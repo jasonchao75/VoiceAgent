@@ -1,0 +1,46 @@
+{
+  "endpoint": "wss://eu.rt.speechmatics.com/v2/",
+  "audio_format": {
+    "type": "raw",
+    "encoding": "pcm_s16le",
+    "sample_rate": 8000
+  },
+  "transcription_config": {
+    "language": "ar_en",
+    "additional_vocab": [
+      {
+        "content": "2026",
+        "sounds_like": ["ألفين وستة وعشرين", "و6", "عشرين ستة وعشرين", "ستة وعشرين"]
+      },
+      {
+        "content": "و25",
+        "sounds_like": ["وخمسة وعشرين", "وخمس وعشرين", "وخمسة وعشرون"]
+      },
+      {
+        "content": "2030",
+        "sounds_like": ["عشرين ثلاثين"]
+      }
+    ],
+    "diarization": "none",
+    "max_delay": 2,
+    "max_delay_mode": "flexible",
+    "audio_filtering_config": {
+      "volume_threshold": 0
+    },
+    "transcript_filtering_config": {
+      "remove_disfluencies": false,
+      "replacements": []
+    },
+    "enable_partials": true,
+    "enable_entities": true,
+    "operating_point": "enhanced",
+    "punctuation_overrides": {
+      "permitted_marks": [".", ",", "?", "!"],
+      "sensitivity": 0.5
+    },
+    "conversation_config": {
+      "end_of_utterance_silence_trigger": 0.5
+    }
+  },
+  "chunk_size_ms": 20
+}
