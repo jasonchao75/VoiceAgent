@@ -88,7 +88,7 @@ voice-agent/
 Skills 是沉淀在 `.opencode/skills/` 目录下的 SOP、架构规范和防坑指南。
 
 **核心架构与流程类**:
-- `pipecat-integration`: **(核心)** 提供 Pipecat 框架的并发原则、帧流转规范及“提前思考(Thinking Ahead)”/“打断(Barge-in)”机制的实现 SOP。（尚未完成，只是AI写了初稿，待更新）
+- `pipecat-integration`: **(核心，尚未完成)** 提供 Pipecat 框架的并发原则、帧流转规范及“提前思考(Thinking Ahead)”/“打断(Barge-in)”机制的实现 SOP。（尚未完成，只是AI写了初稿，待更新）
 - `asr-survey`: 调研接入新 ASR 厂商或新模型的标准流程编排。
 
 **厂商防坑指南 (Vendor Docs)**:
