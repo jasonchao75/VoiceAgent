@@ -88,7 +88,7 @@ voice-agent/
 Skills 是沉淀在 `.opencode/skills/` 目录下的 SOP、架构规范和防坑指南。
 
 **核心架构与流程类**:
-- `pipecat-integration`: **(核心)** 提供 Pipecat 框架的并发原则、帧流转规范及“提前思考(Thinking Ahead)”/“打断(Barge-in)”机制的实现 SOP。
+- `pipecat-integration`: **(核心)** 提供 Pipecat 框架的并发原则、帧流转规范及“提前思考(Thinking Ahead)”/“打断(Barge-in)”机制的实现 SOP。（尚未完成，只是AI写了初稿，待更新）
 - `asr-survey`: 调研接入新 ASR 厂商或新模型的标准流程编排。
 
 **厂商防坑指南 (Vendor Docs)**:
@@ -103,8 +103,10 @@ Skills 是沉淀在 `.opencode/skills/` 目录下的 SOP、架构规范和防坑
 
 随着项目的推进，我们计划逐步固化以下领域的 SOP：
 
+- 🚧 `tts-survey`: TTS 厂商流式合成接口调研、延迟与自然度对比的标准流程 SOP。
+- 🚧 `asr-evaluation`: ASR 专项自动化评测技能，涵盖各语种测试集跑测、WER/CER 计算及抗噪表现量化。
 - 🚧 `freeswitch-integration`: FreeSWITCH / SIP 电话网关与 WebSocket 的对接规范、音频重采样(8KHz/16KHz)及信令控制 SOP。
-- 🚧 `evaluation-metrics`: 基于 jiwer 的 WER/CER 自动化评测规范，以及环境加噪脚本的标准用法。
+- 🚧 `evaluation-metrics`: 通用评测指标及环境加噪脚本的标准用法（将与 asr-evaluation 等专项评测配合使用）。
 - 🚧 `turn-detection-strategy`: 结合 VAD 信号与 LLM 语义的智能断句（Smart Turn Detection）算法调优指南。
 
 ### 4. 调用机制与建议
