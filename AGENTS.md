@@ -128,3 +128,27 @@ voice-agent/
 涉及代码、配置、部署、CI/CD、测试脚本或核心文档的改动完成后，Agent 必须运行与本次改动相关的本地检查；如已推送远端，应查看 GitHub Actions 结果并修复失败项。
 测试过程中如产生临时文件、日志、缓存、测试录音或测试数据库，Agent 必须汇报路径；除非这些文件需要作为证据保留，否则不得提交，并应清理无用脏数据。
 
+## Git 推送方式约定
+
+推送前必须先确认当前仓库 remote：
+
+```bash
+git remote -v
+```
+
+当推送包含 `.github/workflows/` 的改动时，如果 remote 是 HTTPS，且 push 报错：
+
+```text
+refusing to allow a Personal Access Token to create or update workflow ... without `workflow` scope
+```
+
+说明当前 HTTPS Personal Access Token 缺少 `workflow` 权限。此时应改用 SSH remote：
+
+```bash
+git remote set-url origin git@github.com:jasonchao75/VoiceAgent.git
+ssh -T git@github.com
+git push origin main
+```
+
+原因：HTTPS 推送依赖 Personal Access Token；SSH 推送使用本机已授权的 GitHub SSH Key，可正常推送 workflow 文件。
+推送前仍必须运行相关本地检查，并确认没有提交 `.env`、私钥、API Key、日志、录音、缓存等敏感或临时文件。
