@@ -1,0 +1,32 @@
+name: VoiceAgent Basic CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  basic-checks:
+    name: Code & Config Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # Required to run `git ls-files` properly for .env check
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Run CI Checks
+        env:
+          PYTHONPYCACHEPREFIX: /tmp/python-pycache
+        run: |
+          chmod +x scripts/ci/run_checks.py
+          ./scripts/ci/run_checks.py

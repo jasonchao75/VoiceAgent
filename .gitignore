@@ -32,5 +32,8 @@ logs/
 # Docker
 docker-compose.override.yml
 
+# Demos
+demos/
+
 # OpenCode internal
 .opencode/.gitignore

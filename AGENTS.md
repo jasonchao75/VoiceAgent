@@ -60,6 +60,10 @@ voice-agent/
 │   ├── vendor/           # 厂商接口验证脚本（Vendor-Researcher）
 │   └── evaluation/       # 评测工具脚本（Evaluation-Engineer）
 ├── docs/
+│   ├── engineering/      # 工程实践、自动化质检、部署、Hooks、测试、Agent 工作流等详细文档
+│   ├── changes/
+│   │   ├── active/       # 当前进行中的轻量 Change 需求说明
+│   │   └── archive/      # 已完成并归档的 Change 记录
 │   ├── prd/              # PRD 与产品原型文件
 │   ├── references/
 │   │   ├── general/      # 通用参考资料、竞品分析
@@ -68,9 +72,18 @@ voice-agent/
 │       ├── vendor/       # 调研报告、选型决策矩阵（Vendor-Researcher）
 │       └── evaluation/   # 评测报告（Evaluation-Engineer）
 ├── AGENTS.md             # 本项目级协作协议（本文件）
+├── demos/                # 另一个子项目，一些临时演示demo和对应代码，推git时候也要ignore
 └── .gitignore            # 敏感配置与生成文件排除
 ```
 
+### 核心文档分工说明
+
+为了保持项目结构的清晰，本项目的核心文档按以下职责进行严格划分：
+- **`README.md`**：项目首页与团队导航。
+- **`AGENTS.md`**：AI Agent 执行协议、红线和协作规则（本文件）。
+- **`docs/engineering/`**：工程实践与操作手册的承接点。涵盖 CI/CD、Hooks、测试、部署、Agent 工作流等详细文档（注：部分如 CI/CD、部署相关文档目前为规划中，后续将逐步补充）。
+
+**工程文档原则**：可复用的工程规范和操作流程应沉淀到 `docs/engineering/`，`README.md` 仅保留概览与导航。
 ---
 
 ## 5. Agent 角色概览
@@ -97,3 +110,21 @@ voice-agent/
 ---
 
 > 本项目遵循全局 AGENTS.md 的协作原则：Agent 负责技术实现，用户负责需求定义与产品验收。代码变更通过 git 管理，关键里程碑由 Agent 协助提交并推送到远程仓库。
+
+---
+
+## 7. Change 机制与执行约束 (Agent 必读)
+
+为了避免核心功能开发跑偏，引入轻量需求说明（Change）机制。OpenCode 在执行任务时必须遵守以下协议：
+
+- **主动触发 Change**：当用户要求开发核心功能（如 pipeline 机制、ASR/TTS/LLM 适配器、打断逻辑、评测模块等）或可能影响核心系统行为的逻辑时，Agent **必须主动建议**先在 `docs/changes/active/{change-name}/` 下创建 Change 文档（`proposal.md`, `spec.md`, `tasks.md`）。
+- **禁止无凭据编码**：在用户完全确认并同意上述 Change 文档的内容之前，Agent **绝对禁止**直接开始编写核心逻辑代码。
+- **免长流程特权**：对于普通的文档整理（如改 README）、厂商报告汇总、修补已有的 Skill、以及单点参数与小测试脚本的修复，不强制要求开启 Change 流程，避免过度设计。
+- **经验提炼与闭环**：当开发测试完成并将当前目录整体移动归档到 `docs/changes/archive/` 后，如果 Agent 认为该 Change 产生了具有长期复用价值的经验或防坑指南，应**主动建议**将其提炼到 `.opencode/skills/` 中；切勿将一次性需求细节强行写进 Skill。
+
+---
+
+## 任务完成前检查
+涉及代码、配置、部署、CI/CD、测试脚本或核心文档的改动完成后，Agent 必须运行与本次改动相关的本地检查；如已推送远端，应查看 GitHub Actions 结果并修复失败项。
+测试过程中如产生临时文件、日志、缓存、测试录音或测试数据库，Agent 必须汇报路径；除非这些文件需要作为证据保留，否则不得提交，并应清理无用脏数据。
+
