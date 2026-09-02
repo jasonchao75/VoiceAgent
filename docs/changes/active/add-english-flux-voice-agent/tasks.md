@@ -87,6 +87,7 @@
 - [x] CI 覆盖仓库安全检查、format、lint、typecheck、unit test、前端 build 和生产 Docker image build
 - [x] 增加只接受 `main` push 且 CI 成功事件的自动部署 workflow，并保留手动重跑入口
 - [x] 增加固定主机指纹、commit 归属校验、部署串行化、容器健康检查和上一镜像回滚
+- [x] 将 CD 权限收敛为 root 管理的固定部署命令，禁止 `deploy` 用户直接访问 Docker daemon
 - [x] 增加 `PLATFORM_DEPLOY_ENABLED` 部署总开关，避免环境初始化前误触发
 - [ ] 配置 GitHub Environment 与部署 Secrets，并验证 Secret 不出现在日志
 - [ ] 完成一次自动部署演练，并确认失败版本不会替换健康版本

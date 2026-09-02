@@ -49,12 +49,6 @@ jobs:
           fi
           echo "sha=${deploy_sha}" >> "${GITHUB_OUTPUT}"
 
-      - name: Check out verified revision
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.revision.outputs.sha }}
-          fetch-depth: 1
-
       - name: Configure pinned SSH identity
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -72,15 +66,14 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          ssh \
+          printf '%s\n' "${DEPLOY_SHA}" | ssh \
             -o BatchMode=yes \
             -o ConnectTimeout=15 \
             -o IdentitiesOnly=yes \
             -o StrictHostKeyChecking=yes \
             -i "${HOME}/.ssh/voiceagent_deploy" \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "bash -s -- '${DEPLOY_SHA}'" \
-            < scripts/deploy/platform_voiceagent.sh
+            "sudo /usr/local/sbin/deploy-voiceagent-platform"
 
       - name: Verify public health endpoint
         run: curl --fail --show-error --silent --retry 5 --retry-delay 3 https://platform.voiceagentdemo.org/health

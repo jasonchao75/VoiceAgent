@@ -212,6 +212,7 @@ DigitalOcean 部署是本 Change 的第二交付阶段，不是开始编码的�
 - GitHub 对 push/PR 自动运行不调用付费厂商 API 的测试与生产镜像构建。
 - 仅 `main` 分支 push 对应的 CI 全绿后，才可自动部署到 `platform.voiceagentdemo.org`；PR、fork 或失败的 CI 不得触发部署。
 - 自动部署必须串行执行、固定 SSH 主机指纹、验证目标 commit 属于远端 `main`，并在容器启动或健康检查失败时保留或恢复上一健康镜像。
+- SSH `deploy` 用户不得加入等同 root 的 Docker group；只允许通过 sudoers 执行 root 管理的固定部署命令，该命令只接受标准输入中的完整 commit SHA，并再次校验其属于远端 `main`。
 - 仓库变量 `PLATFORM_DEPLOY_ENABLED` 是部署总开关；首次初始化完成前及紧急维护时必须保持关闭。
 - 自动部署只使用服务器运行参数与部署凭证；不得向 GitHub Secrets 或服务器写入共享 Deepgram/LLM Key。
 - 资源创建、DNS 变更、服务器写入、真实 API 费用和部署动作必须由用户再次确认。

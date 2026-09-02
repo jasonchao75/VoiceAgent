@@ -20,6 +20,8 @@
 
 部署总开关是仓库变量 `PLATFORM_DEPLOY_ENABLED`。首次初始化完成前保持非 `true`；完成 Secrets、服务器和 HTTPS 验证后设置为 `true`，后续 `main` 的健康提交即可自动发布。
 
+DigitalOcean 上的 `deploy` 用户不加入 Docker group。GitHub Actions 只能通过 sudoers 执行 root 管理的 `/usr/local/sbin/deploy-voiceagent-platform`，commit SHA 通过标准输入传递；脚本会再次验证该提交属于远端 `main` 后才调用 Docker。
+
 ## 核心仓库与 Demos 仓库的 CI/CD 边界
 
 **重要说明**: `VoiceAgent` 主仓库与 `demos/` 目录下的演示项目（如 `demos/realtimeasr-en-arabic`）是相互独立的 Git 仓库，它们的自动化策略完全不同。
