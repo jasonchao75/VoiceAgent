@@ -6,28 +6,32 @@
 - **CD (持续部署)** = 自动化上线（在你通过所有检查后，自动把代码发布到体验环境或生产环境）。
 - **三层防线的区别**:
   - **本地 Hook** (当前已有): OpenCode 修改文件后自动运行的轻量守卫，不离开你的电脑，比如检查你刚写完的 JSON 或 Python 文件。
-  - **GitHub CI** (未来规划): 当你把代码 push 到 GitHub 或提起 PR 时，GitHub 自动帮你运行一遍全量的自动化质检，确保不破坏主干。
-  - **CD** (未来规划): 质检通过后，自动把对应仓库的应用部署到目标服务器。
+  - **GitHub CI**: 当代码 push 到 GitHub 或提起 PR 时，自动运行全量非付费检查，确保不破坏主干。
+  - **CD**: `main` 的 CI 全绿后，自动把同一个已验证 commit 部署到 DigitalOcean。
 
 ## 当前状态
 
 - ✅ **已有**: OpenCode 内部运行的本地轻量 Hook（见 `docs/engineering/hooks.md`）。
 - ✅ **已有**: README.md 中已开通本文档的入口。
-- ✅ **已有**: 基础 GitHub CI 流水线已搭建，代码 push 或 PR 时自动运行语法、格式和防泄漏检查。
+- ✅ **已有**: GitHub CI 在 push/PR 时运行安全检查、format、lint、typecheck、unit test、前端 build 和生产镜像 build。
+- ✅ **已有**: English Flux Voice Agent 自动 CD workflow；只接受主仓库 `main` push 的成功 CI，包含部署串行化、commit 校验、健康检查和失败回滚。
 - ⏳ **尚未实现**: 真实厂商 API 测试目前主要依赖在本地手动执行脚本进行（例如手动跑 `scripts/vendor/xxx_test.py`），尚未被自动化接管。
-- ⏳ **尚未实现**: 任何形式的 CD（包括轻量 Demo 部署）目前都未配置。
+- ⏳ **待一次性配置**: `platform.voiceagentdemo.org` DNS/HTTPS、GitHub Environment Secrets 和服务器 deploy 身份；完成后自动 CD 才会实际运行。
+
+部署总开关是仓库变量 `PLATFORM_DEPLOY_ENABLED`。首次初始化完成前保持非 `true`；完成 Secrets、服务器和 HTTPS 验证后设置为 `true`，后续 `main` 的健康提交即可自动发布。
 
 ## 核心仓库与 Demos 仓库的 CI/CD 边界
 
 **重要说明**: `VoiceAgent` 主仓库与 `demos/` 目录下的演示项目（如 `demos/realtimeasr-en-arabic`）是相互独立的 Git 仓库，它们的自动化策略完全不同。
-- **VoiceAgent 主仓库**: 仅负责核心组件、适配器和流水线的自动化质检（基础 CI 与高级评测 CI）。主仓库**绝对不会直接负责部署任何具体的 Demo**。
+- **VoiceAgent 主仓库**: 负责核心组件、适配器、流水线质检，以及本仓库 English Flux Voice Agent 的 `platform.voiceagentdemo.org` 部署。
 - **Demos 独立仓库**: 负责自身业务逻辑的 Smoke Test、运行验证以及 Demo 的自动化部署（CD）。
 
 ## 自动运行与手动运行的边界
 
 - **本地 Hook**: 会在 OpenCode **修改文件后自动运行**，无感知防御。
 - **基础 GitHub CI** (当前已有): 每次 **push 或 Pull Request 时自动运行**，作为团队合码前的刚性防线。
-- **真实厂商 API 测试**: 由于调用外部 API 会产生计费且耗时较长，因此**不建议**放进每次 push 的必跑项中。建议通过手动触发、发版前统一触发或每晚定时触发。
+- **自动 CD**: 仅主仓库 `main` push 的 CI 全绿后运行；PR、fork 和失败 CI 不部署。workflow 同时保留手动重跑入口。
+- **真实厂商 API 测试**: 由于调用外部 API 会产生计费且耗时较长，因此不进入每次 push 的 CI；继续由用户以 BYOK 方式人工验收。
 
 ## 基础 CI 计划 (阶段 1)
 
@@ -45,10 +49,10 @@
 
 ## CD 计划 (阶段 3, 6, 7)
 
-当前核心目标是快速暴露进度，因此部署轻量 Demo 的优先级高于完善高级评测 CI。**再次强调：VoiceAgent 主仓库本身不直接部署 Demo。**
+当前核心目标是快速提供稳定的内部体验环境，同时不把付费厂商测试放入无人值守流程。
 
-1. **轻量 Demo CD (阶段 3, 当前优先推进/规划中)**: 
-   - **目标**: **[独立在 demos/realtimeasr-en-arabic 仓库中实现]** 把已经能在本地或服务器手动跑通的 demo 自动更新到演示服务器，而不是做完整的生产环境发布。
+1. **English Flux Voice Agent CD (阶段 3, 已实现 workflow)**:
+   - **目标**: 将本仓库已经通过 CI 的 `main` commit 自动更新到 `platform.voiceagentdemo.org`，而不是做完整的生产级高可用发布。
    - **前置条件**: 
      - demo 已经在本地或服务器手动跑通过至少一次。
      - 目标服务器信息明确。
@@ -80,8 +84,8 @@
 以下是推荐的落地顺序：
 1. **[当前已有] 阶段 1：基础 CI** - 搭建语法、格式、防泄漏的门禁。
 2. **[当前] 阶段 2：Speechmatics demo 手动验证 / Smoke Test** - 确保各链路初步跑通。
-3. **[当前优先推进/规划中] 阶段 3：轻量 Demo CD** - 将手动跑通的 Demo 自动化部署到演示服务器。
-4. **[后续阶段] 阶段 4：pytest 与 mock pipeline** - 引入测试框架进行核心机制自测。
+3. **[当前已实现 workflow，待环境初始化] 阶段 3：轻量 Demo CD** - CI 全绿后自动部署并做健康检查/失败回滚。
+4. **[当前已有] 阶段 4：pytest 与 mock pipeline** - 不调用付费 API 验证核心机制。
 5. **[后续阶段] 阶段 5：高级 CI (WER/CER/延迟)** - 建设抗噪、延迟等量化指标的高级评测流水线。
 6. **[后续阶段] 阶段 6：Docker 部署** - 完善容器化打包镜像的规范。
 7. **[后续阶段] 阶段 7：staging / production 分环境** - 规划完善的多环境发布体系。

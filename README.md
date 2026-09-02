@@ -17,7 +17,7 @@
 - **开发语言**: Python 3.11+ (纯 `asyncio` 架构)
 - **ASR (语音识别)**: 统一适配器接口，当前重点支持 Speechmatics、Azure、Soniox 等。
 - **LLM (大语言模型)**: 流式对接各类大模型。
-- **TTS (语音合成)**: 统一适配器接口，支持 ElevenLabs / Minimax 等。
+- **TTS (语音合成)**: 统一适配器接口；当前 MVP 实现 Deepgram Flux TTS，并预留 ElevenLabs 扩展点。
 - **测试与评测**: 自定义基于 jiwer 的 WER/CER 自动化评测与延迟探针。
 
 ## 📂 项目结构概览
@@ -36,29 +36,17 @@ voice-agent/
 └── AGENTS.md             # AI Agent 开发协作核心协议与红线
 ```
 
-## 🚀 快速开始 (WIP)
+## 🚀 English Flux Voice Agent MVP
 
-*本项目正处于核心 Pipeline 重构与 Pipecat 落地阶段，完整运行脚手架即将发布。*
+安装并启动 Docker Desktop 后，只需运行：
 
-1. **环境准备**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt # (待提供)
-   ```
+```bash
+docker compose up --build
+```
 
-2. **配置密钥**:
-   复制 `.env.example` 到 `.env`，填入相应的厂商 API Keys：
-   ```bash
-   SPEECHMATICS_API_KEY=your_key
-   SONIOX_API_KEY=your_key
-   # ...
-   ```
+浏览器访问 <http://localhost:8000>。Deepgram 与 LLM 均采用会话级 BYOK，API Key 从页面提交且不会写入 `.env` 或磁盘。
 
-3. **运行基础管道自测 (规划中)**:
-   ```bash
-   python tests/pipeline/pipecat_minimal_test.py
-   ```
+完整的配置、验收和故障排查见 [English Flux Voice Agent 本地运行手册](./docs/engineering/english-flux-voice-agent.md)。
 
 ## 📚 文档导航 (Documentation)
 
@@ -67,5 +55,6 @@ voice-agent/
 - 📜 [**AGENTS.md**](./AGENTS.md): 本项目最核心的 Agent 开发协作协议与技术红线。
 - 🤝 [**团队协作与 Agents & Skills 指南**](./docs/engineering/agent-workflow.md): 包含各 Agent 角色的分工、Skills 调用矩阵、以及面向产品经理的 **Change 需求文档编写规范**。
 - 🛡️ [**Hooks 轻量守卫说明**](./docs/engineering/hooks.md): 详细介绍我们在 `tool.execute.after` 阶段启用的代码格式检查、API Key 扫描、同步阻塞拦截机制及后续演进路线图。
-- ⚙️ [**CI/CD 自动化流水线 (规划中)**](./docs/engineering/ci-cd.md): 后续项目交付和集成测试的自动化工作流说明。
+- ⚙️ [**CI/CD 自动化流水线**](./docs/engineering/ci-cd.md): `main` 全量 CI 通过后自动部署 DigitalOcean，并执行健康检查与失败回滚。
 - 🚢 [**DigitalOcean Demo 部署手册**](./docs/engineering/deployment-digitalocean-demo.md): 基于 FastAPI + Nginx 的轻量级 Demo 自动化部署与服务器配置指南。
+- 🎙️ [**English Flux Voice Agent 本地运行手册**](./docs/engineering/english-flux-voice-agent.md): BYOK 页面、启动方式、人工验收与已知限制。

@@ -1,0 +1,258 @@
+"""In-memory BYOK session lifecycle with single-use opaque tokens."""
+
+from __future__ import annotations
+
+import asyncio
+import secrets
+import time
+import uuid
+from dataclasses import dataclass
+
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+
+from src.config import (
+    LLMConfig,
+    LLMProviderCatalog,
+    RuntimeConfig,
+    TTSConfig,
+    VoiceCatalog,
+)
+
+
+class SessionRequest(BaseModel):
+    """Initial session request; secret values are masked in repr and serialization."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    deepgram_api_key: SecretStr = Field(min_length=8, max_length=500)
+    llm_api_key: SecretStr = Field(min_length=8, max_length=500)
+    llm_provider: str = Field(min_length=1, max_length=50)
+    llm_base_url: str = Field(min_length=8, max_length=500)
+    llm_model: str = Field(min_length=1, max_length=200)
+    system_prompt: str = Field(min_length=1, max_length=12000)
+    opening_script: str = Field(max_length=2000)
+    flux_voice: str = Field(min_length=8, max_length=100)
+
+    @field_validator("deepgram_api_key", "llm_api_key")
+    @classmethod
+    def reject_placeholder_key(cls, value: SecretStr) -> SecretStr:
+        """Reject obvious placeholders without assuming a provider-specific key format."""
+        secret = value.get_secret_value().strip()
+        lowered = secret.lower()
+        if not secret or "your_" in lowered or "api_key_here" in lowered:
+            raise ValueError("Enter a real API key for this session")
+        return SecretStr(secret)
+
+
+class SessionConfig(BaseModel):
+    """Validated non-secret configuration locked for one conversation."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    llm: LLMConfig
+    tts: TTSConfig
+    system_prompt: str
+    opening_script: str
+
+
+@dataclass(slots=True, repr=False)
+class SessionCredentials:
+    """Mutable secret holder whose references are cleared deterministically."""
+
+    deepgram_api_key: SecretStr
+    llm_api_key: SecretStr
+
+    def clear(self) -> None:
+        """Drop references to provider keys after the session ends."""
+        self.deepgram_api_key = SecretStr("")
+        self.llm_api_key = SecretStr("")
+
+
+@dataclass(slots=True, repr=False)
+class SessionLease:
+    """Credential and configuration lease owned by exactly one WebSocket."""
+
+    session_id: str
+    token: str
+    credentials: SessionCredentials
+    config: SessionConfig
+    created_at: float
+    expires_at: float
+    claimed: bool = False
+    closed: bool = False
+
+    def close(self) -> None:
+        """Invalidate the lease and release its credential references."""
+        if self.closed:
+            return
+        self.closed = True
+        self.credentials.clear()
+
+
+class SessionCapacityError(RuntimeError):
+    """Raised when the configured in-process session limit is reached."""
+
+
+class SessionTokenError(RuntimeError):
+    """Raised for missing, expired, or already-used session tokens."""
+
+
+class SessionStore:
+    """Async-safe in-memory store for pending and active BYOK sessions."""
+
+    def __init__(self, *, token_ttl_seconds: int, max_sessions: int) -> None:
+        """Initialize the store.
+
+        Args:
+            token_ttl_seconds: Lifetime of an unclaimed WebSocket token.
+            max_sessions: Combined pending and active session limit.
+        """
+        self._token_ttl_seconds = token_ttl_seconds
+        self._max_sessions = max_sessions
+        self._pending: dict[str, SessionLease] = {}
+        self._active: dict[str, SessionLease] = {}
+        self._lock = asyncio.Lock()
+
+    async def create(
+        self,
+        *,
+        request: SessionRequest,
+        runtime: RuntimeConfig,
+        voice_catalog: VoiceCatalog,
+        llm_catalog: LLMProviderCatalog,
+    ) -> SessionLease:
+        """Validate a request and create a short-lived, unclaimed session lease.
+
+        Args:
+            request: BYOK credentials and requested per-session settings.
+            runtime: Server runtime defaults and limits.
+            voice_catalog: Allowed Flux voices.
+            llm_catalog: Allowed provider presets.
+
+        Returns:
+            A pending lease containing a single-use opaque token.
+
+        Raises:
+            SessionCapacityError: If the local concurrency limit is reached.
+            ValueError: If a requested provider setting is not allowed.
+        """
+        session_config = build_session_config(
+            request=request,
+            runtime=runtime,
+            voice_catalog=voice_catalog,
+            llm_catalog=llm_catalog,
+        )
+        now = time.monotonic()
+        async with self._lock:
+            self._purge_expired_locked(now)
+            if len(self._pending) + len(self._active) >= self._max_sessions:
+                raise SessionCapacityError("The demo has reached its session limit")
+            token = secrets.token_urlsafe(32)
+            lease = SessionLease(
+                session_id=str(uuid.uuid4()),
+                token=token,
+                credentials=SessionCredentials(
+                    deepgram_api_key=request.deepgram_api_key,
+                    llm_api_key=request.llm_api_key,
+                ),
+                config=session_config,
+                created_at=now,
+                expires_at=now + self._token_ttl_seconds,
+            )
+            self._pending[token] = lease
+            return lease
+
+    async def claim(self, token: str) -> SessionLease:
+        """Consume a token and bind its lease to one active WebSocket."""
+        now = time.monotonic()
+        async with self._lock:
+            self._purge_expired_locked(now)
+            lease = self._pending.pop(token, None)
+            if lease is None or lease.closed:
+                raise SessionTokenError("Session token is invalid or expired")
+            lease.claimed = True
+            self._active[lease.session_id] = lease
+            return lease
+
+    async def close(self, session_id: str) -> None:
+        """Remove an active session and clear its credential holder."""
+        async with self._lock:
+            lease = self._active.pop(session_id, None)
+            if lease is not None:
+                lease.close()
+
+    async def get_active(self, *, session_id: str, token: str) -> SessionLease:
+        """Authorize a non-secret browser event against the active session."""
+        async with self._lock:
+            lease = self._active.get(session_id)
+            if lease is None or lease.closed or not secrets.compare_digest(lease.token, token):
+                raise SessionTokenError("Session authorization is invalid")
+            return lease
+
+    async def purge_expired(self) -> int:
+        """Clear expired pending sessions and return the number removed."""
+        async with self._lock:
+            return self._purge_expired_locked(time.monotonic())
+
+    async def close_all(self) -> None:
+        """Clear every credential reference during application shutdown."""
+        async with self._lock:
+            leases = [*self._pending.values(), *self._active.values()]
+            self._pending.clear()
+            self._active.clear()
+            for lease in leases:
+                lease.close()
+
+    async def counts(self) -> tuple[int, int]:
+        """Return pending and active counts for non-secret health reporting."""
+        async with self._lock:
+            self._purge_expired_locked(time.monotonic())
+            return len(self._pending), len(self._active)
+
+    def _purge_expired_locked(self, now: float) -> int:
+        expired_tokens = [
+            token for token, lease in self._pending.items() if lease.expires_at <= now
+        ]
+        for token in expired_tokens:
+            self._pending.pop(token).close()
+        return len(expired_tokens)
+
+
+def build_session_config(
+    *,
+    request: SessionRequest,
+    runtime: RuntimeConfig,
+    voice_catalog: VoiceCatalog,
+    llm_catalog: LLMProviderCatalog,
+) -> SessionConfig:
+    """Whitelist all public session overrides against controlled catalogs."""
+    voices = {voice.model_id for voice in voice_catalog.voices}
+    if request.flux_voice not in voices:
+        raise ValueError("Select a Flux voice from the server catalog")
+
+    providers = {provider.id: provider for provider in llm_catalog.providers}
+    provider = providers.get(request.llm_provider)
+    if provider is None:
+        raise ValueError("Unknown LLM provider")
+    base_url = request.llm_base_url.rstrip("/")
+    if provider.id != "custom" and base_url != provider.base_url:
+        raise ValueError("The selected provider base URL does not match the server catalog")
+
+    llm = LLMConfig(
+        provider=provider.id,
+        base_url=base_url,
+        model=request.llm_model.strip(),
+        timeout_seconds=runtime.llm.timeout_seconds,
+    )
+    tts = TTSConfig(
+        provider="deepgram_flux",
+        voice=request.flux_voice,
+        speed=runtime.tts.speed,
+        expressivity=runtime.tts.expressivity,
+    )
+    return SessionConfig(
+        llm=llm,
+        tts=tts,
+        system_prompt=request.system_prompt.strip(),
+        opening_script=request.opening_script.strip(),
+    )

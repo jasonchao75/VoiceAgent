@@ -1,0 +1,22 @@
+name: voiceagent-platform
+
+services:
+  voice-agent:
+    image: voiceagent-platform:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${VOICE_AGENT_BIND_ADDRESS:-127.0.0.1}:${VOICE_AGENT_PORT:-8000}:8000"
+    environment:
+      VOICE_AGENT_ALLOWED_ORIGINS: "${VOICE_AGENT_ALLOWED_ORIGINS:-http://localhost:8000,http://127.0.0.1:8000}"
+      VOICE_AGENT_LOG_LEVEL: "${VOICE_AGENT_LOG_LEVEL:-INFO}"
+      VOICE_AGENT_BASIC_AUTH_USERNAME: "${VOICE_AGENT_BASIC_AUTH_USERNAME:-}"
+      VOICE_AGENT_BASIC_AUTH_PASSWORD: "${VOICE_AGENT_BASIC_AUTH_PASSWORD:-}"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true

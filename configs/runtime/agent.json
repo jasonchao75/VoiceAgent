@@ -1,0 +1,37 @@
+{
+  "language": "en",
+  "audio": {
+    "encoding": "linear16",
+    "input_sample_rate": 16000,
+    "output_sample_rate": 24000,
+    "sample_width_bytes": 2,
+    "channels": 1
+  },
+  "asr": {
+    "provider": "deepgram_flux",
+    "model": "flux-general-en",
+    "eager_eot_threshold": null,
+    "eot_threshold": null,
+    "eot_timeout_ms": null
+  },
+  "llm": {
+    "provider": "openai",
+    "base_url": "https://api.openai.com/v1",
+    "model": "gpt-4.1-mini",
+    "timeout_seconds": 15.0
+  },
+  "tts": {
+    "provider": "deepgram_flux",
+    "voice": "flux-alexis-en",
+    "speed": 1.0,
+    "expressivity": 0
+  },
+  "system_prompt": "You are a concise, friendly English voice assistant. Use natural spoken English, keep answers brief, and do not use markdown.",
+  "opening_script": "Hi! I'm your voice assistant. How can I help today?",
+  "session": {
+    "pending_token_ttl_seconds": 120,
+    "idle_timeout_seconds": 300,
+    "max_duration_seconds": 1800,
+    "max_concurrent_sessions": 3
+  }
+}

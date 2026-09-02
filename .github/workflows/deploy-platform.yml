@@ -1,0 +1,86 @@
+name: Deploy VoiceAgent Platform
+
+on:
+  workflow_run:
+    workflows: ["VoiceAgent CI"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Verified commit SHA to deploy; defaults to main"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: voiceagent-platform-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      vars.PLATFORM_DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-latest
+    environment:
+      name: platform-production
+      url: https://platform.voiceagentdemo.org
+    steps:
+      - name: Resolve deploy commit
+        id: revision
+        env:
+          AUTOMATIC_SHA: ${{ github.event.workflow_run.head_sha }}
+          MANUAL_SHA: ${{ inputs.commit_sha }}
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            deploy_sha="${MANUAL_SHA:-${GITHUB_SHA}}"
+          else
+            deploy_sha="${AUTOMATIC_SHA}"
+          fi
+          if [[ ! "${deploy_sha}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid deploy commit SHA" >&2
+            exit 1
+          fi
+          echo "sha=${deploy_sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Check out verified revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.revision.outputs.sha }}
+          fetch-depth: 1
+
+      - name: Configure pinned SSH identity
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d "${HOME}/.ssh"
+          printf '%s\n' "${DEPLOY_SSH_KEY}" > "${HOME}/.ssh/voiceagent_deploy"
+          chmod 600 "${HOME}/.ssh/voiceagent_deploy"
+          printf '%s\n' "${DEPLOY_KNOWN_HOSTS}" > "${HOME}/.ssh/known_hosts"
+          chmod 600 "${HOME}/.ssh/known_hosts"
+
+      - name: Deploy and verify
+        env:
+          DEPLOY_SHA: ${{ steps.revision.outputs.sha }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -i "${HOME}/.ssh/voiceagent_deploy" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "bash -s -- '${DEPLOY_SHA}'" \
+            < scripts/deploy/platform_voiceagent.sh
+
+      - name: Verify public health endpoint
+        run: curl --fail --show-error --silent --retry 5 --retry-delay 3 https://platform.voiceagentdemo.org/health

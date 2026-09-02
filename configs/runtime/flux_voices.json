@@ -1,0 +1,17 @@
+{
+  "source_url": "https://developers.deepgram.com/docs/flux-tts/voices",
+  "listen_url": "https://talk.deepgram.com/",
+  "verified_at": "2026-09-01",
+  "voices": [
+    {"name": "Alexis", "model_id": "flux-alexis-en", "accent": "American", "gender": "Female", "age": "Adult", "traits": ["clear", "professional", "calm", "empathetic"], "use_cases": ["customer service", "IVR", "financial services"]},
+    {"name": "Hannah", "model_id": "flux-hannah-en", "accent": "American", "gender": "Female", "age": "Young", "traits": ["clear", "confident", "thoughtful", "pleasant"], "use_cases": ["casual chat", "storytelling"]},
+    {"name": "Kit", "model_id": "flux-kit-en", "accent": "British", "gender": "Male", "age": "Young Adult", "traits": ["friendly", "energetic", "thoughtful", "helpful"], "use_cases": ["customer service", "narration", "financial services"]},
+    {"name": "Sienna", "model_id": "flux-sienna-en", "accent": "American", "gender": "Female", "age": "Young Adult", "traits": ["clear", "professional", "calm", "warm"], "use_cases": ["customer service", "financial services", "narration"]},
+    {"name": "Cole", "model_id": "flux-cole-en", "accent": "American", "gender": "Male", "age": "Young", "traits": ["friendly", "clear", "energetic", "engaging"], "use_cases": ["customer service", "IVR"]},
+    {"name": "Colin", "model_id": "flux-colin-en", "accent": "British", "gender": "Male", "age": "Adult", "traits": ["warm", "friendly", "trustworthy", "authoritative"], "use_cases": ["customer service", "financial services", "narration"]},
+    {"name": "Haley", "model_id": "flux-haley-en", "accent": "American", "gender": "Female", "age": "Young Adult", "traits": ["clear", "professional", "caring", "calm"], "use_cases": ["customer service", "financial services", "IVR"]},
+    {"name": "Heather", "model_id": "flux-heather-en", "accent": "American", "gender": "Female", "age": "Young", "traits": ["clear", "engaging", "energetic", "friendly"], "use_cases": ["customer service", "IVR"]},
+    {"name": "Miles", "model_id": "flux-miles-en", "accent": "American", "gender": "Male", "age": "Adult", "traits": ["clear", "calm", "professional", "sincere"], "use_cases": ["customer service", "financial services", "informative"]},
+    {"name": "Sean", "model_id": "flux-sean-en", "accent": "British", "gender": "Male", "age": "Mature", "traits": ["friendly", "kind", "caring", "calming"], "use_cases": ["IVR"]}
+  ]
+}

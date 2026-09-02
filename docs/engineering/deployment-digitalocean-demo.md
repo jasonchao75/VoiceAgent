@@ -124,7 +124,7 @@ server {
 我们使用 GitHub Actions 来完成自动质量检查与手动部署：
 - **基础 CI**：每次 push 自动检查 Python 语法和 JSON 格式，阻断语法错误。
 - **手动 Smoke Test**：在部署前验证代码打包和内部逻辑的自动化测试（按需）。
-- **手动 Deploy CD**：使用 `workflow_dispatch` 触发。我们**不默认 push 自动触发部署**，以防高频提交导致服务器不断重启、影响正在体验 Demo 的用户，以及防止不稳定的构建破坏在线演示。
+- **自动 Deploy CD**：English Flux Voice Agent 在主仓库 `main` push 的 CI 全绿后自动部署；`workflow_dispatch` 只作为重跑入口。部署任务串行执行，并通过容器健康检查和上一镜像回滚保护在线演示。
 
 ## GitHub Secrets
 在 Demo 仓库的 Settings -> Secrets and variables -> Actions 中配置以下凭证：
@@ -145,7 +145,7 @@ deploy ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart <service-name>
 1. **开发**：在 OpenCode 中修改代码和功能。
 2. **提交**：Push 代码到 GitHub。
 3. **CI**：GitHub Actions CI 自动运行，保证基础质量通过。
-4. **触发 CD**：在 GitHub 仓库的 Actions 页面，手动触发 Deploy Workflow。
+4. **触发 CD**：`main` 的 CI 全绿后自动触发；需要重跑时可在 Actions 页面手动触发。
 5. **验收**：部署完成（显示绿色成功）后，进行人工验收。
 
 ## 常用发布指令
