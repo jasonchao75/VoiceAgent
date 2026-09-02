@@ -93,5 +93,9 @@ def test_basic_auth_rejects_incomplete_or_placeholder_configuration(
         create_app()
 
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", "SET_A_STRONG_PASSWORD_BEFORE_DEPLOY")
-    with pytest.raises(RuntimeError, match="at least 16 characters"):
+    with pytest.raises(RuntimeError, match="at least 8 characters"):
+        create_app()
+
+    monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", "only7ch")
+    with pytest.raises(RuntimeError, match="at least 8 characters"):
         create_app()

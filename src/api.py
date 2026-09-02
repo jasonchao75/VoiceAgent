@@ -101,8 +101,8 @@ def _basic_auth_credentials() -> tuple[str, str] | None:
         return None
     if not username or not password:
         raise RuntimeError("Both VoiceAgent Basic Auth variables must be configured")
-    if len(password) < 16 or password == "SET_A_STRONG_PASSWORD_BEFORE_DEPLOY":
-        raise RuntimeError("VoiceAgent Basic Auth password must be at least 16 characters")
+    if len(password) < 8 or password == "SET_A_STRONG_PASSWORD_BEFORE_DEPLOY":
+        raise RuntimeError("VoiceAgent Basic Auth password must be at least 8 characters")
     return username, password
 
 

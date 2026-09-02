@@ -35,12 +35,14 @@ docker compose down
 ### 公网验收环境
 
 - URL：<https://platform.voiceagentdemo.org>
-- 入口使用 HTTP Basic Auth；用户名为 `voiceagent`。
-- 为避免在聊天、文档或终端历史中暴露密码，可在已授权 Mac 上执行下列命令，把服务器保存的随机密码直接复制到剪贴板：
+- 入口使用 HTTP Basic Auth；用户名为 `voiceagent`，密码为固定值（至少 8 个字符）。
+- 密码明文不写入公开仓库；遗忘时可在已授权 Mac 上执行下列命令查看服务器保存的密码：
 
 ```bash
-ssh -i ~/.ssh/id_ed25519 root@104.248.46.112 "sed -n 's/^VOICE_AGENT_BASIC_AUTH_PASSWORD=//p' /home/deploy/apps/voiceagent-platform/repo/.env" | pbcopy
+ssh -i ~/.ssh/id_ed25519 root@104.248.46.112 "sed -n 's/^VOICE_AGENT_BASIC_AUTH_PASSWORD=//p' /home/deploy/apps/voiceagent-platform/repo/.env"
 ```
+
+- 修改密码：更新上述 `.env` 中的 `VOICE_AGENT_BASIC_AUTH_PASSWORD` 后，在 `/home/deploy/apps/voiceagent-platform/repo` 执行 `docker compose up -d` 重启生效。
 
 服务器只保存访问保护参数，不保存 Deepgram 或 LLM API Key；两类厂商 Key 仍由用户在每次会话开始时通过 HTTPS 页面提交。
 
