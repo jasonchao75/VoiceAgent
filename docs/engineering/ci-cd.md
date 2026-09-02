@@ -22,6 +22,8 @@
 
 DigitalOcean 上的 `deploy` 用户不加入 Docker group。GitHub Actions 只能通过 sudoers 执行 root 管理的 `/usr/local/sbin/deploy-voiceagent-platform`，commit SHA 通过标准输入传递；脚本会再次验证该提交属于远端 `main` 后才调用 Docker。
 
+当前公网目标是 `https://platform.voiceagentdemo.org`。仓库已配置 `DEPLOY_HOST`、`DEPLOY_USER`、`DEPLOY_SSH_KEY`、`DEPLOY_KNOWN_HOSTS` 四个加密 Secret；Secret 只允许按名称检查，不得读取或输出值。首次受限 CD 与公网健康检查已通过。
+
 ## 核心仓库与 Demos 仓库的 CI/CD 边界
 
 **重要说明**: `VoiceAgent` 主仓库与 `demos/` 目录下的演示项目（如 `demos/realtimeasr-en-arabic`）是相互独立的 Git 仓库，它们的自动化策略完全不同。

@@ -32,6 +32,18 @@ docker compose down
 
 健康检查：<http://localhost:8000/health>。该接口不会调用任何付费 API。
 
+### 公网验收环境
+
+- URL：<https://platform.voiceagentdemo.org>
+- 入口使用 HTTP Basic Auth；用户名为 `voiceagent`。
+- 为避免在聊天、文档或终端历史中暴露密码，可在已授权 Mac 上执行下列命令，把服务器保存的随机密码直接复制到剪贴板：
+
+```bash
+ssh -i ~/.ssh/id_ed25519 root@104.248.46.112 "sed -n 's/^VOICE_AGENT_BASIC_AUTH_PASSWORD=//p' /home/deploy/apps/voiceagent-platform/repo/.env" | pbcopy
+```
+
+服务器只保存访问保护参数，不保存 Deepgram 或 LLM API Key；两类厂商 Key 仍由用户在每次会话开始时通过 HTTPS 页面提交。
+
 ## 3. 开发模式
 
 仅供需要调试代码时使用：
@@ -76,6 +88,7 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000 --no-access-log
 - 浏览器首播时间来自 Pipecat Client 的播放回调，适合体验对比，但不是声卡级测量。
 - 本机已验证 Python 测试、lint、typecheck、前端生产构建和完整 Docker 镜像构建。macOS 自带 Node/npm 组合出现 npm CLI 退出异常时，以 Node 22 Docker 构建结果为交付依据。
 - DigitalOcean 使用现有 Droplet 和独立域名 `platform.voiceagentdemo.org`；首次部署、DNS/HTTPS 和 GitHub Secrets 配置完成后，`main` 的 CI 全绿会自动发布。
+- 公网环境已完成容器健康、HTTPS、WSS、HTTP 跳转和 Basic Auth 验证；真实三轮对话与 barge-in 仍需用户使用自己的 BYOK Key 和浏览器麦克风人工验收。
 
 ## 7. 常见问题
 

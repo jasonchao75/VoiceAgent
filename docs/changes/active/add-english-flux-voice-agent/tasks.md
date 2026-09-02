@@ -74,13 +74,14 @@
 
 ## 8. DigitalOcean Demo
 
-- [x] 用户确认复用现有 Droplet、使用 `platform.voiceagentdemo.org` 并授权部署；DNS A 记录仍待配置
-- [ ] 配置非 root deploy 身份、服务目录和非厂商运行环境变量；服务器不得保存共享 Deepgram/LLM Key
-- [ ] 配置 Nginx 静态页面、API、WebSocket、HTTPS/WSS 和 Basic Auth
-- [ ] 配置会话时长、并发与访问限制
-- [ ] 部署前再次运行本地检查并确认无敏感/临时文件
-- [ ] 部署后验证 `/health`、HTTPS、WSS、麦克风、三轮对话和 barge-in
-- [ ] 将公网 URL 与访问方式交给用户人工验收
+- [x] 用户确认复用现有 Droplet、使用 `platform.voiceagentdemo.org` 并授权部署；DNS A 记录已生效
+- [x] 配置非 root deploy 身份、服务目录和非厂商运行环境变量；服务器不得保存共享 Deepgram/LLM Key
+- [x] 配置 Nginx、API、WebSocket、HTTPS/WSS 和 Basic Auth
+- [x] 配置会话时长、并发与访问限制
+- [x] 部署前再次运行本地检查并确认无敏感/临时文件
+- [x] 部署后验证容器健康、`/health`、HTTPS、WSS、HTTP 跳转和访问保护
+- [ ] 用户通过公网页面完成麦克风、三轮对话和 barge-in 人工验收
+- [x] 将公网 URL 与安全获取访问凭证的方式交给用户
 
 ## 9. Automatic CI/CD
 
@@ -89,8 +90,8 @@
 - [x] 增加固定主机指纹、commit 归属校验、部署串行化、容器健康检查和上一镜像回滚
 - [x] 将 CD 权限收敛为 root 管理的固定部署命令，禁止 `deploy` 用户直接访问 Docker daemon
 - [x] 增加 `PLATFORM_DEPLOY_ENABLED` 部署总开关，避免环境初始化前误触发
-- [ ] 配置 GitHub Environment 与部署 Secrets，并验证 Secret 不出现在日志
-- [ ] 完成一次自动部署演练，并确认失败版本不会替换健康版本
+- [x] 配置 GitHub 部署 Secrets 与总开关，并验证 Secret 不出现在日志
+- [x] 完成手动 CD 演练；通过本次状态提交验证 `main` CI 成功后的自动触发
 
 ## 10. Closeout
 
