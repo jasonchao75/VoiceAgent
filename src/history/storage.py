@@ -81,6 +81,8 @@ class HistoryStore:
                     playback_ms REAL,
                     server_to_playback_ms REAL,
                     turn_to_playback_ms REAL,
+                    asr_final_reason TEXT,
+                    incomplete_reason TEXT,
                     reasoning_tokens INTEGER,
                     reasoning_status TEXT NOT NULL,
                     reasoning_control TEXT,
@@ -106,6 +108,8 @@ class HistoryStore:
             "llm_request_splicing_ms REAL",
             "tts_initial_ms REAL",
             "playback_ms REAL",
+            "asr_final_reason TEXT",
+            "incomplete_reason TEXT",
         ]
         for column_def in new_columns:
             try:
@@ -197,9 +201,9 @@ class HistoryStore:
                        call_id, turn_index, asr_final_latency_ms,
                        llm_request_splicing_ms, llm_first_token_ms, tts_initial_ms,
                        tts_first_audio_ms, playback_ms, server_to_playback_ms,
-                       turn_to_playback_ms, reasoning_tokens, reasoning_status,
-                       reasoning_control
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       turn_to_playback_ms, asr_final_reason, incomplete_reason,
+                       reasoning_tokens, reasoning_status, reasoning_control
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     (
                         call_id,
@@ -212,6 +216,8 @@ class HistoryStore:
                         item.playback_ms,
                         item.server_to_playback_ms,
                         item.turn_to_playback_ms,
+                        item.asr_final_reason,
+                        item.incomplete_reason,
                         item.reasoning_tokens,
                         item.reasoning_status,
                         item.reasoning_control,

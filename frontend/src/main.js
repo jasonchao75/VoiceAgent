@@ -582,8 +582,21 @@ async function showHistory(callId) {
   for (const metric of call.metrics) {
     const row = document.createElement("p");
     row.className = "history-metric";
-    const fmt = (v) => v === null || v === undefined ? "—" : `${v}`;
-    row.textContent = `Turn ${metric.turn_index + 1}: ASR final ${fmt(metric.asr_final_latency_ms)} ms · LLM splicing ${fmt(metric.llm_request_splicing_ms)} ms · LLM TTFT ${fmt(metric.llm_first_token_ms)} ms · TTS initial ${fmt(metric.tts_initial_ms)} ms · TTS TTFT ${fmt(metric.tts_first_audio_ms)} ms · playback ${fmt(metric.playback_ms)} ms · e2e latency ${fmt(metric.turn_to_playback_ms)} ms · reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`;
+    const reasons = {
+      word_timing_unavailable: "ASR word timing unavailable",
+      audio_clock_mismatch: "ASR audio clock mismatch",
+      interrupted_before_llm_first_token: "interrupted before LLM first token",
+      session_ended_before_llm_first_token: "session ended before LLM first token",
+      interrupted_before_tts_audio: "interrupted before TTS audio",
+      session_ended_before_tts_audio: "session ended before TTS audio",
+      interrupted_before_playback: "interrupted before playback",
+      session_ended_before_playback: "session ended before playback",
+    };
+    const fmt = (value, reason) => {
+      if (value !== null && value !== undefined) return `${value} ms`;
+      return `not available (${reasons[reason] || "event not observed"})`;
+    };
+    row.textContent = `Turn ${metric.turn_index + 1}: ASR final ${fmt(metric.asr_final_latency_ms, metric.asr_final_reason)} · LLM splicing ${fmt(metric.llm_request_splicing_ms, metric.incomplete_reason)} · LLM TTFT ${fmt(metric.llm_first_token_ms, metric.incomplete_reason)} · TTS initial ${fmt(metric.tts_initial_ms, metric.incomplete_reason)} · TTS TTFT ${fmt(metric.tts_first_audio_ms, metric.incomplete_reason)} · playback ${fmt(metric.playback_ms, metric.incomplete_reason)} · e2e latency ${fmt(metric.turn_to_playback_ms, metric.incomplete_reason)} · reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`;
     elements.historyDetail.append(row);
   }
   const remove = document.createElement("button");

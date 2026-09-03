@@ -14,7 +14,17 @@
 #### Scenario: Browser playback event is missing
 
 - **WHEN** 服务端已产生 TTS 音频但未收到浏览器播放回调
-- **THEN** 浏览器相关指标保存为 null 并显示缺失原因，不得记录为 0
+- **THEN** 浏览器相关指标保存为 null 并显示“被打断”或“会话结束前未播放”等缺失原因，不得记录为 0 或仅显示破折号
+
+#### Scenario: Flux emits transcript before user-stopped frame
+
+- **WHEN** Flux 的 `EndOfTurn` Transcript 先于 Pipeline 的 `UserStoppedSpeakingFrame` 到达
+- **THEN** 系统使用 Flux word timing 与已接收音频时钟计算 ASR final latency；无法计算时保存 null 和原因，不得把负值截断为 0
+
+#### Scenario: Previous response leaves late frames
+
+- **WHEN** 用户打断上一轮后，上一轮残留的 TTS frame 在新用户轮次开始后到达
+- **THEN** 残留 frame 不得计入新轮次，新轮次的缺失指标必须标注实际未完成阶段
 
 ### Requirement: Non-blocking history capture
 

@@ -35,7 +35,7 @@
 
 每轮至少计算：
 
-- `asr_final_latency_ms`：VAD 判断用户停口到 ASR 发出最终 transcript（ASR final package latency）。
+- `asr_final_latency_ms`：Flux 最后一个识别词结束到服务端收到 `EndOfTurn` final transcript。使用 `words[].end` 与已接收音频累计时钟计算；word timing 缺失或时钟不一致时保存 null，并通过 `asr_final_reason` 说明，不得把负值截断为 0。
 - `llm_request_splicing_ms`：ASR final 到用户 aggregator 把上下文推给 LLM 服务（`LLMContextFrame`），即 LLM request splicing。
 - `llm_first_token_ms`：`LLMContextFrame` 到服务端观察到首个 `LLMTextFrame`（LLM TTFT）；包含服务器到厂商的公网耗时，不包含浏览器下行播放。
 - `tts_initial_ms`：首个 LLM text token 到 TTS 服务开始处理（TTS initial），含后续 token 流式等待与 TTS 服务启动。
@@ -46,6 +46,8 @@
 以上 6 个 breakdown 项构成完整的延迟链，其和恒等于 `turn_to_playback_ms`。缺失事件必须保存为 null 并标注原因，不得用 0 代替。
 
 缺失事件必须保存为 null 并标注原因，不得用 0 代替。时间点使用单调时钟计算耗时、UTC 时间用于展示和持久化。
+
+每轮额外保存 `incomplete_reason`。用户在 LLM 首 Token、TTS 首音频或浏览器首次播放前打断，以及会话在播放前结束时，前端必须显示具体原因。LLM/TTS/播放事件只有在当前轮的前置事件已经发生时才可归入该轮，防止上一轮残留 frame 污染下一轮。
 
 Reasoning 指标只保存 token 数量与状态，不保存隐藏思维链或 provider 专用 reasoning 内容正文。`reasoning_tokens=null` 表示 provider 未提供证据，与 `0` 严格区分。
 

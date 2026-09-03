@@ -33,6 +33,8 @@ class TurnMetric(BaseModel):
     playback_ms: float | None = None
     server_to_playback_ms: float | None = None
     turn_to_playback_ms: float | None = None
+    asr_final_reason: str | None = None
+    incomplete_reason: str | None = None
     reasoning_tokens: int | None = None
     reasoning_status: str = "unverified"
     reasoning_control: str | None = None

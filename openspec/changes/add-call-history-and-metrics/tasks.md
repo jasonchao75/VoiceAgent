@@ -39,6 +39,7 @@
 - [ ] 5.4 测试逐轮文本聚合与四类延迟口径
 - [ ] 5.5 扫描 API、日志、SQLite、文件名和前端存储，确认无 Key/token 泄漏
 - [x] 5.6 运行 format、lint、typecheck、后端测试和前端 build
+- [x] 5.7 修复 Flux ASR final 口径、跨轮残留 frame 污染和缺失原因展示
 
 ## 6. Acceptance and Joint Deployment
 

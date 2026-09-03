@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 from pipecat.frames.frames import (
+    InputAudioRawFrame,
     LLMContextFrame,
     LLMFullResponseEndFrame,
     LLMTextFrame,
@@ -25,9 +26,17 @@ def capture() -> CallCapture:
 
 def _simulate_single_turn(capture: CallCapture) -> None:
     """Replay one complete user/agent turn through the capture."""
+    capture.observe(InputAudioRawFrame(bytes(9600), sample_rate=16000, num_channels=1))
     capture.observe(UserStartedSpeakingFrame())
     capture.observe(UserStoppedSpeakingFrame())
-    capture.observe(TranscriptionFrame(text="Hello.", user_id="user", timestamp="0"))
+    capture.observe(
+        TranscriptionFrame(
+            text="Hello.",
+            user_id="user",
+            timestamp="0",
+            result={"words": [{"word": "Hello.", "end": 0.2}]},
+        )
+    )
     capture.observe(LLMContextFrame(context={}))
     capture.observe(LLMTextFrame("Hello! "))
     capture.observe(LLMTextFrame("How can I help you today?"))
@@ -74,10 +83,18 @@ def test_single_turn_produces_one_metric(capture: CallCapture) -> None:
 
 def test_duplicate_vad_stops_do_not_create_ghost_turns(capture: CallCapture) -> None:
     """Multiple UserStoppedSpeakingFrame events for one utterance must not become extra metrics."""
+    capture.observe(InputAudioRawFrame(bytes(9600), sample_rate=16000, num_channels=1))
     capture.observe(UserStartedSpeakingFrame())
     capture.observe(UserStoppedSpeakingFrame())
     capture.observe(UserStoppedSpeakingFrame())  # Spurious duplicate stop.
-    capture.observe(TranscriptionFrame(text="Hello.", user_id="user", timestamp="0"))
+    capture.observe(
+        TranscriptionFrame(
+            text="Hello.",
+            user_id="user",
+            timestamp="0",
+            result={"words": [{"word": "Hello.", "end": 0.2}]},
+        )
+    )
     capture.observe(LLMContextFrame(context={}))
     capture.observe(LLMTextFrame("Hello! How can I help you today?"))
     capture.observe(LLMFullResponseEndFrame())
@@ -160,6 +177,7 @@ def test_opening_script_tts_does_not_create_user_turn(capture: CallCapture) -> N
 
 def test_latency_chain_sums_to_e2e(capture: CallCapture, monkeypatch: pytest.MonkeyPatch) -> None:
     """The full breakdown must telescope exactly to turn_to_playback_ms."""
+    capture.observe(InputAudioRawFrame(bytes(9600), sample_rate=16000, num_channels=1))
     capture.started = 0.0
     # Timestamps for: user_start, user_stop, asr_final, llm_request, llm_first,
     # LLM end, tts_start, tts_audio, browser_playback, finalize.
@@ -169,7 +187,14 @@ def test_latency_chain_sums_to_e2e(capture: CallCapture, monkeypatch: pytest.Mon
 
     capture.observe(UserStartedSpeakingFrame())
     capture.observe(UserStoppedSpeakingFrame())
-    capture.observe(TranscriptionFrame(text="Hello.", user_id="user", timestamp="0"))
+    capture.observe(
+        TranscriptionFrame(
+            text="Hello.",
+            user_id="user",
+            timestamp="0",
+            result={"words": [{"word": "Hello.", "end": 0.2}]},
+        )
+    )
     capture.observe(LLMContextFrame(context={}))
     capture.observe(LLMTextFrame("Hello!"))
     capture.observe(LLMFullResponseEndFrame())
@@ -181,7 +206,7 @@ def test_latency_chain_sums_to_e2e(capture: CallCapture, monkeypatch: pytest.Mon
 
     assert len(metrics) == 1
     metric = metrics[0]
-    assert metric.asr_final_latency_ms == 100.0  # 0.300 - 0.200
+    assert metric.asr_final_latency_ms == 100.0  # 300 ms received audio - 200 ms word end.
     assert metric.llm_request_splicing_ms == 10.0  # 0.310 - 0.300
     assert metric.llm_first_token_ms == 10.0  # 0.320 - 0.310
     assert metric.tts_initial_ms == 20.0  # 0.340 - 0.320 (LLM end at 0.330)
@@ -211,3 +236,56 @@ def test_llm_first_token_is_from_llm_request_not_asr_final(
     assert len(metrics) == 1
     # 0.310 - 0.300 = 10 ms, not 0.310 - 0.200 = 110 ms.
     assert metrics[0].llm_first_token_ms == 10.0
+
+
+def test_interrupted_turn_records_missing_reason(capture: CallCapture) -> None:
+    """A new user turn should explain why the prior response has no latency values."""
+    capture.observe(UserStartedSpeakingFrame())
+    capture.observe(
+        TranscriptionFrame(
+            text="Hello.",
+            user_id="user",
+            timestamp="0",
+            result={"words": [{"word": "Hello.", "end": 0.1}]},
+        )
+    )
+    capture.observe(UserStoppedSpeakingFrame())
+    capture.observe(LLMContextFrame(context={}))
+    capture.observe(UserStartedSpeakingFrame())
+
+    _, metrics = capture.finalize()
+
+    assert metrics[0].llm_first_token_ms is None
+    assert metrics[0].incomplete_reason == "interrupted_before_llm_first_token"
+
+
+def test_late_tts_frame_does_not_pollute_next_turn(capture: CallCapture) -> None:
+    """Audio left from an interrupted response must not become the next turn's TTS timing."""
+    capture.observe(UserStartedSpeakingFrame())
+    capture.observe(TranscriptionFrame(text="First", user_id="user", timestamp="0"))
+    capture.observe(UserStoppedSpeakingFrame())
+    capture.observe(LLMContextFrame(context={}))
+    capture.observe(UserStartedSpeakingFrame())
+    capture.observe(TTSStartedFrame())
+    capture.observe(TTSAudioRawFrame(b"late", sample_rate=16000, num_channels=1))
+    capture.observe(TranscriptionFrame(text="Second", user_id="user", timestamp="1"))
+    capture.observe(UserStoppedSpeakingFrame())
+    capture.observe(LLMContextFrame(context={}))
+    capture.observe(LLMTextFrame("Response"))
+
+    _, metrics = capture.finalize()
+
+    assert len(metrics) == 2
+    assert metrics[1].tts_first_audio_ms is None
+    assert metrics[1].incomplete_reason == "session_ended_before_tts_audio"
+
+
+def test_missing_flux_word_timing_is_not_reported_as_zero(capture: CallCapture) -> None:
+    """Unavailable ASR timing must stay null with evidence instead of becoming zero."""
+    capture.observe(UserStartedSpeakingFrame())
+    capture.observe(TranscriptionFrame(text="Hello", user_id="user", timestamp="0"))
+
+    _, metrics = capture.finalize()
+
+    assert metrics[0].asr_final_latency_ms is None
+    assert metrics[0].asr_final_reason == "word_timing_unavailable"
