@@ -18,9 +18,13 @@ def create_openai_compatible_llm(
     Returns:
         Configured Pipecat OpenAI-compatible LLM service.
     """
+    # Ensure the OpenAI-compatible endpoint URL ends with a slash so that
+    # path concatenation produces the correct chat/completions URL. Some
+    # SDK versions or providers are sensitive to the trailing slash.
+    base_url = config.base_url.rstrip("/") + "/"
     return OpenAILLMService(
         api_key=api_key,
-        base_url=config.base_url,
+        base_url=base_url,
         retry_timeout_secs=config.timeout_seconds,
         retry_on_timeout=False,
         timeout=config.timeout_seconds,
