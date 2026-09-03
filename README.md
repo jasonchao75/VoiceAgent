@@ -44,7 +44,7 @@ voice-agent/
 docker compose up --build
 ```
 
-浏览器访问 <http://localhost:8000>。Deepgram 与 LLM 均采用会话级 BYOK，API Key 从页面提交且不会写入 `.env` 或磁盘。
+浏览器访问 <http://localhost:8000>。页面以"机器人（Bot）"为中心：把 ASR/TTS/LLM 选择与 Prompt 存为机器人后一键发起会话；Deepgram 与 LLM 的 API Key 可勾选加密保存在机器人维度（Fernet 加密落 SQLite，主密钥仅存在于服务器环境变量），或不保存保持每次会话 BYOK（仅内存、随会话清除）。不建机器人也可用 Quick start 发起一次性会话。
 
 完整的配置、验收和故障排查见 [English Flux Voice Agent 本地运行手册](./docs/engineering/english-flux-voice-agent.md)。
 

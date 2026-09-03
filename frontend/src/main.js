@@ -17,70 +17,193 @@ app.innerHTML = `
     <section class="workspace">
       <aside class="config-panel">
         <div class="panel-heading">
-          <p class="eyebrow">Agent configuration</p>
-          <h1>Build the voice</h1>
-          <p>Keys are sent once to start this session and are never saved.</p>
+          <p class="eyebrow">Voice bots</p>
+          <h1>Pick a bot, then talk</h1>
+          <p>Bots keep your agent configuration. API keys can be saved encrypted on the server, or provided once per session.</p>
         </div>
 
-        <form id="session-form" autocomplete="off">
-          <fieldset>
-            <legend>Credentials</legend>
-            <label for="deepgram-key">Deepgram API key</label>
-            <div class="input-with-action">
-              <input id="deepgram-key" type="password" autocomplete="new-password" required />
-              <button class="text-button reveal" type="button" data-target="deepgram-key">Show</button>
+        <section class="bot-panel">
+          <div class="list-head">
+            <h2>Your bots</h2>
+            <button id="new-bot-button" class="inline-button" type="button">+ New bot</button>
+          </div>
+          <div id="bot-list" class="bot-list"></div>
+        </section>
+
+        <section id="session-keys" class="session-keys" hidden>
+          <div class="list-head"><h2>Session keys</h2></div>
+          <p class="hint">This bot has no saved keys. Enter both keys for this session only — they are never saved.</p>
+          <label for="session-deepgram-key">Deepgram API key</label>
+          <div class="input-with-action">
+            <input id="session-deepgram-key" type="password" autocomplete="new-password" />
+            <button class="text-button reveal" type="button" data-target="session-deepgram-key">Show</button>
+          </div>
+          <label for="session-llm-key">LLM API key</label>
+          <div class="input-with-action">
+            <input id="session-llm-key" type="password" autocomplete="new-password" />
+            <button class="text-button reveal" type="button" data-target="session-llm-key">Show</button>
+          </div>
+        </section>
+
+        <section id="bot-editor" hidden>
+          <div class="list-head"><h2 id="editor-title">New bot</h2></div>
+          <form id="bot-form" autocomplete="off">
+            <label for="bot-name">Bot name</label>
+            <input id="bot-name" maxlength="100" required />
+
+            <fieldset>
+              <legend>Pipeline</legend>
+              <label for="bot-asr">ASR provider</label>
+              <select id="bot-asr">
+                <option value="deepgram_flux">Deepgram Flux (English)</option>
+              </select>
+
+              <label for="bot-tts">TTS provider</label>
+              <select id="bot-tts">
+                <option value="deepgram_flux">Deepgram Flux</option>
+              </select>
+
+              <label for="bot-voice">Voice</label>
+              <select id="bot-voice"></select>
+              <article id="bot-voice-card" class="voice-card"></article>
+              <div class="link-row">
+                <a id="bot-voice-docs-link" href="#" target="_blank" rel="noreferrer">Voice catalog ↗</a>
+                <a id="bot-voice-listen-link" href="#" target="_blank" rel="noreferrer">Listen ↗</a>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Intelligence</legend>
+              <label for="bot-llm-provider">LLM provider</label>
+              <select id="bot-llm-provider"></select>
+
+              <label for="bot-llm-base-url">Base URL</label>
+              <input id="bot-llm-base-url" type="url" required />
+
+              <label for="bot-llm-model">Model</label>
+              <input id="bot-llm-model" list="bot-model-options" required />
+              <datalist id="bot-model-options"></datalist>
+              <div class="field-help">
+                <span>Choose a recommendation or type an exact model ID</span>
+                <a id="bot-llm-models-link" href="#" target="_blank" rel="noreferrer">Model docs ↗</a>
+              </div>
+
+              <label for="bot-system-prompt">System prompt</label>
+              <textarea id="bot-system-prompt" rows="5" maxlength="30000" required></textarea>
+
+              <label for="bot-opening-script">Opening script</label>
+              <textarea id="bot-opening-script" rows="3" maxlength="2000"></textarea>
+              <p class="hint">Leave blank for a user-first conversation.</p>
+            </fieldset>
+
+            <fieldset>
+              <legend>API keys</legend>
+              <label class="checkbox-row" for="bot-save-keys">
+                <input id="bot-save-keys" type="checkbox" />
+                <span>Save API keys encrypted on the server</span>
+              </label>
+              <p id="keep-keys-hint" class="hint" hidden>
+                Keys are saved for this bot. Leave both fields blank to keep them, or enter new keys to replace them.
+              </p>
+              <div id="bot-key-fields" hidden>
+                <label for="bot-deepgram-key">Deepgram API key</label>
+                <div class="input-with-action">
+                  <input id="bot-deepgram-key" type="password" autocomplete="new-password" />
+                  <button class="text-button reveal" type="button" data-target="bot-deepgram-key">Show</button>
+                </div>
+                <div class="field-help">
+                  <span>Encrypted before storage · never returned by the API</span>
+                  <a href="https://console.deepgram.com/" target="_blank" rel="noreferrer">Get a key ↗</a>
+                </div>
+
+                <label for="bot-llm-key">LLM API key</label>
+                <div class="input-with-action">
+                  <input id="bot-llm-key" type="password" autocomplete="new-password" />
+                  <button class="text-button reveal" type="button" data-target="bot-llm-key">Show</button>
+                </div>
+                <div class="field-help">
+                  <span>Encrypted before storage · never returned by the API</span>
+                  <a id="bot-llm-key-link" href="#" target="_blank" rel="noreferrer">Get a key ↗</a>
+                </div>
+              </div>
+              <p id="byok-hint" class="hint">
+                Unchecked: keys are requested once per session and never saved (BYOK).
+              </p>
+            </fieldset>
+
+            <div class="editor-actions">
+              <button id="save-bot-button" class="primary-button" type="submit">Save bot</button>
+              <button id="cancel-bot-button" class="secondary-button" type="button">Cancel</button>
             </div>
-            <div class="field-help">
-              <span>BYOK · used only for this session</span>
-              <a href="https://console.deepgram.com/" target="_blank" rel="noreferrer">Get a key ↗</a>
-            </div>
+          </form>
+        </section>
 
-            <label for="llm-key">LLM API key</label>
-            <div class="input-with-action">
-              <input id="llm-key" type="password" autocomplete="new-password" required />
-              <button class="text-button reveal" type="button" data-target="llm-key">Show</button>
-            </div>
-            <div class="field-help">
-              <span>BYOK · kept in server memory only</span>
-              <a id="llm-key-link" href="#" target="_blank" rel="noreferrer">Get a key ↗</a>
-            </div>
-          </fieldset>
+        <details class="quick-start">
+          <summary>Quick start — one-off session without a bot</summary>
+          <form id="session-form" autocomplete="off">
+            <fieldset>
+              <legend>Credentials</legend>
+              <label for="deepgram-key">Deepgram API key</label>
+              <div class="input-with-action">
+                <input id="deepgram-key" type="password" autocomplete="new-password" required />
+                <button class="text-button reveal" type="button" data-target="deepgram-key">Show</button>
+              </div>
+              <div class="field-help">
+                <span>BYOK · used only for this session</span>
+                <a href="https://console.deepgram.com/" target="_blank" rel="noreferrer">Get a key ↗</a>
+              </div>
 
-          <fieldset>
-            <legend>Intelligence</legend>
-            <label for="llm-provider">LLM provider</label>
-            <select id="llm-provider"></select>
+              <label for="llm-key">LLM API key</label>
+              <div class="input-with-action">
+                <input id="llm-key" type="password" autocomplete="new-password" required />
+                <button class="text-button reveal" type="button" data-target="llm-key">Show</button>
+              </div>
+              <div class="field-help">
+                <span>BYOK · kept in server memory only</span>
+                <a id="llm-key-link" href="#" target="_blank" rel="noreferrer">Get a key ↗</a>
+              </div>
+            </fieldset>
 
-            <label for="llm-base-url">Base URL</label>
-            <input id="llm-base-url" type="url" required />
+            <fieldset>
+              <legend>Intelligence</legend>
+              <label for="llm-provider">LLM provider</label>
+              <select id="llm-provider"></select>
 
-            <label for="llm-model">Model</label>
-            <input id="llm-model" list="model-options" required />
-            <datalist id="model-options"></datalist>
-            <div class="field-help">
-              <span>Choose a recommendation or type an exact model ID</span>
-              <a id="llm-models-link" href="#" target="_blank" rel="noreferrer">Model docs ↗</a>
-            </div>
+              <label for="llm-base-url">Base URL</label>
+              <input id="llm-base-url" type="url" required />
 
-            <label for="system-prompt">System prompt</label>
-            <textarea id="system-prompt" rows="5" required></textarea>
+              <label for="llm-model">Model</label>
+              <input id="llm-model" list="model-options" required />
+              <datalist id="model-options"></datalist>
+              <div class="field-help">
+                <span>Choose a recommendation or type an exact model ID</span>
+                <a id="llm-models-link" href="#" target="_blank" rel="noreferrer">Model docs ↗</a>
+              </div>
 
-            <label for="opening-script">Opening script</label>
-            <textarea id="opening-script" rows="3"></textarea>
-            <p class="hint">Leave blank for a user-first conversation.</p>
-          </fieldset>
+              <label for="system-prompt">System prompt</label>
+              <textarea id="system-prompt" rows="5" maxlength="30000" required></textarea>
 
-          <fieldset>
-            <legend>Voice</legend>
-            <label for="flux-voice">Flux voice</label>
-            <select id="flux-voice"></select>
-            <article id="voice-card" class="voice-card"></article>
-            <div class="link-row">
-              <a id="voice-docs-link" href="#" target="_blank" rel="noreferrer">Voice catalog ↗</a>
-              <a id="voice-listen-link" href="#" target="_blank" rel="noreferrer">Listen ↗</a>
-            </div>
-          </fieldset>
-        </form>
+              <label for="opening-script">Opening script</label>
+              <textarea id="opening-script" rows="3" maxlength="2000"></textarea>
+              <p class="hint">Leave blank for a user-first conversation.</p>
+            </fieldset>
+
+            <fieldset>
+              <legend>Voice</legend>
+              <label for="flux-voice">Flux voice</label>
+              <select id="flux-voice"></select>
+              <article id="voice-card" class="voice-card"></article>
+              <div class="link-row">
+                <a id="voice-docs-link" href="#" target="_blank" rel="noreferrer">Voice catalog ↗</a>
+                <a id="voice-listen-link" href="#" target="_blank" rel="noreferrer">Listen ↗</a>
+              </div>
+            </fieldset>
+
+            <button id="quick-start-button" class="primary-button" type="submit">
+              Start one-off session
+            </button>
+          </form>
+        </details>
       </aside>
 
       <section class="conversation-panel">
@@ -100,7 +223,7 @@ app.innerHTML = `
             <div class="orb-ring ring-one"></div>
             <div class="orb-ring ring-two"></div>
           </div>
-          <p id="speaker-label" class="speaker-label">Configure your agent, then start a session</p>
+          <p id="speaker-label" class="speaker-label">Select a bot, then start a session</p>
           <div class="waveform" aria-hidden="true">
             <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
           </div>
@@ -135,7 +258,37 @@ app.innerHTML = `
 `;
 
 const elements = {
-  form: document.querySelector("#session-form"),
+  botList: document.querySelector("#bot-list"),
+  newBot: document.querySelector("#new-bot-button"),
+  editor: document.querySelector("#bot-editor"),
+  editorTitle: document.querySelector("#editor-title"),
+  botForm: document.querySelector("#bot-form"),
+  botName: document.querySelector("#bot-name"),
+  botAsr: document.querySelector("#bot-asr"),
+  botTts: document.querySelector("#bot-tts"),
+  botVoice: document.querySelector("#bot-voice"),
+  botVoiceCard: document.querySelector("#bot-voice-card"),
+  botVoiceDocs: document.querySelector("#bot-voice-docs-link"),
+  botVoiceListen: document.querySelector("#bot-voice-listen-link"),
+  botProvider: document.querySelector("#bot-llm-provider"),
+  botBaseUrl: document.querySelector("#bot-llm-base-url"),
+  botModel: document.querySelector("#bot-llm-model"),
+  botModelOptions: document.querySelector("#bot-model-options"),
+  botLlmKeyLink: document.querySelector("#bot-llm-key-link"),
+  botLlmModelsLink: document.querySelector("#bot-llm-models-link"),
+  botSystemPrompt: document.querySelector("#bot-system-prompt"),
+  botOpeningScript: document.querySelector("#bot-opening-script"),
+  botSaveKeys: document.querySelector("#bot-save-keys"),
+  botKeyFields: document.querySelector("#bot-key-fields"),
+  botDeepgramKey: document.querySelector("#bot-deepgram-key"),
+  botLlmKey: document.querySelector("#bot-llm-key"),
+  keepKeysHint: document.querySelector("#keep-keys-hint"),
+  byokHint: document.querySelector("#byok-hint"),
+  cancelBot: document.querySelector("#cancel-bot-button"),
+  sessionKeys: document.querySelector("#session-keys"),
+  sessionDeepgramKey: document.querySelector("#session-deepgram-key"),
+  sessionLlmKey: document.querySelector("#session-llm-key"),
+  quickForm: document.querySelector("#session-form"),
   deepgramKey: document.querySelector("#deepgram-key"),
   llmKey: document.querySelector("#llm-key"),
   provider: document.querySelector("#llm-provider"),
@@ -164,6 +317,9 @@ const elements = {
 };
 
 let catalogs;
+let bots = [];
+let selectedBotId;
+let editingBotId;
 let client;
 let sessionId;
 let sessionToken;
@@ -186,8 +342,14 @@ function setSpeaker(speaker, label) {
 }
 
 function setFormLocked(locked) {
-  for (const control of elements.form.elements) control.disabled = locked;
-  elements.start.disabled = locked;
+  for (const form of [elements.botForm, elements.quickForm]) {
+    for (const control of form.elements) control.disabled = locked;
+  }
+  elements.newBot.disabled = locked;
+  elements.sessionDeepgramKey.disabled = locked;
+  elements.sessionLlmKey.disabled = locked;
+  for (const button of elements.botList.querySelectorAll("button")) button.disabled = locked;
+  elements.start.disabled = locked || !selectedBotId;
   elements.end.disabled = !locked;
 }
 
@@ -199,6 +361,21 @@ function showError(message) {
 function clearError() {
   elements.error.hidden = true;
   elements.error.textContent = "";
+}
+
+async function apiRequest(path, { method = "GET", body } = {}) {
+  const response = await fetch(path, {
+    method,
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    const message = typeof error.detail === "string" ? error.detail : `Request failed (${response.status}).`;
+    throw new Error(message);
+  }
+  if (response.status === 204) return undefined;
+  return response.json();
 }
 
 function addTranscript(role, text, { interim = false } = {}) {
@@ -215,12 +392,17 @@ function addTranscript(role, text, { interim = false } = {}) {
   return bubble;
 }
 
-function updateVoiceDetails() {
-  const voice = catalogs.flux_voices.voices.find(
-    (entry) => entry.model_id === elements.voice.value,
-  );
-  if (!voice) return;
-  elements.voiceCard.innerHTML = `
+function voiceEntry(modelId) {
+  return catalogs.flux_voices.voices.find((entry) => entry.model_id === modelId);
+}
+
+function updateVoiceCard(selectEl, cardEl) {
+  const voice = voiceEntry(selectEl.value);
+  if (!voice) {
+    cardEl.innerHTML = "";
+    return;
+  }
+  cardEl.innerHTML = `
     <div><strong>${voice.name}</strong><code>${voice.model_id}</code></div>
     <p>${voice.accent} · ${voice.gender} · ${voice.age}</p>
     <p>${voice.traits.join(", ")}</p>
@@ -228,39 +410,8 @@ function updateVoiceDetails() {
   `;
 }
 
-function updateProvider({ preserveModel = false } = {}) {
-  const provider = catalogs.llm_providers.providers.find(
-    (entry) => entry.id === elements.provider.value,
-  );
-  if (!provider) return;
-  elements.baseUrl.value = provider.base_url;
-  elements.baseUrl.readOnly = provider.id !== "custom";
-  if (!preserveModel) elements.model.value = provider.default_model;
-  elements.modelOptions.replaceChildren(
-    ...provider.recommended_models.map((model) => {
-      const option = document.createElement("option");
-      option.value = model;
-      return option;
-    }),
-  );
-  elements.llmKeyLink.href = provider.api_key_url;
-  elements.llmModelsLink.href = provider.models_url;
-}
-
-async function loadCatalogs() {
-  const response = await fetch("/api/catalogs", { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error("Could not load the server configuration.");
-  catalogs = await response.json();
-
-  elements.provider.replaceChildren(
-    ...catalogs.llm_providers.providers.map((provider) => {
-      const option = document.createElement("option");
-      option.value = provider.id;
-      option.textContent = provider.name;
-      return option;
-    }),
-  );
-  elements.voice.replaceChildren(
+function fillVoiceSelect(selectEl, selectedId) {
+  selectEl.replaceChildren(
     ...catalogs.flux_voices.voices.map((voice) => {
       const option = document.createElement("option");
       option.value = voice.model_id;
@@ -268,20 +419,229 @@ async function loadCatalogs() {
       return option;
     }),
   );
-
-  elements.provider.value = catalogs.defaults.llm_provider;
-  elements.systemPrompt.value = catalogs.defaults.system_prompt;
-  elements.openingScript.value = catalogs.defaults.opening_script;
-  elements.voice.value = catalogs.defaults.flux_voice;
-  elements.voiceDocs.href = catalogs.flux_voices.source_url;
-  elements.voiceListen.href = catalogs.flux_voices.listen_url;
-  updateProvider();
-  updateVoiceDetails();
+  if (selectedId) selectEl.value = selectedId;
 }
+
+function fillProviderSelect(selectEl, selectedId) {
+  selectEl.replaceChildren(
+    ...catalogs.llm_providers.providers.map((provider) => {
+      const option = document.createElement("option");
+      option.value = provider.id;
+      option.textContent = provider.name;
+      return option;
+    }),
+  );
+  if (selectedId) selectEl.value = selectedId;
+}
+
+function applyProviderPreset(refs, { preserveModel = false } = {}) {
+  const provider = catalogs.llm_providers.providers.find(
+    (entry) => entry.id === refs.provider.value,
+  );
+  if (!provider) return;
+  refs.baseUrl.value = provider.base_url;
+  refs.baseUrl.readOnly = provider.id !== "custom";
+  if (!preserveModel) refs.model.value = provider.default_model;
+  refs.modelOptions.replaceChildren(
+    ...provider.recommended_models.map((model) => {
+      const option = document.createElement("option");
+      option.value = model;
+      return option;
+    }),
+  );
+  refs.keyLink.href = provider.api_key_url;
+  refs.modelsLink.href = provider.models_url;
+}
+
+const quickProviderRefs = {
+  provider: elements.provider,
+  baseUrl: elements.baseUrl,
+  model: elements.model,
+  modelOptions: elements.modelOptions,
+  keyLink: elements.llmKeyLink,
+  modelsLink: elements.llmModelsLink,
+};
+
+const botProviderRefs = {
+  provider: elements.botProvider,
+  baseUrl: elements.botBaseUrl,
+  model: elements.botModel,
+  modelOptions: elements.botModelOptions,
+  keyLink: elements.botLlmKeyLink,
+  modelsLink: elements.botLlmModelsLink,
+};
+
+// --- Bot list and editor ----------------------------------------------------
+
+function renderBotList() {
+  if (!bots.length) {
+    elements.botList.innerHTML = `<p class="empty-bots">No bots yet. Create your first bot to skip re-entering the configuration every time.</p>`;
+  } else {
+    elements.botList.replaceChildren(
+      ...bots.map((bot) => {
+        const voice = voiceEntry(bot.tts_voice);
+        const card = document.createElement("article");
+        card.className = "bot-card";
+        card.dataset.selected = String(bot.id === selectedBotId);
+        card.innerHTML = `
+          <header>
+            <strong></strong>
+            ${bot.has_saved_keys ? '<span class="badge">Keys saved</span>' : '<span class="badge byok">BYOK</span>'}
+          </header>
+          <p></p>
+          <div class="card-actions">
+            <button class="card-button select-bot" type="button"></button>
+            <button class="card-button edit-bot" type="button">Edit</button>
+            <button class="card-button danger delete-bot" type="button">Delete</button>
+          </div>
+        `;
+        card.querySelector("strong").textContent = bot.name;
+        card.querySelector("p").textContent = `${bot.llm_model} · ${voice ? voice.name : bot.tts_voice}`;
+        const selectButton = card.querySelector(".select-bot");
+        selectButton.textContent = bot.id === selectedBotId ? "Selected" : "Select";
+        selectButton.addEventListener("click", () => selectBot(bot.id));
+        card.querySelector(".edit-bot").addEventListener("click", () => openEditor(bot));
+        card.querySelector(".delete-bot").addEventListener("click", () => deleteBot(bot));
+        return card;
+      }),
+    );
+  }
+  elements.sessionKeys.hidden = !selectedBot() || selectedBot().has_saved_keys;
+  elements.start.disabled = !selectedBotId;
+}
+
+function selectedBot() {
+  return bots.find((bot) => bot.id === selectedBotId);
+}
+
+function selectBot(botId) {
+  selectedBotId = botId;
+  renderBotList();
+}
+
+async function loadBots() {
+  bots = await apiRequest("/api/bots");
+  if (!selectedBot() && bots.length) selectedBotId = bots[0].id;
+  renderBotList();
+}
+
+function syncKeyFieldVisibility() {
+  const saving = elements.botSaveKeys.checked;
+  const editingHasKeys = Boolean(
+    editingBotId && bots.find((bot) => bot.id === editingBotId)?.has_saved_keys,
+  );
+  elements.botKeyFields.hidden = !saving;
+  elements.byokHint.hidden = saving;
+  elements.keepKeysHint.hidden = !(saving && editingHasKeys);
+  const keysOptional = saving && editingHasKeys;
+  elements.botDeepgramKey.required = saving && !keysOptional;
+  elements.botLlmKey.required = saving && !keysOptional;
+}
+
+function openEditor(bot) {
+  clearError();
+  editingBotId = bot ? bot.id : null;
+  elements.editorTitle.textContent = bot ? `Edit bot` : "New bot";
+  elements.botName.value = bot ? bot.name : "";
+  elements.botAsr.value = bot ? bot.asr_provider : "deepgram_flux";
+  elements.botTts.value = bot ? bot.tts_provider : "deepgram_flux";
+  fillVoiceSelect(elements.botVoice, bot ? bot.tts_voice : catalogs.defaults.flux_voice);
+  updateVoiceCard(elements.botVoice, elements.botVoiceCard);
+  fillProviderSelect(elements.botProvider, bot ? bot.llm_provider : catalogs.defaults.llm_provider);
+  applyProviderPreset(botProviderRefs);
+  if (bot) {
+    elements.botBaseUrl.value = bot.llm_base_url;
+    elements.botModel.value = bot.llm_model;
+  }
+  elements.botSystemPrompt.value = bot ? bot.system_prompt : catalogs.defaults.system_prompt;
+  elements.botOpeningScript.value = bot ? bot.opening_script : catalogs.defaults.opening_script;
+  elements.botSaveKeys.checked = bot ? bot.has_saved_keys : false;
+  elements.botDeepgramKey.value = "";
+  elements.botLlmKey.value = "";
+  syncKeyFieldVisibility();
+  elements.editor.hidden = false;
+  elements.editor.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function closeEditor() {
+  elements.editor.hidden = true;
+  editingBotId = null;
+}
+
+async function saveBot(event) {
+  event.preventDefault();
+  clearError();
+  const saving = elements.botSaveKeys.checked;
+  const deepgramKey = elements.botDeepgramKey.value;
+  const llmKey = elements.botLlmKey.value;
+  if (saving && (deepgramKey || llmKey) && !(deepgramKey && llmKey)) {
+    showError("Enter both API keys, or leave both fields blank to keep the saved keys.");
+    return;
+  }
+  if (!elements.botForm.reportValidity()) return;
+
+  const payload = {
+    name: elements.botName.value.trim(),
+    asr_provider: elements.botAsr.value,
+    tts_provider: elements.botTts.value,
+    tts_voice: elements.botVoice.value,
+    llm_provider: elements.botProvider.value,
+    llm_base_url: elements.botBaseUrl.value,
+    llm_model: elements.botModel.value,
+    system_prompt: elements.botSystemPrompt.value,
+    opening_script: elements.botOpeningScript.value,
+    save_keys: saving,
+  };
+  if (saving && deepgramKey && llmKey) {
+    payload.deepgram_api_key = deepgramKey;
+    payload.llm_api_key = llmKey;
+  }
+
+  try {
+    const saved = editingBotId
+      ? await apiRequest(`/api/bots/${editingBotId}`, { method: "PUT", body: payload })
+      : await apiRequest("/api/bots", { method: "POST", body: payload });
+    elements.botDeepgramKey.value = "";
+    elements.botLlmKey.value = "";
+    payload.deepgram_api_key = "";
+    payload.llm_api_key = "";
+    closeEditor();
+    await loadBots();
+    selectBot(saved.id);
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Could not save the bot.");
+  }
+}
+
+async function deleteBot(bot) {
+  clearError();
+  const confirmed = window.confirm(
+    `Delete bot "${bot.name}"? This also removes any saved API keys. This cannot be undone.`,
+  );
+  if (!confirmed) return;
+  try {
+    await apiRequest(`/api/bots/${bot.id}`, { method: "DELETE" });
+    if (selectedBotId === bot.id) selectedBotId = undefined;
+    await loadBots();
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Could not delete the bot.");
+  }
+}
+
+// --- Session lifecycle --------------------------------------------------------
 
 function websocketUrl(path) {
   const scheme = window.location.protocol === "https:" ? "wss:" : "ws:";
   return `${scheme}//${window.location.host}${path}`;
+}
+
+function ensureSecureContext() {
+  const isLoopback = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  if (window.location.protocol !== "https:" && !isLoopback) {
+    showError("API keys require HTTPS outside localhost. Open the protected HTTPS demo URL.");
+    return false;
+  }
+  return true;
 }
 
 function deviceErrorMessage(error) {
@@ -420,19 +780,60 @@ function createClient() {
   });
 }
 
-async function startSession() {
+async function connectSession(session) {
+  sessionId = session.session_id;
+  sessionToken = session.session_token;
+  sessionStartedAt = performance.now();
+  client = createClient();
+  await client.initDevices();
+  await client.connect({ wsUrl: websocketUrl(session.websocket_path) });
+}
+
+async function startBotSession() {
   clearError();
-  const isLoopback = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
-  if (window.location.protocol !== "https:" && !isLoopback) {
-    showError("BYOK requires HTTPS outside localhost. Open the protected HTTPS demo URL.");
+  const bot = selectedBot();
+  if (!bot) {
+    showError("Select a bot first, or create a new one.");
     return;
   }
-  if (!elements.form.reportValidity()) return;
+  if (!ensureSecureContext()) return;
+
+  const payload = { bot_id: bot.id };
+  if (!bot.has_saved_keys) {
+    if (!elements.sessionDeepgramKey.value || !elements.sessionLlmKey.value) {
+      showError("This bot has no saved keys. Enter both API keys for this session.");
+      return;
+    }
+    payload.deepgram_api_key = elements.sessionDeepgramKey.value;
+    payload.llm_api_key = elements.sessionLlmKey.value;
+  }
+
+  setFormLocked(true);
+  setSessionState("connecting", "Connecting");
+  setSpeaker("thinking", "Requesting microphone access");
+  try {
+    const session = await apiRequest("/api/sessions", { method: "POST", body: payload });
+    elements.sessionDeepgramKey.value = "";
+    elements.sessionLlmKey.value = "";
+    payload.deepgram_api_key = "";
+    payload.llm_api_key = "";
+    await connectSession(session);
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Could not start the session.");
+    await endSession({ preserveError: true });
+  }
+}
+
+async function startQuickSession(event) {
+  event.preventDefault();
+  clearError();
+  if (!ensureSecureContext()) return;
+  if (!elements.quickForm.reportValidity()) return;
   setFormLocked(true);
   setSessionState("connecting", "Connecting");
   setSpeaker("thinking", "Requesting microphone access");
 
-  const request = {
+  const payload = {
     deepgram_api_key: elements.deepgramKey.value,
     llm_api_key: elements.llmKey.value,
     llm_provider: elements.provider.value,
@@ -444,26 +845,12 @@ async function startSession() {
   };
 
   try {
-    const response = await fetch("/api/sessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(request),
-    });
-    request.deepgram_api_key = "";
-    request.llm_api_key = "";
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(typeof error.detail === "string" ? error.detail : "Session creation failed.");
-    }
-    const session = await response.json();
+    const session = await apiRequest("/api/sessions", { method: "POST", body: payload });
     elements.deepgramKey.value = "";
     elements.llmKey.value = "";
-    sessionId = session.session_id;
-    sessionToken = session.session_token;
-    sessionStartedAt = performance.now();
-    client = createClient();
-    await client.initDevices();
-    await client.connect({ wsUrl: websocketUrl(session.websocket_path) });
+    payload.deepgram_api_key = "";
+    payload.llm_api_key = "";
+    await connectSession(session);
   } catch (error) {
     showError(error instanceof Error ? error.message : "Could not start the session.");
     await endSession({ preserveError: true });
@@ -488,11 +875,13 @@ async function endSession({ preserveError = false } = {}) {
   botSpeaking = false;
   setFormLocked(false);
   setSessionState("idle", "Ready to start");
-  setSpeaker("idle", "Configure your agent, then start a session");
+  setSpeaker("idle", "Select a bot, then start a session");
   elements.wsStatus.textContent = "Disconnected";
   elements.pipelineStatus.textContent = "Standby";
   if (!preserveError) clearError();
 }
+
+// --- Wiring -------------------------------------------------------------------
 
 document.querySelectorAll(".reveal").forEach((button) => {
   button.addEventListener("click", () => {
@@ -501,12 +890,47 @@ document.querySelectorAll(".reveal").forEach((button) => {
     button.textContent = input.type === "password" ? "Show" : "Hide";
   });
 });
-elements.provider.addEventListener("change", () => updateProvider());
-elements.voice.addEventListener("change", updateVoiceDetails);
-elements.start.addEventListener("click", startSession);
+
+elements.newBot.addEventListener("click", () => openEditor(null));
+elements.cancelBot.addEventListener("click", closeEditor);
+elements.botForm.addEventListener("submit", saveBot);
+elements.botSaveKeys.addEventListener("change", syncKeyFieldVisibility);
+elements.botProvider.addEventListener("change", () => applyProviderPreset(botProviderRefs));
+elements.botVoice.addEventListener("change", () =>
+  updateVoiceCard(elements.botVoice, elements.botVoiceCard),
+);
+elements.provider.addEventListener("change", () => applyProviderPreset(quickProviderRefs));
+elements.voice.addEventListener("change", () => updateVoiceCard(elements.voice, elements.voiceCard));
+elements.quickForm.addEventListener("submit", startQuickSession);
+elements.start.addEventListener("click", startBotSession);
 elements.end.addEventListener("click", () => endSession());
 
-loadCatalogs().catch(() => {
-  showError("The local Voice Agent server is unavailable. Start the backend and reload.");
-  elements.start.disabled = true;
-});
+async function boot() {
+  try {
+    catalogs = await apiRequest("/api/catalogs");
+  } catch {
+    showError("The local Voice Agent server is unavailable. Start the backend and reload.");
+    elements.start.disabled = true;
+    elements.newBot.disabled = true;
+    return;
+  }
+
+  fillProviderSelect(elements.provider, catalogs.defaults.llm_provider);
+  applyProviderPreset(quickProviderRefs);
+  fillVoiceSelect(elements.voice, catalogs.defaults.flux_voice);
+  updateVoiceCard(elements.voice, elements.voiceCard);
+  elements.systemPrompt.value = catalogs.defaults.system_prompt;
+  elements.openingScript.value = catalogs.defaults.opening_script;
+  elements.voiceDocs.href = catalogs.flux_voices.source_url;
+  elements.voiceListen.href = catalogs.flux_voices.listen_url;
+  elements.botVoiceDocs.href = catalogs.flux_voices.source_url;
+  elements.botVoiceListen.href = catalogs.flux_voices.listen_url;
+
+  try {
+    await loadBots();
+  } catch {
+    showError("Could not load your bots. Reload the page to try again.");
+  }
+}
+
+boot();

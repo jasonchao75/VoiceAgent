@@ -46,6 +46,7 @@ voice-agent/
 │   └── skills/           # 可复用的 Agent 技能脚本
 ├── src/
 │   ├── asr/              # ASR 统一抽象层 + 各厂商适配器
+│   ├── bots/             # 机器人配置实体：SQLite 持久化 + Fernet 加密 Key 存储
 │   ├── llm/              # LLM 接口 + Streaming 衔接
 │   ├── tts/              # TTS 统一抽象层 + ElevenLabs / Minimax 适配器
 │   ├── pipeline/         # 三段式编排核心（ASR → LLM → TTS）
@@ -101,7 +102,7 @@ voice-agent/
 ## 6. 红线（绝对禁止）
 
 - **禁止在核心 pipeline 中使用同步阻塞 I/O**：所有音频流、网络请求必须使用 asyncio 异步处理。
-- **禁止硬编码任何厂商 API Key 或 Token**：统一使用 `.env` 环境变量；`.env` 与 `configs/` 下的敏感配置文件必须加入 `.gitignore`。
+- **禁止硬编码任何厂商 API Key 或 Token**：统一使用 `.env` 环境变量；`.env` 与 `configs/` 下的敏感配置文件必须加入 `.gitignore`。用户在机器人维度**显式选择保存**的 Key 是唯一例外：必须经 Fernet 加密后落 SQLite，主密钥仅存于 `VOICE_AGENT_STORAGE_KEY` 环境变量，任何 API 响应与日志不得出现明文。
 - **禁止未经自动化评测的 ASR/TTS 适配器直接合入主干**：必须通过 WER、延迟、抗噪基准测试后方可上线。
 - **禁止忽略音频采样率与格式转换**：所有 ASR/TTS 适配器必须显式校验并正确处理音频采样率与格式。当前电话场景为 **8KHz / 16bit / 单声道 PCM**，需确保与目标厂商要求一致，必要时进行重采样。
 - **禁止交付无自测用例的 ASR/TTS 适配器及 pipeline 模块**：每个适配器和核心 pipeline 模块必须包含可独立运行的测试脚本，验证连通性与基本能力。

@@ -23,10 +23,20 @@ from starlette.datastructures import Headers
 from starlette.responses import PlainTextResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from src.bots.crypto import BotKeyCipher, StorageKeyError
+from src.bots.models import (
+    BotConfigFields,
+    BotCreateRequest,
+    BotResponse,
+    BotUpdateRequest,
+)
+from src.bots.storage import BotStore
+from src.bots.validation import validate_bot_config
 from src.config import load_llm_provider_catalog, load_runtime_config, load_voice_catalog
 from src.observability import SessionEventBuffer
 from src.pipeline import run_voice_agent_session
 from src.session import (
+    BotSessionRequest,
     SessionCapacityError,
     SessionRequest,
     SessionStore,
@@ -145,6 +155,11 @@ def _validate_session_origin(request: Request, allowed_origins: list[str]) -> No
         )
 
 
+def _bot_data_dir() -> Path:
+    """Locate the writable directory holding the bot database."""
+    return Path(os.getenv("VOICE_AGENT_DATA_DIR", str(PROJECT_ROOT / "data")))
+
+
 def create_app() -> FastAPI:
     """Create an application with validated configuration and isolated state."""
     runtime = load_runtime_config()
@@ -155,10 +170,13 @@ def create_app() -> FastAPI:
         max_sessions=runtime.session.max_concurrent_sessions,
     )
     tts_registry = create_default_tts_registry()
+    bot_store = BotStore(_bot_data_dir() / "bots.db")
+    bot_cipher = BotKeyCipher.from_env()
     event_buffers: dict[str, SessionEventBuffer] = {}
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        await bot_store.initialize()
         stop = asyncio.Event()
 
         async def purge_loop() -> None:
@@ -184,12 +202,14 @@ def create_app() -> FastAPI:
     app.state.session_store = store
     app.state.event_buffers = event_buffers
     app.state.tts_registry = tts_registry
+    app.state.bot_store = bot_store
+    app.state.bot_cipher = bot_cipher
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_allowed_origins(),
         allow_credentials=False,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
         allow_headers=["Content-Type", "Authorization"],
     )
     basic_auth = _basic_auth_credentials()
@@ -238,12 +258,155 @@ def create_app() -> FastAPI:
             "llm_providers": llm_providers.model_dump(),
         }
 
+    def _config_fields(request: BotCreateRequest | BotUpdateRequest) -> BotConfigFields:
+        """Strip write-only key fields before persistence."""
+        return BotConfigFields.model_validate(
+            request.model_dump(exclude={"save_keys", "deepgram_api_key", "llm_api_key"})
+        )
+
+    def _validate_bot_payload(config: BotConfigFields) -> None:
+        try:
+            validate_bot_config(
+                config=config,
+                voice_catalog=voices,
+                llm_catalog=llm_providers,
+                tts_providers=tts_registry.providers,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from None
+
+    def _encrypt_bot_keys(
+        request: BotCreateRequest | BotUpdateRequest,
+    ) -> tuple[str | None, str | None]:
+        """Encrypt a submitted key pair, or (None, None) when not saving keys."""
+        if not request.save_keys:
+            return None, None
+        if bot_cipher is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Saving API keys is disabled: VOICE_AGENT_STORAGE_KEY is not configured",
+            )
+        assert request.deepgram_api_key is not None and request.llm_api_key is not None
+        return (
+            bot_cipher.encrypt(request.deepgram_api_key),
+            bot_cipher.encrypt(request.llm_api_key),
+        )
+
+    @app.get("/api/bots", response_model=list[BotResponse])
+    async def list_bots() -> list[BotResponse]:
+        return [BotResponse.from_record(record) for record in await bot_store.list()]
+
+    @app.post("/api/bots", response_model=BotResponse, status_code=201)
+    async def create_bot(request: BotCreateRequest) -> BotResponse:
+        _validate_bot_payload(request)
+        encrypted_deepgram_key, encrypted_llm_key = _encrypt_bot_keys(request)
+        record = await bot_store.create(
+            config=_config_fields(request),
+            encrypted_deepgram_key=encrypted_deepgram_key,
+            encrypted_llm_key=encrypted_llm_key,
+        )
+        return BotResponse.from_record(record)
+
+    @app.get("/api/bots/{bot_id}", response_model=BotResponse)
+    async def get_bot(bot_id: str) -> BotResponse:
+        record = await bot_store.get(bot_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        return BotResponse.from_record(record)
+
+    @app.put("/api/bots/{bot_id}", response_model=BotResponse)
+    async def update_bot(bot_id: str, request: BotUpdateRequest) -> BotResponse:
+        existing = await bot_store.get(bot_id)
+        if existing is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        _validate_bot_payload(request)
+        if not request.save_keys:
+            encrypted_pair: tuple[str | None, str | None] = (None, None)
+        elif request.deepgram_api_key is None:
+            # No key fields means keep the stored ciphertext untouched.
+            if not existing.has_saved_keys:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "This bot has no saved keys to keep; "
+                        "provide both API keys or disable save_keys"
+                    ),
+                )
+            encrypted_pair = (existing.encrypted_deepgram_key, existing.encrypted_llm_key)
+        else:
+            encrypted_pair = _encrypt_bot_keys(request)
+        record = await bot_store.update(
+            bot_id,
+            config=_config_fields(request),
+            encrypted_deepgram_key=encrypted_pair[0],
+            encrypted_llm_key=encrypted_pair[1],
+        )
+        assert record is not None
+        return BotResponse.from_record(record)
+
+    @app.delete("/api/bots/{bot_id}", status_code=204)
+    async def delete_bot(bot_id: str) -> None:
+        if not await bot_store.delete(bot_id):
+            raise HTTPException(status_code=404, detail="Bot not found")
+
+    async def _resolve_session_request(
+        request: SessionRequest | BotSessionRequest,
+    ) -> SessionRequest:
+        """Map a bot-based session request onto the canonical inline shape."""
+        if isinstance(request, SessionRequest):
+            return request
+        record = await bot_store.get(request.bot_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        if record.has_saved_keys:
+            if request.deepgram_api_key is not None or request.llm_api_key is not None:
+                raise HTTPException(
+                    status_code=422,
+                    detail="This bot already has saved keys; do not submit session keys",
+                )
+            if bot_cipher is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "This bot has saved keys but VOICE_AGENT_STORAGE_KEY is not configured"
+                    ),
+                )
+            assert (
+                record.encrypted_deepgram_key is not None and record.encrypted_llm_key is not None
+            )
+            try:
+                deepgram_key = bot_cipher.decrypt(record.encrypted_deepgram_key)
+                llm_key = bot_cipher.decrypt(record.encrypted_llm_key)
+            except StorageKeyError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from None
+        else:
+            if request.deepgram_api_key is None or request.llm_api_key is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail="This bot has no saved keys; provide both API keys for this session",
+                )
+            deepgram_key = request.deepgram_api_key
+            llm_key = request.llm_api_key
+        return SessionRequest(
+            deepgram_api_key=deepgram_key,
+            llm_api_key=llm_key,
+            llm_provider=record.llm_provider,
+            llm_base_url=record.llm_base_url,
+            llm_model=record.llm_model,
+            system_prompt=record.system_prompt,
+            opening_script=record.opening_script,
+            flux_voice=record.tts_voice,
+        )
+
     @app.post("/api/sessions", response_model=SessionResponse, status_code=201)
-    async def create_session(request: SessionRequest, http_request: Request) -> SessionResponse:
+    async def create_session(
+        request: SessionRequest | BotSessionRequest, http_request: Request
+    ) -> SessionResponse:
         _validate_session_origin(http_request, _allowed_origins())
+        resolved = await _resolve_session_request(request)
         try:
             lease = await store.create(
-                request=request,
+                request=resolved,
                 runtime=runtime,
                 voice_catalog=voices,
                 llm_catalog=llm_providers,

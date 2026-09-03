@@ -12,7 +12,12 @@ Browser PCM 16 kHz mono
   -> Browser playback
 ```
 
-Deepgram 与 LLM 都采用 BYOK。API Key 只在 `POST /api/sessions` 请求体中提交，后端只在进程内存中持有；WebSocket 使用短时、单次 opaque token。会话结束、异常或 token 过期后释放凭证引用。服务器没有共享厂商 Key。本地仅允许 `localhost` / `127.0.0.1` loopback HTTP，非本地地址必须使用 HTTPS。
+页面以"机器人（Bot）"为中心：机器人保存 ASR/TTS/LLM 选择与 Prompt，选中即可发起会话；API Key 两种模式由用户在机器人上二选一：
+
+- **加密保存（可选）**：勾选后 Deepgram/LLM Key 经 Fernet 加密写入 SQLite（named volume 持久化），发起会话免填 Key；主密钥只存在于服务器环境变量 `VOICE_AGENT_STORAGE_KEY`，任何 API 响应都不返回 Key。
+- **BYOK（默认）**：不保存 Key，发起会话时当次填写。Key 只在 `POST /api/sessions` 请求体中提交，后端只在进程内存中持有；WebSocket 使用短时、单次 opaque token。会话结束、异常或 token 过期后释放凭证引用。
+
+不建机器人也可用页面底部 Quick start 发起一次性全字段会话。服务器没有共享厂商 Key；未配置 `VOICE_AGENT_STORAGE_KEY` 时保存 Key 功能关闭，其余能力不受影响。本地仅允许 `localhost` / `127.0.0.1` loopback HTTP，非本地地址必须使用 HTTPS。
 
 ## 2. 最简启动方式（推荐）
 
@@ -69,17 +74,20 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000 --no-access-log
 - Custom OpenAI-compatible：填写厂商提供的 HTTPS base URL 与准确 model ID；只支持兼容 OpenAI Chat Completions Streaming 的接口。
 - Opening Script：非空时 Agent 先说，并作为 assistant message 加入上下文；留空时等待用户先说。
 
-页面不会使用 Local Storage、Session Storage 或 Cookie 保存 Key。创建会话成功后，两个 Key 输入框会立即清空。
+页面不会使用 Local Storage、Session Storage 或 Cookie 保存 Key。创建会话成功后，Key 输入框会立即清空。机器人勾选"加密保存"的 Key 只以密文落 SQLite，明文不会返回前端。
 
 ## 5. 人工验收清单
 
-1. 填写两类 Key，保持默认模型与 voice，点击 **Start session** 并授权麦克风。
+1. 新建一个机器人并勾选"Save API keys encrypted on the server"，保存后直接点击 **Start session**，确认免填 Key 即可授权麦克风开打。
 2. 确认 Opening Script 先播放，完成至少三轮英文对话。
 3. 新建会话并清空 Opening Script，确认 Agent 等待用户先说。
-4. 更换 System Prompt 和 Flux voice，分别新建会话确认生效。
-5. Agent 播放长回复时开口，确认浏览器立即停止旧音频，新一轮仍能继续。
-6. 输入无效 Key 或无权限 model，确认页面显示可恢复错误，结束后可重新开始。
-7. 点击 **End session**，确认 WebSocket 断开；旧 token 不可再次连接。
+4. 编辑机器人更换 System Prompt 和 voice（Key 留空表示保留），分别新建会话确认生效。
+5. 再建一个不保存 Key 的机器人，确认 Start 时要求当次填写两类 Key，对话正常。
+6. 用 Quick start 不建机器人直接发起一次性会话，确认原有行为不回归。
+7. Agent 播放长回复时开口，确认浏览器立即停止旧音频，新一轮仍能继续。
+8. 输入无效 Key 或无权限 model，确认页面显示可恢复错误，结束后可重新开始。
+9. 点击 **End session**，确认 WebSocket 断开；旧 token 不可再次连接。
+10. 重启容器，确认机器人配置与加密 Key 仍然可用（volume 持久化）。
 
 页面展示两个体验指标：用户停止说话到浏览器开始播放，以及 LLM 首个文本增量到浏览器开始播放。服务端另记录 ASR final、LLM first token、TTS first audio 和 interruption 时间，日志不记录 transcript 或 Key。
 

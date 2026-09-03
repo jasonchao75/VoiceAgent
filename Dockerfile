@@ -24,6 +24,9 @@ COPY --chown=voiceagent:voiceagent --from=frontend-builder /build/frontend/dist 
 RUN pip install -r requirements.lock
 RUN python -m nltk.downloader -d /usr/local/share/nltk_data punkt_tab
 
+# Named-volume target for the bot database; ownership survives first mount.
+RUN mkdir -p /data && chown voiceagent:voiceagent /data
+
 USER voiceagent
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \

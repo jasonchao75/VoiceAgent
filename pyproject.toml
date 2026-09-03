@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Browser-based English voice agent using Deepgram Flux and Pipecat"
 requires-python = ">=3.11"
 dependencies = [
+  "aiosqlite>=0.22,<1",
+  "cryptography>=45,<51",
   "fastapi>=0.116,<1",
   "pipecat-ai[deepgram,openai,runner,websocket]==1.8.1",
   "pydantic>=2.11,<3",

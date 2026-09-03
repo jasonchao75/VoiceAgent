@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from pathlib import Path
+
 import pytest
 
 from src.config import (
@@ -13,6 +16,18 @@ from src.config import (
     load_voice_catalog,
 )
 from src.session import SessionRequest
+
+
+@pytest.fixture(autouse=True)
+def isolated_bot_storage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterator[None]:
+    """Point every app under test at a throwaway data dir with no storage key.
+
+    Individual tests opt into key storage by setting VOICE_AGENT_STORAGE_KEY
+    themselves; the default must never depend on the developer environment.
+    """
+    monkeypatch.setenv("VOICE_AGENT_DATA_DIR", str(tmp_path))
+    monkeypatch.delenv("VOICE_AGENT_STORAGE_KEY", raising=False)
+    yield
 
 
 @pytest.fixture

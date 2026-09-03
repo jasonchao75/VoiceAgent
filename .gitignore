@@ -34,6 +34,9 @@ logs/
 # Docker
 docker-compose.override.yml
 
+# Local bot database (encrypted keys inside; still not for git)
+data/
+
 # Demos
 demos/
 

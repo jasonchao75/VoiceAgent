@@ -108,3 +108,31 @@ button:disabled { opacity: .45; cursor: not-allowed; }.mic-icon { font-size: 8px
   .controls { flex-wrap: wrap; }.controls p { width: 100%; margin: 2px 0 0; }
   .message { max-width: 92%; }
 }
+
+/* Bot panel */
+.list-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; }
+.list-head h2 { font-size: 14px; font-weight: 700; margin: 0; color: #d6ded9; }
+.inline-button { border: 1px solid #39423e; background: transparent; color: var(--accent); font-size: 11px; font-weight: 600; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.inline-button:hover { background: #1b211f; }
+.bot-panel, .session-keys, #bot-editor { margin-bottom: 26px; }
+.bot-list { display: flex; flex-direction: column; gap: 10px; }
+.empty-bots { color: var(--muted); font-size: 12px; line-height: 1.5; border: 1px dashed var(--line); border-radius: 11px; padding: 14px; margin: 0; }
+.bot-card { background: #0d1210; border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; }
+.bot-card[data-selected="true"] { border-color: #3d6b52; box-shadow: 0 0 0 3px rgba(120, 240, 179, .07); }
+.bot-card header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bot-card strong { font-size: 13px; word-break: break-word; }
+.badge { flex-shrink: 0; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #07110c; background: var(--accent); border-radius: 999px; padding: 3px 8px; }
+.badge.byok { color: #9fb4a9; background: #1a2420; border: 1px solid #2c3b34; }
+.bot-card > p { color: #8f9a95; font-size: 11px; margin: 6px 0 10px; }
+.card-actions { display: flex; gap: 6px; }
+.card-button { border: 1px solid #39423e; background: transparent; color: #cbd3cf; font-size: 10px; font-weight: 600; border-radius: 7px; padding: 5px 9px; cursor: pointer; }
+.card-button:hover { background: #1b211f; }
+.card-button.danger { color: var(--danger); border-color: #4a2c2c; }
+.card-button.danger:hover { background: #241616; }
+.checkbox-row { display: flex; align-items: center; gap: 9px; margin: 4px 0 8px; }
+.checkbox-row input { width: auto; }
+.checkbox-row span { font-size: 12px; }
+.editor-actions { display: flex; gap: 10px; }
+.quick-start summary { cursor: pointer; color: var(--accent); font-size: 12px; font-weight: 600; padding: 12px 0; border-top: 1px solid var(--line); }
+.quick-start form { padding-top: 14px; }
+.quick-start .primary-button { width: 100%; }

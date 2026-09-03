@@ -93,7 +93,7 @@ class RuntimeConfig(StrictModel):
     asr: ASRConfig
     llm: LLMConfig
     tts: TTSConfig
-    system_prompt: str = Field(min_length=1, max_length=12000)
+    system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
     session: SessionLimits
 

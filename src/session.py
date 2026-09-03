@@ -8,7 +8,7 @@ import time
 import uuid
 from dataclasses import dataclass
 
-from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 from src.config import (
     LLMConfig,
@@ -29,7 +29,7 @@ class SessionRequest(BaseModel):
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)
-    system_prompt: str = Field(min_length=1, max_length=12000)
+    system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
     flux_voice: str = Field(min_length=8, max_length=100)
 
@@ -42,6 +42,40 @@ class SessionRequest(BaseModel):
         if not secret or "your_" in lowered or "api_key_here" in lowered:
             raise ValueError("Enter a real API key for this session")
         return SecretStr(secret)
+
+
+class BotSessionRequest(BaseModel):
+    """Session request that sources configuration and optionally keys from a bot.
+
+    Mutually exclusive with the inline SessionRequest shape: the API union
+    rejects payloads carrying both bot_id and inline configuration fields.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    bot_id: str = Field(min_length=1, max_length=100)
+    deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+
+    @field_validator("deepgram_api_key", "llm_api_key")
+    @classmethod
+    def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
+        """Apply the same placeholder policy as inline BYOK."""
+        if value is None:
+            return None
+        secret = value.get_secret_value().strip()
+        lowered = secret.lower()
+        if not secret or "your_" in lowered or "api_key_here" in lowered:
+            raise ValueError("Enter a real API key for this session")
+        return SecretStr(secret)
+
+    @model_validator(mode="after")
+    def keys_all_or_nothing(self) -> BotSessionRequest:
+        """Per-session BYOK keys are only valid as a pair."""
+        provided = [key is not None for key in (self.deepgram_api_key, self.llm_api_key)]
+        if any(provided) and not all(provided):
+            raise ValueError("Both API keys must be provided together")
+        return self
 
 
 class SessionConfig(BaseModel):
