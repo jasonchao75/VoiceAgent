@@ -23,10 +23,28 @@ if [[ ! "${DEPLOY_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
 fi
 
 git_as_deploy() {
-  runuser -u deploy -- git -C "${REPO_DIR}" "$@"
+  runuser -u deploy -- env GIT_TERMINAL_PROMPT=0 git -C "${REPO_DIR}" "$@"
 }
 
-git_as_deploy fetch --quiet origin main
+fetch_main() {
+  local attempt
+
+  # GitHub HTTPS fetches can fail transiently before any deployment work starts.
+  for attempt in 1 2 3; do
+    if git_as_deploy fetch --quiet origin main; then
+      return 0
+    fi
+    if [[ "${attempt}" -lt 3 ]]; then
+      echo "Git fetch attempt ${attempt} failed; retrying" >&2
+      sleep $((attempt * 3))
+    fi
+  done
+
+  echo "Git fetch failed after 3 attempts" >&2
+  return 1
+}
+
+fetch_main
 git_as_deploy cat-file -e "${DEPLOY_SHA}^{commit}"
 
 if ! git_as_deploy merge-base --is-ancestor "${DEPLOY_SHA}" origin/main; then
