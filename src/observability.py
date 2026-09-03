@@ -19,12 +19,19 @@ from pipecat.observers.base_observer import BaseObserver, FramePushed
 logger = logging.getLogger(__name__)
 
 EventSink = Callable[[str, float], None]
+FrameSink = Callable[[object], None]
 
 
 class SessionTimingObserver(BaseObserver):
     """Record first-occurrence pipeline timings without storing transcripts."""
 
-    def __init__(self, *, session_id: str, event_sink: EventSink | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        session_id: str,
+        event_sink: EventSink | None = None,
+        frame_sink: FrameSink | None = None,
+    ) -> None:
         """Initialize the observer.
 
         Args:
@@ -34,6 +41,7 @@ class SessionTimingObserver(BaseObserver):
         super().__init__()
         self._session_id = session_id
         self._event_sink = event_sink
+        self._frame_sink = frame_sink
         self._started_at = time.monotonic()
         self._seen_frames: set[int] = set()
         self._turn_events: set[str] = set()
@@ -43,6 +51,8 @@ class SessionTimingObserver(BaseObserver):
         if data.frame.id in self._seen_frames:
             return
         self._seen_frames.add(data.frame.id)
+        if self._frame_sink is not None:
+            self._frame_sink(data.frame)
 
         event: str | None = None
         if isinstance(data.frame, UserStartedSpeakingFrame):

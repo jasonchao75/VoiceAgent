@@ -131,7 +131,7 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
 
     monkeypatch.setattr(voice_agent, "FastAPIWebsocketTransport", lambda **_kwargs: fake_transport)
     monkeypatch.setattr(voice_agent, "create_flux_stt", lambda **_kwargs: stt)
-    monkeypatch.setattr(voice_agent, "create_openai_compatible_llm", lambda **_kwargs: llm)
+    monkeypatch.setattr(voice_agent, "create_llm_service", lambda **_kwargs: llm)
     monkeypatch.setattr(voice_agent, "LLMContext", lambda: fake_context)
     monkeypatch.setattr(
         voice_agent,

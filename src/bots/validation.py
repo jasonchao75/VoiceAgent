@@ -46,5 +46,7 @@ def validate_bot_config(
     base_url = config.llm_base_url.rstrip("/")
     if provider.id != "custom" and base_url != provider.base_url:
         raise ValueError("The selected provider base URL does not match the server catalog")
+    if not provider.supports_custom_model and config.llm_model not in provider.recommended_models:
+        raise ValueError("Select an LLM model from the server catalog")
     # Reuse the canonical HTTPS endpoint validation instead of duplicating it.
     LLMConfig(provider=provider.id, base_url=base_url, model=config.llm_model.strip())

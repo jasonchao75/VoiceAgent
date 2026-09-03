@@ -7,7 +7,7 @@
 ```text
 Browser PCM 16 kHz mono
   -> Deepgram Flux STT (flux-general-en)
-  -> OpenAI-compatible streaming LLM
+  -> OpenAI-compatible or native Google Gemini streaming LLM
   -> Deepgram Flux TTS (/v2/speak, PCM 24 kHz mono)
   -> Browser playback
 ```
@@ -70,11 +70,16 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000 --no-access-log
 - Deepgram Key：从 <https://console.deepgram.com/> 获取，需具备 Flux STT/TTS 使用权限和可用额度。
 - Flux Voice：页面只能选择后端 Catalog 中已核对的 voice；旁边提供官方 Voice Catalog 和试听入口。
 - OpenAI Key：从 <https://platform.openai.com/api-keys> 获取。
+- Google Gemini：固定资源方使用原生 Gemini adapter；2.5 Flash/Flash-Lite 请求 `thinking_budget=0`，3.x Flash/Flash-Lite 请求最低 `thinking_level`。
 - LLM model：默认 `gpt-4.1-mini`，页面提供推荐项和官方模型文档；实际可用模型受账号权限影响。
 - Custom OpenAI-compatible：填写厂商提供的 HTTPS base URL 与准确 model ID；只支持兼容 OpenAI Chat Completions Streaming 的接口。
 - Opening Script：非空时 Agent 先说，并作为 assistant message 加入上下文；留空时等待用户先说。
 
 页面不会使用 Local Storage、Session Storage 或 Cookie 保存 Key。创建会话成功后，Key 输入框会立即清空。机器人勾选"加密保存"的 Key 只以密文落 SQLite，明文不会返回前端。
+
+### 通话历史与容量
+
+用户上行音频以无损 FLAC 默认保留 7 天，最终文本、逐轮延迟和安全诊断默认保留 30 天；不保存 TTS 音频和隐藏思考正文。数据位于 `VOICE_AGENT_DATA_DIR`，录音有效上限是 5GB 与数据卷总容量 20% 的较小值，并至少预留 1GB。可通过 `.env.example` 中四个 `VOICE_AGENT_*RETENTION*` / 容量变量调整，清理任务按最旧录音优先执行且不影响实时通话。
 
 ## 5. 人工验收清单
 

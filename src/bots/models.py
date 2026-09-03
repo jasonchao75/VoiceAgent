@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 
@@ -28,6 +30,7 @@ class BotConfigFields(BaseModel):
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)
+    reasoning_mode: Literal["lowest_latency"] = "lowest_latency"
     system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
 

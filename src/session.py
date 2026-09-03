@@ -7,6 +7,7 @@ import secrets
 import time
 import uuid
 from dataclasses import dataclass
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
@@ -29,6 +30,7 @@ class SessionRequest(BaseModel):
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)
+    reasoning_mode: Literal["lowest_latency"] = "lowest_latency"
     system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
     flux_voice: str = Field(min_length=8, max_length=100)
@@ -194,7 +196,23 @@ class SessionStore:
                 expires_at=now + self._token_ttl_seconds,
             )
             self._pending[token] = lease
-            return lease
+        return lease
+
+    async def build_config(
+        self,
+        *,
+        request: SessionRequest,
+        runtime: RuntimeConfig,
+        voice_catalog: VoiceCatalog,
+        llm_catalog: LLMProviderCatalog,
+    ) -> SessionConfig:
+        """Validate public configuration without creating a credential lease."""
+        return build_session_config(
+            request=request,
+            runtime=runtime,
+            voice_catalog=voice_catalog,
+            llm_catalog=llm_catalog,
+        )
 
     async def claim(self, token: str) -> SessionLease:
         """Consume a token and bind its lease to one active WebSocket."""
@@ -271,11 +289,14 @@ def build_session_config(
     base_url = request.llm_base_url.rstrip("/")
     if provider.id != "custom" and base_url != provider.base_url:
         raise ValueError("The selected provider base URL does not match the server catalog")
+    if not provider.supports_custom_model and request.llm_model not in provider.recommended_models:
+        raise ValueError("Select an LLM model from the server catalog")
 
     llm = LLMConfig(
         provider=provider.id,
         base_url=base_url,
         model=request.llm_model.strip(),
+        reasoning_mode=request.reasoning_mode,
         timeout_seconds=runtime.llm.timeout_seconds,
     )
     tts = TTSConfig(

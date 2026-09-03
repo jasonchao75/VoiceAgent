@@ -83,6 +83,24 @@ def test_basic_auth_protects_public_routes_but_not_health(
     assert authorized.status_code == 200
 
 
+def test_session_bearer_failure_does_not_trigger_basic_auth_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Telemetry bearer failures must not make the browser reopen its login dialog."""
+    monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_USERNAME", "demo-user")
+    monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", "test-password-long-enough")
+
+    with TestClient(create_app()) as client:
+        response = client.get(
+            "/api/sessions/not-active/events",
+            headers={"Authorization": "Bearer invalid-session-token"},
+        )
+
+    assert response.status_code == 401
+    assert "www-authenticate" not in response.headers
+    assert response.json()["detail"] == "Session authorization is invalid"
+
+
 def test_basic_auth_rejects_incomplete_or_placeholder_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

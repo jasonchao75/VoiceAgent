@@ -20,7 +20,8 @@ from pipecat.workers.runner import WorkerRunner
 
 from src.asr import create_flux_stt
 from src.config import RuntimeConfig
-from src.llm import create_openai_compatible_llm
+from src.history.capture import CallCapture
+from src.llm import create_llm_service
 from src.observability import SessionEventBuffer, SessionTimingObserver
 from src.session import SessionLease
 from src.tts import TTSProviderRegistry
@@ -36,6 +37,7 @@ async def run_voice_agent_session(
     tts_registry: TTSProviderRegistry,
     allowed_origins: list[str],
     event_buffer: SessionEventBuffer,
+    call_capture: CallCapture | None = None,
 ) -> None:
     """Run a complete Browser → Flux STT → LLM → Flux TTS session.
 
@@ -72,7 +74,7 @@ async def run_voice_agent_session(
         config=runtime.asr,
         audio=runtime.audio,
     )
-    llm = create_openai_compatible_llm(
+    llm = create_llm_service(
         api_key=llm_key,
         config=lease.config.llm,
         system_prompt=lease.config.system_prompt,
@@ -97,7 +99,11 @@ async def run_voice_agent_session(
             assistant_aggregator,
         ]
     )
-    observer = SessionTimingObserver(session_id=lease.session_id, event_sink=event_buffer.add)
+    observer = SessionTimingObserver(
+        session_id=lease.session_id,
+        event_sink=event_buffer.add,
+        frame_sink=call_capture.observe if call_capture is not None else None,
+    )
     worker = PipelineWorker(
         pipeline,
         name=f"voice-session-{lease.session_id}",

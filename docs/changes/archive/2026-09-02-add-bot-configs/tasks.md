@@ -56,12 +56,12 @@
 
 - [x] 用户确认后：服务器 `.env` 补随机 `VOICE_AGENT_STORAGE_KEY`，`docker compose up -d`
 - [x] 提醒用户把主密钥备份到密码管理器
-- [ ] 公网完成 Bot 全流程人工验收（建 Bot 存 Key → 免填开打 → 重启保留）
+- [x] 公网完成 Bot 全流程人工验收（建 Bot 存 Key → 免填开打 → 重启保留）
 
 ## 8. Closeout
 
 - [x] 更新 `README.md`（BYOK 表述改为"可选加密保存"）与 `docs/engineering/english-flux-voice-agent.md`（新使用流程）
 - [x] 更新 `AGENTS.md` 项目结构（新增 `src/bots/`）与红线表述（可选加密存储的例外说明）
-- [ ] 对照 `spec.md` 完成最终检查并记录偏差
-- [ ] 用户验收通过后归档到 `docs/changes/archive/`
-- [ ] 评估是否把"Fernet 密钥管理 / SQLite 持久化落地"经验提炼到 `.opencode/skills/`
+- [x] 对照 `spec.md` 完成最终检查并记录偏差
+- [x] 用户验收通过后归档到 `docs/changes/archive/`
+- [x] 评估是否把"Fernet 密钥管理 / SQLite 持久化落地"经验提炼到 `.opencode/skills/`

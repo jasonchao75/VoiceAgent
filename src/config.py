@@ -46,6 +46,7 @@ class LLMConfig(StrictModel):
     provider: str = Field(min_length=1, max_length=50)
     base_url: str
     model: str = Field(min_length=1, max_length=200)
+    reasoning_mode: Literal["lowest_latency"] = "lowest_latency"
     timeout_seconds: float = Field(default=15.0, ge=3.0, le=60.0)
 
     @field_validator("base_url")

@@ -31,6 +31,7 @@ voice-agent/
 │   └── pipeline/         # Pipecat 核心并发管道编排
 ├── configs/              # 厂商及运行时配置 (不入库敏感信息)
 ├── docs/                 # 详细文档目录 (协作指引、设计文档等)
+├── openspec/             # 系统主规格、Delta Specs 与 Change 记录
 ├── scripts/              # 本地测试与自动化评测脚本
 ├── benchmarks/           # 评测用音频数据集
 └── AGENTS.md             # AI Agent 开发协作核心协议与红线
@@ -54,6 +55,7 @@ docker compose up --build
 
 - 📜 [**AGENTS.md**](./AGENTS.md): 本项目最核心的 Agent 开发协作协议与技术红线。
 - 🤝 [**团队协作与 Agents & Skills 指南**](./docs/engineering/agent-workflow.md): 包含各 Agent 角色的分工、Skills 调用矩阵、以及面向产品经理的 **Change 需求文档编写规范**。
+- 📐 [**OpenSpec 主规格与 Change**](./openspec/README.md): 系统当前行为的主规格库、Delta Spec 写法及归档规则。
 - 🛡️ [**Hooks 轻量守卫说明**](./docs/engineering/hooks.md): 详细介绍我们在 `tool.execute.after` 阶段启用的代码格式检查、API Key 扫描、同步阻塞拦截机制及后续演进路线图。
 - ⚙️ [**CI/CD 自动化流水线**](./docs/engineering/ci-cd.md): `main` 全量 CI 通过后自动部署 DigitalOcean，并执行健康检查与失败回滚。
 - 🚢 [**DigitalOcean Demo 部署手册**](./docs/engineering/deployment-digitalocean-demo.md): 基于 FastAPI + Nginx 的轻量级 Demo 自动化部署与服务器配置指南。

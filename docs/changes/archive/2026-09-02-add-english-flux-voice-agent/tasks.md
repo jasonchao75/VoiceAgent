@@ -66,9 +66,9 @@
 
 ## 7. Local Acceptance
 
-- [ ] 由用户通过 BYOK 页面提交真实 Deepgram 与 LLM Key，执行受控连通性测试
-- [ ] 通过 localhost 页面完成人工麦克风、Opening Script、三轮对话和 barge-in 验收
-- [ ] 记录 TTFA、端到端响应延迟和打断停止延迟
+- [x] 由用户通过 BYOK 页面提交真实 Deepgram 与 LLM Key，执行受控连通性测试
+- [x] 通过 localhost 页面完成人工麦克风、Opening Script、三轮对话和 barge-in 验收
+- [x] 记录 TTFA、端到端响应延迟和打断停止延迟
 - [x] 汇报未验证范围、已知限制、测试日志和临时产物路径
 - [x] 更新 README 与本地运行/验收说明
 
@@ -80,7 +80,7 @@
 - [x] 配置会话时长、并发与访问限制
 - [x] 部署前再次运行本地检查并确认无敏感/临时文件
 - [x] 部署后验证容器健康、`/health`、HTTPS、WSS、HTTP 跳转和访问保护
-- [ ] 用户通过公网页面完成麦克风、三轮对话和 barge-in 人工验收
+- [x] 用户通过公网页面完成麦克风、三轮对话和 barge-in 人工验收
 - [x] 将公网 URL 与安全获取访问凭证的方式交给用户
 
 ## 9. Automatic CI/CD
@@ -95,6 +95,6 @@
 
 ## 10. Closeout
 
-- [ ] 对照 `spec.md` 完成最终检查并记录偏差
-- [ ] 用户验收通过后，将 Change 整体归档到 `docs/changes/archive/`
-- [ ] 评估是否把 Flux TTS、Pipecat interruption 和公网 Demo 防滥用经验提炼到 `.opencode/skills/`
+- [x] 对照 `spec.md` 完成最终检查并记录偏差
+- [x] 用户验收通过后，将 Change 整体归档到 `docs/changes/archive/`
+- [x] 评估是否把 Flux TTS、Pipecat interruption 和公网 Demo 防滥用经验提炼到 `.opencode/skills/`

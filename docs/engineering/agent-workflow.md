@@ -50,15 +50,15 @@ Skills 是沉淀在 `.opencode/skills/` 目录下的 SOP、架构规范和防坑
 - **隐式调用（默认）**：直接通过自然语言下发指令（如：“去调研 Speechmatics”）。Agent 会根据关键字自动匹配并加载对应的 Skill 规范。
 - **显式调用（推荐）**：对于明确的阶段任务，建议在对话开始时显式切换（如：“当前角色：Integration-Developer。请加载 `pipecat-integration` 技能，开始搭建基础管道”）。这能让 Agent 极度聚焦，避免代码跑偏。
 
-## 5. Change 文档使用规范 (产品经理指南)
+## 5. OpenSpec Change 使用规范（产品经理指南）
 
-**核心是借用OpenSpec工作流程**
-- **explore**：直接让 AI 问 5 个边界问题
-- **new**：手动或让 AI 创建 `docs/changes/active/add-xxx/`
-- **ff**：让 AI 根据 proposal 生成 `spec.md` 和 `tasks.md`
-- **apply**：确认后让 AI 按 tasks 执行
-- **verify**：让 AI 对照 spec 检查实现
-- **archive**：完成后把目录移到 archive
+项目采用渐进式 OpenSpec 工作流：
+
+- **explore**：梳理目标、边界、未知项和验收标准。
+- **new / propose**：创建 `openspec/changes/add-xxx/`，形成 proposal、Delta Specs、design 和 tasks。
+- **apply**：用户确认后按 tasks 实现，并持续勾选进度。
+- **verify**：对照 Delta Specs 的 Requirement 和 Scenario 验证实际行为。
+- **archive**：用户验收后，把 Delta 合并到主规格并归档 Change。
 
 Change 是本次开发任务的轻量级“需求说明书”。请注意，**Change 文档不是每个需求都要写**。
 
@@ -84,19 +84,54 @@ Change 是本次开发任务的轻量级“需求说明书”。请注意，**Ch
 - 小范围更新 skill；
 - 一句话就能验收的小 bug。
 
-**5.4 产品经理与 AI 的分工**
+**5.4 主规格与 Delta Spec**
+
+- `openspec/specs/` 是主规格库，只描述当前已经生效的系统行为。
+- Change 内的 `specs/` 是 Delta Specs，只描述本次新增、修改、删除或重命名的行为。
+- `design.md` 记录技术实现方式，避免把“必须实现的行为”与“当前选择的实现”混在一起。
+- 归档不是简单移动目录：必须先让主规格吸收 Delta，成为新的系统现状。
+
+**5.5 产品经理与 AI 的分工**
 - **产品经理**：负责写清楚业务意图、核心边界和验收标准。
 - **AI 助手**：可以协助您把凌乱的想法整理成结构化的 `proposal.md`、`spec.md` 和 `tasks.md`。
 - **执行规范**：产品经理确认这些文档无误后，再让 AI 或研发开始写核心代码执行。
 
-**5.5 目录与文档结构**
-开 Change 时，请在以下目录建立三个轻量级文档（做完后会整体移动到 archive 归档）：
+**5.6 目录与文档结构**
+
+新建 Change 时使用以下结构：
+
 ```text
-docs/changes/active/{change-name}/
-├── proposal.md  # 提案
-├── spec.md      # 技术方案
-└── tasks.md     # 执行步骤清单
+openspec/
+├── specs/<capability>/spec.md        # 当前已生效的主规格
+└── changes/{change-name}/
+    ├── proposal.md                    # 为什么改、范围和影响
+    ├── design.md                      # 如何实现；简单改动可省略
+    ├── tasks.md                       # 可追踪执行清单
+    └── specs/<capability>/spec.md     # 本次 Delta Spec
 ```
+
+旧 Change 已统一归档到 `docs/changes/archive/`，仅用于历史追溯；所有新需求统一使用 `openspec/changes/`。
+
+**5.7 Delta Spec 最小格式**
+
+```markdown
+## ADDED Requirements
+
+### Requirement: 可观察行为名称
+系统必须……
+
+#### Scenario: 验收场景名称
+- **WHEN** 触发条件
+- **THEN** 预期结果
+```
+
+修改已有行为时使用 `MODIFIED Requirements` 并写出修改后的完整 Requirement；删除或重命名分别使用 `REMOVED Requirements`、`RENAMED Requirements`。
+
+**5.8 第一阶段边界**
+
+- 当前仅落地目录、主规格、Delta 写法和归档规则。
+- 暂不要求安装 OpenSpec CLI，也不在 CI 中强制执行 `openspec validate`。
+- 第一版主规格依据已提交代码、自动化测试和项目强制规范整理；发现偏差时先核实，不得把计划直接当成现状。
 
 ## 常用任务收尾提示词
 

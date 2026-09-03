@@ -43,6 +43,8 @@ app.innerHTML = `
             <input id="session-llm-key" type="password" autocomplete="new-password" />
             <button class="text-button reveal" type="button" data-target="session-llm-key">Show</button>
           </div>
+          <button id="test-session-llm" class="secondary-button diagnostic-button" type="button">Test selected bot LLM</button>
+          <div id="session-diagnostic-result" class="diagnostic-result" hidden></div>
         </section>
 
         <section id="bot-editor" hidden>
@@ -94,6 +96,8 @@ app.innerHTML = `
               <label for="bot-opening-script">Opening script</label>
               <textarea id="bot-opening-script" rows="3" maxlength="2000"></textarea>
               <p class="hint">Leave blank for a user-first conversation.</p>
+              <button id="test-bot-llm" class="secondary-button diagnostic-button" type="button">Test LLM connection</button>
+              <div id="bot-diagnostic-result" class="diagnostic-result" hidden></div>
             </fieldset>
 
             <fieldset>
@@ -186,6 +190,8 @@ app.innerHTML = `
               <label for="opening-script">Opening script</label>
               <textarea id="opening-script" rows="3" maxlength="2000"></textarea>
               <p class="hint">Leave blank for a user-first conversation.</p>
+              <button id="test-quick-llm" class="secondary-button diagnostic-button" type="button">Test LLM connection</button>
+              <div id="quick-diagnostic-result" class="diagnostic-result" hidden></div>
             </fieldset>
 
             <fieldset>
@@ -204,6 +210,14 @@ app.innerHTML = `
             </button>
           </form>
         </details>
+
+        <section class="history-panel">
+          <div class="list-head">
+            <h2>Call history</h2>
+            <button id="refresh-history" class="inline-button" type="button">Refresh</button>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </section>
       </aside>
 
       <section class="conversation-panel">
@@ -250,10 +264,14 @@ app.innerHTML = `
             <span class="mic-icon">●</span> Start session
           </button>
           <button id="end-button" class="secondary-button" type="button" disabled>End session</button>
-          <p id="privacy-note">Microphone access is requested only after you press Start.</p>
+          <p id="privacy-note">User audio is saved for 7 days; transcripts and metrics for 30 days.</p>
         </footer>
       </section>
     </section>
+    <dialog id="history-dialog" class="history-dialog">
+      <button id="close-history" class="text-button dialog-close" type="button">Close</button>
+      <div id="history-detail"></div>
+    </dialog>
   </main>
 `;
 
@@ -278,6 +296,8 @@ const elements = {
   botLlmModelsLink: document.querySelector("#bot-llm-models-link"),
   botSystemPrompt: document.querySelector("#bot-system-prompt"),
   botOpeningScript: document.querySelector("#bot-opening-script"),
+  testBotLlm: document.querySelector("#test-bot-llm"),
+  botDiagnostic: document.querySelector("#bot-diagnostic-result"),
   botSaveKeys: document.querySelector("#bot-save-keys"),
   botKeyFields: document.querySelector("#bot-key-fields"),
   botDeepgramKey: document.querySelector("#bot-deepgram-key"),
@@ -288,6 +308,8 @@ const elements = {
   sessionKeys: document.querySelector("#session-keys"),
   sessionDeepgramKey: document.querySelector("#session-deepgram-key"),
   sessionLlmKey: document.querySelector("#session-llm-key"),
+  testSessionLlm: document.querySelector("#test-session-llm"),
+  sessionDiagnostic: document.querySelector("#session-diagnostic-result"),
   quickForm: document.querySelector("#session-form"),
   deepgramKey: document.querySelector("#deepgram-key"),
   llmKey: document.querySelector("#llm-key"),
@@ -297,6 +319,8 @@ const elements = {
   modelOptions: document.querySelector("#model-options"),
   systemPrompt: document.querySelector("#system-prompt"),
   openingScript: document.querySelector("#opening-script"),
+  testQuickLlm: document.querySelector("#test-quick-llm"),
+  quickDiagnostic: document.querySelector("#quick-diagnostic-result"),
   voice: document.querySelector("#flux-voice"),
   voiceCard: document.querySelector("#voice-card"),
   voiceDocs: document.querySelector("#voice-docs-link"),
@@ -314,6 +338,11 @@ const elements = {
   e2eLatency: document.querySelector("#e2e-latency"),
   synthesisLatency: document.querySelector("#synthesis-latency"),
   error: document.querySelector("#error-banner"),
+  historyList: document.querySelector("#history-list"),
+  refreshHistory: document.querySelector("#refresh-history"),
+  historyDialog: document.querySelector("#history-dialog"),
+  historyDetail: document.querySelector("#history-detail"),
+  closeHistory: document.querySelector("#close-history"),
 };
 
 let catalogs;
@@ -376,6 +405,112 @@ async function apiRequest(path, { method = "GET", body } = {}) {
   }
   if (response.status === 204) return undefined;
   return response.json();
+}
+
+function diagnosticPayload(kind) {
+  if (kind === "bot") {
+    const bot = editingBotId && bots.find((item) => item.id === editingBotId);
+    if (bot?.has_saved_keys && !elements.botLlmKey.value) return { bot_id: bot.id };
+    return {
+      llm_provider: elements.botProvider.value,
+      llm_base_url: elements.botBaseUrl.value,
+      llm_model: elements.botModel.value,
+      llm_api_key: elements.botLlmKey.value,
+    };
+  }
+  return {
+    llm_provider: elements.provider.value,
+    llm_base_url: elements.baseUrl.value,
+    llm_model: elements.model.value,
+    llm_api_key: elements.llmKey.value,
+  };
+}
+
+async function testLlm(kind) {
+  clearError();
+  const output = kind === "bot" ? elements.botDiagnostic : kind === "session" ? elements.sessionDiagnostic : elements.quickDiagnostic;
+  const button = kind === "bot" ? elements.testBotLlm : kind === "session" ? elements.testSessionLlm : elements.testQuickLlm;
+  button.disabled = true;
+  output.hidden = false;
+  output.textContent = "Testing a minimal request…";
+  try {
+    const result = await apiRequest("/api/llm/diagnostics", {
+      method: "POST",
+      body: kind === "session"
+        ? { bot_id: selectedBotId, llm_api_key: elements.sessionLlmKey.value }
+        : diagnosticPayload(kind),
+    });
+    output.dataset.success = String(result.success);
+    const tokens = result.reasoning_tokens === null ? "not reported" : result.reasoning_tokens;
+    output.textContent = `${result.success ? "Connected" : "Failed"} · ${result.provider}/${result.model}\n${result.summary}\nFirst token: ${result.first_token_ms ?? "—"} ms · Reasoning: ${result.reasoning_status} (${tokens} tokens)\n${result.suggestion} · ID ${result.diagnostic_id}`;
+  } catch (error) {
+    output.dataset.success = "false";
+    output.textContent = error instanceof Error ? error.message : "Diagnostic failed.";
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function loadHistory() {
+  const data = await apiRequest("/api/history?limit=25&offset=0");
+  if (!data.items.length) {
+    elements.historyList.innerHTML = '<p class="empty-bots">No calls recorded yet.</p>';
+    return;
+  }
+  elements.historyList.replaceChildren(...data.items.map((call) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "history-card";
+    const duration = call.duration_ms === null ? "pending" : `${Math.round(call.duration_ms / 1000)}s`;
+    button.textContent = `${call.bot_name || "One-off session"} · ${duration}\n${new Date(call.started_at).toLocaleString()} · ${call.status}`;
+    button.addEventListener("click", () => showHistory(call.id));
+    return button;
+  }));
+}
+
+async function showHistory(callId) {
+  const call = await apiRequest(`/api/history/${callId}`);
+  elements.historyDetail.replaceChildren();
+  const heading = document.createElement("h2");
+  heading.textContent = call.bot_name || "One-off session";
+  const meta = document.createElement("p");
+  meta.textContent = `${new Date(call.started_at).toLocaleString()} · ${call.llm_provider}/${call.llm_model} · ${call.status}`;
+  elements.historyDetail.append(heading, meta);
+  if (call.has_recording) {
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = `/api/history/${call.id}/recording`;
+    elements.historyDetail.append(audio);
+  }
+  for (const turn of call.turns) addHistoryTurn(turn);
+  for (const metric of call.metrics) {
+    const row = document.createElement("p");
+    row.className = "history-metric";
+    row.textContent = `Turn ${metric.turn_index + 1}: LLM ${metric.llm_first_token_ms ?? "—"} ms · TTS ${metric.tts_first_audio_ms ?? "—"} ms · playback ${metric.turn_to_playback_ms ?? "—"} ms · reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`;
+    elements.historyDetail.append(row);
+  }
+  const remove = document.createElement("button");
+  remove.className = "card-button danger";
+  remove.textContent = "Delete call";
+  remove.addEventListener("click", async () => {
+    if (!window.confirm("Delete this call, transcript, metrics, and recording?")) return;
+    await apiRequest(`/api/history/${call.id}`, { method: "DELETE" });
+    elements.historyDialog.close();
+    await loadHistory();
+  });
+  elements.historyDetail.append(remove);
+  elements.historyDialog.showModal();
+}
+
+function addHistoryTurn(turn) {
+  const item = document.createElement("article");
+  item.className = `message ${turn.role === "user" ? "user" : "agent"}`;
+  const label = document.createElement("span");
+  label.textContent = turn.role === "user" ? "You" : "Agent";
+  const text = document.createElement("p");
+  text.textContent = turn.text;
+  item.append(label, text);
+  elements.historyDetail.append(item);
 }
 
 function addTranscript(role, text, { interim = false } = {}) {
@@ -441,6 +576,7 @@ function applyProviderPreset(refs, { preserveModel = false } = {}) {
   if (!provider) return;
   refs.baseUrl.value = provider.base_url;
   refs.baseUrl.readOnly = provider.id !== "custom";
+  refs.model.readOnly = !provider.supports_custom_model;
   if (!preserveModel) refs.model.value = provider.default_model;
   refs.modelOptions.replaceChildren(
     ...provider.recommended_models.map((model) => {
@@ -644,6 +780,13 @@ function ensureSecureContext() {
   return true;
 }
 
+function confirmUnverifiedReasoning(provider) {
+  if (provider !== "custom") return true;
+  return window.confirm(
+    "This custom model has no verified reasoning-disable profile. It may add latency. Continue anyway?",
+  );
+}
+
 function deviceErrorMessage(error) {
   const messages = {
     permissions: "Microphone permission is blocked. Allow it in browser and system settings.",
@@ -706,6 +849,18 @@ function createClient() {
       },
       onError: () => {
         showError("A voice provider returned an error. Check both API keys, model access, and balance.");
+        const failedSessionId = sessionId;
+        window.setTimeout(async () => {
+          if (!failedSessionId) return;
+          try {
+            const failed = await apiRequest(`/api/history/${failedSessionId}`);
+            if (failed.diagnostic_id) {
+              showError(`Provider error: ${failed.error_category}. Diagnostic ID: ${failed.diagnostic_id}`);
+            }
+          } catch {
+            // Persistence may still be completing after the WebSocket error.
+          }
+        }, 750);
       },
       onMessageError: () => {
         showError("The voice connection received an invalid message. End and retry the session.");
@@ -797,6 +952,7 @@ async function startBotSession() {
     return;
   }
   if (!ensureSecureContext()) return;
+  if (!confirmUnverifiedReasoning(bot.llm_provider)) return;
 
   const payload = { bot_id: bot.id };
   if (!bot.has_saved_keys) {
@@ -828,6 +984,7 @@ async function startQuickSession(event) {
   event.preventDefault();
   clearError();
   if (!ensureSecureContext()) return;
+  if (!confirmUnverifiedReasoning(elements.provider.value)) return;
   if (!elements.quickForm.reportValidity()) return;
   setFormLocked(true);
   setSessionState("connecting", "Connecting");
@@ -879,6 +1036,7 @@ async function endSession({ preserveError = false } = {}) {
   elements.wsStatus.textContent = "Disconnected";
   elements.pipelineStatus.textContent = "Standby";
   if (!preserveError) clearError();
+  await loadHistory().catch(() => {});
 }
 
 // --- Wiring -------------------------------------------------------------------
@@ -904,6 +1062,13 @@ elements.voice.addEventListener("change", () => updateVoiceCard(elements.voice, 
 elements.quickForm.addEventListener("submit", startQuickSession);
 elements.start.addEventListener("click", startBotSession);
 elements.end.addEventListener("click", () => endSession());
+elements.testBotLlm.addEventListener("click", () => testLlm("bot"));
+elements.testQuickLlm.addEventListener("click", () => testLlm("quick"));
+elements.testSessionLlm.addEventListener("click", () => testLlm("session"));
+elements.refreshHistory.addEventListener("click", () =>
+  loadHistory().catch((error) => showError(error.message)),
+);
+elements.closeHistory.addEventListener("click", () => elements.historyDialog.close());
 
 async function boot() {
   try {
@@ -928,6 +1093,7 @@ async function boot() {
 
   try {
     await loadBots();
+    await loadHistory();
   } catch {
     showError("Could not load your bots. Reload the page to try again.");
   }

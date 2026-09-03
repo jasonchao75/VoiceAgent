@@ -62,9 +62,7 @@ voice-agent/
 │   └── evaluation/       # 评测工具脚本（Evaluation-Engineer）
 ├── docs/
 │   ├── engineering/      # 工程实践、自动化质检、部署、Hooks、测试、Agent 工作流等详细文档
-│   ├── changes/
-│   │   ├── active/       # 当前进行中的轻量 Change 需求说明
-│   │   └── archive/      # 已完成并归档的 Change 记录
+│   ├── changes/archive/  # OpenSpec 引入前的历史 Change（只读）
 │   ├── prd/              # PRD 与产品原型文件
 │   ├── references/
 │   │   ├── general/      # 通用参考资料、竞品分析
@@ -72,6 +70,9 @@ voice-agent/
 │   └── reports/
 │       ├── vendor/       # 调研报告、选型决策矩阵（Vendor-Researcher）
 │       └── evaluation/   # 评测报告（Evaluation-Engineer）
+├── openspec/
+│   ├── specs/            # 当前已生效行为的主规格库（Source of Truth）
+│   └── changes/          # 新 Change、Delta Specs 与归档记录
 ├── AGENTS.md             # 本项目级协作协议（本文件）
 ├── demos/                # 另一个子项目，一些临时演示demo和对应代码，推git时候也要ignore
 └── .gitignore            # 敏感配置与生成文件排除
@@ -114,14 +115,30 @@ voice-agent/
 
 ---
 
-## 7. Change 机制与执行约束 (Agent 必读)
+## 6.1 Vendor 测试脚本与评测产物规范
 
-为了避免核心功能开发跑偏，引入轻量需求说明（Change）机制。OpenCode 在执行任务时必须遵守以下协议：
+- `scripts/vendor/<vendor>/` 只能保留单条测试 Python 脚本、批量测试 Python 脚本和 `logs/` 目录；禁止存放 CSV、Excel、缓存、独立评测算法或数据分析辅助脚本。
+- 单条与批量日志统一保存在对应 vendor 的 `logs/` 中，历史日志全部保留；日志不得包含 API Key、Token 或其他凭证。
+- 批量测试结果统一保存到 `benchmarks/<library>/test-results/<vendor>/`，每个自然日只保留一组 `<YYYYMMDD>.xlsx`、`<YYYYMMDD>.csv`（逐条明细）与 `<YYYYMMDD>_summary.csv`（汇总指标）。同日后续运行必须按 `benchmark_id` 增量合并：新 ID 追加，重复 ID 用最新结果覆盖，然后原子覆盖当日三份文件，不得创建新的结果文件；跨日创建新的一组。XLSX 的 `details` 工作表和明细 CSV 固定且仅包含 7 列：`benchmark_id`、`audio_path`、`annotated_text`、`transcript`、`normalized_annotated_text`、`normalized_transcript`、`wer`；XLSX 可继续保留 `summary`、`run_metadata` 以及用于可靠合并的隐藏状态工作表。禁止在 vendor 脚本目录生成结果表格。
+- 音频与 Benchmark ID 的对应关系必须读取 benchmark 清单中的音频路径字段，不得假设音频文件名等于 Benchmark ID。
+- 计算 ASR 字准率前，必须先读取目标 library 目录内已有的计算脚本和说明。`library_ar` 必须直接使用 `benchmarks/library_ar/asr_char_accuracy.py` 及同目录说明，禁止修改其逻辑或在 vendor 目录复制另一套算法。
+- 如果目标 library 缺少字准率脚本或计算口径，必须先询问用户；确认后在该 library 目录补写说明和可运行脚本并完成自检，禁止静默套用其他语种或语料库规则。
+- `scripts/vendor/` 中的历史 CSV 不保留、不迁移；确认不再需要后直接删除。benchmark 原始清单不属于此规则，禁止误删。
 
-- **主动触发 Change**：当用户要求开发核心功能（如 pipeline 机制、ASR/TTS/LLM 适配器、打断逻辑、评测模块等）或可能影响核心系统行为的逻辑时，Agent **必须主动建议**先在 `docs/changes/active/{change-name}/` 下创建 Change 文档（`proposal.md`, `spec.md`, `tasks.md`）。
-- **禁止无凭据编码**：在用户完全确认并同意上述 Change 文档的内容之前，Agent **绝对禁止**直接开始编写核心逻辑代码。
-- **免长流程特权**：对于普通的文档整理（如改 README）、厂商报告汇总、修补已有的 Skill、以及单点参数与小测试脚本的修复，不强制要求开启 Change 流程，避免过度设计。
-- **经验提炼与闭环**：当开发测试完成并将当前目录整体移动归档到 `docs/changes/archive/` 后，如果 Agent 认为该 Change 产生了具有长期复用价值的经验或防坑指南，应**主动建议**将其提炼到 `.opencode/skills/` 中；切勿将一次性需求细节强行写进 Skill。
+---
+
+## 7. OpenSpec 与 Change 执行约束（Agent 必读）
+
+为了让 Agent 同时掌握“系统当前行为”和“本次准备改变的行为”，新需求采用 OpenSpec 目录与 Delta Spec 机制。OpenCode 必须遵守以下协议：
+
+- **先读主规格**：`openspec/specs/<capability>/spec.md` 是已经验收并生效行为的 Source of Truth。修改系统行为前，Agent 必须先读取相关主规格；主规格与代码或测试冲突时不得自行覆盖，必须查明原因并向用户说明。
+- **主动触发 Change**：开发核心功能或修改可观察系统行为时，必须先在 `openspec/changes/{change-name}/` 创建 `proposal.md`、capability 级 Delta Specs、必要的 `design.md` 与 `tasks.md`。
+- **分离 WHAT 与 HOW**：Delta Spec 只用 `ADDED`、`MODIFIED`、`REMOVED`、`RENAMED` 表达行为契约及验收场景；模块选择、数据结构、迁移和实现取舍写入 `design.md`。
+- **禁止无凭据编码**：用户确认 Change 的范围、行为规格、设计和任务之前，Agent 绝对禁止开始编写核心逻辑代码。
+- **验证后合并**：实现完成后必须对照 Delta Specs 验证。用户验收通过后，先将 Delta 合并到主规格，再把 Change 移至 `openspec/changes/archive/{YYYY-MM-DD-change-name}/`；主规格必须反映最终实现，而非原始计划。
+- **旧 Change 只读**：OpenSpec 引入前的 Change 已归档在 `docs/changes/archive/`，仅用于历史追溯；所有新 Change 使用 `openspec/changes/`。
+- **免长流程特权**：普通文档整理、厂商报告、Skill 修补、单点参数和一句话可验收的小 bug 不强制开启 Change；若它们改变主规格中的行为，仍必须更新相应 Spec。
+- **经验提炼与闭环**：归档后如产生长期可复用的工程经验，应主动建议提炼到 `.opencode/skills/`，不得把一次性需求细节写入 Skill。
 
 ---
 

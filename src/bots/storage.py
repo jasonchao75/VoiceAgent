@@ -13,6 +13,7 @@ from src.bots.models import BotConfigFields, BotRecord
 
 _COLUMNS = (
     "id, name, asr_provider, tts_provider, tts_voice, llm_provider, llm_base_url, llm_model, "
+    "reasoning_mode, "
     "system_prompt, opening_script, encrypted_deepgram_key, encrypted_llm_key, "
     "created_at, updated_at"
 )
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS bots (
     llm_provider TEXT NOT NULL,
     llm_base_url TEXT NOT NULL,
     llm_model TEXT NOT NULL,
+    reasoning_mode TEXT NOT NULL DEFAULT 'lowest_latency',
     system_prompt TEXT NOT NULL,
     opening_script TEXT NOT NULL,
     encrypted_deepgram_key TEXT,
@@ -58,6 +60,14 @@ class BotStore:
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
         async with aiosqlite.connect(self._db_path) as db:
             await db.execute(_CREATE_TABLE)
+            columns = {
+                row[1] for row in await (await db.execute("PRAGMA table_info(bots)")).fetchall()
+            }
+            if "reasoning_mode" not in columns:
+                await db.execute(
+                    "ALTER TABLE bots ADD COLUMN reasoning_mode TEXT NOT NULL "
+                    "DEFAULT 'lowest_latency'"
+                )
             await db.commit()
 
     async def list(self) -> list[BotRecord]:
@@ -93,7 +103,8 @@ class BotStore:
         )
         async with aiosqlite.connect(self._db_path) as db:
             await db.execute(
-                f"INSERT INTO bots ({_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                f"INSERT INTO bots ({_COLUMNS}) VALUES "
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 tuple(record.model_dump()[column.strip()] for column in _COLUMNS.split(",")),
             )
             await db.commit()
