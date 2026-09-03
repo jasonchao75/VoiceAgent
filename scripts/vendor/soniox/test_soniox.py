@@ -7,11 +7,16 @@ import logging
 import argparse
 import asyncio
 import websockets
+import ssl
 from datetime import datetime
+from pathlib import Path
+
+import certifi
 from dotenv import load_dotenv
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--audio', type=str, required=True)
+parser.add_argument('--result-json', type=Path)
 args = parser.parse_args()
 
 AUDIO_FILE = args.audio
@@ -22,7 +27,6 @@ os.makedirs(logs_dir, exist_ok=True)
 audio_filename = os.path.splitext(os.path.basename(AUDIO_FILE))[0]
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 log_file = os.path.join(logs_dir, f"{audio_filename}_{timestamp}.log")
-CSV_RECORD_FILE = os.path.join(base_dir, 'soniox_test_records.csv')
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,18 +49,28 @@ CONFIG_PATH = os.path.join(base_dir, '../../../configs/vendor/soniox/config.json
 with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
     config = json.load(f)
 
-config["api_key"] = SONIOX_API_KEY
+LOCAL_CONFIG_KEYS = {
+    "endpoint",
+    "chunk_size_ms",
+    "open_timeout_seconds",
+    "close_timeout_seconds",
+}
 
-async def send_audio(websocket, wf, chunk_size_ms):
-    safe_config = {**config, "api_key": "***"}
+async def send_audio(websocket, wf, chunk_size_ms, timing):
+    request_config = {
+        key: value for key, value in config.items() if key not in LOCAL_CONFIG_KEYS
+    }
+    request_config["api_key"] = SONIOX_API_KEY
+    safe_config = {**request_config, "api_key": "***"}
     logging.info(f"Sending initial config: {json.dumps(safe_config)}")
-    await websocket.send(json.dumps(config))
+    await websocket.send(json.dumps(request_config))
     
     sample_rate = config["sample_rate"]
     chunk_frames = int(sample_rate * (chunk_size_ms / 1000.0))
     
     await asyncio.sleep(0.1)
     logging.info("Starting to send audio data...")
+    timing["first_audio_sent_at"] = time.monotonic()
     while True:
         data = wf.readframes(chunk_frames)
         if not data:
@@ -67,9 +81,10 @@ async def send_audio(websocket, wf, chunk_size_ms):
     logging.info("Audio transmission finished. Sending empty string...")
     await websocket.send("")
 
-async def receive_results(websocket, start_time):
+async def receive_results(websocket, timing):
     full_transcript = []
     first_packet = True
+    first_result_latency_ms = None
     
     final_tokens = []
     last_printed_non_final = ""
@@ -88,8 +103,13 @@ async def receive_results(websocket, start_time):
                     if token.get("is_final"):
                         final_tokens.append(token["text"])
                         if first_packet:
-                            delay = time.time() - start_time
-                            logging.info(f"First partial result delay: {delay:.3f}s")
+                            first_result_latency_ms = (
+                                time.monotonic() - timing["first_audio_sent_at"]
+                            ) * 1000.0
+                            logging.info(
+                                "First partial result delay: %.3fs",
+                                first_result_latency_ms / 1000.0,
+                            )
                             first_packet = False
                         
                         if token["text"] == "<end>" or token["text"] == "<fin>":
@@ -104,8 +124,13 @@ async def receive_results(websocket, start_time):
                         
             if non_final_tokens:
                 if first_packet:
-                    delay = time.time() - start_time
-                    logging.info(f"First partial result delay: {delay:.3f}s")
+                    first_result_latency_ms = (
+                        time.monotonic() - timing["first_audio_sent_at"]
+                    ) * 1000.0
+                    logging.info(
+                        "First partial result delay: %.3fs",
+                        first_result_latency_ms / 1000.0,
+                    )
                     first_packet = False
                 current_partial = "".join(final_tokens).replace("<end>", "").replace("<fin>", "") + "".join(non_final_tokens)
                 if current_partial != last_printed_non_final and current_partial.strip():
@@ -124,44 +149,52 @@ async def receive_results(websocket, start_time):
             logging.info(f"[Final]: {final_text}")
             full_transcript.append(final_text.strip())
             
-    return " ".join(full_transcript)
+    return " ".join(full_transcript), first_result_latency_ms
 
 async def run_test():
     wf = wave.open(AUDIO_FILE, 'rb')
     config["sample_rate"] = wf.getframerate()
     
-    start_time = time.time()
-    endpoint = "wss://stt-rt.soniox.com/transcribe-websocket"
-    import ssl
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    endpoint = config["endpoint"]
+    ssl_context = ssl.create_default_context(cafile=certifi.where())
+    timing = {}
     
     logging.info(f"Connecting to {endpoint}")
     try:
-        async with websockets.connect(endpoint, ssl=ssl_context) as websocket:
-            send_task = asyncio.create_task(send_audio(websocket, wf, 20))
-            receive_task = asyncio.create_task(receive_results(websocket, start_time))
-            _, final_text = await asyncio.gather(send_task, receive_task)
+        async with websockets.connect(
+            endpoint,
+            ssl=ssl_context,
+            open_timeout=float(config["open_timeout_seconds"]),
+            close_timeout=float(config["close_timeout_seconds"]),
+        ) as websocket:
+            send_task = asyncio.create_task(
+                send_audio(websocket, wf, int(config["chunk_size_ms"]), timing)
+            )
+            receive_task = asyncio.create_task(receive_results(websocket, timing))
+            _, receive_result = await asyncio.gather(send_task, receive_task)
+            final_text, first_result_latency_ms = receive_result
             
             logging.info("\n" + "="*50)
             logging.info("=== FULL TRANSCRIPT SEGMENT ===")
             logging.info(final_text)
             logging.info("="*50 + "\n")
             
-            os.makedirs(os.path.dirname(CSV_RECORD_FILE), exist_ok=True)
-            file_exists = os.path.exists(CSV_RECORD_FILE)
-            with open(CSV_RECORD_FILE, 'a', encoding='utf-8') as f:
-                if not file_exists:
-                    f.write("Audio_File,Language,Full_Transcript\n")
-                safe_transcript = final_text.replace('"', '""')
-                filename = os.path.basename(AUDIO_FILE)
-                lang = ",".join(config.get("language_hints", []))
-                f.write(f'"{filename}","{lang}","{safe_transcript}"\n')
-            logging.info(f"Test record appended to CSV: {CSV_RECORD_FILE}")
+            result = {
+                "audio_file": os.path.basename(AUDIO_FILE),
+                "language": ",".join(config.get("language_hints", [])),
+                "transcript": final_text,
+                "first_result_latency_ms": first_result_latency_ms,
+            }
+            if args.result_json:
+                args.result_json.parent.mkdir(parents=True, exist_ok=True)
+                args.result_json.write_text(
+                    json.dumps(result, ensure_ascii=False), encoding="utf-8"
+                )
+            return result
             
     except Exception as e:
         logging.error(f"WebSocket connection failed: {e}")
+        raise
 
 if __name__ == "__main__":
     asyncio.run(run_test())
