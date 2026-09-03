@@ -54,8 +54,8 @@
 
 ## 7. Public Deployment
 
-- [ ] 用户确认后：服务器 `.env` 补随机 `VOICE_AGENT_STORAGE_KEY`，`docker compose up -d`
-- [ ] 提醒用户把主密钥备份到密码管理器
+- [x] 用户确认后：服务器 `.env` 补随机 `VOICE_AGENT_STORAGE_KEY`，`docker compose up -d`
+- [x] 提醒用户把主密钥备份到密码管理器
 - [ ] 公网完成 Bot 全流程人工验收（建 Bot 存 Key → 免填开打 → 重启保留）
 
 ## 8. Closeout
