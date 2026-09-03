@@ -506,12 +506,15 @@ def create_app() -> FastAPI:
         config = await _resolve_diagnostic(request)
         result = await run_llm_diagnostic(config)
         logger.info(
-            "llm_diagnostic diagnostic_id=%s provider=%s host=%s model=%s category=%s",
+            "llm_diagnostic diagnostic_id=%s provider=%s host=%s model=%s "
+            "category=%s error_type=%s provider_code=%s",
             result.diagnostic_id,
             result.provider,
             result.base_url_host,
             result.model,
             result.category,
+            result.error_type or "none",
+            result.provider_error_code or "none",
         )
         return result
 

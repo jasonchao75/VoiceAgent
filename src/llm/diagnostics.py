@@ -45,6 +45,10 @@ class LLMDiagnosticResult(BaseModel):
     reasoning_control: str | None = None
     reasoning_tokens: int | None = None
     reasoning_status: ReasoningStatus
+    # Safe debugging metadata; never includes request bodies, keys, or headers.
+    http_status: int | None = None
+    error_type: str | None = None
+    provider_error_code: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,6 +107,33 @@ def classify_llm_failure(exc: Exception) -> tuple[str, str, str]:
         "The provider returned an unexpected error.",
         "Use the diagnostic ID to correlate server logs.",
     )
+
+
+def extract_error_meta(exc: Exception) -> tuple[int | None, str, str | None]:
+    """Extract safe, non-sensitive error metadata for debugging.
+
+    Returns the HTTP status code (if reported by the SDK), the exception class
+    name, and any provider-specific error code. Full messages and response
+    bodies are intentionally excluded to avoid leaking keys or request data.
+    """
+    status = getattr(exc, "status_code", None)
+    error_type = type(exc).__name__
+    provider_code = getattr(exc, "code", None)
+
+    # Some SDKs nest the error code inside a response attribute.
+    if provider_code is None:
+        response = getattr(exc, "response", None)
+        if response is not None:
+            provider_code = getattr(response, "code", None)
+            if status is None:
+                status = getattr(response, "status_code", None) or getattr(response, "status", None)
+
+    if isinstance(provider_code, int):
+        provider_code = str(provider_code)
+    elif not isinstance(provider_code, str):
+        provider_code = None
+
+    return status, error_type, provider_code
 
 
 def _reasoning_result(
@@ -224,6 +255,7 @@ async def run_llm_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
         )
     except Exception as exc:
         category, summary, suggestion = classify_llm_failure(exc)
+        http_status, error_type, provider_code = extract_error_meta(exc)
         control, reasoning_status = _reasoning_result(
             provider=config.provider, model=config.model, reasoning_tokens=None
         )
@@ -239,4 +271,7 @@ async def run_llm_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
             total_ms=round((time.monotonic() - started) * 1000, 1),
             reasoning_control=control,
             reasoning_status=reasoning_status,
+            http_status=http_status,
+            error_type=error_type,
+            provider_error_code=provider_code,
         )
