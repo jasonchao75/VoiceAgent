@@ -143,8 +143,10 @@ class CallCapture:
                 tts_first_audio,
                 playback,
             ]
-            if all(v is not None for v in breakdown):
-                e2e = round(sum(breakdown), 1)
+            complete_breakdown = [value for value in breakdown if value is not None]
+            e2e: float | None
+            if len(complete_breakdown) == len(breakdown):
+                e2e = round(sum(complete_breakdown), 1)
             else:
                 e2e = _difference(state.browser_playback_ms, state.user_stop_ms)
             metrics.append(

@@ -48,14 +48,14 @@ class SessionTimingObserver(BaseObserver):
 
     async def on_push_frame(self, data: FramePushed) -> None:
         """Map significant Pipecat frames to safe timing events."""
-        # The frame sink (e.g. CallCapture) must see every frame so it can track
-        # per-turn state transitions; deduplication is only for our own logging.
-        if self._frame_sink is not None:
-            self._frame_sink(data.frame)
-
+        # A frame is observed at every processor boundary. Capture it once by
+        # frame ID so transcripts, text chunks, and turn transitions are not
+        # duplicated as the same frame traverses the pipeline.
         if data.frame.id in self._seen_frames:
             return
         self._seen_frames.add(data.frame.id)
+        if self._frame_sink is not None:
+            self._frame_sink(data.frame)
 
         event: str | None = None
         if isinstance(data.frame, UserStartedSpeakingFrame):

@@ -12,7 +12,12 @@ from src.observability import SessionEventBuffer, SessionTimingObserver
 async def test_interruption_and_tts_audio_are_recorded_once_per_frame() -> None:
     """Expose timing signals without storing transcript text or audio bytes."""
     buffer = SessionEventBuffer()
-    observer = SessionTimingObserver(session_id="safe-session-id", event_sink=buffer.add)
+    captured_frames: list[object] = []
+    observer = SessionTimingObserver(
+        session_id="safe-session-id",
+        event_sink=buffer.add,
+        frame_sink=captured_frames.append,
+    )
     processor = FrameProcessor(name="test-processor")
     frames = [
         InterruptionFrame(),
@@ -32,3 +37,4 @@ async def test_interruption_and_tts_audio_are_recorded_once_per_frame() -> None:
     events = buffer.snapshot()
     assert [event["event"] for event in events] == ["interruption", "tts_first_audio"]
     assert all("audio" not in event for event in events)
+    assert captured_frames == frames

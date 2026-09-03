@@ -58,15 +58,18 @@ def test_single_turn_produces_one_metric(capture: CallCapture) -> None:
     assert metric.playback_ms is not None
     assert metric.turn_to_playback_ms is not None
     # Breakdown chain must sum to the end-to-end latency.
-    assert round(
-        metric.asr_final_latency_ms
-        + metric.llm_request_splicing_ms
-        + metric.llm_first_token_ms
-        + metric.tts_initial_ms
-        + metric.tts_first_audio_ms
-        + metric.playback_ms,
-        1,
-    ) == metric.turn_to_playback_ms
+    assert (
+        round(
+            metric.asr_final_latency_ms
+            + metric.llm_request_splicing_ms
+            + metric.llm_first_token_ms
+            + metric.tts_initial_ms
+            + metric.tts_first_audio_ms
+            + metric.playback_ms,
+            1,
+        )
+        == metric.turn_to_playback_ms
+    )
 
 
 def test_duplicate_vad_stops_do_not_create_ghost_turns(capture: CallCapture) -> None:
@@ -90,15 +93,18 @@ def test_duplicate_vad_stops_do_not_create_ghost_turns(capture: CallCapture) -> 
     assert metric.llm_first_token_ms is not None
     assert metric.tts_first_audio_ms is not None
     assert metric.turn_to_playback_ms is not None
-    assert round(
-        metric.asr_final_latency_ms
-        + metric.llm_request_splicing_ms
-        + metric.llm_first_token_ms
-        + metric.tts_initial_ms
-        + metric.tts_first_audio_ms
-        + metric.playback_ms,
-        1,
-    ) == metric.turn_to_playback_ms
+    assert (
+        round(
+            metric.asr_final_latency_ms
+            + metric.llm_request_splicing_ms
+            + metric.llm_first_token_ms
+            + metric.tts_initial_ms
+            + metric.tts_first_audio_ms
+            + metric.playback_ms,
+            1,
+        )
+        == metric.turn_to_playback_ms
+    )
 
 
 def test_two_distinct_utterances_produce_two_metrics(capture: CallCapture) -> None:
@@ -152,9 +158,7 @@ def test_opening_script_tts_does_not_create_user_turn(capture: CallCapture) -> N
     assert metrics[0].turn_index == 0
 
 
-def test_latency_chain_sums_to_e2e(
-    capture: CallCapture, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_latency_chain_sums_to_e2e(capture: CallCapture, monkeypatch: pytest.MonkeyPatch) -> None:
     """The full breakdown must telescope exactly to turn_to_playback_ms."""
     capture.started = 0.0
     # Timestamps for: user_start, user_stop, asr_final, llm_request, llm_first,
