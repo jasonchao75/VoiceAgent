@@ -1,0 +1,801 @@
+﻿Benchmark ID,Category,Dialect,Domain,Critical Label,Annotation Text(spoken form),Annotation Text (with code-switching),wav
+ARB-0001,Base,Omani Arabic,Finance,None,السلام عليكم، باغي أفتح عندكم حساب توفير جديد بفرع السيب، مو الأوراق اللي لازم أجيبها معاي وأنا جاي؟,,audio/omani/1.wav
+ARB-0002,Corner,Omani Arabic,Finance,Financial Number,هلا وغلا، الحساب التوفير يحتاج البطاقة الشخصية وإثبات الراتب فقط، وتقدر تفتحه بخمسين ريال بس.,,audio/omani/2.wav
+ARB-0003,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration; Long Utterance; Disfluency,والله تو مسوي تحويل من حسابي لأخوي في صلالة وما وصله المبلغ لين ألحين، صار له الموضوع يومين والفلوس محجوزة.,,audio/omani/3.wav
+ARB-0004,Corner,Omani Arabic,Finance,Date/Time/Duration; Numeric Identifier,زين، عطني رقم الحساب وبتحقق لك عن الحوالة، عادةً التحويل الداخلي ما ياخذ أكثر من دقيقتين.,,audio/omani/4.wav
+ARB-0005,Corner,Omani Arabic,Finance,Financial Number,أبغى أسحب ألف وخمسمية ريال، بس الصراف اللي قدام البيت في الخوض خربان، هين أقرب صراف لي؟,,audio/omani/5.wav
+ARB-0006,Corner,Omani Arabic,Finance,General Number; Loanword,في صراف ثاني عند مجمع السيتي سنتر في الموالح، وبعد في واحد جنب محطة البترول على شارع السلطان قابوس.,,audio/omani/6.wav
+ARB-0007,Corner,Omani Arabic,Finance,Financial Number,صباح الخير، بغيت أستفسر عن قرض السيارات، أنا راتبي سبعمية ريال وشغال في شركة حكومية من خمس سنوات.,,audio/omani/7.wav
+ARB-0008,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number,بالنسبة لقرض السيارات نعطيك لين خمسة وعشرين ألف ريال، والفايدة عندنا أربعة ونص في المية متناقصة.,,audio/omani/8.wav
+ARB-0009,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Disfluency; Numeric Ambiguity - Review,لا والله هالفايدة واجد عليي، البنك الثاني في روي عرض عليي ثلاثة وثمانين من عشرة بس.,,audio/omani/9.wav
+ARB-0010,Corner,Omani Arabic,Finance,Date/Time/Duration,البطاقة مالي انتهت من شهر مارس وما وصلتني بعدها البطاقة الجديدة، مع إني حدثت عنواني قبل شهرين.,,audio/omani/10.wav
+ARB-0011,Corner,Omani Arabic,Finance,Date/Time/Duration,ولا يهمك، بنطلع لك بطاقة بديلة وبتوصلك فرع مطرح خلال خمسة أيام عمل إن شاء الله.,,audio/omani/11.wav
+ARB-0012,Base,Omani Arabic,Finance,None,هلا أخوي، مو أخبارك؟ باغي أعرف كم رصيدي لأنه الرسالة النصية ما توصلني من أسبوع.,,audio/omani/12.wav
+ARB-0013,Base,Omani Arabic,Finance,None,أنا ساكن في نزوى ولازم أروح مسقط كل مرة عشان المعاملات، ما عندكم فرع أقرب من ذي المسافة؟,,audio/omani/13.wav
+ARB-0014,Corner,Omani Arabic,Finance,General Number,ايوه شيء عندنا فرع في نزوى نفسها جنب السوق القديم، يفتح من الثمانية الصبح لين ثنتين الظهر.,,audio/omani/14.wav
+ARB-0015,Base,Omani Arabic,Finance,None,مشكور، وأنا ترا حولت راتبي لبنككم من أول الشهر وباغي أعرف متى تنزل بطاقة الائتمان مالي.,,audio/omani/15.wav
+ARB-0016,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,راتبك نزل يوم خمسة وعشرين من الشهر، وبطاقة الائتمان بتكون جاهزة بعد أسبوعين إن شاالله.,,audio/omani/16.wav
+ARB-0017,Corner,Omani Arabic,Finance,Disfluency,والله يا أخوي أنا كبير في السن وما أعرف أستخدمها ذي التطبيقات، اتقدروا تساعدوني أسوي المعاملة من الفرع؟,,audio/omani/17.wav
+ARB-0018,Corner,Omani Arabic,Finance,Long Utterance,أكيد من حقك تراه، تفضل اجلس وايجيك تو الموظف يخلص لك كل شي، وبعدين إذا بغيت عادي انعلمك على التطبيق.,,audio/omani/18.wav
+ARB-0019,Corner,Omani Arabic,Finance,Financial Number,السلام عليكم، انسحب من حسابي مبلغ مية وعشرين ريال ما أعرف من هين، أبغى أعرف مال مو ذي العملية.,,audio/omani/19.wav
+ARB-0020,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,اشيك تو عليه، ذا قسط التأمين اللي مسجلنه من شهر ديسمبر اللي راح، وينسحب كل ستة أشهر مرة.,,audio/omani/20.wav
+ARB-0021,Base,Omani Arabic,Finance,None,أنا بسافر بريطانيا الأسبوع اللي يجي وأبغى أفعّل البطاقة عشان الاستخدام الدولي، وكم رسوم السحب من هناك؟,,audio/omani/21.wav
+ARB-0022,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Loanword,رسوم السحب الدولي ثلاثة في المية من المبلغ، وأنصحك تاخذ معاك شوية كاش عشان ما تتعب.,,audio/omani/22.wav
+ARB-0023,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,باغي أفتح وديعة ثابتة بعشرة آلاف ريال، كم نسبة الفايدة إذا حطيتها لمدة سنتين عندكم؟,,audio/omani/23.wav
+ARB-0024,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,الوديعة لمدة سنتين فايدتها أربعة في المية، وإذا مديتها لخمس سنوات توصل خمسة وربع.,,audio/omani/24.wav
+ARB-0025,Corner,Omani Arabic,Finance,Disfluency,والله الشيك اللي عطاني إياه صاحب الشغل رجع مرتد، وأنا محتاج هالفلوس ضروري قبل عن نهاية الشهر.,,audio/omani/25.wav
+ARB-0026,Base,Omani Arabic,Finance,None,ما عليه أخوي، الشيك رجع لأن التوقيع مالك ما مطابق، خله يراجع فرعه في صحار ويحدث توقيعه.,,audio/omani/26.wav
+ARB-0027,Base,Omani Arabic,Finance,None,هلا، أبغى أغير رقم تلفوني المسجل في البنك لأني بدلت الشريحة مالي، وما قادر أدخل التطبيق.,,audio/omani/27.wav
+ARB-0028,Base,Omani Arabic,Finance,None,اهلين اخوي، عندي استحقاق بيت في بركاء وبغيت أعرف تفاصيل التمويل العقاري وكم أقصى مدة حال السداد.,,audio/omani/28.wav
+ARB-0029,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,التمويل العقاري عندنا يوصل لين مية وخمسين ألف ريال، والسداد على خمسة وعشرين سنة كحد أقصى.,,audio/omani/29.wav
+ARB-0030,Base,Omani Arabic,Finance,None,زين والله، عجب بمر عليكم الفرع يوم الأحد اللي تجي إن شاء الله وعاد اجيبلكم كل الأوراق.,,audio/omani/30.wav
+ARB-0031,Base,Omani Arabic,Finance,None,صباح الخير، باغي أفتح حساب جاري في فرع الخوير، كم أقل مبلغ لازم أحطه أول شي؟,,audio/omani/31.wav
+ARB-0032,Corner,Omani Arabic,Finance,Financial Number,اهلين اخوي، الحساب الجاري ما له حد أدنى بس ننصحك تحط مية ريال عشان تفعّل البطاقة على طول.,,audio/omani/32.wav
+ARB-0033,Corner,Omani Arabic,Finance,General Number,عندي حساب توفير من خمسة سنين وما استخدمته اللبر، سمعت إنه صار حساب خامل، كيف أرجع أفعّله؟,,audio/omani/33.wav
+ARB-0034,Corner,Omani Arabic,Finance,General Number,تقدر تفعّله بزيارة أقرب فرع ومعاك بطاقتك الشخصية، العملية ما تاخذ أكثر من عشر دقايق.,,audio/omani/34.wav
+ARB-0035,Corner,Omani Arabic,Finance,General Number,لو سمحت باغي أفتح حساب حال ولدي الصغير عمره سبع سنوات، عشان نجمّع له مصروفه من تو.,,audio/omani/35.wav
+ARB-0036,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,حساب الأطفال عندنا واجد جميل بصراحه، تحط له أي مبلغ شهري والفايدة عليه اثنين ونص في المية.,,audio/omani/36.wav
+ARB-0037,Base,Omani Arabic,Finance,None,أنا والأهل باغيين نفتح حساب مشترك عشان مصاريف البيت، لازم نحضر بأثنينّا للفرع؟,,audio/omani/37.wav
+ARB-0038,Base,Omani Arabic,Finance,None,ايوه نعم، لازم الطرفين يوقّعوا قدّام الموظف، وتقدروا تحجزوا موعد في فرع القرم عن طريق التطبيق.,,audio/omani/38.wav
+ARB-0039,Base,Omani Arabic,Finance,None,باغي أقفل حسابي عندكم لأني بنتقل أشتغل في صلالة والبنك ما عنده فرع قريب مني هناك.,,audio/omani/39.wav
+ARB-0040,Corner,Omani Arabic,Finance,General Number,لا تقفله، عندنا فرعين في صلالة، واحد في السعادة وواحد جنب السوق المركزي.,,audio/omani/40.wav
+ARB-0041,Base,Omani Arabic,Finance,None,بطاقتي ما لقيتها من أمس في سوق مطرح، باغي أوقفها قبل عن أحد يستخدمها.,,audio/omani/41.wav
+ARB-0042,Base,Omani Arabic,Finance,None,ما يهمك، تم إيقاف البطاقة تو، ولا تخاف ما في أي عملية سحب صارت عليها من أمس.,,audio/omani/42.wav
+ARB-0043,Base,Omani Arabic,Finance,None,متى توصل البطاقة الجديدة؟ لأني محتاجنها ضروري قبل عن أسافر يوم الخميس القادم.,,audio/omani/43.wav
+ARB-0044,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,البطاقة البديلة تآخذ عادة من ثلاثة لخمسة أيام عمل، بس نقدر نستعجلك إياها بخمسة ريال.,,audio/omani/44.wav
+ARB-0045,Corner,Omani Arabic,Finance,Financial Number,وصلتني رسالة إنه في عملية شراء بمية وثمانين ريال من موقع ما أعرفه، أنا ما اشتريت شي.,,audio/omani/45.wav
+ARB-0046,Base,Omani Arabic,Finance,None,طيّب زين إنك اتصلت بسرعة، تو انوقف البطاقة وانفتح لك بلاغ اعتراض على العملية.,,audio/omani/46.wav
+ARB-0047,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,حد البطاقة الائتمانية عندي ألفين ريال، أقدر أرفعه لثلاثة آلاف؟ راتبي زايد عاد من شهرين.,,audio/omani/47.wav
+ARB-0048,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,ايو طبعاً، بس نحتاج منك شهادة راتب جديدة من شغلك ونرد عليك خلال يومين عمل.,,audio/omani/48.wav
+ARB-0049,Base,Omani Arabic,Finance,None,كيف أفعّل البطاقة الجديدة اللي وصلتني بالبريد؟ جرّبت في الصرّاف وما قبلت الرقم السري.,,audio/omani/49.wav
+ARB-0050,Base,Omani Arabic,Finance,None,أول شي لازم تتصل على الرقم المجاني وتفعّلها، بعدين أول عملية لازم تكون سحب من الصرّاف ما شراء.,,audio/omani/50.wav
+ARB-0051,Corner,Omani Arabic,Finance,Financial Number,باغي آخذ قرض شخصي بعشرة آلاف ريال، راتبي ستمية وخمسين وما عليّ أي التزامات غيرها.,,audio/omani/51.wav
+ARB-0052,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,جميل واجد، القرض متوافق مع راتبك، والقسط الشهري ايكون جوب مية وسبعين ريال حال مدة خمس سنين.,,audio/omani/52.wav
+ARB-0053,Base,Omani Arabic,Finance,None,عندي قرض في بنك ثاني وباغي أحوّله عندكم، سمعت إن الفايدة عندكم أقل، ايش بالضبط الإجراءات؟,,audio/omani/53.wav
+ARB-0054,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number,نطلب منك كتاب مديونية من البنك الثاني، وبعدين نسدّد عنك ونحوّل القرض علينا بفايدة أربعة في المية.,,audio/omani/54.wav
+ARB-0055,Base,Omani Arabic,Finance,None,متى ينزل قرار قرض السيارة؟ قدّمت الطلب عاد من أسبوع في فرع صحار وماحد ردّ عليي إلى تو.,,audio/omani/55.wav
+ARB-0056,Base,Omani Arabic,Finance,None,أعتذر عن التأخير، طلبك في المرحلة الأخيرة وايوصلك اتصال من قسم القروض باكر الصبح إن شاء الله.,,audio/omani/56.wav
+ARB-0057,Corner,Omani Arabic,Finance,Financial Number,باغي أسدّد القرض كامل قبل عن يخلص وقته، باقي عليي أربعة آلاف ريال، فيه رسوم سداد مبكر؟,,audio/omani/57.wav
+ARB-0058,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Disfluency,رسوم السداد المبكر واحد في المية من المبلغ المتبقي، يعني اتدفع أربعين ريال زيادة بس.,,audio/omani/58.wav
+ARB-0059,Corner,Omani Arabic,Finance,Disfluency,والله ظروفي صعبة ذا الشهر وما أقدر أدفع القسط، ممكن تأجّلولي إياه لقسط شهر أغسطس؟,,audio/omani/59.wav
+ARB-0060,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,ايوه، ممكن نأجّل لك قسط واحد في السنة، بس لازم تقدّم طلب رسمي قبل عن يجي تاريخ الاستقطاع بأسبوع.,,audio/omani/60.wav
+ARB-0061,Base,Omani Arabic,Finance,None,كم تآخذ التحويلة من حسابي عندكم لبنك ثاني داخل عُمان؟,,audio/omani/61.wav
+ARB-0062,Corner,Omani Arabic,Finance,Date/Time/Duration,التحويلة المحلية توصل بنفس اليوم إذا سوّيتها قبل الساعة ثنتين الظهر، وإذا بعدها اتوصل ثاني يوم عمل.,,audio/omani/62.wav
+ARB-0063,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,باغي أفتح وديعة بعشرة آلاف ريال لمدة سنة، كم الفايدة اللي اتعطوني إياها؟,,audio/omani/63.wav
+ARB-0064,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,الفايدة على الوديعة لمدة سنة أربعة ونص في المية، واتنزل لك دفعة وحدة في نهاية المدة.,,audio/omani/64.wav
+ARB-0065,Base,Omani Arabic,Finance,None,إذا احتجت أكسر الوديعة قبل السنة، مو اللي ايصير؟ اتروح كل الفايدة؟,,audio/omani/65.wav
+ARB-0066,Corner,Omani Arabic,Finance,Percentage/Interest Rate,إذا كسرتها قبل ستة شهور ما اتاخذ أي فايدة، وإذا بعد ستة شهور اتاخذ نص الفايدة المتفق عليها.,,audio/omani/66.wav
+ARB-0067,Base,Omani Arabic,Finance,None,بطاقتي الائتمانية ضاعت مني في السوق أمس، واجد خايف حد يستخدمها.,,audio/omani/67.wav
+ARB-0068,Corner,Omani Arabic,Finance,Date/Time/Duration; Numeric Identifier; Long Utterance,تقدر توقف البطاقة من التطبيق بأي وقت وسهل أو اتصل على الرقم المجاني، وعاد انصدر لك بطاقة جديدة خلال ثلاثة أيام عمل.,,audio/omani/68.wav
+ARB-0069,Corner,Omani Arabic,Finance,Financial Number,كم الحد الأعلى للبطاقة الائتمانية اللي أقدر أطلبها براتب ثمانمية ريال؟,,audio/omani/69.wav
+ARB-0070,Corner,Omani Arabic,Finance,Financial Number; Disfluency,الحد الأعلى ثلاث مرات الراتب، يعني تقدر تاخذ بطاقة بحد ألفين وأربعمية ريال.,,audio/omani/70.wav
+ARB-0071,Corner,Omani Arabic,Finance,Financial Number,جاتني رسالة إنه فيه عملية شرا بمبلغ ثلاثمية ريال من موقع ما أعرفه، وأنا ما سوّيت أي شي.,,audio/omani/71.wav
+ARB-0072,Corner,Omani Arabic,Finance,Date/Time/Duration,نوقف البطاقة على طول ونفتح لك بلاغ احتيال، اتوصلك المبالغ راجعة خلال ثلاثين يوم عمل.,,audio/omani/72.wav
+ARB-0073,Base,Omani Arabic,Finance,None,باغي أحوّل مبلغ لأخوي في دبي، كم الرسوم وكم اتاخذ التحويلة اتوصل؟,,audio/omani/73.wav
+ARB-0074,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,الرسوم خمسه ريال ثابته، والتحويله اتوصل خلال يوم عمل واحد على أكثر شيء.,,audio/omani/74.wav
+ARB-0075,Base,Omani Arabic,Finance,None,هل عندكم خدمة تحويل مباشر للهند؟ عندي عمّال ولازم أرسل لهم كل شهر.,,audio/omani/75.wav
+ARB-0076,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,ايوه عندنا شراكة مع بنكين في الهند، والتحويلة اتوصل في نفس اليوم بدون أي رسوم إضافية.,,audio/omani/76.wav
+ARB-0077,Base,Omani Arabic,Finance,None,نسيت الرقم السري للتطبيق وما أقدر أدخل حسابي، إيش أسوّي؟,,audio/omani/77.wav
+ARB-0078,Base,Omani Arabic,Finance,None,تقدر تسترجعه من صفحة تسجيل الدخول، اضغط على نسيت الرقم السري وعاد اتبع الخطوات، اتحتاج بس رقم بطاقتك الشخصية.,,audio/omani/78.wav
+ARB-0079,Corner,Omani Arabic,Finance,Financial Number,باغي أشتري بيت بمية ألف ريال، مو شروط التمويل العقاري عندكم؟,,audio/omani/79.wav
+ARB-0080,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,التمويل العقاري مدته توصل خمسه وعشرين سنة، بفايدة ثلاثة ونص في المية، والمقدم عشرين في المية من قيمة البيت.,,audio/omani/80.wav
+ARB-0081,Corner,Omani Arabic,Finance,Financial Number,راتبي ألف ومية ريال، أقدر اخذ تمويل عقاري بخمسه وسبعين ألف ريال عُماني؟,,audio/omani/81.wav
+ARB-0082,Corner,Omani Arabic,Finance,Financial Number; Numeric Identifier,راتبك يسمح لك تاخذ إلى ستين ألف، بس إذا ضمّينا راتب زوجتك ايصير الرقم اللي طلبته.,,audio/omani/82.wav
+ARB-0083,Base,Omani Arabic,Finance,None,باغي أفتح حساب حال شركتي الصغيرة، مو الأوراق المطلوبة؟,,audio/omani/83.wav
+ARB-0084,Base,Omani Arabic,Finance,None,اتحتاج السجل التجاري، عقد التأسيس، البطاقة الشخصية للشركاء، والتوقيع المعتمد من الغرفة التجارية.,,audio/omani/84.wav
+ARB-0085,Base,Omani Arabic,Finance,None,كم الحد الأدنى للحساب التجاري ومو هي الرسوم الشهرية عليه؟,,audio/omani/85.wav
+ARB-0086,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,الحد الأدنى خمسمية ريال، والرسوم الشهرية ريالين بس، وايشمل خدمة التحويلات والبطاقة التجارية.,,audio/omani/86.wav
+ARB-0087,Base,Omani Arabic,Finance,None,باغي أطلع لعمرة الشهر الجاي، هل بطاقتي اتشتغل في السعودية ولا لا؟,,audio/omani/87.wav
+ARB-0088,Base,Omani Arabic,Finance,None,ايوه اتشتغل بدون أي مشكلة، بس اتصل علينا قبل السفر عشان ما اتتوقف بسبب الحماية.,,audio/omani/88.wav
+ARB-0089,Base,Omani Arabic,Finance,None,كم الرسوم على السحب من الصرّاف في السعودية؟,,audio/omani/89.wav
+ARB-0090,Corner,Omani Arabic,Finance,Financial Number,الرسوم ريال واحد لكل عملية سحب، ونصيحة اسحب مبلغ كبير مرة وحدة عشان ما تدفع رسوم كل مره.,,audio/omani/90.wav
+ARB-0091,Corner,Omani Arabic,Finance,Loanword,جربت أدفع أونلاين في موقع أمريكي وما قبلت البطاقة، ليش؟,,audio/omani/91.wav
+ARB-0092,Base,Omani Arabic,Finance,None,لازم تفعّل خاصية الشراء الدولي من التطبيق، اتلقاها في إعدادات البطاقة، وتقدر بمره تفعّلها بضغطة زر.,,audio/omani/92.wav
+ARB-0093,Base,Omani Arabic,Finance,None,باغي أخلي زوجتي وأولادي على حسابي، ممكن أعطيهم بطاقات ثانوية؟,,audio/omani/93.wav
+ARB-0094,Base,Omani Arabic,Finance,None,ايوه ممكن، تقدر تعطي حرمتك بطاقة إضافية بنفس حدك، والأولاد لهم بطاقات مصروف بحد شهري تحدّده عاد أنت.,,audio/omani/94.wav
+ARB-0095,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,راتبي متعود يوصل حسابي كل شهر خمسة وعشرين، ممكن أطلب سلفة إذا خلصت فلوسي قبل الراتب؟,,audio/omani/95.wav
+ARB-0096,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,عندنا خدمة السلفة على الراتب، تاخذ إلى خمسين في المية من راتبك مقدّم، بفايدة بسيطة وتسدّدها يوم يوصلك الراتب.,,audio/omani/96.wav
+ARB-0097,Base,Omani Arabic,Finance,None,نزّلت التطبيق الجديد وما أعرف كيف أفعّله، خطواته معقّدة واجد بصراحه.,,audio/omani/97.wav
+ARB-0098,Base,Omani Arabic,Finance,None,سهل واجد، دخّل رقم بطاقتك الشخصية، بعدها ايوصلك رمز على جوالك، حطّه واختار رقم سري جديد وخلاص جاهز.,,audio/omani/98.wav
+ARB-0099,Base,Omani Arabic,Finance,None,هل التطبيق يشتغل بدون إنترنت لو أبا أشوف رصيدي بس؟,,audio/omani/99.wav
+ARB-0100,Base,Omani Arabic,Finance,None,لأ لازم إنترنت، بس بعض العمليات الأساسية كما الرصيد اتحفظها آخر مرة دخلت فيها التطبيق.,,audio/omani/100.wav
+ARB-0101,Base,Omani Arabic,Finance,None,باغي أسوّي تحويل تلقائي شهري لحساب توفير الأولاد، يستوي أضبطه من التطبيق؟,,audio/omani/101.wav
+ARB-0102,Base,Omani Arabic,Finance,None,ايوه ينفع، إدخل قسم التحويلات المجدولة، اختار الحساب المستفيد والمبلغ والتاريخ، وعاد التحويله اتنزل كل شهر بدون ما تعيدها.,,audio/omani/102.wav
+ARB-0103,Base,Omani Arabic,Finance,None,باغي أعرف كم صرفت ذا الشهر من البطاقة، فيه خدمة تحلّل لي مصاريفي؟,,audio/omani/103.wav
+ARB-0104,Corner,Omani Arabic,Finance,Long Utterance,ايوه التطبيق فيه قسم كامل اسمه تحليل المصاريف، اتشوف فيه صرفك مقسّم بالفئات: أكل، سفر، تسوّق، بنزين وواجد فئات غيرهن.,,audio/omani/104.wav
+ARB-0105,Base,Omani Arabic,Finance,None,كم مرة أقدر أسحب من مكينة الصراف في اليوم الواحد؟ لأني باغي أسحب مبلغ كبير حال زواجي.,,audio/omani/105.wav
+ARB-0106,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration; Loanword,الحد اليومي ألف ريال، بس إذا احتجت أكثر تقدر تجي أي فرع وتسحب مبلغ أكبر مباشرةً سيده من الكاونتر.,,audio/omani/106.wav
+ARB-0107,Base,Omani Arabic,Finance,None,جايتني رسالة إنه في محاولة دخول لحسابي من جهاز غريب، مو أسوّي؟,,audio/omani/107.wav
+ARB-0108,Base,Omani Arabic,Finance,None,غيّر رقمك السري بمره من التطبيق، وإذا شكّيت في شي اتصل علينا وعاد نحنا نجمّد الحساب إلين ما نتأكد.,,audio/omani/108.wav
+ARB-0109,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,باغي أرفع الحد اليومي للسحب من ألف لثلاثة آلاف؟ راتبي زايد عاد من شهرين.,,audio/omani/109.wav
+ARB-0110,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,ايوه طبعاً، بس نحتاج منك شهادة راتب جديدة من شغلك ونرد عليك خلال يومين عمل.,,audio/omani/110.wav
+ARB-0111,Corner,Omani Arabic,Finance,Financial Number; Date/Time/Duration,جميل واجد، القرض متوافق مع راتبك، والقسط الشهري يكون جوب ميه وسبعين ريال حال مدة خمس سنين.,,audio/omani/111.wav
+ARB-0112,Base,Omani Arabic,Finance,None,عندي قرض في بنك ثاني وباغي أحوّله عندكم، سمعت إن الفايدة عندكم أقل، مو بالضبط الإجراءات؟,,audio/omani/112.wav
+ARB-0113,Base,Omani Arabic,Finance,None,متى ينزل قرار قرض السيارة؟ قدّمت الطلب من أسبوع في فرع صحار وما حد ردّ علي إلى تو.,,audio/omani/113.wav
+ARB-0114,Base,Omani Arabic,Finance,None,باغي أعرف كيف أستفيد من نقاط البطاقة اللي جمعّتها، صارت واجد تو وما عارف كيف أصرفها.,,audio/omani/114.wav
+ARB-0115,Corner,Omani Arabic,Finance,Loanword,النقاط يستوي تحوّلها حال كاش يرجع لحسابك، أو تستخدمها في المحلات الشريكة معنا، أو تحوّلها لأميال طيران.,,audio/omani/115.wav
+ARB-0116,Base,Omani Arabic,Finance,None,كم نقطة أخذ على كل ريال أصرفه بالبطاقة؟,,audio/omani/116.wav
+ARB-0117,Corner,Omani Arabic,Finance,Financial Number,على كل ريال ياخذك نقطة وحدة، وإذا تم الشراء من محلاتنا الشريكة اتآخذ نقطتين مضاعفة غيرهن.,,audio/omani/117.wav
+ARB-0118,Base,Omani Arabic,Finance,None,باغي ألغي بطاقتي الائتمانية، ما احتاجها عاد، مو الخطوات بالضبط؟,,audio/omani/118.wav
+ARB-0119,Base,Omani Arabic,Finance,None,اتحتاج تسدّد كل المبلغ اللي عليك، بعدين تجي الفرع وتوقّع على طلب الإلغاء، والبطاقة اتلتغي بنفس اليوم.,,audio/omani/119.wav
+ARB-0120,Base,Omani Arabic,Finance,None,هل في رسوم إذا لغيت البطاقة قبل عن تكمل سنة؟,,audio/omani/120.wav
+ARB-0121,Base,Omani Arabic,Finance,None,لأ ما عندنا أي رسوم إلغاء، بس الرسوم السنوية اللي دفعتها ما اترجع لك.,,audio/omani/121.wav
+ARB-0122,Base,Omani Arabic,Finance,None,راتبي ينزل حسابي كل شهر بس باغي أوقف الاستقطاع التلقائي للقسط، يستويّ؟,,audio/omani/122.wav
+ARB-0123,Base,Omani Arabic,Finance,None,الاستقطاع التلقائي شرط في العقد وما نقدر نوقفه، بس تقدر تسدّد مبكر إذا باغي تخلص القرض بسرعه.,,audio/omani/123.wav
+ARB-0124,Base,Omani Arabic,Finance,None,بطاقتي انسحبت من الصرّاف وما رجعت لي، الجهاز أخذها، مو أسوّي بالضبط؟,,audio/omani/124.wav
+ARB-0125,Base,Omani Arabic,Finance,None,اطمن عادي، البطاقة عندنا بأمان، تقدر تجي الفرع الأقرب حالك من باكر واتاخذها ولازم تجيبي معك بطاقتك الشخصية.,,audio/omani/125.wav
+ARB-0126,Corner,Omani Arabic,Finance,Disfluency,سمعت إنه في حساب استثماري إسلامي متوافق مع الشريعة، مو يعني الفرق بينه وبين الحساب العادي؟,,audio/omani/126.wav
+ARB-0127,Base,Omani Arabic,Finance,None,الحساب الإسلامي يشتغل بنظام المضاربة، الأرباح متغيّرة حسب أداء الاستثمارات، ما شي فيه فوايد ثابتة كما الحساب العادي.,,audio/omani/127.wav
+ARB-0128,Base,Omani Arabic,Finance,None,كم الحد الأدنى للحساب الإسلامي وكم الأرباح المتوقعة سنوياً؟,,audio/omani/128.wav
+ARB-0129,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number; Date/Time/Duration,الحد الأدنى مية ريال، والأرباح المتوقعة اتراوح بين ثلاثة وأربعة في المية سنوياً على حسب السنة.,,audio/omani/129.wav
+ARB-0130,Base,Omani Arabic,Finance,None,باغي ادخل جمعية مع الجيران، فيه خدمة عندكم للجمعيات؟,,audio/omani/130.wav
+ARB-0131,Base,Omani Arabic,Finance,None,ايوه عندنا خدمة اسمها جمعيتي، تختار عدد المشتركين والمبلغ والمدة، واحنا نتكفّل بكل شي، والفلوس اتنزل حسب الدور.,,audio/omani/131.wav
+ARB-0132,Base,Omani Arabic,Finance,None,كم عدد الفروع اللي عندكم في محافظة الداخلية؟,,audio/omani/132.wav
+ARB-0133,Corner,Omani Arabic,Finance,General Number,عندنا سبعة فروع في الداخلية: نزوى، سمائل، بهلا، منح، إزكي، بدبد وأدم.,,audio/omani/133.wav
+ARB-0134,Base,Omani Arabic,Finance,None,هل فروعكم في نزوى تفتح يوم السبت؟,,audio/omani/134.wav
+ARB-0135,Corner,Omani Arabic,Finance,Date/Time/Duration,ايوه، بس الفرع الرئيسي في نزوى يفتح يوم السبت من الساعة تسع الصباح إلين اثينعشر الظهر.,,audio/omani/135.wav
+ARB-0136,Base,Omani Arabic,Finance,None,شي معكم خدمة استقبال في الفرع حال كبار السن؟ والدي كبير ومخجل يوقف بالطابور وهو ما قادر.,,audio/omani/136.wav
+ARB-0137,Corner,Omani Arabic,Finance,Loanword,ايوه، عندنا موظفين مخصّصين لكبار السن، ياخذوهم مباشرة للكاونتر بدون طابور، بس نبّهنا يوم يوصل.,,audio/omani/137.wav
+ARB-0138,Base,Omani Arabic,Finance,None,باغي أفتح حساب باسم والدتي، كبيرة في السن وما اتقدر تجي الفرع، ينفع نسوّيلها من البيت؟,,audio/omani/138.wav
+ARB-0139,Base,Omani Arabic,Finance,None,ايوه، عندنا خدمة زيارة منزلية لكبار السن، تحجز موعد من التطبيق وايجيكم حد من الموظفين البيت ياخذ التوقيعات.,,audio/omani/139.wav
+ARB-0140,Base,Omani Arabic,Finance,None,عندي شبهة في تحويلة نزلت على حسابي ما عازف مصدرها، تقدروا تو تتأكدولي منها؟,,audio/omani/140.wav
+ARB-0141,Corner,Omani Arabic,Finance,Date/Time/Duration,طبعاً ينفع، نراجع لك التحويلة ونرد عليك خلال يومين عمل، إذا طلعت غلط اترجع الفلوس لصاحبها الأصلي.,,audio/omani/141.wav
+ARB-0142,Base,Omani Arabic,Finance,None,كم الفايدة على قرض الترميم للبيت؟ باغي أرمّم بيتنا القديم.,,audio/omani/142.wav
+ARB-0143,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number,قرض الترميم فايدته ثلاثة وربع في المية، بمدة سداد اتوصل عشر سنين، والمبلغ اتاخذه إلى عشرين ألف ريال.,,audio/omani/143.wav
+ARB-0144,Corner,Omani Arabic,Finance,Disfluency,يعني الفايدة ثابتة طول مدة القرض ولا اتتغيّر؟,,audio/omani/144.wav
+ARB-0145,Base,Omani Arabic,Finance,None,عندنا خيارين: فايدة ثابتة طول المدة، أو متغيّرة اتنزل واتطلع حسب أسعار السوق، أنت تختار عاد اللي يناسبك.,,audio/omani/145.wav
+ARB-0146,Base,Omani Arabic,Finance,None,جاتني بطاقة جديدة بدون ما أطلبها، أنا شاك في الموضوع، ما طلبت أي بطاقة.,,audio/omani/146.wav
+ARB-0147,Base,Omani Arabic,Finance,None,هذي بطاقة استبدال للبطاقة القديمة اللي اتنتهي قريب فما تحاتي، لكن لازم تفعّلها يوم اتنتهي القديمة.,,audio/omani/147.wav
+ARB-0148,Corner,Omani Arabic,Finance,Numeric Identifier,نسيت رقم البطاقة السري وحاولت ثلاث مرات، والبطاقة انقفلت، مو الحل؟,,audio/omani/148.wav
+ARB-0149,Base,Omani Arabic,Finance,None,اتصل على الرقم المجاني ونعطيك رقم سري مؤقت، بعدين تقدر تغيّره من مكينة الصرّاف برقم سري اتختاره أنت.,,audio/omani/149.wav
+ARB-0150,Base,Omani Arabic,Finance,None,شيء معكم تطبيق خاص للأطفال يعلّمهم يخزنوا فلوسهم؟,,audio/omani/150.wav
+ARB-0151,Base,Omani Arabic,Finance,None,ايوه، معنت تطبيق اسمه توفيري للأطفال، يشوفوا فيه رصيدهم ويحدّدوا هدف التوفير والوالدين يتابعوا عاد معاهم.,,audio/omani/151.wav
+ARB-0152,Base,Omani Arabic,Finance,None,من كم عمر أقدر أفتح لولدي حساب توفير؟,,audio/omani/152.wav
+ARB-0153,Corner,Omani Arabic,Finance,Date/Time/Duration; Long Utterance,من عمر يوم واحد، بس تجيب معك شهادة الميلاد مال الطفل وبطاقتك الشخصية وانفتح له الحساب ويكون تحت وصايتك إلى ثمنطعشر سنة.,,audio/omani/153.wav
+ARB-0154,Corner,Omani Arabic,Finance,Financial Number,باغي أستثمر مبلغ خمسه وعشرين ألف ريال في الأسهم، عندكم خدمة استثمار؟,,audio/omani/154.wav
+ARB-0155,Base,Omani Arabic,Finance,None,ايوه، عندنا شركة استثمارية تابعة، اتلقى فيها مستشار مالي ايساعدك تختار الأسهم المناسبة حالك حسب هدفك ومستوى المخاطرة.,,audio/omani/155.wav
+ARB-0156,Base,Omani Arabic,Finance,None,كم الرسوم على شرا وبيع الأسهم عندكم؟,,audio/omani/156.wav
+ARB-0157,Corner,Omani Arabic,Finance,Percentage/Interest Rate; Financial Number,الرسوم نص في المية على كل عملية شرا أو بيع، وحد أدنى ثلاث ريال لكل عملية.,,audio/omani/157.wav
+ARB-0158,Base,Omani Arabic,Finance,None,تعطونا شهادات ادّخار للأطفال هدية للعيد؟,,audio/omani/158.wav
+ARB-0159,Corner,Omani Arabic,Finance,Financial Number; Long Utterance,ايوه، عندنا شهادات ادّخار جميلة بأسماء الأطفال، يستوي تشتريها من الفرع وتعطيهم هدية بمبلغ من عشرة ريالات إلى ألف عادي.,,audio/omani/159.wav
+ARB-0160,Base,Omani Arabic,Finance,None,عندي إيداع كبير أبا أنقله من البيت للبنك، شي عندكم خدمة نقل نقود آمنة؟,,audio/omani/160.wav
+ARB-0161,Base,Omani Arabic,Finance,None,ايوه، معنا خدمة النقل الآمن للمبالغ الكبيرة، اتحجز موعد ونجي البيت بسيارة مخصّصة وموظفين مدرّبين.,,audio/omani/161.wav
+ARB-0162,Base,Omani Arabic,Finance,None,كم الرسوم على خدمة النقل الآمن هذي؟,,audio/omani/162.wav
+ARB-0163,Corner,Omani Arabic,Finance,Financial Number; Long Utterance,الرسوم عشرين ريال حال كل عملية نقل، حتى لو كان المبلغ كبير، وبيشمل التأمين على الفلوس إلى ما اتوصل حسابك.,,audio/omani/163.wav
+ARB-0164,Corner,Omani Arabic,Finance,Loanword,سمعت إن في بطاقة مسبقة الدفع تستوي حال السفر بدون ما تاخذ فلوس كاش، صحيح ذا الخبر؟,,audio/omani/164.wav
+ARB-0165,Base,Omani Arabic,Finance,None,ايوه، عندنا بطاقة مسافر المسبقة، اتشحنها بأي مبلغ بأي عملة، ويوم تسافر عاد اتصرف منها بدون رسوم تحويل عملة.,,audio/omani/165.wav
+ARB-0166,Base,Omani Arabic,Finance,None,كم عملة أقدر أشحن على البطاقة نفسها؟,,audio/omani/166.wav
+ARB-0167,Corner,Omani Arabic,Finance,Financial Number,اتشحن إلى خمس عملات مختلفة في نفس الوقت: دولار، يورو، جنيه، درهم، وريال سعودي.,,audio/omani/167.wav
+ARB-0168,Base,Omani Arabic,Finance,None,جايتني رسالة بأن حسابي اينغلق بسبب عدم التحديث، أنا محتار ما عارف ذي صحيحة ولا لا.,,audio/omani/168.wav
+ARB-0169,Corner,Omani Arabic,Finance,Long Utterance,ما نرسل رسايل نطلب فيها معلومات كما هذي، هذي رسايل احتيال، لا تضغط على أي رابط فيها واتصل علينا مباشرة إذا شكّيت.,,audio/omani/169.wav
+ARB-0170,Base,Omani Arabic,Finance,None,إيش نصايحكم عشان ما نطيح ضحية احتيال؟,,audio/omani/170.wav
+ARB-0171,Base,Omani Arabic,Finance,None,لا تعطي أحد رقم البطاقة السري أو الرمز، والبنك ما ايطلب هذي المعلومات اللبر.,,audio/omani/171.wav
+ARB-0172,Base,Omani Arabic,Finance,None,باغي أفتح حساب للجالية الآسيوية اللي تشتغل عندي، فيه حسابات مخصّصة للعمالة؟,,audio/omani/172.wav
+ARB-0173,Base,Omani Arabic,Finance,None,ايوه عندنا حساب راتب للعمالة، بدون حد أدنى وبدون رسوم شهرية، وبطاقة سحب مجانية.,,audio/omani/173.wav
+ARB-0174,Base,Omani Arabic,Finance,None,جايتني مكالمة قالولي فيها إنهم من البنك وباغيين رقم بطاقتي، من هذلا؟,,audio/omani/174.wav
+ARB-0175,Corner,Omani Arabic,Finance,Long Utterance,لأ أبداً، البنك ما ايتصل يطلب كما هذي المعلومات، هذا احتيال واضح بمره، صكر الخط مباشرةً واتصل علينا سوي بلاغ.,,audio/omani/175.wav
+ARB-0176,Base,Omani Arabic,Finance,None,باغي أعرف رصيدي بسرعة بدون ما أفتح التطبيق، شي معكم طريقة أسرع؟,,audio/omani/176.wav
+ARB-0177,Base,Omani Arabic,Finance,None,ايوه، أرسل رسالة نصية على الرقم المخصّص وايوصلك الرصيد خلال ثواني، والخدمة مجانية.,,audio/omani/177.wav
+ARB-0178,Corner,Omani Arabic,Finance,Date/Time/Duration,كم مدة الاحتفاظ بكشف الحساب لو باغنه بعد سنتين؟,,audio/omani/178.wav
+ARB-0179,Corner,Omani Arabic,Finance,Date/Time/Duration; Long Utterance,اتلاقي كشف حسابك في التطبيق لآخر خمس سنين، وإذا باغي تواريخ أقدم، فيستوي تقدم من الفرع وايوصلك خلال ثلاثة أيام.,,audio/omani/179.wav
+ARB-0180,Base,Omani Arabic,Finance,None,كم رسوم إصدار كشف حساب معتمد بختم البنك؟,,audio/omani/180.wav
+ARB-0181,Corner,Omani Arabic,Finance,Financial Number,خمسه ريال لكل كشف، بس إذا كنت من عملاء الحساب المميز انرسله لك بدون رسوم حتى.,,audio/omani/181.wav
+ARB-0182,Base,Omani Arabic,Finance,None,عندي تحويل شهري تلقائي أبا أوقفه، دخلت التطبيق وما لقيت الخيار.,,audio/omani/182.wav
+ARB-0183,Base,Omani Arabic,Finance,None,الخيار موجود في قسم التحويلات المجدولة، اضغط على التحويلة اللي تبا توقفها وايطلع لك زر إلغاء بلون أحمر.,,audio/omani/183.wav
+ARB-0184,Base,Omani Arabic,Finance,None,شي عندكم فرع خاص حال الحريم بس، إذا الحرمة تجي بحرية بدون زحمة رجال؟,,audio/omani/184.wav
+ARB-0185,Base,Omani Arabic,Finance,None,ايوه، عندنا قسم مخصّص للنساء في فروع نزوى، مسقط وصحار، والموظفات كلهن نساء عمانيات.,,audio/omani/185.wav
+ARB-0186,Base,Omani Arabic,Finance,None,باغي أعطي أختي وكالة على حسابي عشان تسحب لي إذا احتجت، مو الإجراءات؟,,audio/omani/186.wav
+ARB-0187,Base,Omani Arabic,Finance,None,اتحتاج توكيل من كاتب العدل، بعدين تجيوا ياثنينكم للفرع بالبطاقات الشخصية مالكك ونفعّل الوكالة بنفس اليوم.,,audio/omani/187.wav
+ARB-0188,Base,Omani Arabic,Finance,None,كم مدة الوكالة اتاخذ قبل عن اتنتهي؟,,audio/omani/188.wav
+ARB-0189,Base,Omani Arabic,Finance,None,الوكالة اتظل فعّالة إلى ما اتلغيها أنت رسمياً، أو إذا الموكّل ألغاها وحده من كاتب بالعدل.,,audio/omani/189.wav
+ARB-0190,Base,Omani Arabic,Finance,None,باغي أعرف رقم الآيبان مال حسابي، هين ألقاه في التطبيق؟,,audio/omani/190.wav
+ARB-0191,Corner,Omani Arabic,Finance,Long Utterance,أتلقاه في قسم تفاصيل الحساب، اضغط على الحساب وايطلع لك رقم الآيبان كامل مع خيار نسخ أو مشاركة عبر واتساب.,,audio/omani/191.wav
+ARB-0192,Base,Omani Arabic,Finance,None,باغي اعرف إذا الآيبان يختلف من حساب لحساب أو ثابت حال نفس الشخص؟,,audio/omani/192.wav
+ARB-0193,Base,Omani Arabic,Finance,None,كل حساب له رقم آيبان مختلف، حتى لو كل الحسابات باسمك، الرقم مرتبط بالحساب ما بالشخص.,,audio/omani/193.wav
+ARB-0194,Base,Omani Arabic,Finance,None,جاتني رسالة إن الراتب متحول، بس يوم دخلت الحساب ما لقيت شي، مو السبب؟,,audio/omani/194.wav
+ARB-0195,Corner,Omani Arabic,Finance,Date/Time/Duration,انتظر دقيقتين وجرب تدخل التطبيق مره، أحياناً اتاخذ الرسالة قبل ما تنزل الفلوس فالحساب، إذا استمرت المشكلة اتصلبنا.,,audio/omani/195.wav
+ARB-0196,Base,Omani Arabic,Finance,None,باغي أفتح حساب توفير بالدولار عشان أدّخر للسفر، ينفع؟,,audio/omani/196.wav
+ARB-0197,Base,Omani Arabic,Finance,None,ايوه، عندنا حسابات توفير بعملات أجنبية: دولار، يورو، جنيه، درهم، وريال سعودي، ينفع تراه تفتحها من التطبيق.,,audio/omani/197.wav
+ARB-0198,Base,Omani Arabic,Finance,None,كم الفايدة على حساب التوفير بالدولار؟,,audio/omani/198.wav
+ARB-0199,Corner,Omani Arabic,Finance,Percentage/Interest Rate,الفايدة اثنين في المية سنوياً، اتنزل ربع سنوي على الحساب مباشرة.,,audio/omani/199.wav
+ARB-0200,Base,Omani Arabic,Finance,None,باغي أعرف كيف أحوّل من حسابي بالريال العماني لحساب بالدولار في نفس البنك؟,,audio/omani/200.wav
+ARB-0201,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع العزيزية صح,,audio/saudi/506.wav
+ARB-0202,Corner,Saudi Arabic (provisional),Finance,Disfluency,آه وش الفرق وش الخدمات اللي عندكم في الفروق,,audio/saudi/505.wav
+ARB-0203,Corner,Saudi Arabic (provisional),Finance,Disfluency; Named Entity,إيه الدمام الرئيسي,,audio/saudi/503.wav
+ARB-0204,Corner,Saudi Arabic (provisional),Finance,Disfluency; Named Entity,إيه الدمام الرئيسي,,audio/saudi/502.wav
+ARB-0205,Corner,Saudi Arabic (provisional),Finance,Disfluency,إيه لو سمحتي,,audio/saudi/501.wav
+ARB-0206,Corner,Saudi Arabic (provisional),Finance,Disfluency,إيه لو سمحتي,,audio/saudi/500.wav
+ARB-0207,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع البحيرة في حايل,,audio/saudi/498.wav
+ARB-0208,Corner,Saudi Arabic (provisional),Finance,Named Entity,شارع الملك فيصل,,audio/saudi/497.wav
+ARB-0209,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع البكيرية,,audio/saudi/496.wav
+ARB-0210,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الزلفي,,audio/saudi/495.wav
+ARB-0211,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع رياض الخبراء,,audio/saudi/494.wav
+ARB-0212,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع عنيزة,,audio/saudi/493.wav
+ARB-0213,Corner,Saudi Arabic (provisional),Finance,Named Entity,الفرع في الجابرية,,audio/saudi/492.wav
+ARB-0214,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع مدينة الملك خالد العسكرية,,audio/saudi/491.wav
+ARB-0215,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع حايل الرئيسي,,audio/saudi/490.wav
+ARB-0216,Corner,Saudi Arabic (provisional),Finance,Short Utterance,حفر الباطن,,audio/saudi/489.wav
+ARB-0217,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع بريدة,,audio/saudi/488.wav
+ARB-0218,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع سوق برزان,,audio/saudi/487.wav
+ARB-0219,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الأرطاوية,,audio/saudi/486.wav
+ARB-0220,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع حي الصفراء,,audio/saudi/485.wav
+ARB-0221,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الرس,,audio/saudi/484.wav
+ARB-0222,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المجمعة,,audio/saudi/483.wav
+ARB-0223,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الدوادمي,,audio/saudi/482.wav
+ARB-0224,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الرقعي,,audio/saudi/481.wav
+ARB-0225,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المذنب,,audio/saudi/480.wav
+ARB-0226,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الغاط,,audio/saudi/479.wav
+ARB-0227,Corner,Saudi Arabic (provisional),Finance,Short Utterance,صامطة,,audio/saudi/478.wav
+ARB-0228,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع العريسة,,audio/saudi/477.wav
+ARB-0229,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,محايل عسير,,audio/saudi/476.wav
+ARB-0230,Corner,Saudi Arabic (provisional),Finance,Short Utterance,النماص,,audio/saudi/475.wav
+ARB-0231,Corner,Saudi Arabic (provisional),Finance,Named Entity,طريق الملك فهد,,audio/saudi/474.wav
+ARB-0232,Corner,Saudi Arabic (provisional),Finance,Short Utterance,أبو عريش,,audio/saudi/473.wav
+ARB-0233,Corner,Saudi Arabic (provisional),Finance,Short Utterance,السوق التجاري,,audio/saudi/472.wav
+ARB-0234,Corner,Saudi Arabic (provisional),Finance,Short Utterance,السليل,,audio/saudi/471.wav
+ARB-0235,Corner,Saudi Arabic (provisional),Finance,Short Utterance,وادي الدواسر,,audio/saudi/470.wav
+ARB-0236,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع بلجرشي,,audio/saudi/469.wav
+ARB-0237,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الباحة,,audio/saudi/468.wav
+ARB-0238,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع صبيا,,audio/saudi/467.wav
+ARB-0239,Corner,Saudi Arabic (provisional),Finance,Short Utterance,شرورة,,audio/saudi/466.wav
+ARB-0240,Corner,Saudi Arabic (provisional),Finance,Short Utterance,سبت العلايا,,audio/saudi/465.wav
+ARB-0241,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع نجران,,audio/saudi/464.wav
+ARB-0242,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الموسى,,audio/saudi/463.wav
+ARB-0243,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المدينة العسكرية,,audio/saudi/462.wav
+ARB-0244,Corner,Saudi Arabic (provisional),Finance,Short Utterance,خميس مشيط,,audio/saudi/461.wav
+ARB-0245,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع جازان,,audio/saudi/460.wav
+ARB-0246,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع بيشة,,audio/saudi/459.wav
+ARB-0247,Corner,Saudi Arabic (provisional),Finance,Short Utterance,أحد مسارحه,,audio/saudi/458.wav
+ARB-0248,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع أبها,,audio/saudi/457.wav
+ARB-0249,Base,Saudi Arabic (provisional),Finance,None,مدينة الملك عبد العزيز,,audio/saudi/456.wav
+ARB-0250,Corner,Saudi Arabic (provisional),Finance,Short Utterance,خيبر,,audio/saudi/455.wav
+ARB-0251,Corner,Saudi Arabic (provisional),Finance,Short Utterance,العلا,,audio/saudi/454.wav
+ARB-0252,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع أملج,,audio/saudi/453.wav
+ARB-0253,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع طريف,,audio/saudi/452.wav
+ARB-0254,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المهرجان,,audio/saudi/451.wav
+ARB-0255,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,تبوك,,audio/saudi/450.wav
+ARB-0256,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع سكاكا,,audio/saudi/449.wav
+ARB-0257,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع القريات,,audio/saudi/448.wav
+ARB-0258,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع حقل,,audio/saudi/447.wav
+ARB-0259,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع ضباء,,audio/saudi/446.wav
+ARB-0260,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع دومة الجندل,,audio/saudi/445.wav
+ARB-0261,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع عرعر,,audio/saudi/444.wav
+ARB-0262,Corner,Saudi Arabic (provisional),Finance,Named Entity,طريق الملك خالد,,audio/saudi/443.wav
+ARB-0263,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الجسر,,audio/saudi/442.wav
+ARB-0264,Corner,Saudi Arabic (provisional),Finance,Short Utterance,النعيرية,,audio/saudi/441.wav
+ARB-0265,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الخزامى,,audio/saudi/440.wav
+ARB-0266,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الفناتير,,audio/saudi/439.wav
+ARB-0267,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المنيزلة,,audio/saudi/438.wav
+ARB-0268,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المزروعية,,audio/saudi/437.wav
+ARB-0269,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الريان,,audio/saudi/436.wav
+ARB-0270,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الراكة,,audio/saudi/433.wav
+ARB-0271,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الواحة,,audio/saudi/432.wav
+ARB-0272,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الفيصلية,,audio/saudi/431.wav
+ARB-0273,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المريكبات,,audio/saudi/430.wav
+ARB-0274,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الكورنيش,,audio/saudi/429.wav
+ARB-0275,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,غرب الدمام,,audio/saudi/428.wav
+ARB-0276,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الاتصالات,,audio/saudi/427.wav
+ARB-0277,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع الظهران,,audio/saudi/426.wav
+ARB-0278,Corner,Saudi Arabic (provisional),Finance,Short Utterance,مركز الروابي,,audio/saudi/425.wav
+ARB-0279,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الدوحة,,audio/saudi/424.wav
+ARB-0280,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع النجاح,,audio/saudi/423.wav
+ARB-0281,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع الماجد,,audio/saudi/422.wav
+ARB-0282,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الشهابية,,audio/saudi/421.wav
+ARB-0283,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع البستان,,audio/saudi/420.wav
+ARB-0284,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع أم الحمام,,audio/saudi/419.wav
+ARB-0285,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المنطقة الصناعية,,audio/saudi/418.wav
+ARB-0286,Corner,Saudi Arabic (provisional),Finance,Short Utterance,قرية العليا,,audio/saudi/417.wav
+ARB-0287,Corner,Saudi Arabic (provisional),Finance,Named Entity,شارع بن خلدون,,audio/saudi/416.wav
+ARB-0288,Corner,Saudi Arabic (provisional),Finance,Short Utterance,تاروت,,audio/saudi/415.wav
+ARB-0289,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع العيون,,audio/saudi/414.wav
+ARB-0290,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الجبيل الصناعية,,audio/saudi/413.wav
+ARB-0291,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الجلوية,,audio/saudi/412.wav
+ARB-0292,Corner,Saudi Arabic (provisional),Finance,Named Entity,شارع الملك عبدالعزيز,,audio/saudi/411.wav
+ARB-0293,Corner,Saudi Arabic (provisional),Finance,Short Utterance,قاعدة الجبيل,,audio/saudi/410.wav
+ARB-0294,Corner,Saudi Arabic (provisional),Finance,Disfluency; Named Entity,آه فرع أرامكو,,audio/saudi/409.wav
+ARB-0295,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع جامعة الملك فيصل,,audio/saudi/408.wav
+ARB-0296,Corner,Saudi Arabic (provisional),Finance,Named Entity,شارع الأمير تركي,,audio/saudi/407.wav
+ARB-0297,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع صفوى,,audio/saudi/406.wav
+ARB-0298,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المنطقة المحايدة,,audio/saudi/405.wav
+ARB-0299,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع سيهات,,audio/saudi/404.wav
+ARB-0300,Corner,Saudi Arabic (provisional),Finance,Named Entity,جامعة الملك فهد,,audio/saudi/403.wav
+ARB-0301,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الثقبة,,audio/saudi/402.wav
+ARB-0302,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الخفجي,,audio/saudi/401.wav
+ARB-0303,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع بقيق,,audio/saudi/400.wav
+ARB-0304,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الجبيل,,audio/saudi/399.wav
+ARB-0305,Corner,Saudi Arabic (provisional),Finance,Short Utterance,رأس تنورة,,audio/saudi/398.wav
+ARB-0306,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع القطيف,,audio/saudi/397.wav
+ARB-0307,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المبرز,,audio/saudi/396.wav
+ARB-0308,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الهفوف,,audio/saudi/395.wav
+ARB-0309,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الأمير محمد,,audio/saudi/394.wav
+ARB-0310,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الدمام,,audio/saudi/393.wav
+ARB-0311,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الخبر,,audio/saudi/392.wav
+ARB-0312,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع شارع الإحساء,,audio/saudi/391.wav
+ARB-0313,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع حوطة السدير,,audio/saudi/390.wav
+ARB-0314,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الصحنة,,audio/saudi/389.wav
+ARB-0315,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,طريق الحجاز,,audio/saudi/388.wav
+ARB-0316,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع النرجس,,audio/saudi/387.wav
+ARB-0317,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الدرعية,,audio/saudi/386.wav
+ARB-0318,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع النهضة,,audio/saudi/385.wav
+ARB-0319,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع البديعة,,audio/saudi/384.wav
+ARB-0320,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع قرطبة,,audio/saudi/383.wav
+ARB-0321,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي المنصورة,,audio/saudi/382.wav
+ARB-0322,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الدائري الجنوبي,,audio/saudi/381.wav
+ARB-0323,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع الدائري الغربي,,audio/saudi/380.wav
+ARB-0324,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الربيع,,audio/saudi/379.wav
+ARB-0325,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الواحة,,audio/saudi/378.wav
+ARB-0326,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المصيف,,audio/saudi/377.wav
+ARB-0327,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع نمار,,audio/saudi/376.wav
+ARB-0328,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الندى,,audio/saudi/375.wav
+ARB-0329,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع مدينة الملك فهد,,audio/saudi/374.wav
+ARB-0330,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع العقيق,,audio/saudi/373.wav
+ARB-0331,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المروج,,audio/saudi/372.wav
+ARB-0332,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع العريجاء,,audio/saudi/371.wav
+ARB-0333,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي الرائد,,audio/saudi/370.wav
+ARB-0334,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الأندلس,,audio/saudi/369.wav
+ARB-0335,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع القدس,,audio/saudi/368.wav
+ARB-0336,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع النسيم,,audio/saudi/367.wav
+ARB-0337,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المونسية,,audio/saudi/366.wav
+ARB-0338,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الربوة,,audio/saudi/365.wav
+ARB-0339,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع النزهة,,audio/saudi/364.wav
+ARB-0340,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الورود,,audio/saudi/363.wav
+ARB-0341,Corner,Saudi Arabic (provisional),Finance,Named Entity,جامعة الأميرة نورة,,audio/saudi/362.wav
+ARB-0342,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع عرقه,,audio/saudi/361.wav
+ARB-0343,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الروابي,,audio/saudi/360.wav
+ARB-0344,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الرمال,,audio/saudi/359.wav
+ARB-0345,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي الشفاء,,audio/saudi/358.wav
+ARB-0346,Corner,Saudi Arabic (provisional),Finance,Short Utterance,السجل التجاري,,audio/saudi/357.wav
+ARB-0347,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع ظهرة البديعه,,audio/saudi/356.wav
+ARB-0348,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الروضة,,audio/saudi/355.wav
+ARB-0349,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المزاحمية,,audio/saudi/354.wav
+ARB-0350,Base,Saudi Arabic (provisional),Finance,None,مركز المنشآت الصغيرة والمتوسطة,,audio/saudi/353.wav
+ARB-0351,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع ضرما,,audio/saudi/352.wav
+ARB-0352,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المربع,,audio/saudi/351.wav
+ARB-0353,Corner,Saudi Arabic (provisional),Finance,Short Utterance,القويعية,,audio/saudi/350.wav
+ARB-0354,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع السويدي,,audio/saudi/349.wav
+ARB-0355,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الأفلاج,,audio/saudi/348.wav
+ARB-0356,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الحمراء,,audio/saudi/347.wav
+ARB-0357,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الندوة,,audio/saudi/346.wav
+ARB-0358,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع التخصصي,,audio/saudi/345.wav
+ARB-0359,Corner,Saudi Arabic (provisional),Finance,Short Utterance,العسكرية,,audio/saudi/344.wav
+ARB-0360,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع لبن,,audio/saudi/343.wav
+ARB-0361,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع العليا,,audio/saudi/342.wav
+ARB-0362,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع السليمانية,,audio/saudi/341.wav
+ARB-0363,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع شقراء,,audio/saudi/340.wav
+ARB-0364,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الخرج,,audio/saudi/339.wav
+ARB-0365,Corner,Saudi Arabic (provisional),Finance,Named Entity,شارع الأمير مشعل,,audio/saudi/338.wav
+ARB-0366,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع بدر,,audio/saudi/337.wav
+ARB-0367,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع جرير,,audio/saudi/336.wav
+ARB-0368,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الملز,,audio/saudi/335.wav
+ARB-0369,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي الياسمين,,audio/saudi/334.wav
+ARB-0370,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المحمدية,,audio/saudi/333.wav
+ARB-0371,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الشرائع,,audio/saudi/332.wav
+ARB-0372,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي الفلاح,,audio/saudi/331.wav
+ARB-0373,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الرصيفة,,audio/saudi/330.wav
+ARB-0374,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع حراء,,audio/saudi/329.wav
+ARB-0375,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع شارع الأمير سلطان,,audio/saudi/328.wav
+ARB-0376,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,طريق الحرمين,,audio/saudi/327.wav
+ARB-0377,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع البساتين,,audio/saudi/326.wav
+ARB-0378,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,أستاذ الرياضي,,audio/saudi/325.wav
+ARB-0379,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع صاري,,audio/saudi/324.wav
+ARB-0380,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المروة,,audio/saudi/323.wav
+ARB-0381,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع العزيزية,,audio/saudi/322.wav
+ARB-0382,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع سلطانة,,audio/saudi/321.wav
+ARB-0383,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع القنفذة,,audio/saudi/320.wav
+ARB-0384,Corner,Saudi Arabic (provisional),Finance,Named Entity,شارع الأمير عبد المجيد,,audio/saudi/319.wav
+ARB-0385,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المنسك,,audio/saudi/318.wav
+ARB-0386,Corner,Saudi Arabic (provisional),Finance,Short Utterance,التحلية,,audio/saudi/317.wav
+ARB-0387,Base,Saudi Arabic (provisional),Finance,None,الخدمات المصرفية الخاصة,,audio/saudi/316.wav
+ARB-0388,Corner,Saudi Arabic (provisional),Finance,Short Utterance,طيبة,,audio/saudi/315.wav
+ARB-0389,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي المنتزهات,,audio/saudi/314.wav
+ARB-0390,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المدينة الصناعية,,audio/saudi/313.wav
+ARB-0391,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي الشهداء,,audio/saudi/312.wav
+ARB-0392,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,حي السلامة,,audio/saudi/311.wav
+ARB-0393,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,طريق المينا,,audio/saudi/310.wav
+ARB-0394,Corner,Saudi Arabic (provisional),Finance,Short Utterance,بدر,,audio/saudi/309.wav
+ARB-0395,Base,Saudi Arabic (provisional),Finance,None,قاعدة الملك فيصل البحرية,,audio/saudi/308.wav
+ARB-0396,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع المكرونة,,audio/saudi/307.wav
+ARB-0397,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الحويّة,,audio/saudi/306.wav
+ARB-0398,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع فلسطين,,audio/saudi/305.wav
+ARB-0399,Corner,Saudi Arabic (provisional),Finance,Short Utterance,البغدادية,,audio/saudi/304.wav
+ARB-0400,Corner,Saudi Arabic (provisional),Finance,Short Utterance,تربة,,audio/saudi/303.wav
+ARB-0401,Corner,Saudi Arabic (provisional),Finance,Short Utterance,العتيبية,,audio/saudi/302.wav
+ARB-0402,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع رابغ,,audio/saudi/301.wav
+ARB-0403,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,ينبع الصناعية,,audio/saudi/300.wav
+ARB-0404,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المعابدة,,audio/saudi/299.wav
+ARB-0405,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع الستين,,audio/saudi/298.wav
+ARB-0406,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الفيحاء,,audio/saudi/297.wav
+ARB-0407,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع قباء,,audio/saudi/296.wav
+ARB-0408,Corner,Saudi Arabic (provisional),Finance,Short Utterance,العوالي,,audio/saudi/295.wav
+ARB-0409,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,ينبع,,audio/saudi/294.wav
+ARB-0410,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الحمدانية,,audio/saudi/293.wav
+ARB-0411,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الغرفة التجارية,,audio/saudi/292.wav
+ARB-0412,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع حي أحد,,audio/saudi/291.wav
+ARB-0413,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع برحة القزاز,,audio/saudi/290.wav
+ARB-0414,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع المدينة المنورة,,audio/saudi/289.wav
+ARB-0415,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع مكة الرئيسي,,audio/saudi/288.wav
+ARB-0416,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الشرفية,,audio/saudi/287.wav
+ARB-0417,Corner,Saudi Arabic (provisional),Finance,Short Utterance,جدّة الرئيسي,,audio/saudi/286.wav
+ARB-0418,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع المذنب,,audio/saudi/285.wav
+ARB-0419,Corner,Saudi Arabic (provisional),Finance,Short Utterance,رياض الخبراء,,audio/saudi/284.wav
+ARB-0420,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع بقيق,,audio/saudi/282.wav
+ARB-0421,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع املج,,audio/saudi/281.wav
+ARB-0422,Corner,Saudi Arabic (provisional),Finance,Disfluency; Named Entity,آه فرع القويعية,,audio/saudi/280.wav
+ARB-0423,Corner,Saudi Arabic (provisional),Finance,Short Utterance,القويعية,,audio/saudi/279.wav
+ARB-0424,Corner,Saudi Arabic (provisional),Finance,Loanword; Short Utterance,دايموند,,audio/saudi/278.wav
+ARB-0425,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي,,audio/saudi/277.wav
+ARB-0426,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 401,,audio/saudi/276.wav
+ARB-0427,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,145 بدر,,audio/saudi/275.wav
+ARB-0428,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 14,,audio/saudi/274.wav
+ARB-0429,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/273.wav
+ARB-0430,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه,,audio/saudi/272.wav
+ARB-0431,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,397,,audio/saudi/271.wav
+ARB-0432,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,365,,audio/saudi/270.wav
+ARB-0433,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,359,,audio/saudi/269.wav
+ARB-0434,Corner,Saudi Arabic (provisional),Finance,Short Utterance,النعيرية,,audio/saudi/268.wav
+ARB-0435,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه صحيح,,audio/saudi/267.wav
+ARB-0436,Corner,Saudi Arabic (provisional),Finance,Short Utterance,اي اي,,audio/saudi/266.wav
+ARB-0437,Base,Saudi Arabic (provisional),Finance,None,الخدمات المصرفية الخاصة,,audio/saudi/265.wav
+ARB-0438,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,355,,audio/saudi/264.wav
+ARB-0439,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,104,,audio/saudi/263.wav
+ARB-0440,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,الشارع الاول,,audio/saudi/262.wav
+ARB-0441,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,352,,audio/saudi/261.wav
+ARB-0442,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,351,,audio/saudi/260.wav
+ARB-0443,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Named Entity,رمز االفرع 104,,audio/saudi/259.wav
+ARB-0444,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,350,,audio/saudi/258.wav
+ARB-0445,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,349,,audio/saudi/257.wav
+ARB-0446,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,348,,audio/saudi/256.wav
+ARB-0447,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الفيصلية,,audio/saudi/255.wav
+ARB-0448,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/254.wav
+ARB-0449,Corner,Saudi Arabic (provisional),Finance,Short Utterance,المريكبات,,audio/saudi/253.wav
+ARB-0450,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,346,,audio/saudi/252.wav
+ARB-0451,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,343,,audio/saudi/251.wav
+ARB-0452,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,342,,audio/saudi/250.wav
+ARB-0453,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,340,,audio/saudi/249.wav
+ARB-0454,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,336,,audio/saudi/248.wav
+ARB-0455,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الربوة بالظهران,,audio/saudi/247.wav
+ARB-0456,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,335,,audio/saudi/246.wav
+ARB-0457,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/245.wav
+ARB-0458,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,334,,audio/saudi/244.wav
+ARB-0459,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,333,,audio/saudi/243.wav
+ARB-0460,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/242.wav
+ARB-0461,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,332,,audio/saudi/241.wav
+ARB-0462,Corner,Saudi Arabic (provisional),Finance,Short Utterance,ام الحمام,,audio/saudi/240.wav
+ARB-0463,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/239.wav
+ARB-0464,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/238.wav
+ARB-0465,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,330,,audio/saudi/237.wav
+ARB-0466,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/236.wav
+ARB-0467,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,329,,audio/saudi/235.wav
+ARB-0468,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,328,,audio/saudi/234.wav
+ARB-0469,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,326,,audio/saudi/233.wav
+ARB-0470,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,327,,audio/saudi/232.wav
+ARB-0471,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/231.wav
+ARB-0472,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,324,,audio/saudi/230.wav
+ARB-0473,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,323,,audio/saudi/229.wav
+ARB-0474,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,322,,audio/saudi/228.wav
+ARB-0475,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,321,,audio/saudi/227.wav
+ARB-0476,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,320,,audio/saudi/226.wav
+ARB-0477,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,319,,audio/saudi/225.wav
+ARB-0478,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,318,,audio/saudi/224.wav
+ARB-0479,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,317,,audio/saudi/223.wav
+ARB-0480,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,316,,audio/saudi/222.wav
+ARB-0481,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الو,,audio/saudi/221.wav
+ARB-0482,Corner,Saudi Arabic (provisional),Finance,Short Utterance,سيهات,,audio/saudi/220.wav
+ARB-0483,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,313,,audio/saudi/219.wav
+ARB-0484,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه,,audio/saudi/218.wav
+ARB-0485,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,312,,audio/saudi/217.wav
+ARB-0486,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,308,,audio/saudi/216.wav
+ARB-0487,Corner,Saudi Arabic (provisional),Finance,Short Utterance,راس تنورة,,audio/saudi/215.wav
+ARB-0488,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي,,audio/saudi/214.wav
+ARB-0489,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/213.wav
+ARB-0490,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/212.wav
+ARB-0491,Corner,Saudi Arabic (provisional),Finance,Short Utterance,لا,,audio/saudi/211.wav
+ARB-0492,Corner,Saudi Arabic (provisional),Finance,Short Utterance,خلاص,,audio/saudi/210.wav
+ARB-0493,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/209.wav
+ARB-0494,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/208.wav
+ARB-0495,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,شارع الاحساء,,audio/saudi/207.wav
+ARB-0496,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,293,,audio/saudi/206.wav
+ARB-0497,Corner,Saudi Arabic (provisional),Finance,Short Utterance,لوكلايزر,,audio/saudi/205.wav
+ARB-0498,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/204.wav
+ARB-0499,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,271,,audio/saudi/203.wav
+ARB-0500,Corner,Saudi Arabic (provisional),Finance,Short Utterance,اسمعك,,audio/saudi/202.wav
+ARB-0501,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,265,,audio/saudi/201.wav
+ARB-0502,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,262,,audio/saudi/200.wav
+ARB-0503,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/199.wav
+ARB-0504,Corner,Saudi Arabic (provisional),Finance,Short Utterance,اي صحيح,,audio/saudi/198.wav
+ARB-0505,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,251,,audio/saudi/197.wav
+ARB-0506,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/196.wav
+ARB-0507,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,618,,audio/saudi/195.wav
+ARB-0508,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,624,,audio/saudi/194.wav
+ARB-0509,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/193.wav
+ARB-0510,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,622,,audio/saudi/192.wav
+ARB-0511,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,621,,audio/saudi/191.wav
+ARB-0512,Corner,Saudi Arabic (provisional),Finance,Short Utterance,البكيرية,,audio/saudi/190.wav
+ARB-0513,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,620,,audio/saudi/189.wav
+ARB-0514,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,619,,audio/saudi/188.wav
+ARB-0515,Corner,Saudi Arabic (provisional),Finance,Short Utterance,رياض الخبراء,,audio/saudi/187.wav
+ARB-0516,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,618,,audio/saudi/186.wav
+ARB-0517,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,616,,audio/saudi/185.wav
+ARB-0518,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,615,,audio/saudi/184.wav
+ARB-0519,Corner,Saudi Arabic (provisional),Finance,Short Utterance,صح,,audio/saudi/183.wav
+ARB-0520,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,614,,audio/saudi/182.wav
+ARB-0521,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,613,,audio/saudi/181.wav
+ARB-0522,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,612,,audio/saudi/180.wav
+ARB-0523,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,611,,audio/saudi/179.wav
+ARB-0524,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,610,,audio/saudi/178.wav
+ARB-0525,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,609,,audio/saudi/177.wav
+ARB-0526,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,607,,audio/saudi/176.wav
+ARB-0527,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الدوادمي,,audio/saudi/175.wav
+ARB-0528,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,605,,audio/saudi/174.wav
+ARB-0529,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,604,,audio/saudi/173.wav
+ARB-0530,Corner,Saudi Arabic (provisional),Finance,Short Utterance,وش قلتي,,audio/saudi/172.wav
+ARB-0531,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الغاط,,audio/saudi/171.wav
+ARB-0532,Base,Saudi Arabic (provisional),Finance,None,مدينة الملك عبد العزيز العسكرية,,audio/saudi/170.wav
+ARB-0533,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,416,,audio/saudi/169.wav
+ARB-0534,Corner,Saudi Arabic (provisional),Finance,Short Utterance,طريف,,audio/saudi/168.wav
+ARB-0535,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,تبوك الرئيسي,,audio/saudi/167.wav
+ARB-0536,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,408,,audio/saudi/166.wav
+ARB-0537,Corner,Saudi Arabic (provisional),Finance,Short Utterance,القريات,,audio/saudi/165.wav
+ARB-0538,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,407,,audio/saudi/164.wav
+ARB-0539,Corner,Saudi Arabic (provisional),Finance,Short Utterance,ايش,,audio/saudi/163.wav
+ARB-0540,Corner,Saudi Arabic (provisional),Finance,Short Utterance,حقل,,audio/saudi/162.wav
+ARB-0541,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,406,,audio/saudi/161.wav
+ARB-0542,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/160.wav
+ARB-0543,Corner,Saudi Arabic (provisional),Finance,Short Utterance,حالة عمار,,audio/saudi/159.wav
+ARB-0544,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي,,audio/saudi/158.wav
+ARB-0545,Corner,Saudi Arabic (provisional),Finance,Short Utterance,ضباء,,audio/saudi/157.wav
+ARB-0546,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/156.wav
+ARB-0547,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,402,,audio/saudi/155.wav
+ARB-0548,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/154.wav
+ARB-0549,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,526,,audio/saudi/153.wav
+ARB-0550,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/152.wav
+ARB-0551,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,513,,audio/saudi/151.wav
+ARB-0552,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/150.wav
+ARB-0553,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/149.wav
+ARB-0554,Corner,Saudi Arabic (provisional),Finance,Short Utterance,النماص,,audio/saudi/148.wav
+ARB-0555,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,523,,audio/saudi/147.wav
+ARB-0556,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,521,,audio/saudi/146.wav
+ARB-0557,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه,,audio/saudi/145.wav
+ARB-0558,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,520,,audio/saudi/144.wav
+ARB-0559,Corner,Saudi Arabic (provisional),Finance,Short Utterance,السليل,,audio/saudi/143.wav
+ARB-0560,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/142.wav
+ARB-0561,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,514,,audio/saudi/141.wav
+ARB-0562,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,504,,audio/saudi/140.wav
+ARB-0563,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,503,,audio/saudi/139.wav
+ARB-0564,Corner,Saudi Arabic (provisional),Finance,Short Utterance,ابها,,audio/saudi/138.wav
+ARB-0565,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/137.wav
+ARB-0566,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,307 رأس تنورة,,audio/saudi/136.wav
+ARB-0567,Corner,Saudi Arabic (provisional),Finance,Missing/Invalid Annotation,,,audio/saudi/135.wav
+ARB-0568,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,404,,audio/saudi/133.wav
+ARB-0569,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,403 دومة الجندل,,audio/saudi/132.wav
+ARB-0570,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عرعر,,audio/saudi/131.wav
+ARB-0571,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,401 الحديثة,,audio/saudi/130.wav
+ARB-0572,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,306,,audio/saudi/129.wav
+ARB-0573,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,رع 306 يا طيب,,audio/saudi/128.wav
+ARB-0574,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي,,audio/saudi/127.wav
+ARB-0575,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,3,,audio/saudi/126.wav
+ARB-0576,Base,Saudi Arabic (provisional),Finance,None,أقول لك رمز,,audio/saudi/125.wav
+ARB-0577,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,أقول لك رمز 104,,audio/saudi/124.wav
+ARB-0578,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,201,,audio/saudi/123.wav
+ARB-0579,Corner,Saudi Arabic (provisional),Finance,Short Utterance,الرصيفة,,audio/saudi/122.wav
+ARB-0580,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الرصيفة,,audio/saudi/121.wav
+ARB-0581,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,طريق الحرمين,,audio/saudi/120.wav
+ARB-0582,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,185,,audio/saudi/119.wav
+ARB-0583,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 183,,audio/saudi/118.wav
+ARB-0584,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,184,,audio/saudi/117.wav
+ARB-0585,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,180,,audio/saudi/116.wav
+ARB-0586,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,167,,audio/saudi/115.wav
+ARB-0587,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,163,,audio/saudi/114.wav
+ARB-0588,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Named Entity,فرع 152,,audio/saudi/113.wav
+ARB-0589,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 150,,audio/saudi/112.wav
+ARB-0590,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,149,,audio/saudi/111.wav
+ARB-0591,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,149,,audio/saudi/110.wav
+ARB-0592,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 147,,audio/saudi/109.wav
+ARB-0593,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,147,,audio/saudi/108.wav
+ARB-0594,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 130,,audio/saudi/107.wav
+ARB-0595,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 128,,audio/saudi/106.wav
+ARB-0596,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,144,,audio/saudi/105.wav
+ARB-0597,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 123,,audio/saudi/104.wav
+ARB-0598,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,123,,audio/saudi/103.wav
+ARB-0599,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,121,,audio/saudi/102.wav
+ARB-0600,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 119,,audio/saudi/101.wav
+ARB-0601,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 117,,audio/saudi/100.wav
+ARB-0602,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,فرمي 115,,audio/saudi/99.wav
+ARB-0603,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 115,,audio/saudi/98.wav
+ARB-0604,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 114,,audio/saudi/97.wav
+ARB-0605,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع قباء,,audio/saudi/96.wav
+ARB-0606,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 109,,audio/saudi/95.wav
+ARB-0607,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Named Entity,لا فرع 107,,audio/saudi/94.wav
+ARB-0608,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع أحد,,audio/saudi/93.wav
+ARB-0609,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع أحد,,audio/saudi/92.wav
+ARB-0610,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,لا 105,,audio/saudi/91.wav
+ARB-0611,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,101,,audio/saudi/90.wav
+ARB-0612,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,لا قصدي 103,,audio/saudi/89.wav
+ARB-0613,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 102,,audio/saudi/88.wav
+ARB-0614,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 106,,audio/saudi/87.wav
+ARB-0615,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 102,,audio/saudi/86.wav
+ARB-0616,Base,Saudi Arabic (provisional),Finance,None,مكة الرئيسي مكة الرئيسي,,audio/saudi/85.wav
+ARB-0617,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,103,,audio/saudi/84.wav
+ARB-0618,Base,Saudi Arabic (provisional),Finance,None,طيب حوليني على قسم المساعدة,,audio/saudi/83.wav
+ARB-0619,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع جدة,,audio/saudi/82.wav
+ARB-0620,Base,Saudi Arabic (provisional),Finance,None,ممكن تحولني على التيلر,,audio/saudi/81.wav
+ARB-0621,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Numeric Ambiguity - Review,لا 310 310,,audio/saudi/80.wav
+ARB-0622,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,بس أنا ما قلت 110 قلت 310,,audio/saudi/79.wav
+ARB-0623,Base,Saudi Arabic (provisional),Finance,None,اي حوليني أنتظرك تحوليني,,audio/saudi/78.wav
+ARB-0624,Corner,Saudi Arabic (provisional),Finance,Named Entity,صحيح بس ايش اسم الفرع,,audio/saudi/77.wav
+ARB-0625,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Numeric Ambiguity - Review,505 505,,audio/saudi/76.wav
+ARB-0626,Base,Saudi Arabic (provisional),Finance,None,أنا عميلة ماسية,,audio/saudi/75.wav
+ARB-0627,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه صحيح,,audio/saudi/74.wav
+ARB-0628,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,لا 250,,audio/saudi/73.wav
+ARB-0629,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,لا 250,,audio/saudi/72.wav
+ARB-0630,Corner,Saudi Arabic (provisional),Finance,General Number; Named Entity,فرع الندى 250,,audio/saudi/71.wav
+ARB-0631,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي,,audio/saudi/70.wav
+ARB-0632,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه صحيح,,audio/saudi/69.wav
+ARB-0633,Base,Saudi Arabic (provisional),Finance,None,ما ادري كيف ممكن تخدميني,,audio/saudi/68.wav
+ARB-0634,Corner,Saudi Arabic (provisional),Finance,Named Entity,لا معليش جدة,,audio/saudi/67.wav
+ARB-0635,Corner,Saudi Arabic (provisional),Finance,Disfluency; Named Entity,طيب عندكم فرع بالنخيل يعني,,audio/saudi/66.wav
+ARB-0636,Base,Saudi Arabic (provisional),Finance,None,ودي أقدم بلاغ بصراحة الخدمة كانت سيئة,,audio/saudi/65.wav
+ARB-0637,Base,Saudi Arabic (provisional),Finance,None,معليش ممكن تعيدينهم,,audio/saudi/64.wav
+ARB-0638,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه حوليني,,audio/saudi/63.wav
+ARB-0639,Corner,Saudi Arabic (provisional),Finance,Named Entity,كم فرع اسمه فرع العزيزية,,audio/saudi/62.wav
+ARB-0640,Base,Saudi Arabic (provisional),Finance,None,أنا عميل ماسي,,audio/saudi/61.wav
+ARB-0641,Base,Saudi Arabic (provisional),Finance,None,ممكن تحوليني على خدمة العملاء,,audio/saudi/60.wav
+ARB-0642,Corner,Saudi Arabic (provisional),Finance,Named Entity,ما احتاج اروح أنا كلمتك عشان ما أبغى أروح الفرع ف ليش يهمك اسم الفرع وش بيفرق,,audio/saudi/59.wav
+ARB-0643,Corner,Saudi Arabic (provisional),Finance,Short Utterance,ما اعرف,,audio/saudi/58.wav
+ARB-0644,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع ايش,,audio/saudi/57.wav
+ARB-0645,Base,Saudi Arabic (provisional),Finance,None,كيف اكتب لك وأنا قاعدة أكلمك,,audio/saudi/56.wav
+ARB-0646,Corner,Saudi Arabic (provisional),Finance,Named Entity,بس هذا الفرعين,,audio/saudi/55.wav
+ARB-0647,Base,Saudi Arabic (provisional),Finance,None,ليش تحوليني على الأوبريتر,,audio/saudi/54.wav
+ARB-0648,Corner,Saudi Arabic (provisional),Finance,Named Entity,أنا عند فرع جده الرئيسي وأبي اتكلم مع المدير الحين,,audio/saudi/53.wav
+ARB-0649,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي عربي,,audio/saudi/52.wav
+ARB-0650,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع مكة,,audio/saudi/51.wav
+ARB-0651,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,104,,audio/saudi/50.wav
+ARB-0652,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance; Named Entity,فرع 303,,audio/saudi/49.wav
+ARB-0653,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,303,,audio/saudi/48.wav
+ARB-0654,Corner,Saudi Arabic (provisional),Finance,Short Utterance,اي حوليني,,audio/saudi/47.wav
+ARB-0655,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,فرع الرياض,,audio/saudi/46.wav
+ARB-0656,Corner,Saudi Arabic (provisional),Finance,Short Utterance,ايش الفروع,,audio/saudi/45.wav
+ARB-0657,Corner,Saudi Arabic (provisional),Finance,Named Entity,طيب بتحوليني على اي فرع,,audio/saudi/44.wav
+ARB-0658,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي,,audio/saudi/43.wav
+ARB-0659,Corner,Saudi Arabic (provisional),Finance,Short Utterance,عربي,,audio/saudi/42.wav
+ARB-0660,Base,Saudi Arabic (provisional),Finance,None,ابغا اتأكد من ساعات العمل الله يعافيك,,audio/saudi/41.wav
+ARB-0661,Corner,Saudi Arabic (provisional),Finance,Named Entity,قتلك فرع العليا,,audio/saudi/40.wav
+ARB-0662,Corner,Saudi Arabic (provisional),Finance,Named Entity,مافهمتيني أنا قاعده أسألك ايش الفرع القريب مني,,audio/saudi/39.wav
+ARB-0663,Corner,Saudi Arabic (provisional),Finance,Named Entity,طيب مافي فرع ثاني غير هذول الفرعين,,audio/saudi/38.wav
+ARB-0664,Corner,Saudi Arabic (provisional),Finance,Named Entity,وش الفرع القريب مني,,audio/saudi/37.wav
+ARB-0665,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع الرياض الرئيسي وين مكانه بالضبط,,audio/saudi/36.wav
+ARB-0666,Corner,Saudi Arabic (provisional),Finance,Named Entity,أنا حاليا في شرق الرياض ممكن تعلميني اقرب فرع لي,,audio/saudi/35.wav
+ARB-0667,Base,Saudi Arabic (provisional),Finance,None,أخوي ولا اختي,,audio/saudi/34.wav
+ARB-0668,Corner,Saudi Arabic (provisional),Finance,Named Entity,ممكن تحوليني على مدير الفرع,,audio/saudi/33.wav
+ARB-0669,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع الريان في الرياض,,audio/saudi/32.wav
+ARB-0670,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Numeric Ambiguity - Review,قلت لك 344 344,,audio/saudi/31.wav
+ARB-0671,Corner,Saudi Arabic (provisional),Finance,Named Entity,ابي فروع الدمام,,audio/saudi/30.wav
+ARB-0672,Corner,Saudi Arabic (provisional),Finance,Named Entity,طيب انتو كم فرع عندكم في الدمام,,audio/saudi/29.wav
+ARB-0673,Corner,Saudi Arabic (provisional),Finance,Named Entity,ما أعرف الفرع بس فرع الدمام,,audio/saudi/28.wav
+ARB-0674,Corner,Saudi Arabic (provisional),Finance,Short Utterance,أعرب,,audio/saudi/27.wav
+ARB-0675,Base,Saudi Arabic (provisional),Finance,None,اي قلت لك صحيح,,audio/saudi/26.wav
+ARB-0676,Base,Saudi Arabic (provisional),Finance,None,يه صحيح صحيح,,audio/saudi/25.wav
+ARB-0677,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع كورنيش الدمام,,audio/saudi/24.wav
+ARB-0678,Base,Saudi Arabic (provisional),Finance,None,ماعرف انتي المفروض تعرفين,,audio/saudi/23.wav
+ARB-0679,Corner,Saudi Arabic (provisional),Finance,Named Entity,أنا ماعرف اسم الفرع فممكن تقوليلي أقرب فرع لي,,audio/saudi/22.wav
+ARB-0680,Base,Saudi Arabic (provisional),Finance,None,حوليني على السيلز,,audio/saudi/21.wav
+ARB-0681,Base,Saudi Arabic (provisional),Finance,None,أنا عميل ماسي,,audio/saudi/20.wav
+ARB-0682,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,بنك الرياض,,audio/saudi/19.wav
+ARB-0683,Base,Saudi Arabic (provisional),Finance,None,أنا أسأل اذا عندكم خدمة مبيعات,,audio/saudi/18.wav
+ARB-0684,Base,Saudi Arabic (provisional),Finance,None,ممكن تحوليني على قسم المبيعات,,audio/saudi/17.wav
+ARB-0685,Corner,Saudi Arabic (provisional),Finance,Named Entity,فرع جدة الرئيسي,,audio/saudi/16.wav
+ARB-0686,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه حوليني,,audio/saudi/15.wav
+ARB-0687,Corner,Saudi Arabic (provisional),Finance,Named Entity,ما يهمني حوليني على أي فرع,,audio/saudi/14.wav
+ARB-0688,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Named Entity,الفرع الرئيسي,,audio/saudi/13.wav
+ARB-0689,Base,Saudi Arabic (provisional),Finance,None,قلت لك بطاقتي ضاعت فأحتاج مساعدة,,audio/saudi/12.wav
+ARB-0690,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier; Short Utterance,رع 307,,audio/saudi/11.wav
+ARB-0691,Corner,Saudi Arabic (provisional),Finance,Short Utterance; Disfluency,ايه حوليني,,audio/saudi/10.wav
+ARB-0692,Corner,Saudi Arabic (provisional),Finance,Numeric Identifier,176,,audio/saudi/9.wav
+ARB-0693,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,إذا حابة تستفيدين من مزايا السفر، أنصحك بـ بطاقة ترافل بلس.,إذا حابة تستفيدين من مزايا السفر، أنصحك بـ Travel Plus card.,
+ARB-0694,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,بطاقة ترافل بلس تعطيك نقاط أكثر على حجوزات الطيران والفنادق.,بطاقة travel plus تعطيك نقاط أكثر على حجوزات الطيران والفنادق.,
+ARB-0695,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,تفعيل بطاقة ترافل بلس يتم خلال دقائق وما يحتاج زيارة الفرع.,تفعيل Travel Plus card يتم خلال دقائق وما يحتاج زيارة الفرع.,
+ARB-0696,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,مع بطاقة ترافل بلس تقدرين تستخدمين صالات المطارات حول العالم.,مع Travel Plus card تقدرين تستخدمين صالات المطارات حول العالم.,
+ARB-0697,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,رسوم بطاقة ترافل بلس واضحة ومذكورة في العقد بدون أي مفاجآت.,رسوم بطاقة Travel Plus واضحة ومذكورة في العقد بدون أي مفاجآت.,
+ARB-0698,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,لو انتي كثيرة سفر، بطاقة ترافل بلس بتكون مناسبة لك مرة.,لو انتي كثيرة سفر، بطاقة Travel Plus بتكون مناسبة لك مرة.,
+ARB-0699,Base,Saudi/Gulf Arabic (provisional),Finance,Domain Mapping Review,لا تقلقين، الموضوع بسيط وراح نحلّه لك الآن.,,
+ARB-0700,Base,Saudi/Gulf Arabic (provisional),Finance,None,ما يحتاج تقلقين بخصوص العملية، هي بس معلّقة وقيد المعالجة.,,
+ARB-0701,Base,Saudi/Gulf Arabic (provisional),Finance,None,لا تقلقين أبد، حسابك آمن وكل شيء تحت المتابعة.,,
+ARB-0702,Base,Saudi/Gulf Arabic (provisional),Finance,Domain Mapping Review,لا تقلقين، بإذن الله ما راح يتكرر هذا الشي.,,
+ARB-0703,Base,Saudi/Gulf Arabic (provisional),Finance,None,تقدرين تحولِين المبلغ من التطبيق مباشرة.,,
+ARB-0704,Base,Saudi/Gulf Arabic (provisional),Finance,None,إذا حابة تحولِين الرصيد لحساب ثاني، أقدر اساعدك بالخطوات.,,
+ARB-0705,Base,Saudi/Gulf Arabic (provisional),Finance,None,تبين تحولِين المبلغ محلي أو دولي؟,,
+ARB-0706,Base,Saudi/Gulf Arabic (provisional),Finance,None,أول ما تحولِين، يوصلك إشعار بتأكيد العملية.,,
+ARB-0707,Base,Saudi/Gulf Arabic (provisional),Finance,None,تقدرين تحولِين لأي حساب مسجل باسمك بدون رسوم إضافية.,,
+ARB-0708,Base,Saudi/Gulf Arabic (provisional),Finance,None,يتم خصم المبلغ مباشرة من الحساب.,,
+ARB-0709,Base,Saudi/Gulf Arabic (provisional),Finance,Domain Mapping Review,نقدر نرفع لك الطلب مباشرة بدون انتظار.,,
+ARB-0710,Base,Saudi/Gulf Arabic (provisional),Finance,None,البطاقة تتفعل مباشرة بعد الموافقة.,,
+ARB-0711,Base,Saudi/Gulf Arabic (provisional),Finance,None,أول ما تتم العملية، راح يوصلك إشعار مباشرة.,,
+ARB-0712,Base,Saudi/Gulf Arabic (provisional),Finance,None,كنتِ مسافرة وقت العملية؟,,
+ARB-0713,Base,Saudi/Gulf Arabic (provisional),Finance,None,كنت أراجع حسابك قبل شوي وفعلاً المبلغ ظاهر.,,
+ARB-0714,Base,Saudi/Gulf Arabic (provisional),Finance,None,كنتِ تستخدمين البطاقة خارج المملكة؟,,
+ARB-0715,Base,Saudi/Gulf Arabic (provisional),Finance,None,إذا كنتِ متأكدة إنها عملية غير مصرح بها، نقدر نرفع اعتراض.,,
+ARB-0716,Base,Saudi/Gulf Arabic (provisional),Finance,Domain Mapping Review,كنت أحاول أتواصل معك بخصوص الطلب السابق.,,
+ARB-0717,Base,Saudi/Gulf Arabic (provisional),Finance,Domain Mapping Review,كنتِ مفعلة الإشعارات وقتها؟,,
+ARB-0718,Base,Saudi/Gulf Arabic (provisional),Finance,Domain Mapping Review,قدر الله وما شاء فعل، أهم شيء سلامتك.,,
+ARB-0719,Base,Saudi/Gulf Arabic (provisional),Finance,Domain Mapping Review,اذا صارت المشكلة لو قدر الله، إن شاء الله تنحل بسرعة.,,
+ARB-0720,Base,Saudi/Gulf Arabic (provisional),Finance,None,قدر الله وتأخر التحويل، ونعتذر لك عن الإزعاج.,,
+ARB-0721,Base,Saudi/Gulf Arabic (provisional),Finance,None,قدر الله وما تمت العملية، نقدر نحاول لك مرة ثانية.,,
+ARB-0722,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,بطاقتك من نوع فيزا ومقبولة عالميًا.,بطاقتك من نوع visa ومقبولة عالميًا.,
+ARB-0723,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,لو العملية كانت عن طريق فيزا، أقدر أشيك عليها بالتفصيل.,لو العملية كانت عن طريق visa، أقدر أشيك عليها بالتفصيل.,
+ARB-0724,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,بطاقة فيزا توفر لك حماية على المشتريات.,بطاقة visa توفر لك حماية على المشتريات.,
+ARB-0725,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,بعض المتاجر يطلبون تحقق إضافي لبطاقات فيزا.,بعض المتاجر يطلبون تحقق إضافي لبطاقات visa.,
+ARB-0726,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,تقدرين تربطين بطاقة فيزا بالمحفظة الرقمية بسهولة.,تقدرين تربطين بطاقة visa بالمحفظة الرقمية بسهولة.,
+ARB-0727,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,أنا بالفعل رفعت لك الطلب للنظام.,أنا already رفعت لك الطلب للنظام.,
+ARB-0728,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,إذا انت بالفعل مفعلة البطاقة، راح توصلك رسالة تأكيد.,إذا انت already مفعلة البطاقة، راح توصلك رسالة تأكيد.,
+ARB-0729,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,المبلغ انخصم بالفعل بس هو حجز مؤقت.,المبلغ انخصم already بس هو حجز مؤقت.,
+ARB-0730,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,انت بالفعل مسجلة في التطبيق قبل,انت already مسجلة في التطبيق قبل,
+ARB-0731,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,الطلب تقفل بالفعل وما فيه أي إجراء إضافي.,الطلب تقفل already وما فيه أي إجراء إضافي.,
+ARB-0732,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,الطلب ما زال تحت المعالجة.,الطلب still تحت المعالجة.,
+ARB-0733,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,المبلغ ما زال معلق وما تم خصمه نهائيًا.,المبلغ still معلق وما تم خصمه نهائيًا.,
+ARB-0734,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,إذا المشكلة ما زالت موجودة، نقدر نرفع بلاغ تقني.,إذا المشكلة still موجودة، نقدر نرفع بلاغ تقني.,
+ARB-0735,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,البطاقة ما زالت سارِيَة وما انتهت.,البطاقة still سارِيَة وما انتهت.,
+ARB-0736,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,التحويل ما زال ما وصل للطرف الثاني.,التحويل still ما وصل للطرف الثاني.,
+ARB-0737,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,شيكي على المفتاح يمكن طافي.,شيكي على الـ switch يمكن طافي.,
+ARB-0738,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,طفي المفتاح وشغليه مرة ثانية.,طفي الـ switch وشغليه مرة ثانية.,
+ARB-0739,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,أحيانًا المفتاح يكون فيه خلل بسيط.,أحيانًا الـ switch يكون فيه خلل بسيط.,
+ARB-0740,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,إذا ضغطتي المفتاح وما اشتغل، نرفع طلب صيانة.,إذا ضغطتي الـ switch وما اشتغل، نرفع طلب صيانة.,
+ARB-0741,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,أحتاج شفاطة مع العصير لو سمحت.,أحتاج straw مع العصير لو سمحت.,
+ARB-0742,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,ما فيه شفاطة مع الطلب.,ما فيه straw مع الطلب.,
+ARB-0743,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,ممكن تعطيني شفاطة ورقي؟,ممكن تعطيني straw ورقي؟,
+ARB-0744,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,بعض الأماكن ما توفر شفاطة بلاستيك.,بعض الأماكن ما توفر straw بلاستيك.,
+ARB-0745,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,لا تنسين تحطين شفاطة بالكيس.,لا تنسين تحطين straw بالكيس.,
+ARB-0746,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,ممكن تعطيني مناديل لو سمحتي؟,ممكن تعطيني tissue لو سمحتي؟,
+ARB-0747,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,المناديل موجود جنب المغسلة.,الـ tissue موجود جنب المغسلة.,
+ARB-0748,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,احتاج علبة مناديل جديدة.,احتاج علبة tissue جديدة.,
+ARB-0749,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,علبة المناديل خلصت بسرعة.,علبة الـ tissue خلصت بسرعة.,
+ARB-0750,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,سوي دوران للخلف مع الإشارة الجاية.,سوي U-turn مع الإشارة الجاية.,
+ARB-0751,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,ما يسمح بـ دوران للخلف في هالمكان.,ما يسمح بـ U-turn في هالمكان.,
+ARB-0752,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,لو فاتك المخرج، خذ دوران للخلف.,لو فاتك المخرج، خذ U-turn.,
+ARB-0753,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,انتبه مكتوب ممنوع انك تسوي دوران للخلف هنا.,انتبه مكتوب ممنوع انك تسوي U-turn هنا.,
+ARB-0754,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,سويت دوران للخلف عشان أرجع للموقع.,سويت U-turn عشان أرجع للموقع.,
+ARB-0755,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,ربطتي البطاقة في المحفظة؟,ربطتي البطاقة في الـ wallet؟,
+ARB-0756,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,تأكدي إن المحفظة محدثة.,تأكدي إن الـ wallet محدثة.,
+ARB-0757,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,تقدرين تدفعين من المحفظة بدون بطاقة فعلية.,تقدرين تدفعين من الـ wallet بدون بطاقة فعلية.,
+ARB-0758,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,المحفظة يطلب تحقق بالبصمة.,الـ wallet يطلب تحقق بالبصمة.,
+ARB-0759,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,احذفي البطاقة من المحفظة وجربي تضيفينها مرة ثانية.,احذفي البطاقة من الـ wallet وجربي تضيفينها مرة ثانية.,
+ARB-0760,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,وين الريموت حق التلفزيون؟,وين الـ remote حق التلفزيون؟,
+ARB-0761,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,الريموت مب شغال.,الـ remote مب شغال.,
+ARB-0762,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,غيري بطارية الريموت.,غيري بطارية الـ remote.,
+ARB-0763,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,اقدر اشتغل عن بعد اليوم؟,اقدر اشتغل remotely اليوم؟,
+ARB-0764,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,الريموت ضاع في الغرفة.,الـ remote ضاع في الغرفة.,
+ARB-0765,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,النظام حالياً فيه تحديث.,الـ system حالياً فيه تحديث.,
+ARB-0766,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,حسب النظام الطلب مكتمل.,حسب الـ system الطلب مكتمل.,
+ARB-0767,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching,النظام ما يسمح بهالعملية.,الـ system ما يسمح بهالعملية.,
+ARB-0768,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,بنرفع تذكرة على النظام.,بنرفع تذكرة على الـ system.,
+ARB-0769,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,يمكن فيه خلل بسيط في النظام.,يمكن فيه خلل بسيط في الـ system.,
+ARB-0770,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,أول ما يرجع النظام نكمل الإجراء.,أول ما يرجع الـ system نكمل الإجراء.,
+ARB-0771,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,كان فيه طائرة مسيرة يصور الفعالية.,كان فيه drone يصور الفعالية.,
+ARB-0772,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,استخدام الطائرة المسيرة يحتاج تصريح.,استخدام الـ drone يحتاج تصريح.,
+ARB-0773,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,تصوير الطائرة المسيرة يعطي زاوية أوضح.,تصوير الـ drone يعطي زاوية أوضح.,
+ARB-0774,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,لازم تشحنين بطارية الطائرة المسيرة قبل الاستخدام.,لازم تشحنين بطارية الـ drone قبل الاستخدام.,
+ARB-0775,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,اعطيني ال تحديث لوسمحتي,اعطيني ال update لوسمحتي,
+ARB-0776,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,عندي تحديث جديد,عندي update جديد,
+ARB-0777,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,خليني اشوف ال قائمة اول,خليني اشوف ال menu اول,
+ARB-0778,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,عندي تذكرتين كبار الشخصيات,عندي تذكرتين VIP,
+ARB-0779,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,عندي تذكرتين الدرجة الأولى,عندي تذكرتين First class,
+ARB-0780,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,ابغا بيتزتين مارغريتا,ابغا بيتزتين margherita,
+ARB-0781,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,لازم تستخدم واقي شمس قبل ماتطلع في الشمس,لازم تستخدم sunscreen قبل ماتطلع في الشمس,
+ARB-0782,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,احب ال سفن أب اكثر من ال ميرندا,احب ال seven up اكثر من ال mirinda,
+ARB-0783,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,خلني أتأكد من الحجز وأرجع لك,خلني أتأكد من الـ booking وأرجع لك,
+ARB-0784,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,تقدر تدخل على الموقع الإلكتروني وتشوف التفاصيل,تقدر تدخل على الـ website وتشوف التفاصيل,
+ARB-0785,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,أقدر أرسل لك الرابط على جوالك,أقدر أرسل لك الـ link على جوالك,
+ARB-0786,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,تقدر تسوي تسجيل الدخول من الصفحة الرئيسية,تقدر تسوي الـ login من الصفحة الرئيسية,
+ARB-0787,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,الاجتماع بكون عبر الإنترنت,الـ meeting بكون online,
+ARB-0788,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,اليوم عندي اجتماع الصباح,اليوم عندي meeting الصباح,
+ARB-0789,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,ممكن ترسل لي الملف مرة ثانية؟,ممكن ترسل لي الـ file مرة ثانية؟,
+ARB-0790,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,الموقع مو ظاهر عندي بشكل واضح,الـ location مو ظاهر عندي بشكل واضح,
+ARB-0791,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,أرسل لي موقع المطعم,أرسل لي location المطعم,
+ARB-0792,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,العرض هذا متاح لفترة محدودة,الـ offer هذا متاح لفترة محدودة,
+ARB-0793,Corner,Saudi/Gulf Arabic (provisional),Food,Code-switching,خلنا نراجع الطلب قبل ما نكمل,خلنا نراجع الـ order قبل ما نكمل,
+ARB-0794,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,خلني أشيك على تقويم,خلني أشيك على calendar,
+ARB-0795,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,وين موقف السيارات؟,وين الـ parking؟,
+ARB-0796,Corner,Saudi/Gulf Arabic (provisional),Finance,General Number; Code-switching; Domain Mapping Review,خلني آخذ استراحة 5 دقايق,خلني آخذ break خمس دقايق,
+ARB-0797,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,أرسلها لي على واتساب,أرسلها لي على WhatsApp,
+ARB-0798,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,أرسل لي التفاصيل إذا فضيت,أرسل لي الـ details إذا فضيت,
+ARB-0799,Corner,Saudi/Gulf Arabic (provisional),Finance,Code-switching; Domain Mapping Review,خلني أرسل لك تذكير,خلني أرسل لك reminder,
+ARB-0800,Corner,Saudi/Gulf Arabic (provisional),Car,Code-switching,نسيت أسوي التسجيل الوصول,نسيت أسوي الـ check-in,
