@@ -914,9 +914,10 @@ def write_xlsx(path: Path, sheets: list[tuple[str, list[dict[str, Any]]]]) -> No
         'ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
         f"{content_overrides}</Types>"
     )
+    hidden_sheet_state = ' state="hidden"'
     workbook_sheets = "".join(
         f'<sheet name="{xml_text(name)}" sheetId="{index}" r:id="rId{index}"'
-        f'{" state=\"hidden\"" if name == "_state" else ""}/>'
+        f'{hidden_sheet_state if name == "_state" else ""}/>'
         for index, (name, _) in enumerate(sheets, start=1)
     )
     workbook = (
