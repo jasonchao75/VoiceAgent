@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import os
 import shutil
+import sqlite3
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -72,8 +73,12 @@ class HistoryStore:
                 CREATE TABLE IF NOT EXISTS turn_metrics (
                     call_id TEXT NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
                     turn_index INTEGER NOT NULL,
+                    asr_final_latency_ms REAL,
+                    llm_request_splicing_ms REAL,
                     llm_first_token_ms REAL,
+                    tts_initial_ms REAL,
                     tts_first_audio_ms REAL,
+                    playback_ms REAL,
                     server_to_playback_ms REAL,
                     turn_to_playback_ms REAL,
                     reasoning_tokens INTEGER,
@@ -84,7 +89,23 @@ class HistoryStore:
                 CREATE INDEX IF NOT EXISTS idx_calls_started_at ON calls(started_at DESC);
                 """
             )
+            await self._migrate_turn_metrics(database)
             await database.commit()
+
+    async def _migrate_turn_metrics(self, database: aiosqlite.Connection) -> None:
+        """Add latency-chain columns to existing turn_metrics tables idempotently."""
+        new_columns = [
+            "asr_final_latency_ms REAL",
+            "llm_request_splicing_ms REAL",
+            "tts_initial_ms REAL",
+            "playback_ms REAL",
+        ]
+        for column_def in new_columns:
+            try:
+                await database.execute(f"ALTER TABLE turn_metrics ADD COLUMN {column_def}")
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    raise
 
     async def start_call(
         self,
@@ -166,13 +187,17 @@ class HistoryStore:
             )
             await database.executemany(
                 """INSERT OR REPLACE INTO turn_metrics VALUES
-                   (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     (
                         call_id,
                         item.turn_index,
+                        item.asr_final_latency_ms,
+                        item.llm_request_splicing_ms,
                         item.llm_first_token_ms,
+                        item.tts_initial_ms,
                         item.tts_first_audio_ms,
+                        item.playback_ms,
                         item.server_to_playback_ms,
                         item.turn_to_playback_ms,
                         item.reasoning_tokens,

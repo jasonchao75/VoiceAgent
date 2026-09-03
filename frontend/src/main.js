@@ -582,7 +582,8 @@ async function showHistory(callId) {
   for (const metric of call.metrics) {
     const row = document.createElement("p");
     row.className = "history-metric";
-    row.textContent = `Turn ${metric.turn_index + 1}: LLM ${metric.llm_first_token_ms ?? "—"} ms · TTS ${metric.tts_first_audio_ms ?? "—"} ms · playback ${metric.turn_to_playback_ms ?? "—"} ms · reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`;
+    const fmt = (v) => v === null || v === undefined ? "—" : `${v}`;
+    row.textContent = `Turn ${metric.turn_index + 1}: ASR final ${fmt(metric.asr_final_latency_ms)} ms · LLM splicing ${fmt(metric.llm_request_splicing_ms)} ms · LLM TTFT ${fmt(metric.llm_first_token_ms)} ms · TTS initial ${fmt(metric.tts_initial_ms)} ms · TTS TTFT ${fmt(metric.tts_first_audio_ms)} ms · playback ${fmt(metric.playback_ms)} ms · e2e latency ${fmt(metric.turn_to_playback_ms)} ms · reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`;
     elements.historyDetail.append(row);
   }
   const remove = document.createElement("button");

@@ -35,10 +35,15 @@
 
 每轮至少计算：
 
-- `llm_first_token_ms`：ASR final 到服务端观察到 LLM 首个文本 Token；包含服务器到厂商的公网耗时，不包含浏览器下行播放。
-- `tts_first_audio_ms`：首段文本交给 TTS 到服务端收到首个音频包；包含服务器到厂商的公网耗时。
-- `server_to_playback_ms`：服务端首个 TTS 音频包到浏览器首次播放回调，主要反映传输、缓冲和客户端播放。
-- `turn_to_playback_ms`：用户停止说话到浏览器首次播放，用于整体体感。
+- `asr_final_latency_ms`：VAD 判断用户停口到 ASR 发出最终 transcript（ASR final package latency）。
+- `llm_request_splicing_ms`：ASR final 到用户 aggregator 把上下文推给 LLM 服务（`LLMContextFrame`），即 LLM request splicing。
+- `llm_first_token_ms`：`LLMContextFrame` 到服务端观察到首个 `LLMTextFrame`（LLM TTFT）；包含服务器到厂商的公网耗时，不包含浏览器下行播放。
+- `tts_initial_ms`：首个 LLM text token 到 TTS 服务开始处理（TTS initial），含后续 token 流式等待与 TTS 服务启动。
+- `tts_first_audio_ms`：TTS 服务开始处理到服务端收到首个音频包（TTS TTFT）；包含服务器到厂商的公网耗时。
+- `playback_ms`：服务端首个 TTS 音频包到浏览器首次播放回调，主要反映传输、缓冲和客户端播放。
+- `turn_to_playback_ms`：用户停止说话到浏览器首次播放（e2e latency）。
+
+以上 6 个 breakdown 项构成完整的延迟链，其和恒等于 `turn_to_playback_ms`。缺失事件必须保存为 null 并标注原因，不得用 0 代替。
 
 缺失事件必须保存为 null 并标注原因，不得用 0 代替。时间点使用单调时钟计算耗时、UTC 时间用于展示和持久化。
 

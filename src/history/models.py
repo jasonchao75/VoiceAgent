@@ -16,12 +16,21 @@ class HistoryTurn(BaseModel):
 
 
 class TurnMetric(BaseModel):
-    """One turn's server and browser latency decomposition."""
+    """One turn's full latency chain decomposition.
+
+    The breakdown fields telescope to ``turn_to_playback_ms``:
+    asr_final_latency + llm_request_splicing + llm_first_token +
+    tts_initial + tts_first_audio + playback == e2e latency.
+    """
 
     model_config = ConfigDict(extra="forbid")
     turn_index: int
+    asr_final_latency_ms: float | None = None
+    llm_request_splicing_ms: float | None = None
     llm_first_token_ms: float | None = None
+    tts_initial_ms: float | None = None
     tts_first_audio_ms: float | None = None
+    playback_ms: float | None = None
     server_to_playback_ms: float | None = None
     turn_to_playback_ms: float | None = None
     reasoning_tokens: int | None = None
