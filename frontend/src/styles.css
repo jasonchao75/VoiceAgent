@@ -148,3 +148,28 @@ button:disabled { opacity: .45; cursor: not-allowed; }.mic-icon { font-size: 8px
 .history-dialog audio { width: 100%; margin: 14px 0; }
 .dialog-close { position: sticky; float: right; top: 0; }
 .history-metric { color: #9eaaa4; background: #0d1210; border: 1px solid var(--line); border-radius: 8px; padding: 9px; font-size: 10px; }
+
+/* Diagnostic result detail */
+.diagnostic-result { padding: 10px; border: 1px solid #315843; border-radius: 9px; background: #0d1210; }
+.diagnostic-result[data-success="false"] { border-color: #663030; color: inherit; }
+.diagnostic-detail { display: flex; flex-direction: column; gap: 10px; }
+.diagnostic-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.diagnostic-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 3px 8px; border-radius: 999px; }
+.diagnostic-badge.success { color: #07110c; background: var(--accent); }
+.diagnostic-badge.danger { color: #341b1b; background: var(--danger); }
+.diagnostic-provider { font-weight: 600; font-size: 11px; color: #c9d2cd; }
+.diagnostic-host { font-size: 10px; color: var(--muted); }
+.diagnostic-metrics, .diagnostic-debug-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; margin: 0; }
+.diagnostic-metrics div, .diagnostic-debug-list div { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; background: #101412; border: 1px solid var(--line); border-radius: 7px; }
+.diagnostic-metrics dt, .diagnostic-debug-list dt { color: #65716b; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.diagnostic-metrics dd, .diagnostic-debug-list dd { margin: 0; color: #c9d2cd; font-size: 10px; font-weight: 600; }
+.diagnostic-message { padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: #101412; }
+.diagnostic-message p { margin: 0; font-size: 11px; line-height: 1.5; color: #c9d2cd; }
+.diagnostic-message p + p { margin-top: 6px; color: #9eaaa4; }
+.diagnostic-debug summary { cursor: pointer; color: var(--accent); font-size: 11px; font-weight: 600; list-style: none; }
+.diagnostic-debug summary::-webkit-details-marker { display: none; }
+.diagnostic-debug[open] summary { margin-bottom: 8px; }
+.diagnostic-id-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.diagnostic-id-row code { flex: 1; font-size: 10px; color: #9eaaa4; background: #101412; padding: 6px 8px; border-radius: 6px; overflow-wrap: anywhere; }
+.diagnostic-id-row .copy-id { position: static; color: var(--accent); font-size: 10px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.diagnostic-id-row .copy-id:hover { background: #1b211f; }

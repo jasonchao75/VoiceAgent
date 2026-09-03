@@ -426,12 +426,109 @@ function diagnosticPayload(kind) {
   };
 }
 
+function escapeHtml(text) {
+  if (text == null) return "";
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderDiagnosticResult(result) {
+  const container = document.createElement("div");
+  container.className = "diagnostic-detail";
+
+  const badgeClass = result.success ? "success" : "danger";
+  const badgeLabel = result.success ? "Connected" : "Failed";
+
+  const header = document.createElement("div");
+  header.className = "diagnostic-header";
+  header.innerHTML = `
+    <span class="diagnostic-badge ${badgeClass}">${badgeLabel}</span>
+    <span class="diagnostic-provider">${escapeHtml(result.provider)}/${escapeHtml(result.model)}</span>
+    <span class="diagnostic-host">@${escapeHtml(result.base_url_host)}</span>
+  `;
+  container.appendChild(header);
+
+  const metrics = document.createElement("dl");
+  metrics.className = "diagnostic-metrics";
+  const firstToken = result.first_token_ms != null ? `${result.first_token_ms} ms` : "—";
+  const reasoningTokens = result.reasoning_tokens != null ? ` (${result.reasoning_tokens} tokens)` : "";
+  metrics.innerHTML = `
+    <div><dt>First token</dt><dd>${escapeHtml(firstToken)}</dd></div>
+    <div><dt>Total</dt><dd>${escapeHtml(result.total_ms)} ms</dd></div>
+    <div><dt>Reasoning</dt><dd>${escapeHtml(result.reasoning_status)}${reasoningTokens}</dd></div>
+    ${result.reasoning_control ? `<div><dt>Control</dt><dd>${escapeHtml(result.reasoning_control)}</dd></div>` : ""}
+  `;
+  container.appendChild(metrics);
+
+  const message = document.createElement("div");
+  message.className = "diagnostic-message";
+  message.innerHTML = `
+    <p><strong>${escapeHtml(result.summary)}</strong></p>
+    <p>${escapeHtml(result.suggestion)}</p>
+  `;
+  container.appendChild(message);
+
+  const debug = document.createElement("details");
+  debug.className = "diagnostic-debug";
+  debug.open = !result.success;
+  const summary = document.createElement("summary");
+  summary.textContent = "Debug details";
+  debug.appendChild(summary);
+
+  const debugList = document.createElement("dl");
+  debugList.className = "diagnostic-debug-list";
+  const debugRows = [
+    `<div><dt>Category</dt><dd>${escapeHtml(result.category)}</dd></div>`,
+    result.http_status != null
+      ? `<div><dt>HTTP status</dt><dd>${escapeHtml(result.http_status)}</dd></div>`
+      : "",
+    result.error_type
+      ? `<div><dt>Error type</dt><dd>${escapeHtml(result.error_type)}</dd></div>`
+      : "",
+    result.provider_error_code
+      ? `<div><dt>Provider code</dt><dd>${escapeHtml(result.provider_error_code)}</dd></div>`
+      : "",
+  ].filter(Boolean);
+  debugList.innerHTML = debugRows.join("");
+  debug.appendChild(debugList);
+
+  const idRow = document.createElement("div");
+  idRow.className = "diagnostic-id-row";
+  const idCode = document.createElement("code");
+  idCode.textContent = result.diagnostic_id;
+  const copyButton = document.createElement("button");
+  copyButton.className = "text-button copy-id";
+  copyButton.type = "button";
+  copyButton.textContent = "Copy";
+  copyButton.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(result.diagnostic_id);
+      copyButton.textContent = "Copied";
+      window.setTimeout(() => {
+        copyButton.textContent = "Copy";
+      }, 1200);
+    } catch {
+      copyButton.textContent = "Error";
+    }
+  });
+  idRow.append(idCode, copyButton);
+  debug.appendChild(idRow);
+
+  container.appendChild(debug);
+  return container;
+}
+
 async function testLlm(kind) {
   clearError();
   const output = kind === "bot" ? elements.botDiagnostic : kind === "session" ? elements.sessionDiagnostic : elements.quickDiagnostic;
   const button = kind === "bot" ? elements.testBotLlm : kind === "session" ? elements.testSessionLlm : elements.testQuickLlm;
   button.disabled = true;
   output.hidden = false;
+  output.dataset.success = "";
   output.textContent = "Testing a minimal request…";
   try {
     const result = await apiRequest("/api/llm/diagnostics", {
@@ -441,8 +538,7 @@ async function testLlm(kind) {
         : diagnosticPayload(kind),
     });
     output.dataset.success = String(result.success);
-    const tokens = result.reasoning_tokens === null ? "not reported" : result.reasoning_tokens;
-    output.textContent = `${result.success ? "Connected" : "Failed"} · ${result.provider}/${result.model}\n${result.summary}\nFirst token: ${result.first_token_ms ?? "—"} ms · Reasoning: ${result.reasoning_status} (${tokens} tokens)\n${result.suggestion} · ID ${result.diagnostic_id}`;
+    output.replaceChildren(renderDiagnosticResult(result));
   } catch (error) {
     output.dataset.success = "false";
     output.textContent = error instanceof Error ? error.message : "Diagnostic failed.";
