@@ -1,0 +1,34 @@
+{
+  "endpoint": "wss://eu.rt.speechmatics.com/v2/",
+  "audio_format": {
+    "type": "raw",
+    "encoding": "pcm_s16le",
+    "sample_rate": 8000
+  },
+  "transcription_config": {
+    "language": "ar",
+    "diarization": "none",
+    "max_delay": 2,
+    "max_delay_mode": "flexible",
+    "audio_filtering_config": {
+      "volume_threshold": 0
+    },
+    "transcript_filtering_config": {
+      "remove_disfluencies": false
+    },
+    "enable_partials": true,
+    "enable_entities": true,
+    "operating_point": "enhanced",
+    "punctuation_overrides": {
+      "permitted_marks": [".", ",", "?", "!"],
+      "sensitivity": 0.5
+    },
+    "conversation_config": {
+      "end_of_utterance_silence_trigger": 0.5
+    }
+  },
+  "chunk_size_ms": 20,
+  "open_timeout_seconds": 10.0,
+  "close_timeout_seconds": 10.0,
+  "recognition_start_timeout_seconds": 10.0
+}

@@ -1,0 +1,17 @@
+{
+  "endpoint": "wss://api.elevenlabs.io/v1/speech-to-text/realtime",
+  "model_id": "scribe_v2_realtime",
+  "audio_format": "pcm_8000",
+  "language_code": "ar",
+  "commit_strategy": "vad",
+  "vad_silence_threshold_secs": 1.5,
+  "vad_threshold": 0.4,
+  "min_speech_duration_ms": 100,
+  "min_silence_duration_ms": 100,
+  "include_timestamps": false,
+  "include_language_detection": false,
+  "no_verbatim": false,
+  "enable_logging": true,
+  "keyterms": ["ثلاثمية", "ثلاثمائة", "ثلاثمئة", "واحد", "وواحد", "وسبعة", "وتسعين"],
+  "chunk_size_ms": 20
+}

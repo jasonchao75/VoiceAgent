@@ -1,4 +1,5 @@
 {
+  "endpoint": "wss://stt-rt.soniox.com/transcribe-websocket",
   "model": "stt-rt-v4",
   "audio_format": "pcm_s16le",
   "sample_rate": 8000,
@@ -7,5 +8,8 @@
   "enable_language_identification": true,
   "enable_speaker_diarization": false,
   "enable_endpoint_detection": true,
-  "max_endpoint_delay_ms": 2000
+  "max_endpoint_delay_ms": 2000,
+  "chunk_size_ms": 20,
+  "open_timeout_seconds": 10.0,
+  "close_timeout_seconds": 10.0
 }
