@@ -90,6 +90,13 @@ class HistoryStore:
                 """
             )
             await self._migrate_turn_metrics(database)
+            await database.execute(
+                """UPDATE calls
+                   SET ended_at = COALESCE(ended_at, ?), status = 'failed',
+                       error_category = COALESCE(error_category, 'session_interrupted')
+                   WHERE status = 'pending'""",
+                (datetime.now(UTC).isoformat(),),
+            )
             await database.commit()
 
     async def _migrate_turn_metrics(self, database: aiosqlite.Connection) -> None:
@@ -186,8 +193,13 @@ class HistoryStore:
                 [(call_id, item.sequence, item.role, item.text, item.created_ms) for item in turns],
             )
             await database.executemany(
-                """INSERT OR REPLACE INTO turn_metrics VALUES
-                   (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                """INSERT OR REPLACE INTO turn_metrics (
+                       call_id, turn_index, asr_final_latency_ms,
+                       llm_request_splicing_ms, llm_first_token_ms, tts_initial_ms,
+                       tts_first_audio_ms, playback_ms, server_to_playback_ms,
+                       turn_to_playback_ms, reasoning_tokens, reasoning_status,
+                       reasoning_control
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     (
                         call_id,

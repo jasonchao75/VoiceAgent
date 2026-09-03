@@ -644,22 +644,26 @@ def create_app() -> FastAPI:
             if websocket.client_state.name != "DISCONNECTED":
                 await websocket.close(code=1011, reason="Voice service error")
         finally:
-            await recorder.stop()
-            turns, metrics = capture.finalize()
-            await history_store.finish_call(
-                call_id=lease.session_id,
-                status=call_status,
-                duration_ms=(time.monotonic() - capture.started) * 1000,
-                turns=turns,
-                metrics=metrics,
-                recording_path=recording_path,
-                recording_status=recorder.status,
-                error_category=error_category,
-                diagnostic_id=diagnostic_id,
-            )
-            await store.close(lease.session_id)
-            event_buffers.pop(lease.session_id, None)
-            call_captures.pop(lease.session_id, None)
+            try:
+                await recorder.stop()
+                turns, metrics = capture.finalize()
+                await history_store.finish_call(
+                    call_id=lease.session_id,
+                    status=call_status,
+                    duration_ms=(time.monotonic() - capture.started) * 1000,
+                    turns=turns,
+                    metrics=metrics,
+                    recording_path=recording_path,
+                    recording_status=recorder.status,
+                    error_category=error_category,
+                    diagnostic_id=diagnostic_id,
+                )
+            finally:
+                try:
+                    await store.close(lease.session_id)
+                finally:
+                    event_buffers.pop(lease.session_id, None)
+                    call_captures.pop(lease.session_id, None)
 
     @app.get("/api/history", response_model=CallListResponse)
     async def list_history(limit: int = 50, offset: int = 0) -> CallListResponse:

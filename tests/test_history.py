@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import aiosqlite
 import pytest
 
 from src.history.models import HistoryTurn, TurnMetric
@@ -71,6 +72,96 @@ async def test_cleanup_is_idempotent_on_empty_store(tmp_path: Path) -> None:
     await store.cleanup()
     await store.cleanup()
     assert (await store.list_calls(limit=10, offset=0)).total == 0
+
+
+@pytest.mark.asyncio
+async def test_legacy_metric_column_order_is_migrated_safely(tmp_path: Path) -> None:
+    """Explicit column writes must support databases migrated from the old schema."""
+    database_path = tmp_path / "history.db"
+    async with aiosqlite.connect(database_path) as database:
+        await database.execute(
+            """CREATE TABLE turn_metrics (
+                   call_id TEXT NOT NULL,
+                   turn_index INTEGER NOT NULL,
+                   llm_first_token_ms REAL,
+                   tts_first_audio_ms REAL,
+                   server_to_playback_ms REAL,
+                   turn_to_playback_ms REAL,
+                   reasoning_tokens INTEGER,
+                   reasoning_status TEXT NOT NULL,
+                   reasoning_control TEXT,
+                   PRIMARY KEY (call_id, turn_index)
+               )"""
+        )
+        await database.commit()
+
+    store = HistoryStore(tmp_path)
+    await store.initialize()
+    await store.start_call(
+        call_id="legacy-call",
+        bot_id=None,
+        bot_name=None,
+        llm_provider="custom",
+        llm_model="gemini-3.5-flash-lite",
+        asr_provider="deepgram_flux",
+        asr_model="flux-general-en",
+        language="en",
+        sample_rate=16000,
+        channels=1,
+    )
+    await store.finish_call(
+        call_id="legacy-call",
+        status="completed",
+        duration_ms=500,
+        turns=[],
+        metrics=[
+            TurnMetric(
+                turn_index=0,
+                asr_final_latency_ms=10,
+                llm_request_splicing_ms=20,
+                llm_first_token_ms=30,
+                tts_initial_ms=40,
+                tts_first_audio_ms=50,
+                playback_ms=60,
+                turn_to_playback_ms=210,
+                reasoning_status="unverified",
+            )
+        ],
+        recording_path=None,
+        recording_status="unavailable",
+    )
+
+    detail = await store.get_call("legacy-call")
+    assert detail is not None
+    assert detail.status == "completed"
+    assert detail.metrics[0].asr_final_latency_ms == 10
+    assert detail.metrics[0].reasoning_status == "unverified"
+
+
+@pytest.mark.asyncio
+async def test_initialize_marks_abandoned_pending_calls_failed(tmp_path: Path) -> None:
+    """A restart must not leave calls permanently pending when finalization was interrupted."""
+    store = HistoryStore(tmp_path)
+    await store.initialize()
+    await store.start_call(
+        call_id="abandoned-call",
+        bot_id=None,
+        bot_name=None,
+        llm_provider="custom",
+        llm_model="model",
+        asr_provider="deepgram_flux",
+        asr_model="flux-general-en",
+        language="en",
+        sample_rate=16000,
+        channels=1,
+    )
+
+    restarted = HistoryStore(tmp_path)
+    await restarted.initialize()
+    detail = await restarted.get_call("abandoned-call")
+    assert detail is not None
+    assert detail.status == "failed"
+    assert detail.error_category == "session_interrupted"
 
 
 @pytest.mark.asyncio
