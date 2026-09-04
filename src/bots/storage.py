@@ -74,8 +74,7 @@ class BotStore:
                 )
             if "tts_model" not in columns:
                 await db.execute(
-                    "ALTER TABLE bots ADD COLUMN tts_model TEXT NOT NULL "
-                    "DEFAULT 'flux-general-en'"
+                    "ALTER TABLE bots ADD COLUMN tts_model TEXT NOT NULL DEFAULT 'flux-general-en'"
                 )
             if "encrypted_elevenlabs_key" not in columns:
                 await db.execute("ALTER TABLE bots ADD COLUMN encrypted_elevenlabs_key TEXT")

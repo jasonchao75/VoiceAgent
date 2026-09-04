@@ -358,8 +358,8 @@ def create_app() -> FastAPI:
     @app.post("/api/bots", response_model=BotResponse, status_code=201)
     async def create_bot(request: BotCreateRequest) -> BotResponse:
         _validate_bot_payload(request)
-        encrypted_deepgram_key, encrypted_llm_key, encrypted_elevenlabs_key = (
-            _encrypt_bot_keys(request)
+        encrypted_deepgram_key, encrypted_llm_key, encrypted_elevenlabs_key = _encrypt_bot_keys(
+            request
         )
         record = await bot_store.create(
             config=_config_fields(request),
