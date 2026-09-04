@@ -43,6 +43,13 @@ app.innerHTML = `
             <input id="session-llm-key" type="password" autocomplete="new-password" />
             <button class="text-button reveal" type="button" data-target="session-llm-key">Show</button>
           </div>
+          <div id="session-elevenlabs-key-field" hidden>
+            <label for="session-elevenlabs-key">ElevenLabs API key</label>
+            <div class="input-with-action">
+              <input id="session-elevenlabs-key" type="password" autocomplete="new-password" />
+              <button class="text-button reveal" type="button" data-target="session-elevenlabs-key">Show</button>
+            </div>
+          </div>
           <button id="test-session-llm" class="secondary-button diagnostic-button" type="button">Test selected bot LLM</button>
           <div id="session-diagnostic-result" class="diagnostic-result" hidden></div>
         </section>
@@ -63,10 +70,15 @@ app.innerHTML = `
               <label for="bot-tts">TTS provider</label>
               <select id="bot-tts">
                 <option value="deepgram_flux">Deepgram Flux</option>
+                <option value="elevenlabs">ElevenLabs</option>
               </select>
 
+              <label for="bot-tts-model">TTS model</label>
+              <select id="bot-tts-model"></select>
+
               <label for="bot-voice">Voice</label>
-              <select id="bot-voice"></select>
+              <select id="bot-voice" hidden></select>
+              <button id="choose-bot-voice" class="voice-picker-trigger" type="button">Choose voice</button>
               <article id="bot-voice-card" class="voice-card"></article>
               <div class="link-row">
                 <a id="bot-voice-docs-link" href="#" target="_blank" rel="noreferrer">Voice catalog ↗</a>
@@ -124,6 +136,15 @@ app.innerHTML = `
                 <div class="input-with-action">
                   <input id="bot-llm-key" type="password" autocomplete="new-password" />
                   <button class="text-button reveal" type="button" data-target="bot-llm-key">Show</button>
+                </div>
+
+                <div id="bot-elevenlabs-key-field" hidden>
+                  <label for="bot-elevenlabs-key">ElevenLabs API key</label>
+                  <div class="input-with-action">
+                    <input id="bot-elevenlabs-key" type="password" autocomplete="new-password" />
+                    <button class="text-button reveal" type="button" data-target="bot-elevenlabs-key">Show</button>
+                  </div>
+                  <p class="hint">Required only when ElevenLabs is the TTS provider.</p>
                 </div>
                 <div class="field-help">
                   <span>Encrypted before storage · never returned by the API</span>
@@ -272,6 +293,34 @@ app.innerHTML = `
       <button id="close-history" class="text-button dialog-close" type="button">Close</button>
       <div id="history-detail"></div>
     </dialog>
+    <dialog id="voice-picker-dialog" class="voice-picker-dialog">
+      <button id="close-voice-picker" class="text-button dialog-close" type="button">Close</button>
+      <p class="eyebrow">TTS voice</p>
+      <h2 id="voice-picker-title">Choose voice</h2>
+      <p id="voice-picker-help" class="hint"></p>
+      <div id="voice-discovery-key-field">
+        <label for="voice-discovery-key">ElevenLabs API key for voice discovery</label>
+        <input id="voice-discovery-key" type="password" autocomplete="new-password" />
+        <p class="hint">Used for this request only unless “Save API keys” is enabled.</p>
+      </div>
+      <div class="voice-picker-filters">
+        <input id="voice-search" placeholder="Search name or description" />
+        <select id="voice-language"><option value="">All languages</option></select>
+        <select id="voice-accent"><option value="">All accents</option></select>
+        <select id="voice-gender"><option value="">All genders</option></select>
+        <select id="voice-category"><option value="">All sources</option></select>
+      </div>
+      <div id="voice-picker-error" class="error-banner" hidden></div>
+      <div id="voice-picker-list" class="voice-picker-list"></div>
+      <button id="load-more-voices" class="secondary-button" type="button" hidden>Load more</button>
+      <details id="manual-voice-panel">
+        <summary>Enter Voice ID manually</summary>
+        <div class="manual-voice-row">
+          <input id="manual-voice-id" maxlength="100" placeholder="ElevenLabs Voice ID" />
+          <button id="use-manual-voice" class="secondary-button" type="button">Use ID</button>
+        </div>
+      </details>
+    </dialog>
   </main>
 `;
 
@@ -284,7 +333,9 @@ const elements = {
   botName: document.querySelector("#bot-name"),
   botAsr: document.querySelector("#bot-asr"),
   botTts: document.querySelector("#bot-tts"),
+  botTtsModel: document.querySelector("#bot-tts-model"),
   botVoice: document.querySelector("#bot-voice"),
+  chooseBotVoice: document.querySelector("#choose-bot-voice"),
   botVoiceCard: document.querySelector("#bot-voice-card"),
   botVoiceDocs: document.querySelector("#bot-voice-docs-link"),
   botVoiceListen: document.querySelector("#bot-voice-listen-link"),
@@ -302,12 +353,16 @@ const elements = {
   botKeyFields: document.querySelector("#bot-key-fields"),
   botDeepgramKey: document.querySelector("#bot-deepgram-key"),
   botLlmKey: document.querySelector("#bot-llm-key"),
+  botElevenlabsKeyField: document.querySelector("#bot-elevenlabs-key-field"),
+  botElevenlabsKey: document.querySelector("#bot-elevenlabs-key"),
   keepKeysHint: document.querySelector("#keep-keys-hint"),
   byokHint: document.querySelector("#byok-hint"),
   cancelBot: document.querySelector("#cancel-bot-button"),
   sessionKeys: document.querySelector("#session-keys"),
   sessionDeepgramKey: document.querySelector("#session-deepgram-key"),
   sessionLlmKey: document.querySelector("#session-llm-key"),
+  sessionElevenlabsKeyField: document.querySelector("#session-elevenlabs-key-field"),
+  sessionElevenlabsKey: document.querySelector("#session-elevenlabs-key"),
   testSessionLlm: document.querySelector("#test-session-llm"),
   sessionDiagnostic: document.querySelector("#session-diagnostic-result"),
   quickForm: document.querySelector("#session-form"),
@@ -343,12 +398,31 @@ const elements = {
   historyDialog: document.querySelector("#history-dialog"),
   historyDetail: document.querySelector("#history-detail"),
   closeHistory: document.querySelector("#close-history"),
+  voicePickerDialog: document.querySelector("#voice-picker-dialog"),
+  closeVoicePicker: document.querySelector("#close-voice-picker"),
+  voicePickerTitle: document.querySelector("#voice-picker-title"),
+  voicePickerHelp: document.querySelector("#voice-picker-help"),
+  voiceDiscoveryKeyField: document.querySelector("#voice-discovery-key-field"),
+  voiceDiscoveryKey: document.querySelector("#voice-discovery-key"),
+  voiceSearch: document.querySelector("#voice-search"),
+  voiceLanguage: document.querySelector("#voice-language"),
+  voiceAccent: document.querySelector("#voice-accent"),
+  voiceGender: document.querySelector("#voice-gender"),
+  voiceCategory: document.querySelector("#voice-category"),
+  voicePickerError: document.querySelector("#voice-picker-error"),
+  voicePickerList: document.querySelector("#voice-picker-list"),
+  loadMoreVoices: document.querySelector("#load-more-voices"),
+  manualVoicePanel: document.querySelector("#manual-voice-panel"),
+  manualVoiceId: document.querySelector("#manual-voice-id"),
+  useManualVoice: document.querySelector("#use-manual-voice"),
 };
 
 let catalogs;
 let bots = [];
 let selectedBotId;
 let editingBotId;
+let discoveredVoices = [];
+let nextVoicePageToken;
 let client;
 let sessionId;
 let sessionToken;
@@ -570,7 +644,7 @@ async function showHistory(callId) {
   const heading = document.createElement("h2");
   heading.textContent = call.bot_name || "One-off session";
   const meta = document.createElement("p");
-  meta.textContent = `${new Date(call.started_at).toLocaleString()} · ${call.llm_provider}/${call.llm_model} · ${call.status}`;
+  meta.textContent = `${new Date(call.started_at).toLocaleString()} · ${call.llm_provider}/${call.llm_model} · ${call.tts_provider}/${call.tts_model} · ${call.status}`;
   elements.historyDetail.append(heading, meta);
   if (call.has_recording) {
     const audio = document.createElement("audio");
@@ -667,6 +741,144 @@ function fillVoiceSelect(selectEl, selectedId) {
   if (selectedId) selectEl.value = selectedId;
 }
 
+function syncTtsFields() {
+  const elevenlabs = elements.botTts.value === "elevenlabs";
+  elements.botTtsModel.replaceChildren(
+    ...(
+      elevenlabs
+        ? ["eleven_flash_v2_5", "eleven_multilingual_v2"]
+        : ["flux-general-en"]
+    ).map((model) => new Option(model, model)),
+  );
+  elements.botElevenlabsKeyField.hidden = !elevenlabs;
+  elements.sessionElevenlabsKeyField.hidden = !(
+    selectedBot()?.tts_provider === "elevenlabs" && !selectedBot()?.has_saved_keys
+  );
+  elements.manualVoicePanel.hidden = !elevenlabs;
+  elements.voiceDiscoveryKeyField.hidden = !elevenlabs;
+  if (!elevenlabs && !voiceEntry(elements.botVoice.value)) {
+    fillVoiceSelect(elements.botVoice, catalogs.defaults.flux_voice);
+  }
+  updateBotVoiceDisplay();
+  syncKeyFieldVisibility();
+}
+
+function updateBotVoiceDisplay() {
+  const voice = voiceEntry(elements.botVoice.value);
+  const name = voice?.name || elements.botVoice.selectedOptions[0]?.textContent || elements.botVoice.value;
+  elements.chooseBotVoice.textContent = name ? `${name} — Change voice` : "Choose voice";
+  updateVoiceCard(elements.botVoice, elements.botVoiceCard);
+}
+
+function normalizedDeepgramVoices() {
+  return catalogs.flux_voices.voices.map((voice) => ({
+    voice_id: voice.model_id,
+    name: voice.name,
+    category: "Built-in",
+    labels: { language: "English", accent: voice.accent, gender: voice.gender },
+    description: [...voice.traits, ...voice.use_cases].join(" "),
+  }));
+}
+
+function fillDynamicFilter(select, placeholder, values) {
+  select.replaceChildren(new Option(placeholder, ""), ...values.map((value) => new Option(value, value)));
+}
+
+function renderVoicePicker() {
+  const query = elements.voiceSearch.value.trim().toLowerCase();
+  const visible = discoveredVoices.filter((voice) => {
+    const searchable = `${voice.name} ${voice.description || ""} ${Object.values(voice.labels).join(" ")}`.toLowerCase();
+    return (
+      searchable.includes(query) &&
+      (!elements.voiceLanguage.value || voice.labels.language === elements.voiceLanguage.value) &&
+      (!elements.voiceAccent.value || voice.labels.accent === elements.voiceAccent.value) &&
+      (!elements.voiceGender.value || voice.labels.gender === elements.voiceGender.value) &&
+      (!elements.voiceCategory.value || voice.category === elements.voiceCategory.value)
+    );
+  });
+  elements.voicePickerList.replaceChildren(
+    ...visible.map((voice) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "voice-picker-option";
+      button.dataset.selected = String(voice.voice_id === elements.botVoice.value);
+      button.innerHTML = `<strong></strong><span></span><em></em>`;
+      button.querySelector("strong").textContent = voice.name;
+      button.querySelector("span").textContent = `${voice.labels.language} · ${voice.labels.accent} · ${voice.labels.gender}`;
+      button.querySelector("em").textContent = voice.category;
+      button.addEventListener("click", () => selectVoice(voice));
+      if (voice.preview_url) {
+        const preview = document.createElement("audio");
+        preview.controls = true;
+        preview.preload = "none";
+        preview.src = voice.preview_url;
+        button.append(preview);
+      }
+      return button;
+    }),
+  );
+}
+
+function selectVoice(voice) {
+  elements.botVoice.replaceChildren(new Option(voice.name, voice.voice_id, true, true));
+  updateBotVoiceDisplay();
+  elements.voicePickerDialog.close();
+}
+
+async function loadElevenlabsVoices({ append = false } = {}) {
+  const apiKey = elements.botElevenlabsKey.value || elements.voiceDiscoveryKey.value;
+  const editingBot = bots.find((bot) => bot.id === editingBotId);
+  if (!apiKey && !editingBot?.has_saved_keys) {
+    throw new Error("Enter the ElevenLabs API key before loading voices.");
+  }
+  const response = await apiRequest("/api/tts/elevenlabs/voices", {
+    method: "POST",
+    body: {
+      api_key: apiKey || null,
+      bot_id: apiKey ? null : editingBotId,
+      search: elements.voiceSearch.value.trim(),
+      page_token: append ? nextVoicePageToken : null,
+    },
+  });
+  discoveredVoices = append ? [...discoveredVoices, ...response.voices] : response.voices;
+  nextVoicePageToken = response.next_page_token;
+  elements.loadMoreVoices.hidden = !response.has_more;
+}
+
+async function openVoicePicker() {
+  elements.voicePickerError.hidden = true;
+  elements.voiceSearch.value = "";
+  if (elements.botTts.value === "deepgram_flux") {
+    discoveredVoices = normalizedDeepgramVoices();
+    elements.voicePickerTitle.textContent = "Choose a Deepgram Flux voice";
+    elements.voicePickerHelp.textContent = "Search the built-in catalog.";
+    elements.loadMoreVoices.hidden = true;
+  } else {
+    elements.voicePickerTitle.textContent = "Choose an ElevenLabs voice";
+    elements.voicePickerHelp.textContent = "Loaded dynamically from your ElevenLabs account.";
+    try {
+      await loadElevenlabsVoices();
+    } catch (error) {
+      discoveredVoices = [];
+      elements.voicePickerError.textContent = error.message;
+      elements.voicePickerError.hidden = false;
+    }
+  }
+  const labelValues = (key) => [
+    ...new Set(discoveredVoices.map((voice) => voice.labels[key] || "Unspecified")),
+  ].sort();
+  fillDynamicFilter(elements.voiceLanguage, "All languages", labelValues("language"));
+  fillDynamicFilter(elements.voiceAccent, "All accents", labelValues("accent"));
+  fillDynamicFilter(elements.voiceGender, "All genders", labelValues("gender"));
+  fillDynamicFilter(
+    elements.voiceCategory,
+    "All sources",
+    [...new Set(discoveredVoices.map((voice) => voice.category || "Unspecified"))].sort(),
+  );
+  renderVoicePicker();
+  elements.voicePickerDialog.showModal();
+}
+
 function fillProviderSelect(selectEl, selectedId) {
   selectEl.replaceChildren(
     ...catalogs.llm_providers.providers.map((provider) => {
@@ -753,6 +965,9 @@ function renderBotList() {
     );
   }
   elements.sessionKeys.hidden = !selectedBot() || selectedBot().has_saved_keys;
+  elements.sessionElevenlabsKeyField.hidden = !(
+    selectedBot()?.tts_provider === "elevenlabs" && !selectedBot()?.has_saved_keys
+  );
   elements.start.disabled = !selectedBotId;
 }
 
@@ -782,6 +997,8 @@ function syncKeyFieldVisibility() {
   const keysOptional = saving && editingHasKeys;
   elements.botDeepgramKey.required = saving && !keysOptional;
   elements.botLlmKey.required = saving && !keysOptional;
+  elements.botElevenlabsKey.required =
+    saving && elements.botTts.value === "elevenlabs" && !keysOptional;
 }
 
 function openEditor(bot) {
@@ -791,8 +1008,14 @@ function openEditor(bot) {
   elements.botName.value = bot ? bot.name : "";
   elements.botAsr.value = bot ? bot.asr_provider : "deepgram_flux";
   elements.botTts.value = bot ? bot.tts_provider : "deepgram_flux";
-  fillVoiceSelect(elements.botVoice, bot ? bot.tts_voice : catalogs.defaults.flux_voice);
-  updateVoiceCard(elements.botVoice, elements.botVoiceCard);
+  syncTtsFields();
+  elements.botTtsModel.value = bot ? bot.tts_model : "flux-general-en";
+  if (bot?.tts_provider === "elevenlabs") {
+    elements.botVoice.replaceChildren(new Option(bot.tts_voice, bot.tts_voice, true, true));
+  } else {
+    fillVoiceSelect(elements.botVoice, bot ? bot.tts_voice : catalogs.defaults.flux_voice);
+  }
+  updateBotVoiceDisplay();
   fillProviderSelect(elements.botProvider, bot ? bot.llm_provider : catalogs.defaults.llm_provider);
   applyProviderPreset(botProviderRefs);
   if (bot) {
@@ -804,6 +1027,7 @@ function openEditor(bot) {
   elements.botSaveKeys.checked = bot ? bot.has_saved_keys : false;
   elements.botDeepgramKey.value = "";
   elements.botLlmKey.value = "";
+  elements.botElevenlabsKey.value = "";
   syncKeyFieldVisibility();
   elements.editor.hidden = false;
   elements.editor.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -820,8 +1044,18 @@ async function saveBot(event) {
   const saving = elements.botSaveKeys.checked;
   const deepgramKey = elements.botDeepgramKey.value;
   const llmKey = elements.botLlmKey.value;
-  if (saving && (deepgramKey || llmKey) && !(deepgramKey && llmKey)) {
-    showError("Enter both API keys, or leave both fields blank to keep the saved keys.");
+  const elevenlabsKey = elements.botElevenlabsKey.value || elements.voiceDiscoveryKey.value;
+  if (saving && elevenlabsKey && !elements.botElevenlabsKey.value) {
+    elements.botElevenlabsKey.value = elevenlabsKey;
+  }
+  const requiredKeys = [deepgramKey, llmKey];
+  if (elements.botTts.value === "elevenlabs") requiredKeys.push(elevenlabsKey);
+  if (saving && requiredKeys.some(Boolean) && !requiredKeys.every(Boolean)) {
+    showError("Enter all API keys required by the selected providers, or leave them blank to keep saved keys.");
+    return;
+  }
+  if (!elements.botVoice.value) {
+    showError("Choose a TTS voice before saving the bot.");
     return;
   }
   if (!elements.botForm.reportValidity()) return;
@@ -831,6 +1065,7 @@ async function saveBot(event) {
     asr_provider: elements.botAsr.value,
     tts_provider: elements.botTts.value,
     tts_voice: elements.botVoice.value,
+    tts_model: elements.botTtsModel.value,
     llm_provider: elements.botProvider.value,
     llm_base_url: elements.botBaseUrl.value,
     llm_model: elements.botModel.value,
@@ -841,6 +1076,7 @@ async function saveBot(event) {
   if (saving && deepgramKey && llmKey) {
     payload.deepgram_api_key = deepgramKey;
     payload.llm_api_key = llmKey;
+    if (elevenlabsKey) payload.elevenlabs_api_key = elevenlabsKey;
   }
 
   try {
@@ -849,8 +1085,11 @@ async function saveBot(event) {
       : await apiRequest("/api/bots", { method: "POST", body: payload });
     elements.botDeepgramKey.value = "";
     elements.botLlmKey.value = "";
+    elements.botElevenlabsKey.value = "";
+    elements.voiceDiscoveryKey.value = "";
     payload.deepgram_api_key = "";
     payload.llm_api_key = "";
+    payload.elevenlabs_api_key = "";
     closeEditor();
     await loadBots();
     selectBot(saved.id);
@@ -1000,7 +1239,7 @@ function createClient() {
         const now = performance.now();
         botSpeaking = true;
         setSpeaker("agent", "Agent is speaking");
-        elements.pipelineStatus.textContent = "Flux TTS playing";
+        elements.pipelineStatus.textContent = `${selectedBot()?.tts_provider === "elevenlabs" ? "ElevenLabs" : "Flux"} TTS playing`;
         if (userStoppedAt) elements.e2eLatency.textContent = `${Math.round(now - userStoppedAt)} ms`;
         if (llmFirstTokenAt) {
           elements.synthesisLatency.textContent = `${Math.round(now - llmFirstTokenAt)} ms`;
@@ -1072,6 +1311,13 @@ async function startBotSession() {
     }
     payload.deepgram_api_key = elements.sessionDeepgramKey.value;
     payload.llm_api_key = elements.sessionLlmKey.value;
+    if (bot.tts_provider === "elevenlabs") {
+      if (!elements.sessionElevenlabsKey.value) {
+        showError("This bot uses ElevenLabs. Enter its API key for this session.");
+        return;
+      }
+      payload.elevenlabs_api_key = elements.sessionElevenlabsKey.value;
+    }
   }
 
   setFormLocked(true);
@@ -1081,6 +1327,7 @@ async function startBotSession() {
     const session = await apiRequest("/api/sessions", { method: "POST", body: payload });
     elements.sessionDeepgramKey.value = "";
     elements.sessionLlmKey.value = "";
+    elements.sessionElevenlabsKey.value = "";
     payload.deepgram_api_key = "";
     payload.llm_api_key = "";
     await connectSession(session);
@@ -1163,6 +1410,25 @@ elements.newBot.addEventListener("click", () => openEditor(null));
 elements.cancelBot.addEventListener("click", closeEditor);
 elements.botForm.addEventListener("submit", saveBot);
 elements.botSaveKeys.addEventListener("change", syncKeyFieldVisibility);
+elements.botTts.addEventListener("change", () => {
+  elements.botVoice.replaceChildren();
+  syncTtsFields();
+});
+elements.chooseBotVoice.addEventListener("click", openVoicePicker);
+elements.closeVoicePicker.addEventListener("click", () => elements.voicePickerDialog.close());
+elements.voiceSearch.addEventListener("input", renderVoicePicker);
+elements.voiceLanguage.addEventListener("change", renderVoicePicker);
+elements.voiceAccent.addEventListener("change", renderVoicePicker);
+elements.voiceGender.addEventListener("change", renderVoicePicker);
+elements.voiceCategory.addEventListener("change", renderVoicePicker);
+elements.loadMoreVoices.addEventListener("click", async () => {
+  await loadElevenlabsVoices({ append: true });
+  renderVoicePicker();
+});
+elements.useManualVoice.addEventListener("click", () => {
+  const voiceId = elements.manualVoiceId.value.trim();
+  if (voiceId) selectVoice({ voice_id: voiceId, name: voiceId });
+});
 elements.botProvider.addEventListener("change", () => applyProviderPreset(botProviderRefs));
 elements.botVoice.addEventListener("change", () =>
   updateVoiceCard(elements.botVoice, elements.botVoiceCard),

@@ -69,10 +69,11 @@ class LLMConfig(StrictModel):
 
 
 class TTSConfig(StrictModel):
-    """Deepgram Flux synthesis settings."""
+    """Provider-aware streaming synthesis settings."""
 
-    provider: Literal["deepgram_flux"] = "deepgram_flux"
+    provider: Literal["deepgram_flux", "elevenlabs"] = "deepgram_flux"
     voice: str
+    model: str = "flux-general-en"
     speed: float = Field(default=1.0, ge=0.85, le=1.15, multiple_of=0.05)
     expressivity: Literal[-2, -1, 0, 1, 2] = 0
 

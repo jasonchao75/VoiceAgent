@@ -15,12 +15,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import urlparse
 
+import httpx
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from starlette.datastructures import Headers
 from starlette.responses import PlainTextResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -159,6 +160,17 @@ class BrowserEvent(BaseModel):
     elapsed_ms: float = Field(ge=0, le=7_200_000)
 
 
+class VoiceDiscoveryRequest(BaseModel):
+    """Secret-bearing ElevenLabs voice search request."""
+
+    model_config = ConfigDict(extra="forbid")
+    api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    bot_id: str | None = Field(default=None, min_length=1, max_length=100)
+    search: str = Field(default="", max_length=100)
+    page_token: str | None = Field(default=None, max_length=500)
+    page_size: int = Field(default=30, ge=1, le=100)
+
+
 def _allowed_origins() -> list[str]:
     raw = os.getenv(
         "VOICE_AGENT_ALLOWED_ORIGINS",
@@ -295,7 +307,14 @@ def create_app() -> FastAPI:
     def _config_fields(request: BotCreateRequest | BotUpdateRequest) -> BotConfigFields:
         """Strip write-only key fields before persistence."""
         return BotConfigFields.model_validate(
-            request.model_dump(exclude={"save_keys", "deepgram_api_key", "llm_api_key"})
+            request.model_dump(
+                exclude={
+                    "save_keys",
+                    "deepgram_api_key",
+                    "llm_api_key",
+                    "elevenlabs_api_key",
+                }
+            )
         )
 
     def _validate_bot_payload(config: BotConfigFields) -> None:
@@ -311,19 +330,25 @@ def create_app() -> FastAPI:
 
     def _encrypt_bot_keys(
         request: BotCreateRequest | BotUpdateRequest,
-    ) -> tuple[str | None, str | None]:
-        """Encrypt a submitted key pair, or (None, None) when not saving keys."""
+    ) -> tuple[str | None, str | None, str | None]:
+        """Encrypt submitted provider keys, or nulls when not saving keys."""
         if not request.save_keys:
-            return None, None
+            return None, None, None
         if bot_cipher is None:
             raise HTTPException(
                 status_code=400,
                 detail="Saving API keys is disabled: VOICE_AGENT_STORAGE_KEY is not configured",
             )
         assert request.deepgram_api_key is not None and request.llm_api_key is not None
+        encrypted_elevenlabs = (
+            bot_cipher.encrypt(request.elevenlabs_api_key)
+            if request.elevenlabs_api_key is not None
+            else None
+        )
         return (
             bot_cipher.encrypt(request.deepgram_api_key),
             bot_cipher.encrypt(request.llm_api_key),
+            encrypted_elevenlabs,
         )
 
     @app.get("/api/bots", response_model=list[BotResponse])
@@ -333,11 +358,14 @@ def create_app() -> FastAPI:
     @app.post("/api/bots", response_model=BotResponse, status_code=201)
     async def create_bot(request: BotCreateRequest) -> BotResponse:
         _validate_bot_payload(request)
-        encrypted_deepgram_key, encrypted_llm_key = _encrypt_bot_keys(request)
+        encrypted_deepgram_key, encrypted_llm_key, encrypted_elevenlabs_key = (
+            _encrypt_bot_keys(request)
+        )
         record = await bot_store.create(
             config=_config_fields(request),
             encrypted_deepgram_key=encrypted_deepgram_key,
             encrypted_llm_key=encrypted_llm_key,
+            encrypted_elevenlabs_key=encrypted_elevenlabs_key,
         )
         return BotResponse.from_record(record)
 
@@ -355,7 +383,7 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="Bot not found")
         _validate_bot_payload(request)
         if not request.save_keys:
-            encrypted_pair: tuple[str | None, str | None] = (None, None)
+            encrypted_keys: tuple[str | None, str | None, str | None] = (None, None, None)
         elif request.deepgram_api_key is None:
             # No key fields means keep the stored ciphertext untouched.
             if not existing.has_saved_keys:
@@ -366,14 +394,24 @@ def create_app() -> FastAPI:
                         "provide both API keys or disable save_keys"
                     ),
                 )
-            encrypted_pair = (existing.encrypted_deepgram_key, existing.encrypted_llm_key)
+            if request.tts_provider == "elevenlabs" and existing.encrypted_elevenlabs_key is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="This bot has no saved ElevenLabs key to keep",
+                )
+            encrypted_keys = (
+                existing.encrypted_deepgram_key,
+                existing.encrypted_llm_key,
+                existing.encrypted_elevenlabs_key,
+            )
         else:
-            encrypted_pair = _encrypt_bot_keys(request)
+            encrypted_keys = _encrypt_bot_keys(request)
         record = await bot_store.update(
             bot_id,
             config=_config_fields(request),
-            encrypted_deepgram_key=encrypted_pair[0],
-            encrypted_llm_key=encrypted_pair[1],
+            encrypted_deepgram_key=encrypted_keys[0],
+            encrypted_llm_key=encrypted_keys[1],
+            encrypted_elevenlabs_key=encrypted_keys[2],
         )
         assert record is not None
         return BotResponse.from_record(record)
@@ -393,7 +431,14 @@ def create_app() -> FastAPI:
         if record is None:
             raise HTTPException(status_code=404, detail="Bot not found")
         if record.has_saved_keys:
-            if request.deepgram_api_key is not None or request.llm_api_key is not None:
+            if any(
+                key is not None
+                for key in (
+                    request.deepgram_api_key,
+                    request.llm_api_key,
+                    request.elevenlabs_api_key,
+                )
+            ):
                 raise HTTPException(
                     status_code=422,
                     detail="This bot already has saved keys; do not submit session keys",
@@ -411,6 +456,11 @@ def create_app() -> FastAPI:
             try:
                 deepgram_key = bot_cipher.decrypt(record.encrypted_deepgram_key)
                 llm_key = bot_cipher.decrypt(record.encrypted_llm_key)
+                elevenlabs_key = (
+                    bot_cipher.decrypt(record.encrypted_elevenlabs_key)
+                    if record.encrypted_elevenlabs_key is not None
+                    else None
+                )
             except StorageKeyError as exc:
                 raise HTTPException(status_code=400, detail=str(exc)) from None
         else:
@@ -421,9 +471,16 @@ def create_app() -> FastAPI:
                 )
             deepgram_key = request.deepgram_api_key
             llm_key = request.llm_api_key
+            elevenlabs_key = request.elevenlabs_api_key
+            if record.tts_provider == "elevenlabs" and elevenlabs_key is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail="This bot uses ElevenLabs; provide an ElevenLabs API key",
+                )
         return SessionRequest(
             deepgram_api_key=deepgram_key,
             llm_api_key=llm_key,
+            elevenlabs_api_key=elevenlabs_key,
             llm_provider=record.llm_provider,
             llm_base_url=record.llm_base_url,
             llm_model=record.llm_model,
@@ -431,7 +488,75 @@ def create_app() -> FastAPI:
             system_prompt=record.system_prompt,
             opening_script=record.opening_script,
             flux_voice=record.tts_voice,
+            tts_provider=record.tts_provider,
+            tts_model=record.tts_model,
         )
+
+    @app.post("/api/tts/elevenlabs/voices")
+    async def discover_elevenlabs_voices(
+        request: VoiceDiscoveryRequest, http_request: Request
+    ) -> dict[str, object]:
+        """Proxy a sanitized, timeout-bounded ElevenLabs account voice query."""
+        _validate_session_origin(http_request, _allowed_origins())
+        api_key = request.api_key
+        if api_key is None and request.bot_id:
+            record = await bot_store.get(request.bot_id)
+            if record is None:
+                raise HTTPException(status_code=404, detail="Bot not found")
+            if bot_cipher is None or record.encrypted_elevenlabs_key is None:
+                raise HTTPException(status_code=422, detail="Provide an ElevenLabs API key")
+            try:
+                api_key = bot_cipher.decrypt(record.encrypted_elevenlabs_key)
+            except StorageKeyError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from None
+        if api_key is None:
+            raise HTTPException(status_code=422, detail="Provide an ElevenLabs API key")
+        params: dict[str, str | int] = {"page_size": request.page_size}
+        if request.search.strip():
+            params["search"] = request.search.strip()
+        if request.page_token:
+            params["next_page_token"] = request.page_token
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(
+                    "https://api.elevenlabs.io/v2/voices",
+                    headers={"xi-api-key": api_key.get_secret_value()},
+                    params=params,
+                )
+                response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            status = 401 if exc.response.status_code in {401, 403} else 502
+            detail = (
+                "ElevenLabs API key was rejected"
+                if status == 401
+                else "ElevenLabs voice service failed"
+            )
+            raise HTTPException(status_code=status, detail=detail) from None
+        except httpx.HTTPError:
+            raise HTTPException(
+                status_code=502, detail="ElevenLabs voice service is unavailable"
+            ) from None
+        payload = response.json()
+        safe_voices = []
+        for voice in payload.get("voices", []):
+            labels = voice.get("labels") if isinstance(voice.get("labels"), dict) else {}
+            safe_voices.append(
+                {
+                    "voice_id": voice.get("voice_id", ""),
+                    "name": voice.get("name", "Unnamed voice"),
+                    "category": voice.get("category") or "Unspecified",
+                    "labels": {
+                        key: str(labels.get(key) or "Unspecified")
+                        for key in ("language", "accent", "gender")
+                    },
+                    "preview_url": voice.get("preview_url"),
+                }
+            )
+        return {
+            "voices": safe_voices,
+            "has_more": bool(payload.get("has_more")),
+            "next_page_token": payload.get("next_page_token"),
+        }
 
     async def _resolve_diagnostic(request: LLMDiagnosticRequest) -> DiagnosticConfig:
         """Resolve a diagnostic request without returning or persisting its key."""
@@ -547,6 +672,9 @@ def create_app() -> FastAPI:
             bot_name=bot_name,
             llm_provider=lease.config.llm.provider,
             llm_model=lease.config.llm.model,
+            tts_provider=lease.config.tts.provider,
+            tts_model=lease.config.tts.model,
+            tts_voice=lease.config.tts.voice,
             asr_provider=runtime.asr.provider,
             asr_model=runtime.asr.model,
             language=runtime.language,

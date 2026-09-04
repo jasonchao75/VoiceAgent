@@ -51,6 +51,11 @@ async def run_voice_agent_session(
     """
     deepgram_key = lease.credentials.deepgram_api_key.get_secret_value()
     llm_key = lease.credentials.llm_api_key.get_secret_value()
+    tts_key = (
+        lease.credentials.elevenlabs_api_key.get_secret_value()
+        if lease.config.tts.provider == "elevenlabs" and lease.credentials.elevenlabs_api_key
+        else deepgram_key
+    )
 
     transport = FastAPIWebsocketTransport(
         websocket=websocket,
@@ -81,7 +86,7 @@ async def run_voice_agent_session(
     )
     tts = tts_registry.create(
         provider=lease.config.tts.provider,
-        api_key=deepgram_key,
+        api_key=tts_key,
         config=lease.config.tts,
         audio=runtime.audio,
     )

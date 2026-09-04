@@ -52,6 +52,9 @@ class CallSummary(BaseModel):
     duration_ms: float | None
     llm_provider: str
     llm_model: str
+    tts_provider: str = "deepgram_flux"
+    tts_model: str = "flux-general-en"
+    tts_voice: str = ""
     has_recording: bool
     recording_status: str
     error_category: str | None

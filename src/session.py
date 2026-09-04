@@ -27,6 +27,7 @@ class SessionRequest(BaseModel):
 
     deepgram_api_key: SecretStr = Field(min_length=8, max_length=500)
     llm_api_key: SecretStr = Field(min_length=8, max_length=500)
+    elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)
@@ -34,11 +35,15 @@ class SessionRequest(BaseModel):
     system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
     flux_voice: str = Field(min_length=8, max_length=100)
+    tts_provider: Literal["deepgram_flux", "elevenlabs"] = "deepgram_flux"
+    tts_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
 
-    @field_validator("deepgram_api_key", "llm_api_key")
+    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
     @classmethod
-    def reject_placeholder_key(cls, value: SecretStr) -> SecretStr:
+    def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Reject obvious placeholders without assuming a provider-specific key format."""
+        if value is None:
+            return None
         secret = value.get_secret_value().strip()
         lowered = secret.lower()
         if not secret or "your_" in lowered or "api_key_here" in lowered:
@@ -58,8 +63,9 @@ class BotSessionRequest(BaseModel):
     bot_id: str = Field(min_length=1, max_length=100)
     deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
-    @field_validator("deepgram_api_key", "llm_api_key")
+    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
     @classmethod
     def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Apply the same placeholder policy as inline BYOK."""
@@ -76,7 +82,7 @@ class BotSessionRequest(BaseModel):
         """Per-session BYOK keys are only valid as a pair."""
         provided = [key is not None for key in (self.deepgram_api_key, self.llm_api_key)]
         if any(provided) and not all(provided):
-            raise ValueError("Both API keys must be provided together")
+            raise ValueError("Deepgram and LLM API keys must be provided together")
         return self
 
 
@@ -97,11 +103,13 @@ class SessionCredentials:
 
     deepgram_api_key: SecretStr
     llm_api_key: SecretStr
+    elevenlabs_api_key: SecretStr | None = None
 
     def clear(self) -> None:
         """Drop references to provider keys after the session ends."""
         self.deepgram_api_key = SecretStr("")
         self.llm_api_key = SecretStr("")
+        self.elevenlabs_api_key = None
 
 
 @dataclass(slots=True, repr=False)
@@ -190,6 +198,7 @@ class SessionStore:
                 credentials=SessionCredentials(
                     deepgram_api_key=request.deepgram_api_key,
                     llm_api_key=request.llm_api_key,
+                    elevenlabs_api_key=request.elevenlabs_api_key,
                 ),
                 config=session_config,
                 created_at=now,
@@ -278,9 +287,17 @@ def build_session_config(
     llm_catalog: LLMProviderCatalog,
 ) -> SessionConfig:
     """Whitelist all public session overrides against controlled catalogs."""
-    voices = {voice.model_id for voice in voice_catalog.voices}
-    if request.flux_voice not in voices:
-        raise ValueError("Select a Flux voice from the server catalog")
+    if request.tts_provider == "deepgram_flux":
+        voices = {voice.model_id for voice in voice_catalog.voices}
+        if request.flux_voice not in voices:
+            raise ValueError("Select a Flux voice from the server catalog")
+        if request.tts_model != "flux-general-en":
+            raise ValueError("Unsupported Deepgram Flux TTS model")
+    else:
+        if request.elevenlabs_api_key is None:
+            raise ValueError("ElevenLabs API key is required for ElevenLabs TTS")
+        if request.tts_model not in {"eleven_flash_v2_5", "eleven_multilingual_v2"}:
+            raise ValueError("Unsupported ElevenLabs TTS model")
 
     providers = {provider.id: provider for provider in llm_catalog.providers}
     provider = providers.get(request.llm_provider)
@@ -300,8 +317,9 @@ def build_session_config(
         timeout_seconds=runtime.llm.timeout_seconds,
     )
     tts = TTSConfig(
-        provider="deepgram_flux",
+        provider=request.tts_provider,
         voice=request.flux_voice,
+        model=request.tts_model,
         speed=runtime.tts.speed,
         expressivity=runtime.tts.expressivity,
     )

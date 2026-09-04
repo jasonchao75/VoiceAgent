@@ -27,6 +27,7 @@ class BotConfigFields(BaseModel):
     asr_provider: str = Field(min_length=1, max_length=50)
     tts_provider: str = Field(min_length=1, max_length=50)
     tts_voice: str = Field(min_length=1, max_length=100)
+    tts_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)
@@ -41,8 +42,9 @@ class BotCreateRequest(BotConfigFields):
     save_keys: bool = False
     deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
-    @field_validator("deepgram_api_key", "llm_api_key")
+    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
     @classmethod
     def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Apply the same placeholder policy as session-level BYOK."""
@@ -51,10 +53,13 @@ class BotCreateRequest(BotConfigFields):
     @model_validator(mode="after")
     def keys_match_save_intent(self) -> BotCreateRequest:
         """Require exactly both keys when saving and none when not."""
-        provided = [key is not None for key in (self.deepgram_api_key, self.llm_api_key)]
-        if self.save_keys and not all(provided):
-            raise ValueError("Both API keys are required when save_keys is enabled")
-        if not self.save_keys and any(provided):
+        required = [self.deepgram_api_key, self.llm_api_key]
+        if self.tts_provider == "elevenlabs":
+            required.append(self.elevenlabs_api_key)
+        submitted = [self.deepgram_api_key, self.llm_api_key, self.elevenlabs_api_key]
+        if self.save_keys and any(key is None for key in required):
+            raise ValueError("All API keys required by the selected providers must be supplied")
+        if not self.save_keys and any(key is not None for key in submitted):
             raise ValueError("API keys must not be submitted when save_keys is disabled")
         return self
 
@@ -69,8 +74,9 @@ class BotUpdateRequest(BotConfigFields):
     save_keys: bool = False
     deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
-    @field_validator("deepgram_api_key", "llm_api_key")
+    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
     @classmethod
     def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Apply the same placeholder policy as session-level BYOK."""
@@ -79,10 +85,13 @@ class BotUpdateRequest(BotConfigFields):
     @model_validator(mode="after")
     def keys_all_or_nothing(self) -> BotUpdateRequest:
         """Accept keys only as a pair and only while save_keys is enabled."""
-        provided = [key is not None for key in (self.deepgram_api_key, self.llm_api_key)]
-        if any(provided) and not all(provided):
-            raise ValueError("Both API keys must be provided together")
-        if any(provided) and not self.save_keys:
+        provided = [self.deepgram_api_key, self.llm_api_key, self.elevenlabs_api_key]
+        required = provided[:2] + ([provided[2]] if self.tts_provider == "elevenlabs" else [])
+        if any(key is not None for key in provided) and any(key is None for key in required):
+            raise ValueError(
+                "All API keys required by the selected providers must be provided together"
+            )
+        if any(key is not None for key in provided) and not self.save_keys:
             raise ValueError("save_keys must be enabled when replacing stored keys")
         return self
 
@@ -93,13 +102,17 @@ class BotRecord(BotConfigFields):
     id: str
     encrypted_deepgram_key: str | None
     encrypted_llm_key: str | None
+    encrypted_elevenlabs_key: str | None
     created_at: str
     updated_at: str
 
     @property
     def has_saved_keys(self) -> bool:
         """Both columns move together; ASR and TTS share the Deepgram key."""
-        return self.encrypted_deepgram_key is not None and self.encrypted_llm_key is not None
+        common = self.encrypted_deepgram_key is not None and self.encrypted_llm_key is not None
+        return common and (
+            self.tts_provider != "elevenlabs" or self.encrypted_elevenlabs_key is not None
+        )
 
 
 class BotResponse(BotConfigFields):
@@ -114,6 +127,12 @@ class BotResponse(BotConfigFields):
     def from_record(cls, record: BotRecord) -> BotResponse:
         """Strip secret columns while exposing only the saved-keys marker."""
         return cls(
-            **record.model_dump(exclude={"encrypted_deepgram_key", "encrypted_llm_key"}),
+            **record.model_dump(
+                exclude={
+                    "encrypted_deepgram_key",
+                    "encrypted_llm_key",
+                    "encrypted_elevenlabs_key",
+                }
+            ),
             has_saved_keys=record.has_saved_keys,
         )

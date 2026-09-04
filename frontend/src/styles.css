@@ -145,6 +145,19 @@ button:disabled { opacity: .45; cursor: not-allowed; }.mic-icon { font-size: 8px
 .history-card:hover { border-color: #3d6b52; }
 .history-dialog { width: min(680px, calc(100vw - 32px)); max-height: 80vh; overflow: auto; color: #edf2ef; background: #111514; border: 1px solid var(--line); border-radius: 14px; padding: 28px; }
 .history-dialog::backdrop { background: rgba(0, 0, 0, .72); }
+.voice-picker-dialog { width: min(760px, calc(100vw - 32px)); max-height: 82vh; overflow: auto; color: #edf2ef; background: #111514; border: 1px solid var(--line); border-radius: 14px; padding: 26px; }
+.voice-picker-dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(4px); }
+.voice-picker-dialog h2 { margin: 5px 0; }
+.voice-picker-trigger { width: 100%; padding: 11px 12px; color: var(--accent); text-align: left; background: #0d1210; border: 1px solid #315843; border-radius: 9px; cursor: pointer; }
+.voice-picker-filters { display: grid; grid-template-columns: 1fr repeat(4, 120px); gap: 8px; margin: 18px 0 12px; }
+.voice-picker-list { display: grid; gap: 8px; margin-bottom: 12px; }
+.voice-picker-option { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; width: 100%; padding: 12px; color: #edf2ef; text-align: left; background: #0d1210; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.voice-picker-option:hover, .voice-picker-option[data-selected="true"] { border-color: #4f9e75; background: #102018; }
+.voice-picker-option span { color: #8f9a95; font-size: 10px; }
+.voice-picker-option em { color: #9eaaa4; font-size: 9px; font-style: normal; }
+.voice-picker-option audio { grid-column: 1 / -1; width: 100%; height: 30px; margin-top: 6px; }
+.manual-voice-row { display: flex; gap: 8px; margin-top: 10px; }
+.manual-voice-row button { flex: 0 0 auto; }
 .history-dialog audio { width: 100%; margin: 14px 0; }
 .dialog-close { position: sticky; float: right; top: 0; }
 .history-metric { color: #9eaaa4; background: #0d1210; border: 1px solid var(--line); border-radius: 8px; padding: 9px; font-size: 10px; }

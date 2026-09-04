@@ -11,6 +11,7 @@ dependencies = [
   "aiosqlite>=0.22,<1",
   "cryptography>=45,<51",
   "fastapi>=0.116,<1",
+  "httpx>=0.28,<1",
   "pipecat-ai[deepgram,google,openai,runner,websocket]==1.8.1",
   "pydantic>=2.11,<3",
   "soundfile>=0.13,<1",

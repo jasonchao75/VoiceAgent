@@ -15,10 +15,62 @@ def test_health_and_catalogs_do_not_call_providers() -> None:
         catalogs = client.get("/api/catalogs")
     assert health.status_code == 200
     assert health.json()["status"] == "ok"
-    assert health.json()["tts_providers"] == ["deepgram_flux"]
+    assert health.json()["tts_providers"] == ["deepgram_flux", "elevenlabs"]
     assert catalogs.status_code == 200
     assert "deepgram_api_key" not in catalogs.text
     assert "llm_api_key" not in catalogs.text
+
+
+def test_elevenlabs_voice_discovery_sanitizes_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The proxy returns only approved voice metadata and pagination state."""
+
+    class FakeResponse:
+        status_code = 200
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return {
+                "voices": [
+                    {
+                        "voice_id": "voice-1",
+                        "name": "Support",
+                        "category": "cloned",
+                        "labels": {"language": "en", "gender": "female"},
+                        "preview_url": "https://example.com/preview.mp3",
+                        "secret_internal_field": "must-not-leak",
+                    }
+                ],
+                "has_more": True,
+                "next_page_token": "next",
+            }
+
+    class FakeClient:
+        def __init__(self, *, timeout: float) -> None:
+            assert timeout == 10.0
+
+        async def __aenter__(self) -> "FakeClient":
+            return self
+
+        async def __aexit__(self, *args: object) -> None:
+            return None
+
+        async def get(self, *args: object, **kwargs: object) -> FakeResponse:
+            return FakeResponse()
+
+    monkeypatch.setattr("src.api.httpx.AsyncClient", FakeClient)
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/api/tts/elevenlabs/voices",
+            json={"api_key": "elevenlabs-test-key"},
+            headers={"Origin": "http://localhost:8000"},
+        )
+    assert response.status_code == 200, response.text
+    assert response.json()["voices"][0]["labels"]["accent"] == "Unspecified"
+    assert "secret_internal_field" not in response.text
 
 
 def test_validation_error_never_echoes_rejected_key() -> None:

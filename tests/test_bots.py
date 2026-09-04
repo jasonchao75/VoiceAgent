@@ -28,6 +28,7 @@ VALID_CONFIG = {
 
 DEEPGRAM_KEY = "dg-test-key-0000000001"
 LLM_KEY = "llm-test-key-0000000001"
+ELEVENLABS_KEY = "elevenlabs-test-key-0000000001"
 ORIGIN = {"Origin": "http://localhost:8000"}
 
 
@@ -278,6 +279,34 @@ def test_session_request_rejects_mixed_bot_and_inline_config(client: TestClient)
 def test_session_from_unknown_bot_is_404(client: TestClient) -> None:
     response = client.post("/api/sessions", json={"bot_id": "missing"}, headers=ORIGIN)
     assert response.status_code == 404
+
+
+def test_elevenlabs_bot_requires_and_uses_provider_key(client_with_keys: TestClient) -> None:
+    """ElevenLabs bots persist and resolve all three required provider keys."""
+    config = {
+        **VALID_CONFIG,
+        "tts_provider": "elevenlabs",
+        "tts_voice": "test-elevenlabs-voice-id",
+        "tts_model": "eleven_flash_v2_5",
+        "save_keys": True,
+        "deepgram_api_key": DEEPGRAM_KEY,
+        "llm_api_key": LLM_KEY,
+    }
+    missing = client_with_keys.post("/api/bots", json=config, headers=ORIGIN)
+    assert missing.status_code == 422
+
+    created = client_with_keys.post(
+        "/api/bots",
+        json={**config, "elevenlabs_api_key": ELEVENLABS_KEY},
+        headers=ORIGIN,
+    )
+    assert created.status_code == 201, created.text
+    assert created.json()["has_saved_keys"] is True
+    assert created.json()["tts_model"] == "eleven_flash_v2_5"
+    session = client_with_keys.post(
+        "/api/sessions", json={"bot_id": created.json()["id"]}, headers=ORIGIN
+    )
+    assert session.status_code == 201, session.text
 
 
 def test_saved_key_bot_degrades_without_storage_key(

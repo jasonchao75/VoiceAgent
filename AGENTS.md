@@ -139,6 +139,10 @@ voice-agent/
 - **旧 Change 只读**：OpenSpec 引入前的 Change 已归档在 `docs/changes/archive/`，仅用于历史追溯；所有新 Change 使用 `openspec/changes/`。
 - **免长流程特权**：普通文档整理、厂商报告、Skill 修补、单点参数和一句话可验收的小 bug 不强制开启 Change；若它们改变主规格中的行为，仍必须更新相应 Spec。
 - **经验提炼与闭环**：归档后如产生长期可复用的工程经验，应主动建议提炼到 `.opencode/skills/`，不得把一次性需求细节写入 Skill。
+- **页面 Change 必须带原型**：凡 Change 新增或修改用户可见页面、弹窗或核心交互，必须在 `openspec/changes/{change-name}/prototypes/` 提供可直接运行的高保真 HTML 原型，并直接套用当前产品布局、入口、视觉变量和组件模式，不得以脱离现有产品的独立概念页代替。
+- **原型可追溯与先确认**：`prototypes/README.md` 必须把原型区域映射到 Delta Requirement/Scenario，并标记确认状态。用户确认 Delta Spec 与原型前不得编写正式页面逻辑；确认后原型成为 UI baseline。
+- **规格与原型优先级**：行为、数据规则和异常契约以 Delta Spec 为准；视觉结构与交互细节以已确认原型为准。任何有意偏离必须先更新 Change 并重新获得确认。
+- **页面验收留证**：Change 必须包含 `verification/ui-checklist.md`，覆盖入口、主要状态、异常、响应式与兼容行为；实现后逐项核对并保存实际页面截图作为验收证据。
 
 ---
 

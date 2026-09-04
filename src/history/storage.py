@@ -50,6 +50,9 @@ class HistoryStore:
                     duration_ms REAL,
                     llm_provider TEXT NOT NULL,
                     llm_model TEXT NOT NULL,
+                    tts_provider TEXT NOT NULL DEFAULT 'deepgram_flux',
+                    tts_model TEXT NOT NULL DEFAULT 'flux-general-en',
+                    tts_voice TEXT NOT NULL DEFAULT '',
                     asr_provider TEXT NOT NULL,
                     asr_model TEXT NOT NULL,
                     language TEXT NOT NULL,
@@ -92,6 +95,7 @@ class HistoryStore:
                 """
             )
             await self._migrate_turn_metrics(database)
+            await self._migrate_calls(database)
             await database.execute(
                 """UPDATE calls
                    SET ended_at = COALESCE(ended_at, ?), status = 'failed',
@@ -100,6 +104,19 @@ class HistoryStore:
                 (datetime.now(UTC).isoformat(),),
             )
             await database.commit()
+
+    async def _migrate_calls(self, database: aiosqlite.Connection) -> None:
+        """Add provider-neutral TTS snapshot columns idempotently."""
+        for column_def in (
+            "tts_provider TEXT NOT NULL DEFAULT 'deepgram_flux'",
+            "tts_model TEXT NOT NULL DEFAULT 'flux-general-en'",
+            "tts_voice TEXT NOT NULL DEFAULT ''",
+        ):
+            try:
+                await database.execute(f"ALTER TABLE calls ADD COLUMN {column_def}")
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    raise
 
     async def _migrate_turn_metrics(self, database: aiosqlite.Connection) -> None:
         """Add latency-chain columns to existing turn_metrics tables idempotently."""
@@ -126,6 +143,9 @@ class HistoryStore:
         bot_name: str | None,
         llm_provider: str,
         llm_model: str,
+        tts_provider: str = "deepgram_flux",
+        tts_model: str = "flux-general-en",
+        tts_voice: str = "",
         asr_provider: str,
         asr_model: str,
         language: str,
@@ -137,8 +157,9 @@ class HistoryStore:
             await database.execute(
                 """INSERT INTO calls (
                     id, bot_id, bot_name, started_at, status, llm_provider, llm_model,
+                    tts_provider, tts_model, tts_voice,
                     asr_provider, asr_model, language, audio_format, sample_rate, channels
-                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, 'flac', ?, ?)""",
+                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, 'flac', ?, ?)""",
                 (
                     call_id,
                     bot_id,
@@ -146,6 +167,9 @@ class HistoryStore:
                     datetime.now(UTC).isoformat(),
                     llm_provider,
                     llm_model,
+                    tts_provider,
+                    tts_model,
+                    tts_voice,
                     asr_provider,
                     asr_model,
                     language,
@@ -392,6 +416,9 @@ def _summary(row: aiosqlite.Row) -> CallSummary:
         duration_ms=row["duration_ms"],
         llm_provider=row["llm_provider"],
         llm_model=row["llm_model"],
+        tts_provider=row["tts_provider"],
+        tts_model=row["tts_model"],
+        tts_voice=row["tts_voice"],
         has_recording=row["recording_path"] is not None,
         recording_status=row["recording_status"],
         error_category=row["error_category"],

@@ -62,8 +62,30 @@ def _build_deepgram_flux(api_key: str, config: TTSConfig, audio: AudioConfig) ->
     )
 
 
+def _build_elevenlabs(api_key: str, config: TTSConfig, audio: AudioConfig) -> TTSService:
+    """Build low-latency ElevenLabs WebSocket synthesis."""
+    from pipecat.services.elevenlabs.tts import ElevenLabsTTSService
+
+    return ElevenLabsTTSService(
+        api_key=api_key,
+        sample_rate=audio.output_sample_rate,
+        auto_mode=True,
+        settings=ElevenLabsTTSService.Settings(
+            voice=config.voice,
+            model=config.model,
+            speed=config.speed,
+            stability=0.5,
+            similarity_boost=0.8,
+            style=0.0,
+            use_speaker_boost=True,
+            apply_text_normalization="auto",
+        ),
+    )
+
+
 def create_default_tts_registry() -> TTSProviderRegistry:
-    """Create the MVP registry; ElevenLabs can register without pipeline changes."""
+    """Create the production registry for supported streaming TTS providers."""
     registry = TTSProviderRegistry()
     registry.register("deepgram_flux", _build_deepgram_flux)
+    registry.register("elevenlabs", _build_elevenlabs)
     return registry

@@ -12,9 +12,11 @@ import aiosqlite
 from src.bots.models import BotConfigFields, BotRecord
 
 _COLUMNS = (
-    "id, name, asr_provider, tts_provider, tts_voice, llm_provider, llm_base_url, llm_model, "
+    "id, name, asr_provider, tts_provider, tts_voice, tts_model, "
+    "llm_provider, llm_base_url, llm_model, "
     "reasoning_mode, "
     "system_prompt, opening_script, encrypted_deepgram_key, encrypted_llm_key, "
+    "encrypted_elevenlabs_key, "
     "created_at, updated_at"
 )
 
@@ -25,6 +27,7 @@ CREATE TABLE IF NOT EXISTS bots (
     asr_provider TEXT NOT NULL,
     tts_provider TEXT NOT NULL,
     tts_voice TEXT NOT NULL,
+    tts_model TEXT NOT NULL DEFAULT 'flux-general-en',
     llm_provider TEXT NOT NULL,
     llm_base_url TEXT NOT NULL,
     llm_model TEXT NOT NULL,
@@ -33,6 +36,7 @@ CREATE TABLE IF NOT EXISTS bots (
     opening_script TEXT NOT NULL,
     encrypted_deepgram_key TEXT,
     encrypted_llm_key TEXT,
+    encrypted_elevenlabs_key TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 )
@@ -68,6 +72,13 @@ class BotStore:
                     "ALTER TABLE bots ADD COLUMN reasoning_mode TEXT NOT NULL "
                     "DEFAULT 'lowest_latency'"
                 )
+            if "tts_model" not in columns:
+                await db.execute(
+                    "ALTER TABLE bots ADD COLUMN tts_model TEXT NOT NULL "
+                    "DEFAULT 'flux-general-en'"
+                )
+            if "encrypted_elevenlabs_key" not in columns:
+                await db.execute("ALTER TABLE bots ADD COLUMN encrypted_elevenlabs_key TEXT")
             await db.commit()
 
     async def list(self) -> list[BotRecord]:
@@ -90,6 +101,7 @@ class BotStore:
         config: BotConfigFields,
         encrypted_deepgram_key: str | None,
         encrypted_llm_key: str | None,
+        encrypted_elevenlabs_key: str | None,
     ) -> BotRecord:
         """Insert one bot and return the stored record."""
         now = _utcnow()
@@ -98,13 +110,14 @@ class BotStore:
             **config.model_dump(),
             encrypted_deepgram_key=encrypted_deepgram_key,
             encrypted_llm_key=encrypted_llm_key,
+            encrypted_elevenlabs_key=encrypted_elevenlabs_key,
             created_at=now,
             updated_at=now,
         )
         async with aiosqlite.connect(self._db_path) as db:
             await db.execute(
                 f"INSERT INTO bots ({_COLUMNS}) VALUES "
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 tuple(record.model_dump()[column.strip()] for column in _COLUMNS.split(",")),
             )
             await db.commit()
@@ -117,6 +130,7 @@ class BotStore:
         config: BotConfigFields,
         encrypted_deepgram_key: str | None,
         encrypted_llm_key: str | None,
+        encrypted_elevenlabs_key: str | None,
     ) -> BotRecord | None:
         """Replace one bot's mutable fields; None when the ID does not exist."""
         existing = await self.get(bot_id)
@@ -127,6 +141,7 @@ class BotStore:
             **config.model_dump(),
             encrypted_deepgram_key=encrypted_deepgram_key,
             encrypted_llm_key=encrypted_llm_key,
+            encrypted_elevenlabs_key=encrypted_elevenlabs_key,
             created_at=existing.created_at,
             updated_at=_utcnow(),
         )

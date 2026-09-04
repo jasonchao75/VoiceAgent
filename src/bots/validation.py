@@ -37,7 +37,13 @@ def validate_bot_config(
         voices = {voice.model_id for voice in voice_catalog.voices}
         if config.tts_voice not in voices:
             raise ValueError("Select a TTS voice from the server catalog")
-    # Future TTS providers validate tts_voice against their own catalogs here.
+        if config.tts_model != "flux-general-en":
+            raise ValueError("Unsupported Deepgram Flux TTS model")
+    elif config.tts_provider == "elevenlabs":
+        if config.tts_model not in {"eleven_flash_v2_5", "eleven_multilingual_v2"}:
+            raise ValueError("Unsupported ElevenLabs TTS model")
+        if not config.tts_voice.strip() or len(config.tts_voice) > 100:
+            raise ValueError("Enter a valid ElevenLabs voice ID")
 
     providers = {provider.id: provider for provider in llm_catalog.providers}
     provider = providers.get(config.llm_provider)
