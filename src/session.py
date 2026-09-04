@@ -37,6 +37,13 @@ class SessionRequest(BaseModel):
     flux_voice: str = Field(min_length=8, max_length=100)
     tts_provider: Literal["deepgram_flux", "elevenlabs"] = "deepgram_flux"
     tts_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
+    tts_text_aggregation: Literal["token", "sentence"] = "token"
+    tts_speed: float = Field(default=1.0, ge=0.7, le=1.2, multiple_of=0.05)
+    tts_stability: float = Field(default=0.5, ge=0, le=1)
+    tts_similarity_boost: float = Field(default=0.8, ge=0, le=1)
+    tts_style: float = Field(default=0.0, ge=0, le=1)
+    tts_use_speaker_boost: bool = False
+    tts_text_normalization: Literal["auto", "on", "off"] = "auto"
 
     @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
     @classmethod
@@ -296,8 +303,15 @@ def build_session_config(
     else:
         if request.elevenlabs_api_key is None:
             raise ValueError("ElevenLabs API key is required for ElevenLabs TTS")
-        if request.tts_model not in {"eleven_flash_v2_5", "eleven_multilingual_v2"}:
+        if request.tts_model not in {
+            "eleven_flash_v2_5",
+            "eleven_turbo_v2_5",
+            "eleven_multilingual_v2",
+            "eleven_v3",
+        }:
             raise ValueError("Unsupported ElevenLabs TTS model")
+        if request.tts_model == "eleven_v3" and request.tts_stability not in {0.0, 0.5, 1.0}:
+            raise ValueError("Eleven v3 stability must be Creative, Natural, or Robust")
 
     providers = {provider.id: provider for provider in llm_catalog.providers}
     provider = providers.get(request.llm_provider)
@@ -320,8 +334,14 @@ def build_session_config(
         provider=request.tts_provider,
         voice=request.flux_voice,
         model=request.tts_model,
-        speed=runtime.tts.speed,
+        text_aggregation=request.tts_text_aggregation,
+        speed=request.tts_speed,
         expressivity=runtime.tts.expressivity,
+        stability=request.tts_stability,
+        similarity_boost=request.tts_similarity_boost,
+        style=request.tts_style,
+        use_speaker_boost=request.tts_use_speaker_boost,
+        text_normalization=request.tts_text_normalization,
     )
     return SessionConfig(
         llm=llm,

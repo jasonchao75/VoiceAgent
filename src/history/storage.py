@@ -53,6 +53,7 @@ class HistoryStore:
                     tts_provider TEXT NOT NULL DEFAULT 'deepgram_flux',
                     tts_model TEXT NOT NULL DEFAULT 'flux-general-en',
                     tts_voice TEXT NOT NULL DEFAULT '',
+                    tts_text_aggregation TEXT NOT NULL DEFAULT 'token',
                     asr_provider TEXT NOT NULL,
                     asr_model TEXT NOT NULL,
                     language TEXT NOT NULL,
@@ -111,6 +112,7 @@ class HistoryStore:
             "tts_provider TEXT NOT NULL DEFAULT 'deepgram_flux'",
             "tts_model TEXT NOT NULL DEFAULT 'flux-general-en'",
             "tts_voice TEXT NOT NULL DEFAULT ''",
+            "tts_text_aggregation TEXT NOT NULL DEFAULT 'token'",
         ):
             try:
                 await database.execute(f"ALTER TABLE calls ADD COLUMN {column_def}")
@@ -146,6 +148,7 @@ class HistoryStore:
         tts_provider: str = "deepgram_flux",
         tts_model: str = "flux-general-en",
         tts_voice: str = "",
+        tts_text_aggregation: str = "token",
         asr_provider: str,
         asr_model: str,
         language: str,
@@ -157,9 +160,9 @@ class HistoryStore:
             await database.execute(
                 """INSERT INTO calls (
                     id, bot_id, bot_name, started_at, status, llm_provider, llm_model,
-                    tts_provider, tts_model, tts_voice,
+                    tts_provider, tts_model, tts_voice, tts_text_aggregation,
                     asr_provider, asr_model, language, audio_format, sample_rate, channels
-                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, 'flac', ?, ?)""",
+                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'flac', ?, ?)""",
                 (
                     call_id,
                     bot_id,
@@ -170,6 +173,7 @@ class HistoryStore:
                     tts_provider,
                     tts_model,
                     tts_voice,
+                    tts_text_aggregation,
                     asr_provider,
                     asr_model,
                     language,
@@ -419,6 +423,7 @@ def _summary(row: aiosqlite.Row) -> CallSummary:
         tts_provider=row["tts_provider"],
         tts_model=row["tts_model"],
         tts_voice=row["tts_voice"],
+        tts_text_aggregation=row["tts_text_aggregation"],
         has_recording=row["recording_path"] is not None,
         recording_status=row["recording_status"],
         error_category=row["error_category"],

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from pipecat.services.tts_service import TTSService
+from pipecat.services.tts_service import TextAggregationMode, TTSService
 
 from src.config import AudioConfig, TTSConfig
 
@@ -54,6 +54,7 @@ def _build_deepgram_flux(api_key: str, config: TTSConfig, audio: AudioConfig) ->
     return DeepgramFluxTTSService(
         api_key=api_key,
         sample_rate=audio.output_sample_rate,
+        text_aggregation_mode=TextAggregationMode(config.text_aggregation),
         settings=DeepgramFluxTTSService.Settings(
             voice=config.voice,
             speed=config.speed,
@@ -69,16 +70,17 @@ def _build_elevenlabs(api_key: str, config: TTSConfig, audio: AudioConfig) -> TT
     return ElevenLabsTTSService(
         api_key=api_key,
         sample_rate=audio.output_sample_rate,
-        auto_mode=True,
+        auto_mode=config.text_aggregation == "sentence",
+        text_aggregation_mode=TextAggregationMode(config.text_aggregation),
         settings=ElevenLabsTTSService.Settings(
             voice=config.voice,
             model=config.model,
             speed=config.speed,
-            stability=0.5,
-            similarity_boost=0.8,
-            style=0.0,
-            use_speaker_boost=True,
-            apply_text_normalization="auto",
+            stability=config.stability,
+            similarity_boost=None if config.model == "eleven_v3" else config.similarity_boost,
+            style=config.style,
+            use_speaker_boost=None if config.model == "eleven_v3" else config.use_speaker_boost,
+            apply_text_normalization=config.text_normalization,
         ),
     )
 

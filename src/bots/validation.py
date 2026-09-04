@@ -40,8 +40,15 @@ def validate_bot_config(
         if config.tts_model != "flux-general-en":
             raise ValueError("Unsupported Deepgram Flux TTS model")
     elif config.tts_provider == "elevenlabs":
-        if config.tts_model not in {"eleven_flash_v2_5", "eleven_multilingual_v2"}:
+        if config.tts_model not in {
+            "eleven_flash_v2_5",
+            "eleven_turbo_v2_5",
+            "eleven_multilingual_v2",
+            "eleven_v3",
+        }:
             raise ValueError("Unsupported ElevenLabs TTS model")
+        if config.tts_model == "eleven_v3" and config.tts_stability not in {0.0, 0.5, 1.0}:
+            raise ValueError("Eleven v3 stability must be Creative, Natural, or Robust")
         if not config.tts_voice.strip() or len(config.tts_voice) > 100:
             raise ValueError("Enter a valid ElevenLabs voice ID")
 

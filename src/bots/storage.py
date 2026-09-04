@@ -13,6 +13,8 @@ from src.bots.models import BotConfigFields, BotRecord
 
 _COLUMNS = (
     "id, name, asr_provider, tts_provider, tts_voice, tts_model, "
+    "tts_text_aggregation, tts_speed, tts_stability, tts_similarity_boost, "
+    "tts_style, tts_use_speaker_boost, tts_text_normalization, "
     "llm_provider, llm_base_url, llm_model, "
     "reasoning_mode, "
     "system_prompt, opening_script, encrypted_deepgram_key, encrypted_llm_key, "
@@ -28,6 +30,13 @@ CREATE TABLE IF NOT EXISTS bots (
     tts_provider TEXT NOT NULL,
     tts_voice TEXT NOT NULL,
     tts_model TEXT NOT NULL DEFAULT 'flux-general-en',
+    tts_text_aggregation TEXT,
+    tts_speed REAL NOT NULL DEFAULT 1.0,
+    tts_stability REAL NOT NULL DEFAULT 0.5,
+    tts_similarity_boost REAL NOT NULL DEFAULT 0.8,
+    tts_style REAL NOT NULL DEFAULT 0.0,
+    tts_use_speaker_boost INTEGER NOT NULL DEFAULT 0,
+    tts_text_normalization TEXT NOT NULL DEFAULT 'auto',
     llm_provider TEXT NOT NULL,
     llm_base_url TEXT NOT NULL,
     llm_model TEXT NOT NULL,
@@ -78,6 +87,26 @@ class BotStore:
                 )
             if "encrypted_elevenlabs_key" not in columns:
                 await db.execute("ALTER TABLE bots ADD COLUMN encrypted_elevenlabs_key TEXT")
+            migrations = (
+                "tts_text_aggregation TEXT",
+                "tts_speed REAL NOT NULL DEFAULT 1.0",
+                "tts_stability REAL NOT NULL DEFAULT 0.5",
+                "tts_similarity_boost REAL NOT NULL DEFAULT 0.8",
+                "tts_style REAL NOT NULL DEFAULT 0.0",
+                "tts_use_speaker_boost INTEGER NOT NULL DEFAULT 0",
+                "tts_text_normalization TEXT NOT NULL DEFAULT 'auto'",
+            )
+            for column_def in migrations:
+                if column_def.split()[0] not in columns:
+                    await db.execute(f"ALTER TABLE bots ADD COLUMN {column_def}")
+            await db.execute(
+                """UPDATE bots
+                   SET tts_text_aggregation = CASE
+                       WHEN tts_provider = 'elevenlabs' THEN 'sentence'
+                       ELSE 'token'
+                   END
+                   WHERE tts_text_aggregation IS NULL"""
+            )
             await db.commit()
 
     async def list(self) -> list[BotRecord]:
@@ -116,7 +145,7 @@ class BotStore:
         async with aiosqlite.connect(self._db_path) as db:
             await db.execute(
                 f"INSERT INTO bots ({_COLUMNS}) VALUES "
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                f"({', '.join('?' for _ in _COLUMNS.split(','))})",
                 tuple(record.model_dump()[column.strip()] for column in _COLUMNS.split(",")),
             )
             await db.commit()

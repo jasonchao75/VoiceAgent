@@ -73,8 +73,12 @@ app.innerHTML = `
                 <option value="elevenlabs">ElevenLabs</option>
               </select>
 
-              <label for="bot-tts-model">TTS model</label>
-              <select id="bot-tts-model"></select>
+              <label for="bot-tts-aggregation">TTS text aggregation</label>
+              <select id="bot-tts-aggregation">
+                <option value="token">Token · Lowest latency</option>
+                <option value="sentence">Sentence · More stable prosody</option>
+              </select>
+              <p class="hint">Token streams LLM output immediately; Sentence waits for a sentence boundary.</p>
 
               <label for="bot-voice">Voice</label>
               <select id="bot-voice" hidden></select>
@@ -84,6 +88,24 @@ app.innerHTML = `
                 <a id="bot-voice-docs-link" href="#" target="_blank" rel="noreferrer">Voice catalog ↗</a>
                 <a id="bot-voice-listen-link" href="#" target="_blank" rel="noreferrer">Listen ↗</a>
               </div>
+            </fieldset>
+
+            <fieldset id="elevenlabs-tuning" hidden>
+              <legend>ElevenLabs voice tuning</legend>
+              <label for="bot-tts-model">Model</label>
+              <select id="bot-tts-model"></select>
+              <p id="bot-tts-model-hint" class="hint"></p>
+              <details class="voice-advanced" open>
+                <summary>Voice settings</summary>
+                <div class="voice-setting"><div><label for="bot-tts-stability">Stability</label><output id="bot-tts-stability-value">0.50</output></div><input id="bot-tts-stability" type="range" min="0" max="1" step="0.05" value="0.5"><small id="bot-tts-stability-scale">More variable ↔ More stable</small></div>
+                <div class="voice-setting"><div><label for="bot-tts-similarity">Clarity + Similarity</label><output id="bot-tts-similarity-value">0.80</output></div><input id="bot-tts-similarity" type="range" min="0" max="1" step="0.05" value="0.8"><small>Low ↔ High</small></div>
+                <div class="voice-setting"><div><label for="bot-tts-style">Style exaggeration</label><output id="bot-tts-style-value">0.00</output></div><input id="bot-tts-style" type="range" min="0" max="1" step="0.05" value="0"><small>Natural / faster ↔ Exaggerated</small></div>
+                <div class="voice-setting"><div><label for="bot-tts-speed">Speed</label><output id="bot-tts-speed-value">1.00</output></div><input id="bot-tts-speed" type="range" min="0.7" max="1.2" step="0.05" value="1"><small>Slower ↔ Faster</small></div>
+                <label class="switch-row"><span><b>Use speaker boost</b><small>May improve similarity at some generation cost.</small></span><input id="bot-tts-speaker-boost" type="checkbox"></label>
+                <label class="switch-row"><span><b>Auto mode <em id="bot-auto-mode-state">Off · derived</em></b><small id="bot-auto-mode-hint">Token input keeps ElevenLabs chunk scheduling enabled.</small></span><input id="bot-auto-mode" type="checkbox" disabled></label>
+                <label for="bot-text-normalization">Text normalization</label>
+                <select id="bot-text-normalization"><option value="auto">Auto · Recommended</option><option value="on">On · Force numbers/dates into spoken form</option><option value="off">Off · Synthesize original text</option></select>
+              </details>
             </fieldset>
 
             <fieldset>
@@ -306,11 +328,10 @@ app.innerHTML = `
       <div class="voice-picker-filters">
         <input id="voice-search" placeholder="Search name or description" />
         <select id="voice-language"><option value="">All languages</option></select>
-        <select id="voice-accent"><option value="">All accents</option></select>
         <select id="voice-gender"><option value="">All genders</option></select>
-        <select id="voice-category"><option value="">All sources</option></select>
       </div>
       <div id="voice-picker-error" class="error-banner" hidden></div>
+      <div class="voice-picker-meta"><span id="voice-result-count">0 voices</span><span>Language and gender filters come from the current catalog.</span></div>
       <div id="voice-picker-list" class="voice-picker-list"></div>
       <button id="load-more-voices" class="secondary-button" type="button" hidden>Load more</button>
       <details id="manual-voice-panel">
@@ -320,6 +341,10 @@ app.innerHTML = `
           <button id="use-manual-voice" class="secondary-button" type="button">Use ID</button>
         </div>
       </details>
+      <footer class="voice-picker-actions">
+        <button id="cancel-voice-picker" class="secondary-button" type="button">Cancel</button>
+        <button id="confirm-voice-picker" class="primary-button" type="button">Use selected voice</button>
+      </footer>
     </dialog>
   </main>
 `;
@@ -333,7 +358,24 @@ const elements = {
   botName: document.querySelector("#bot-name"),
   botAsr: document.querySelector("#bot-asr"),
   botTts: document.querySelector("#bot-tts"),
+  botTtsAggregation: document.querySelector("#bot-tts-aggregation"),
   botTtsModel: document.querySelector("#bot-tts-model"),
+  elevenlabsTuning: document.querySelector("#elevenlabs-tuning"),
+  botTtsModelHint: document.querySelector("#bot-tts-model-hint"),
+  botTtsStability: document.querySelector("#bot-tts-stability"),
+  botTtsStabilityValue: document.querySelector("#bot-tts-stability-value"),
+  botTtsStabilityScale: document.querySelector("#bot-tts-stability-scale"),
+  botTtsSimilarity: document.querySelector("#bot-tts-similarity"),
+  botTtsSimilarityValue: document.querySelector("#bot-tts-similarity-value"),
+  botTtsStyle: document.querySelector("#bot-tts-style"),
+  botTtsStyleValue: document.querySelector("#bot-tts-style-value"),
+  botTtsSpeed: document.querySelector("#bot-tts-speed"),
+  botTtsSpeedValue: document.querySelector("#bot-tts-speed-value"),
+  botTtsSpeakerBoost: document.querySelector("#bot-tts-speaker-boost"),
+  botAutoMode: document.querySelector("#bot-auto-mode"),
+  botAutoModeState: document.querySelector("#bot-auto-mode-state"),
+  botAutoModeHint: document.querySelector("#bot-auto-mode-hint"),
+  botTextNormalization: document.querySelector("#bot-text-normalization"),
   botVoice: document.querySelector("#bot-voice"),
   chooseBotVoice: document.querySelector("#choose-bot-voice"),
   botVoiceCard: document.querySelector("#bot-voice-card"),
@@ -406,11 +448,12 @@ const elements = {
   voiceDiscoveryKey: document.querySelector("#voice-discovery-key"),
   voiceSearch: document.querySelector("#voice-search"),
   voiceLanguage: document.querySelector("#voice-language"),
-  voiceAccent: document.querySelector("#voice-accent"),
   voiceGender: document.querySelector("#voice-gender"),
-  voiceCategory: document.querySelector("#voice-category"),
   voicePickerError: document.querySelector("#voice-picker-error"),
   voicePickerList: document.querySelector("#voice-picker-list"),
+  voiceResultCount: document.querySelector("#voice-result-count"),
+  cancelVoicePicker: document.querySelector("#cancel-voice-picker"),
+  confirmVoicePicker: document.querySelector("#confirm-voice-picker"),
   loadMoreVoices: document.querySelector("#load-more-voices"),
   manualVoicePanel: document.querySelector("#manual-voice-panel"),
   manualVoiceId: document.querySelector("#manual-voice-id"),
@@ -422,6 +465,7 @@ let bots = [];
 let selectedBotId;
 let editingBotId;
 let discoveredVoices = [];
+let pendingVoice;
 let nextVoicePageToken;
 let client;
 let sessionId;
@@ -644,7 +688,7 @@ async function showHistory(callId) {
   const heading = document.createElement("h2");
   heading.textContent = call.bot_name || "One-off session";
   const meta = document.createElement("p");
-  meta.textContent = `${new Date(call.started_at).toLocaleString()} · ${call.llm_provider}/${call.llm_model} · ${call.tts_provider}/${call.tts_model} · ${call.status}`;
+  meta.textContent = `${new Date(call.started_at).toLocaleString()} · ${call.llm_provider}/${call.llm_model} · ${call.tts_provider}/${call.tts_model} · ${call.tts_text_aggregation} input · ${call.status}`;
   elements.historyDetail.append(heading, meta);
   if (call.has_recording) {
     const audio = document.createElement("audio");
@@ -653,6 +697,10 @@ async function showHistory(callId) {
     elements.historyDetail.append(audio);
   }
   for (const turn of call.turns) addHistoryTurn(turn);
+  const metricHelp = document.createElement("p");
+  metricHelp.className = "hint";
+  metricHelp.textContent = "TTS initial measures pipeline handoff to the TTS request; TTS TTFT measures first synthesized audio. In sentence mode, TTS initial therefore includes the wait for the first complete sentence.";
+  elements.historyDetail.append(metricHelp);
   for (const metric of call.metrics) {
     const row = document.createElement("p");
     row.className = "history-metric";
@@ -746,11 +794,12 @@ function syncTtsFields() {
   elements.botTtsModel.replaceChildren(
     ...(
       elevenlabs
-        ? ["eleven_flash_v2_5", "eleven_multilingual_v2"]
+        ? ["eleven_flash_v2_5", "eleven_turbo_v2_5", "eleven_multilingual_v2", "eleven_v3"]
         : ["flux-general-en"]
     ).map((model) => new Option(model, model)),
   );
   elements.botElevenlabsKeyField.hidden = !elevenlabs;
+  elements.elevenlabsTuning.hidden = !elevenlabs;
   elements.sessionElevenlabsKeyField.hidden = !(
     selectedBot()?.tts_provider === "elevenlabs" && !selectedBot()?.has_saved_keys
   );
@@ -760,7 +809,45 @@ function syncTtsFields() {
     fillVoiceSelect(elements.botVoice, catalogs.defaults.flux_voice);
   }
   updateBotVoiceDisplay();
+  syncElevenlabsSettings();
   syncKeyFieldVisibility();
+}
+
+function syncElevenlabsSettings() {
+  const model = elements.botTtsModel.value;
+  const isV3 = model === "eleven_v3";
+  const hints = {
+    eleven_flash_v2_5: "Recommended for realtime conversation.",
+    eleven_turbo_v2_5: "Balanced latency and quality.",
+    eleven_multilingual_v2: "Stable for longer generations; higher latency.",
+    eleven_v3: "Most expressive; Stability uses Creative, Natural, or Robust.",
+  };
+  elements.botTtsModelHint.textContent = hints[model] || "";
+  elements.botTtsStability.step = isV3 ? "0.5" : "0.05";
+  if (isV3) {
+    const current = Number(elements.botTtsStability.value);
+    elements.botTtsStability.value = String([0, 0.5, 1].reduce((best, value) =>
+      Math.abs(value - current) < Math.abs(best - current) ? value : best, 0.5));
+  }
+  elements.botTtsStabilityScale.textContent = isV3
+    ? "Creative (0) · Natural (0.5) · Robust (1)"
+    : "More variable ↔ More stable";
+  elements.botTtsSimilarity.disabled = isV3;
+  elements.botTtsSpeakerBoost.disabled = isV3;
+  elements.botTtsSimilarity.closest(".voice-setting").classList.toggle("is-disabled", isV3);
+  elements.botTtsSpeakerBoost.closest(".switch-row").classList.toggle("is-disabled", isV3);
+  const sentence = elements.botTtsAggregation.value === "sentence";
+  elements.botAutoMode.checked = sentence;
+  elements.botAutoModeState.textContent = sentence ? "On · derived" : "Off · derived";
+  elements.botAutoModeHint.textContent = sentence
+    ? "Complete-sentence input skips ElevenLabs chunk scheduling."
+    : "Token input keeps ElevenLabs chunk scheduling enabled.";
+  for (const [input, output] of [
+    [elements.botTtsStability, elements.botTtsStabilityValue],
+    [elements.botTtsSimilarity, elements.botTtsSimilarityValue],
+    [elements.botTtsStyle, elements.botTtsStyleValue],
+    [elements.botTtsSpeed, elements.botTtsSpeedValue],
+  ]) output.value = Number(input.value).toFixed(2);
 }
 
 function updateBotVoiceDisplay() {
@@ -791,32 +878,49 @@ function renderVoicePicker() {
     return (
       searchable.includes(query) &&
       (!elements.voiceLanguage.value || voice.labels.language === elements.voiceLanguage.value) &&
-      (!elements.voiceAccent.value || voice.labels.accent === elements.voiceAccent.value) &&
-      (!elements.voiceGender.value || voice.labels.gender === elements.voiceGender.value) &&
-      (!elements.voiceCategory.value || voice.category === elements.voiceCategory.value)
+      (!elements.voiceGender.value || voice.labels.gender === elements.voiceGender.value)
     );
   });
+  elements.voiceResultCount.textContent = `${visible.length} voice${visible.length === 1 ? "" : "s"}`;
   elements.voicePickerList.replaceChildren(
     ...visible.map((voice) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "voice-picker-option";
-      button.dataset.selected = String(voice.voice_id === elements.botVoice.value);
-      button.innerHTML = `<strong></strong><span></span><em></em>`;
-      button.querySelector("strong").textContent = voice.name;
-      button.querySelector("span").textContent = `${voice.labels.language} · ${voice.labels.accent} · ${voice.labels.gender}`;
-      button.querySelector("em").textContent = voice.category;
-      button.addEventListener("click", () => selectVoice(voice));
+      const card = document.createElement("article");
+      card.className = "voice-picker-option";
+      card.tabIndex = 0;
+      card.setAttribute("role", "radio");
+      card.setAttribute("aria-checked", String(voice.voice_id === pendingVoice?.voice_id));
+      card.dataset.selected = String(voice.voice_id === pendingVoice?.voice_id);
+      card.innerHTML = `<i class="voice-radio"></i><div class="voice-option-copy"><strong></strong><span></span><em></em></div>`;
+      card.querySelector("strong").textContent = voice.name;
+      card.querySelector("span").textContent = [voice.labels.language, voice.labels.accent, voice.labels.gender].filter(Boolean).join(" · ");
+      card.querySelector("em").textContent = voice.description || voice.category;
+      const choose = () => {
+        pendingVoice = voice;
+        renderVoicePicker();
+      };
+      card.addEventListener("click", choose);
+      card.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          choose();
+        }
+      });
       if (voice.preview_url) {
-        const preview = document.createElement("audio");
-        preview.controls = true;
-        preview.preload = "none";
-        preview.src = voice.preview_url;
-        button.append(preview);
+        const preview = document.createElement("button");
+        preview.type = "button";
+        preview.className = "voice-preview";
+        preview.setAttribute("aria-label", `Preview ${voice.name}`);
+        preview.textContent = "▶";
+        preview.addEventListener("click", (event) => {
+          event.stopPropagation();
+          new Audio(voice.preview_url).play().catch(() => {});
+        });
+        card.append(preview);
       }
-      return button;
+      return card;
     }),
   );
+  elements.confirmVoicePicker.disabled = !pendingVoice;
 }
 
 function selectVoice(voice) {
@@ -848,6 +952,7 @@ async function loadElevenlabsVoices({ append = false } = {}) {
 async function openVoicePicker() {
   elements.voicePickerError.hidden = true;
   elements.voiceSearch.value = "";
+  pendingVoice = undefined;
   if (elements.botTts.value === "deepgram_flux") {
     discoveredVoices = normalizedDeepgramVoices();
     elements.voicePickerTitle.textContent = "Choose a Deepgram Flux voice";
@@ -868,13 +973,8 @@ async function openVoicePicker() {
     ...new Set(discoveredVoices.map((voice) => voice.labels[key] || "Unspecified")),
   ].sort();
   fillDynamicFilter(elements.voiceLanguage, "All languages", labelValues("language"));
-  fillDynamicFilter(elements.voiceAccent, "All accents", labelValues("accent"));
   fillDynamicFilter(elements.voiceGender, "All genders", labelValues("gender"));
-  fillDynamicFilter(
-    elements.voiceCategory,
-    "All sources",
-    [...new Set(discoveredVoices.map((voice) => voice.category || "Unspecified"))].sort(),
-  );
+  pendingVoice = discoveredVoices.find((voice) => voice.voice_id === elements.botVoice.value);
   renderVoicePicker();
   elements.voicePickerDialog.showModal();
 }
@@ -1008,8 +1108,18 @@ function openEditor(bot) {
   elements.botName.value = bot ? bot.name : "";
   elements.botAsr.value = bot ? bot.asr_provider : "deepgram_flux";
   elements.botTts.value = bot ? bot.tts_provider : "deepgram_flux";
+  elements.botTtsAggregation.value = bot
+    ? (bot.tts_text_aggregation || (bot.tts_provider === "elevenlabs" ? "sentence" : "token"))
+    : "token";
   syncTtsFields();
   elements.botTtsModel.value = bot ? bot.tts_model : "flux-general-en";
+  elements.botTtsSpeed.value = bot?.tts_speed ?? 1;
+  elements.botTtsStability.value = bot?.tts_stability ?? 0.5;
+  elements.botTtsSimilarity.value = bot?.tts_similarity_boost ?? 0.8;
+  elements.botTtsStyle.value = bot?.tts_style ?? 0;
+  elements.botTtsSpeakerBoost.checked = bot?.tts_use_speaker_boost ?? false;
+  elements.botTextNormalization.value = bot?.tts_text_normalization ?? "auto";
+  syncElevenlabsSettings();
   if (bot?.tts_provider === "elevenlabs") {
     elements.botVoice.replaceChildren(new Option(bot.tts_voice, bot.tts_voice, true, true));
   } else {
@@ -1066,6 +1176,13 @@ async function saveBot(event) {
     tts_provider: elements.botTts.value,
     tts_voice: elements.botVoice.value,
     tts_model: elements.botTtsModel.value,
+    tts_text_aggregation: elements.botTtsAggregation.value,
+    tts_speed: Number(elements.botTtsSpeed.value),
+    tts_stability: Number(elements.botTtsStability.value),
+    tts_similarity_boost: Number(elements.botTtsSimilarity.value),
+    tts_style: Number(elements.botTtsStyle.value),
+    tts_use_speaker_boost: elements.botTtsSpeakerBoost.checked,
+    tts_text_normalization: elements.botTextNormalization.value,
     llm_provider: elements.botProvider.value,
     llm_base_url: elements.botBaseUrl.value,
     llm_model: elements.botModel.value,
@@ -1414,20 +1531,33 @@ elements.botTts.addEventListener("change", () => {
   elements.botVoice.replaceChildren();
   syncTtsFields();
 });
+elements.botTtsModel.addEventListener("change", syncElevenlabsSettings);
+elements.botTtsAggregation.addEventListener("change", syncElevenlabsSettings);
+for (const input of [
+  elements.botTtsStability,
+  elements.botTtsSimilarity,
+  elements.botTtsStyle,
+  elements.botTtsSpeed,
+]) input.addEventListener("input", syncElevenlabsSettings);
 elements.chooseBotVoice.addEventListener("click", openVoicePicker);
 elements.closeVoicePicker.addEventListener("click", () => elements.voicePickerDialog.close());
+elements.cancelVoicePicker.addEventListener("click", () => elements.voicePickerDialog.close());
+elements.confirmVoicePicker.addEventListener("click", () => {
+  if (pendingVoice) selectVoice(pendingVoice);
+});
 elements.voiceSearch.addEventListener("input", renderVoicePicker);
 elements.voiceLanguage.addEventListener("change", renderVoicePicker);
-elements.voiceAccent.addEventListener("change", renderVoicePicker);
 elements.voiceGender.addEventListener("change", renderVoicePicker);
-elements.voiceCategory.addEventListener("change", renderVoicePicker);
 elements.loadMoreVoices.addEventListener("click", async () => {
   await loadElevenlabsVoices({ append: true });
   renderVoicePicker();
 });
 elements.useManualVoice.addEventListener("click", () => {
   const voiceId = elements.manualVoiceId.value.trim();
-  if (voiceId) selectVoice({ voice_id: voiceId, name: voiceId });
+  if (voiceId) {
+    pendingVoice = { voice_id: voiceId, name: voiceId };
+    renderVoicePicker();
+  }
 });
 elements.botProvider.addEventListener("change", () => applyProviderPreset(botProviderRefs));
 elements.botVoice.addEventListener("change", () =>

@@ -1,12 +1,23 @@
 # UI Verification Checklist
 
+- [ ] Side-by-side screenshots confirm the implementation matches the approved prototype before product review.
+- [ ] Field order, section grouping, spacing hierarchy, labels, control types, default values and disabled/read-only treatments match the prototype.
 - [ ] Entry remains inside the existing Bot editor; no new navigation page is introduced.
 - [ ] Deepgram and LLM keys always appear; ElevenLabs key appears only for ElevenLabs TTS.
 - [ ] Provider switching updates provider-specific voice source and credential fields.
+- [ ] Both providers expose Token and Sentence text aggregation with a clear latency/quality explanation; Token is the default.
+- [ ] ElevenLabs shows Auto mode as derived read-only state: Off for Token and On for Sentence.
+- [ ] ElevenLabs exposes Flash v2.5, Turbo v2.5, Multilingual v2 and Eleven v3 model choices.
+- [ ] Stability, Similarity, Style and Speed show both a slider and exact value; Speaker Boost is an explicit switch.
+- [ ] v3 Stability becomes Creative, Natural and Robust presets; Similarity and Speaker Boost are disabled with an explanation.
+- [ ] Advanced help text explains latency/quality effects and why Auto mode is derived from aggregation.
+- [ ] Text normalization exposes Auto, On and Off in Advanced settings, defaults to Auto, and explains number/date reading behavior.
 - [ ] Voice Picker covers selection, preview, search, dynamic filters, loading, empty/error states, and pagination.
+- [ ] Voice selection remains the prototype modal with result cards; it is not replaced by a native select or unrelated layout.
 - [ ] ElevenLabs filter values come from returned metadata; missing values use `Unspecified`.
 - [ ] Manual Voice ID remains available when ElevenLabs discovery fails.
 - [ ] Saved selection is restored by stable Voice ID.
 - [ ] Desktop and narrow viewport layouts remain usable.
 - [ ] Existing latency fields and labels remain provider-neutral.
+- [ ] History shows the saved text aggregation and explains that Sentence-mode TTS initial includes sentence-boundary waiting.
 - [ ] Final implementation screenshots are attached before product acceptance.

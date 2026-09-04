@@ -490,6 +490,14 @@ def create_app() -> FastAPI:
             flux_voice=record.tts_voice,
             tts_provider=record.tts_provider,
             tts_model=record.tts_model,
+            tts_text_aggregation=record.tts_text_aggregation
+            or ("sentence" if record.tts_provider == "elevenlabs" else "token"),
+            tts_speed=record.tts_speed,
+            tts_stability=record.tts_stability,
+            tts_similarity_boost=record.tts_similarity_boost,
+            tts_style=record.tts_style,
+            tts_use_speaker_boost=record.tts_use_speaker_boost,
+            tts_text_normalization=record.tts_text_normalization,
         )
 
     @app.post("/api/tts/elevenlabs/voices")
@@ -675,6 +683,7 @@ def create_app() -> FastAPI:
             tts_provider=lease.config.tts.provider,
             tts_model=lease.config.tts.model,
             tts_voice=lease.config.tts.voice,
+            tts_text_aggregation=lease.config.tts.text_aggregation,
             asr_provider=runtime.asr.provider,
             asr_model=runtime.asr.model,
             language=runtime.language,

@@ -28,6 +28,13 @@ class BotConfigFields(BaseModel):
     tts_provider: str = Field(min_length=1, max_length=50)
     tts_voice: str = Field(min_length=1, max_length=100)
     tts_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
+    tts_text_aggregation: Literal["token", "sentence"] = "token"
+    tts_speed: float = Field(default=1.0, ge=0.7, le=1.2, multiple_of=0.05)
+    tts_stability: float = Field(default=0.5, ge=0, le=1)
+    tts_similarity_boost: float = Field(default=0.8, ge=0, le=1)
+    tts_style: float = Field(default=0.0, ge=0, le=1)
+    tts_use_speaker_boost: bool = False
+    tts_text_normalization: Literal["auto", "on", "off"] = "auto"
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)

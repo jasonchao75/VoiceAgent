@@ -13,6 +13,7 @@ from pydantic import SecretStr
 
 from src.api import create_app
 from src.bots.crypto import BotKeyCipher, StorageKeyError
+from src.bots.storage import BotStore
 
 VALID_CONFIG = {
     "name": "Support bot",
@@ -76,6 +77,58 @@ def test_cipher_roundtrip_and_wrong_key() -> None:
 def test_cipher_rejects_malformed_master_key() -> None:
     with pytest.raises(StorageKeyError, match="not a valid Fernet key"):
         BotKeyCipher("not-a-fernet-key")
+
+
+@pytest.mark.asyncio
+async def test_legacy_bots_receive_provider_compatible_aggregation(tmp_path: Path) -> None:
+    """Migration preserves the pre-setting provider behavior for existing bots."""
+    database_path = tmp_path / "bots.db"
+    columns = """id, name, asr_provider, tts_provider, tts_voice, tts_model,
+        llm_provider, llm_base_url, llm_model, reasoning_mode, system_prompt,
+        opening_script, encrypted_deepgram_key, encrypted_llm_key,
+        encrypted_elevenlabs_key, created_at, updated_at"""
+    with sqlite3.connect(database_path) as database:
+        database.execute(
+            """CREATE TABLE bots (
+                id TEXT PRIMARY KEY, name TEXT NOT NULL, asr_provider TEXT NOT NULL,
+                tts_provider TEXT NOT NULL, tts_voice TEXT NOT NULL,
+                tts_model TEXT NOT NULL, llm_provider TEXT NOT NULL,
+                llm_base_url TEXT NOT NULL, llm_model TEXT NOT NULL,
+                reasoning_mode TEXT NOT NULL, system_prompt TEXT NOT NULL,
+                opening_script TEXT NOT NULL, encrypted_deepgram_key TEXT,
+                encrypted_llm_key TEXT, encrypted_elevenlabs_key TEXT,
+                created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+            )"""
+        )
+        values = (
+            "legacy-eleven",
+            "Legacy Eleven",
+            "deepgram_flux",
+            "elevenlabs",
+            "voice-1",
+            "eleven_flash_v2_5",
+            "openai",
+            "https://api.openai.com/v1",
+            "gpt-4.1-mini",
+            "lowest_latency",
+            "Prompt",
+            "Hello",
+            None,
+            None,
+            None,
+            "now",
+            "now",
+        )
+        database.execute(
+            f"INSERT INTO bots ({columns}) VALUES ({', '.join('?' for _ in values)})",
+            values,
+        )
+
+    store = BotStore(database_path)
+    await store.initialize()
+    record = await store.get("legacy-eleven")
+    assert record is not None
+    assert record.tts_text_aggregation == "sentence"
 
 
 # --- management API ----------------------------------------------------------
@@ -287,7 +340,14 @@ def test_elevenlabs_bot_requires_and_uses_provider_key(client_with_keys: TestCli
         **VALID_CONFIG,
         "tts_provider": "elevenlabs",
         "tts_voice": "test-elevenlabs-voice-id",
-        "tts_model": "eleven_flash_v2_5",
+        "tts_model": "eleven_turbo_v2_5",
+        "tts_text_aggregation": "sentence",
+        "tts_speed": 1.1,
+        "tts_stability": 0.7,
+        "tts_similarity_boost": 0.65,
+        "tts_style": 0.2,
+        "tts_use_speaker_boost": True,
+        "tts_text_normalization": "on",
         "save_keys": True,
         "deepgram_api_key": DEEPGRAM_KEY,
         "llm_api_key": LLM_KEY,
@@ -302,11 +362,51 @@ def test_elevenlabs_bot_requires_and_uses_provider_key(client_with_keys: TestCli
     )
     assert created.status_code == 201, created.text
     assert created.json()["has_saved_keys"] is True
-    assert created.json()["tts_model"] == "eleven_flash_v2_5"
+    assert created.json()["tts_model"] == "eleven_turbo_v2_5"
+    assert created.json()["tts_text_aggregation"] == "sentence"
+    assert created.json()["tts_speed"] == 1.1
+    assert created.json()["tts_stability"] == 0.7
+    assert created.json()["tts_similarity_boost"] == 0.65
+    assert created.json()["tts_style"] == 0.2
+    assert created.json()["tts_use_speaker_boost"] is True
+    assert created.json()["tts_text_normalization"] == "on"
     session = client_with_keys.post(
         "/api/sessions", json={"bot_id": created.json()["id"]}, headers=ORIGIN
     )
     assert session.status_code == 201, session.text
+
+
+def test_eleven_v3_accepts_only_supported_stability_presets(client: TestClient) -> None:
+    """Eleven v3 accepts its discrete stability contract and all four models are valid."""
+    for model in (
+        "eleven_flash_v2_5",
+        "eleven_turbo_v2_5",
+        "eleven_multilingual_v2",
+        "eleven_v3",
+    ):
+        created = _create_bot(
+            client,
+            name=model,
+            tts_provider="elevenlabs",
+            tts_voice="test-elevenlabs-voice-id",
+            tts_model=model,
+            tts_stability=1.0,
+        )
+        assert created["tts_model"] == model
+
+    rejected = client.post(
+        "/api/bots",
+        json={
+            **VALID_CONFIG,
+            "tts_provider": "elevenlabs",
+            "tts_voice": "test-elevenlabs-voice-id",
+            "tts_model": "eleven_v3",
+            "tts_stability": 0.7,
+        },
+        headers=ORIGIN,
+    )
+    assert rejected.status_code == 400
+    assert "stability" in rejected.json()["detail"]
 
 
 def test_saved_key_bot_degrades_without_storage_key(

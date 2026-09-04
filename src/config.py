@@ -74,8 +74,14 @@ class TTSConfig(StrictModel):
     provider: Literal["deepgram_flux", "elevenlabs"] = "deepgram_flux"
     voice: str
     model: str = "flux-general-en"
-    speed: float = Field(default=1.0, ge=0.85, le=1.15, multiple_of=0.05)
+    text_aggregation: Literal["token", "sentence"] = "token"
+    speed: float = Field(default=1.0, ge=0.7, le=1.2, multiple_of=0.05)
     expressivity: Literal[-2, -1, 0, 1, 2] = 0
+    stability: float = Field(default=0.5, ge=0, le=1)
+    similarity_boost: float = Field(default=0.8, ge=0, le=1)
+    style: float = Field(default=0.0, ge=0, le=1)
+    use_speaker_boost: bool = False
+    text_normalization: Literal["auto", "on", "off"] = "auto"
 
 
 class SessionLimits(StrictModel):

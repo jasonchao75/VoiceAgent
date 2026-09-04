@@ -23,6 +23,10 @@ async def test_history_crud_persists_across_store_instances(tmp_path: Path) -> N
         bot_name="Gemini bot",
         llm_provider="google_gemini",
         llm_model="gemini-2.5-flash-lite",
+        tts_provider="elevenlabs",
+        tts_model="eleven_turbo_v2_5",
+        tts_voice="voice-1",
+        tts_text_aggregation="sentence",
         asr_provider="deepgram_flux",
         asr_model="flux-general-en",
         language="en",
@@ -56,6 +60,10 @@ async def test_history_crud_persists_across_store_instances(tmp_path: Path) -> N
     assert page.total == 1
     assert detail is not None
     assert detail.turns[0].text == "hello"
+    assert detail.tts_provider == "elevenlabs"
+    assert detail.tts_model == "eleven_turbo_v2_5"
+    assert detail.tts_voice == "voice-1"
+    assert detail.tts_text_aggregation == "sentence"
     assert detail.metrics[0].reasoning_status == "confirmed_off"
     assert await restarted.recording_path("call-1") == recording
 

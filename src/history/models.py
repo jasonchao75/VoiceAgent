@@ -55,6 +55,7 @@ class CallSummary(BaseModel):
     tts_provider: str = "deepgram_flux"
     tts_model: str = "flux-general-en"
     tts_voice: str = ""
+    tts_text_aggregation: str = "token"
     has_recording: bool
     recording_status: str
     error_category: str | None
