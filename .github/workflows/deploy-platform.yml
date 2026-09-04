@@ -70,6 +70,8 @@ jobs:
             -o BatchMode=yes \
             -o ConnectTimeout=15 \
             -o IdentitiesOnly=yes \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
             -o StrictHostKeyChecking=yes \
             -i "${HOME}/.ssh/voiceagent_deploy" \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
