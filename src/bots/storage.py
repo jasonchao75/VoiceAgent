@@ -13,7 +13,7 @@ from src.bots.models import BotConfigFields, BotRecord
 
 _COLUMNS = (
     "id, name, asr_provider, tts_provider, tts_voice, tts_model, "
-    "tts_text_aggregation, tts_speed, tts_stability, tts_similarity_boost, "
+    "tts_text_aggregation, tts_speed, tts_expressivity, tts_stability, tts_similarity_boost, "
     "tts_style, tts_use_speaker_boost, tts_text_normalization, "
     "llm_provider, llm_base_url, llm_model, "
     "reasoning_mode, "
@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS bots (
     tts_model TEXT NOT NULL DEFAULT 'flux-general-en',
     tts_text_aggregation TEXT,
     tts_speed REAL NOT NULL DEFAULT 1.0,
+    tts_expressivity INTEGER NOT NULL DEFAULT 0,
     tts_stability REAL NOT NULL DEFAULT 0.5,
     tts_similarity_boost REAL NOT NULL DEFAULT 0.8,
     tts_style REAL NOT NULL DEFAULT 0.0,
@@ -90,6 +91,7 @@ class BotStore:
             migrations = (
                 "tts_text_aggregation TEXT",
                 "tts_speed REAL NOT NULL DEFAULT 1.0",
+                "tts_expressivity INTEGER NOT NULL DEFAULT 0",
                 "tts_stability REAL NOT NULL DEFAULT 0.5",
                 "tts_similarity_boost REAL NOT NULL DEFAULT 0.8",
                 "tts_style REAL NOT NULL DEFAULT 0.0",

@@ -39,6 +39,8 @@ def validate_bot_config(
             raise ValueError("Select a TTS voice from the server catalog")
         if config.tts_model != "flux-general-en":
             raise ValueError("Unsupported Deepgram Flux TTS model")
+        if not 0.85 <= config.tts_speed <= 1.15:
+            raise ValueError("Deepgram Flux speed must be between 0.85 and 1.15")
     elif config.tts_provider == "elevenlabs":
         if config.tts_model not in {
             "eleven_flash_v2_5",

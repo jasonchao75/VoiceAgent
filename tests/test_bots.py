@@ -129,15 +129,18 @@ async def test_legacy_bots_receive_provider_compatible_aggregation(tmp_path: Pat
     record = await store.get("legacy-eleven")
     assert record is not None
     assert record.tts_text_aggregation == "sentence"
+    assert record.tts_expressivity == 0
 
 
 # --- management API ----------------------------------------------------------
 
 
 def test_bot_crud_without_saved_keys(client: TestClient) -> None:
-    created = _create_bot(client)
+    created = _create_bot(client, tts_speed=1.05, tts_expressivity=1)
     assert created["has_saved_keys"] is False
     assert created["name"] == "Support bot"
+    assert created["tts_speed"] == 1.05
+    assert created["tts_expressivity"] == 1
     assert "deepgram_api_key" not in created
     assert "llm_api_key" not in created
 
@@ -148,6 +151,7 @@ def test_bot_crud_without_saved_keys(client: TestClient) -> None:
     fetched = client.get(f"/api/bots/{created['id']}", headers=ORIGIN)
     assert fetched.status_code == 200
     assert fetched.json()["tts_voice"] == "flux-alexis-en"
+    assert fetched.json()["tts_expressivity"] == 1
 
     updated = client.put(
         f"/api/bots/{created['id']}",
@@ -185,6 +189,14 @@ def test_bot_validation_uses_catalogs(client: TestClient) -> None:
         "/api/bots", json={**VALID_CONFIG, "asr_provider": "other-asr"}, headers=ORIGIN
     )
     assert response.status_code == 400
+
+    response = client.post("/api/bots", json={**VALID_CONFIG, "tts_speed": 1.2}, headers=ORIGIN)
+    assert response.status_code == 400
+
+    response = client.post(
+        "/api/bots", json={**VALID_CONFIG, "tts_expressivity": 1.5}, headers=ORIGIN
+    )
+    assert response.status_code == 422
 
 
 def test_saving_keys_requires_storage_key(client: TestClient) -> None:

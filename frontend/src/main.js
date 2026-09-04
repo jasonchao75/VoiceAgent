@@ -90,6 +90,13 @@ app.innerHTML = `
               </div>
             </fieldset>
 
+            <fieldset id="flux-tuning">
+              <legend>Deepgram Flux voice tuning</legend>
+              <div class="voice-setting"><div><label for="bot-flux-expressivity">Expressivity</label><output id="bot-flux-expressivity-value">0</output></div><input id="bot-flux-expressivity" type="range" min="-2" max="2" step="1" value="0"><small>Calm (-2) · Neutral (0) · Animated (2)</small></div>
+              <div class="voice-setting"><div><label for="bot-flux-speed">Speed</label><output id="bot-flux-speed-value">1.00</output></div><input id="bot-flux-speed" type="range" min="0.85" max="1.15" step="0.05" value="1"><small>Slower ↔ Faster</small></div>
+              <p class="hint">Expressivity changes delivery style, not quality. Positive values sound more animated and may need voice-by-voice auditioning.</p>
+            </fieldset>
+
             <fieldset id="elevenlabs-tuning" hidden>
               <legend>ElevenLabs voice tuning</legend>
               <label for="bot-tts-model">Model</label>
@@ -360,6 +367,11 @@ const elements = {
   botTts: document.querySelector("#bot-tts"),
   botTtsAggregation: document.querySelector("#bot-tts-aggregation"),
   botTtsModel: document.querySelector("#bot-tts-model"),
+  fluxTuning: document.querySelector("#flux-tuning"),
+  botFluxExpressivity: document.querySelector("#bot-flux-expressivity"),
+  botFluxExpressivityValue: document.querySelector("#bot-flux-expressivity-value"),
+  botFluxSpeed: document.querySelector("#bot-flux-speed"),
+  botFluxSpeedValue: document.querySelector("#bot-flux-speed-value"),
   elevenlabsTuning: document.querySelector("#elevenlabs-tuning"),
   botTtsModelHint: document.querySelector("#bot-tts-model-hint"),
   botTtsStability: document.querySelector("#bot-tts-stability"),
@@ -799,6 +811,7 @@ function syncTtsFields() {
     ).map((model) => new Option(model, model)),
   );
   elements.botElevenlabsKeyField.hidden = !elevenlabs;
+  elements.fluxTuning.hidden = elevenlabs;
   elements.elevenlabsTuning.hidden = !elevenlabs;
   elements.sessionElevenlabsKeyField.hidden = !(
     selectedBot()?.tts_provider === "elevenlabs" && !selectedBot()?.has_saved_keys
@@ -810,7 +823,13 @@ function syncTtsFields() {
   }
   updateBotVoiceDisplay();
   syncElevenlabsSettings();
+  syncFluxSettings();
   syncKeyFieldVisibility();
+}
+
+function syncFluxSettings() {
+  elements.botFluxExpressivityValue.value = elements.botFluxExpressivity.value;
+  elements.botFluxSpeedValue.value = Number(elements.botFluxSpeed.value).toFixed(2);
 }
 
 function syncElevenlabsSettings() {
@@ -1114,12 +1133,15 @@ function openEditor(bot) {
   syncTtsFields();
   elements.botTtsModel.value = bot ? bot.tts_model : "flux-general-en";
   elements.botTtsSpeed.value = bot?.tts_speed ?? 1;
+  elements.botFluxSpeed.value = bot?.tts_speed ?? 1;
+  elements.botFluxExpressivity.value = bot?.tts_expressivity ?? 0;
   elements.botTtsStability.value = bot?.tts_stability ?? 0.5;
   elements.botTtsSimilarity.value = bot?.tts_similarity_boost ?? 0.8;
   elements.botTtsStyle.value = bot?.tts_style ?? 0;
   elements.botTtsSpeakerBoost.checked = bot?.tts_use_speaker_boost ?? false;
   elements.botTextNormalization.value = bot?.tts_text_normalization ?? "auto";
   syncElevenlabsSettings();
+  syncFluxSettings();
   if (bot?.tts_provider === "elevenlabs") {
     elements.botVoice.replaceChildren(new Option(bot.tts_voice, bot.tts_voice, true, true));
   } else {
@@ -1177,7 +1199,8 @@ async function saveBot(event) {
     tts_voice: elements.botVoice.value,
     tts_model: elements.botTtsModel.value,
     tts_text_aggregation: elements.botTtsAggregation.value,
-    tts_speed: Number(elements.botTtsSpeed.value),
+    tts_speed: Number(elements.botTts.value === "elevenlabs" ? elements.botTtsSpeed.value : elements.botFluxSpeed.value),
+    tts_expressivity: Number(elements.botFluxExpressivity.value),
     tts_stability: Number(elements.botTtsStability.value),
     tts_similarity_boost: Number(elements.botTtsSimilarity.value),
     tts_style: Number(elements.botTtsStyle.value),
@@ -1533,6 +1556,8 @@ elements.botTts.addEventListener("change", () => {
 });
 elements.botTtsModel.addEventListener("change", syncElevenlabsSettings);
 elements.botTtsAggregation.addEventListener("change", syncElevenlabsSettings);
+elements.botFluxExpressivity.addEventListener("input", syncFluxSettings);
+elements.botFluxSpeed.addEventListener("input", syncFluxSettings);
 for (const input of [
   elements.botTtsStability,
   elements.botTtsSimilarity,

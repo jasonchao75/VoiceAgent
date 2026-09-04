@@ -39,6 +39,7 @@ class SessionRequest(BaseModel):
     tts_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
     tts_text_aggregation: Literal["token", "sentence"] = "token"
     tts_speed: float = Field(default=1.0, ge=0.7, le=1.2, multiple_of=0.05)
+    tts_expressivity: Literal[-2, -1, 0, 1, 2] = 0
     tts_stability: float = Field(default=0.5, ge=0, le=1)
     tts_similarity_boost: float = Field(default=0.8, ge=0, le=1)
     tts_style: float = Field(default=0.0, ge=0, le=1)
@@ -336,7 +337,7 @@ def build_session_config(
         model=request.tts_model,
         text_aggregation=request.tts_text_aggregation,
         speed=request.tts_speed,
-        expressivity=runtime.tts.expressivity,
+        expressivity=request.tts_expressivity,
         stability=request.tts_stability,
         similarity_boost=request.tts_similarity_boost,
         style=request.tts_style,

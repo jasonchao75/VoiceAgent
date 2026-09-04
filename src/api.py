@@ -493,6 +493,7 @@ def create_app() -> FastAPI:
             tts_text_aggregation=record.tts_text_aggregation
             or ("sentence" if record.tts_provider == "elevenlabs" else "token"),
             tts_speed=record.tts_speed,
+            tts_expressivity=record.tts_expressivity,
             tts_stability=record.tts_stability,
             tts_similarity_boost=record.tts_similarity_boost,
             tts_style=record.tts_style,

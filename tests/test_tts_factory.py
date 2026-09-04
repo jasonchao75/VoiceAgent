@@ -20,6 +20,8 @@ def test_default_registry_contains_supported_providers(runtime_config: RuntimeCo
     )
     assert isinstance(service, DeepgramFluxTTSService)
     assert service._settings.voice == runtime_config.tts.voice
+    assert service._settings.speed == runtime_config.tts.speed
+    assert service._settings.expressivity == runtime_config.tts.expressivity
     assert service._init_sample_rate == runtime_config.audio.output_sample_rate
     assert service._text_aggregation_mode.value == "token"
 
@@ -73,6 +75,19 @@ def test_elevenlabs_settings_and_derived_auto_mode(runtime_config: RuntimeConfig
     assert service._settings.use_speaker_boost is True
     assert service._settings.speed == 1.1
     assert service._settings.apply_text_normalization == "on"
+
+
+def test_flux_voice_controls_are_passed_to_service(runtime_config: RuntimeConfig) -> None:
+    """Flux receives the persisted conversational voice controls."""
+    config = runtime_config.tts.model_copy(update={"speed": 1.05, "expressivity": 1})
+    service = create_default_tts_registry().create(
+        provider="deepgram_flux",
+        api_key="inert-test-key",
+        config=config,
+        audio=runtime_config.audio,
+    )
+    assert service._settings.speed == 1.05
+    assert service._settings.expressivity == 1
 
 
 def test_eleven_v3_omits_unsupported_settings(runtime_config: RuntimeConfig) -> None:
