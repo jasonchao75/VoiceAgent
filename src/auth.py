@@ -119,8 +119,9 @@ class ProductAuthMiddleware(BaseHTTPMiddleware):
             target = path
             if request.url.query:
                 target += f"?{request.url.query}"
+            reason = "expired=1&" if token else ""
             return RedirectResponse(
-                f"/login?expired=1&next={quote(target, safe='')}", status_code=303
+                f"/login?{reason}next={quote(target, safe='')}", status_code=303
             )
 
         request.state.auth_idle_expires_at = expiry[0]

@@ -123,6 +123,7 @@ def test_product_login_protects_routes_without_native_auth_challenge(
 
     with TestClient(create_app(), base_url="https://testserver") as client:
         health = client.get("/health")
+        first_visit = client.get("/", follow_redirects=False)
         unauthorized = client.get("/api/catalogs")
         login = client.post(
             "/api/auth/login",
@@ -132,6 +133,7 @@ def test_product_login_protects_routes_without_native_auth_challenge(
         session = client.get("/api/auth/session")
 
     assert health.status_code == 200
+    assert first_visit.headers["location"] == "/login?next=%2F"
     assert unauthorized.status_code == 401
     assert "www-authenticate" not in unauthorized.headers
     assert login.status_code == 200
