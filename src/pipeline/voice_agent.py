@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 
 from fastapi import WebSocket
+from pipecat.adapters.schemas.function_schema import FunctionSchema
 from pipecat.frames.frames import TTSSpeakFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker, ProcessorUnusablePolicy
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.serializers.protobuf import ProtobufFrameSerializer
+from pipecat.services.llm_service import FunctionCallParams
 from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketParams,
     FastAPIWebsocketTransport,
@@ -23,6 +26,7 @@ from src.config import RuntimeConfig
 from src.history.capture import CallCapture
 from src.llm import create_llm_service
 from src.observability import SessionEventBuffer, SessionTimingObserver
+from src.pipeline.speed_control import SessionSpeedController
 from src.session import SessionLease
 from src.tts import TTSProviderRegistry
 
@@ -57,10 +61,11 @@ async def run_voice_agent_session(
         else deepgram_key
     )
 
+    is_chat = lease.session_type == "chat_test"
     transport = FastAPIWebsocketTransport(
         websocket=websocket,
         params=FastAPIWebsocketParams(
-            audio_in_enabled=True,
+            audio_in_enabled=not is_chat,
             audio_out_enabled=True,
             audio_in_sample_rate=runtime.audio.input_sample_rate,
             audio_out_sample_rate=runtime.audio.output_sample_rate,
@@ -74,10 +79,14 @@ async def run_voice_agent_session(
             ws_close_timeout=1.0,
         ),
     )
-    stt = create_flux_stt(
-        api_key=deepgram_key,
-        config=runtime.asr,
-        audio=runtime.audio,
+    stt = (
+        None
+        if is_chat
+        else create_flux_stt(
+            api_key=deepgram_key,
+            config=lease.config.asr,
+            audio=runtime.audio,
+        )
     )
     llm = create_llm_service(
         api_key=llm_key,
@@ -91,19 +100,73 @@ async def run_voice_agent_session(
         audio=runtime.audio,
     )
 
-    context = LLMContext()
+    tools: list[FunctionSchema] = []
+    if lease.config.tts.dynamic_speed_enabled and lease.config.tts.model != "eleven_v3":
+        limits = (0.5, 1.5) if lease.config.tts.provider == "deepgram_flux" else (0.7, 1.2)
+
+        async def apply_speed(target: float) -> None:
+            settings = type(tts).Settings(speed=target)
+            await asyncio.wait_for(tts._update_settings(settings), timeout=3.0)
+
+        speed_controller = SessionSpeedController(
+            configured_speed=lease.config.tts.speed,
+            step=lease.config.tts.speed_step,
+            minimum=limits[0],
+            maximum=limits[1],
+            apply_speed=apply_speed,
+        )
+
+        async def set_speech_speed(params: FunctionCallParams) -> None:
+            started = time.monotonic()
+            action = params.arguments.get("action")
+            if action not in {"faster", "slower", "normal", "configured"}:
+                await params.result_callback({"status": "failed", "reason": "invalid_action"})
+                return
+            result = await speed_controller.update(action)
+            logger.info(
+                "speech_speed_update session_id=%s provider=%s action=%s old=%s "
+                "target=%s status=%s duration_ms=%.1f",
+                lease.session_id,
+                lease.config.tts.provider,
+                action,
+                result.old_speed,
+                result.target_speed,
+                result.status,
+                (time.monotonic() - started) * 1000,
+            )
+            await params.result_callback(
+                {
+                    "status": result.status,
+                    "old_speed": result.old_speed,
+                    "effective_speed": result.effective_speed,
+                }
+            )
+
+        tools.append(
+            FunctionSchema(
+                name="set_speech_speed",
+                description=(
+                    "Change this agent's speaking speed for the current call when the caller "
+                    "explicitly asks. Only confirm a change when status is applied."
+                ),
+                properties={
+                    "action": {
+                        "type": "string",
+                        "enum": ["faster", "slower", "normal", "configured"],
+                    }
+                },
+                required=["action"],
+                handler=set_speech_speed,
+            )
+        )
+
+    context = LLMContext(tools=tools) if tools else LLMContext()
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(context)
-    pipeline = Pipeline(
-        [
-            transport.input(),
-            stt,
-            user_aggregator,
-            llm,
-            tts,
-            transport.output(),
-            assistant_aggregator,
-        ]
-    )
+    processors = [transport.input()]
+    if stt is not None:
+        processors.append(stt)
+    processors.extend([user_aggregator, llm, tts, transport.output(), assistant_aggregator])
+    pipeline = Pipeline(processors)
     observer = SessionTimingObserver(
         session_id=lease.session_id,
         event_sink=event_buffer.add,
@@ -127,6 +190,16 @@ async def run_voice_agent_session(
             start_metadata={"session_id": lease.session_id},
         ),
     )
+
+    async def on_llm_completion_timeout(_service: object) -> None:
+        """Speak the Bot fallback without issuing another LLM request."""
+        logger.warning("llm_completion_timeout session_id=%s", lease.session_id)
+        if lease.config.fallback_script:
+            await worker.queue_frames([TTSSpeakFrame(lease.config.fallback_script)])
+
+    add_llm_handler = getattr(llm, "add_event_handler", None)
+    if callable(add_llm_handler):
+        add_llm_handler("on_completion_timeout", on_llm_completion_timeout)
 
     @worker.rtvi.event_handler("on_client_ready")
     async def on_client_ready(_rtvi: object) -> None:

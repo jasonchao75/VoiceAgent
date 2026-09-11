@@ -6,13 +6,16 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test:ui": "playwright test",
+    "test:ui:update": "playwright test --update-snapshots"
   },
   "dependencies": {
     "@pipecat-ai/client-js": "1.13.0",
     "@pipecat-ai/websocket-transport": "1.7.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "vite": "8.2.2"
   }
 }

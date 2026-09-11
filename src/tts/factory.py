@@ -49,13 +49,14 @@ class TTSProviderRegistry:
 
 def _build_deepgram_flux(api_key: str, config: TTSConfig, audio: AudioConfig) -> TTSService:
     """Build the only production TTS provider included in the MVP."""
-    from pipecat.services.deepgram.flux.tts import DeepgramFluxTTSService
+    from src.tts.confirmed_flux import ConfirmedDeepgramFluxTTSService
 
-    return DeepgramFluxTTSService(
+    return ConfirmedDeepgramFluxTTSService(
         api_key=api_key,
         sample_rate=audio.output_sample_rate,
+        mip_opt_out=config.model_improvement_opt_out,
         text_aggregation_mode=TextAggregationMode(config.text_aggregation),
-        settings=DeepgramFluxTTSService.Settings(
+        settings=ConfirmedDeepgramFluxTTSService.Settings(
             voice=config.voice,
             speed=config.speed,
             expressivity=config.expressivity,

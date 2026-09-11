@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import uuid
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -12,12 +13,15 @@ import aiosqlite
 from src.bots.models import BotConfigFields, BotRecord
 
 _COLUMNS = (
-    "id, name, asr_provider, tts_provider, tts_voice, tts_model, "
-    "tts_text_aggregation, tts_speed, tts_expressivity, tts_stability, tts_similarity_boost, "
+    "id, name, asr_provider, asr_model, asr_language_hints, asr_eot_threshold, "
+    "asr_eot_timeout_ms, asr_keyterms, asr_profanity_filter, asr_numerals, asr_redact, "
+    "tts_provider, tts_voice, tts_model, tts_text_aggregation, tts_speed, "
+    "tts_dynamic_speed_enabled, tts_speed_step, tts_expressivity, tts_stability, "
+    "tts_similarity_boost, tts_model_improvement_opt_out, "
     "tts_style, tts_use_speaker_boost, tts_text_normalization, "
-    "llm_provider, llm_base_url, llm_model, "
-    "reasoning_mode, "
-    "system_prompt, opening_script, encrypted_deepgram_key, encrypted_llm_key, "
+    "llm_provider, llm_base_url, llm_model, llm_temperature, "
+    "reasoning_mode, llm_max_response_tokens, llm_request_timeout_seconds, "
+    "system_prompt, opening_script, fallback_script, encrypted_deepgram_key, encrypted_llm_key, "
     "encrypted_elevenlabs_key, "
     "created_at, updated_at"
 )
@@ -27,23 +31,38 @@ CREATE TABLE IF NOT EXISTS bots (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     asr_provider TEXT NOT NULL,
+    asr_model TEXT NOT NULL DEFAULT 'flux-general-en',
+    asr_language_hints TEXT NOT NULL DEFAULT '[]',
+    asr_eot_threshold REAL NOT NULL DEFAULT 0.7,
+    asr_eot_timeout_ms INTEGER NOT NULL DEFAULT 5000,
+    asr_keyterms TEXT NOT NULL DEFAULT '[]',
+    asr_profanity_filter INTEGER NOT NULL DEFAULT 0,
+    asr_numerals INTEGER NOT NULL DEFAULT 0,
+    asr_redact TEXT,
     tts_provider TEXT NOT NULL,
     tts_voice TEXT NOT NULL,
     tts_model TEXT NOT NULL DEFAULT 'flux-general-en',
     tts_text_aggregation TEXT,
     tts_speed REAL NOT NULL DEFAULT 1.0,
+    tts_dynamic_speed_enabled INTEGER NOT NULL DEFAULT 0,
+    tts_speed_step REAL NOT NULL DEFAULT 0.10,
     tts_expressivity INTEGER NOT NULL DEFAULT 0,
     tts_stability REAL NOT NULL DEFAULT 0.5,
     tts_similarity_boost REAL NOT NULL DEFAULT 0.8,
+    tts_model_improvement_opt_out INTEGER NOT NULL DEFAULT 0,
     tts_style REAL NOT NULL DEFAULT 0.0,
     tts_use_speaker_boost INTEGER NOT NULL DEFAULT 0,
     tts_text_normalization TEXT NOT NULL DEFAULT 'auto',
     llm_provider TEXT NOT NULL,
     llm_base_url TEXT NOT NULL,
     llm_model TEXT NOT NULL,
-    reasoning_mode TEXT NOT NULL DEFAULT 'lowest_latency',
+    llm_temperature REAL NOT NULL DEFAULT 0.7,
+    reasoning_mode TEXT NOT NULL DEFAULT 'provider_default',
+    llm_max_response_tokens INTEGER NOT NULL DEFAULT 250,
+    llm_request_timeout_seconds REAL NOT NULL DEFAULT 15.0,
     system_prompt TEXT NOT NULL,
     opening_script TEXT NOT NULL,
+    fallback_script TEXT NOT NULL DEFAULT '',
     encrypted_deepgram_key TEXT,
     encrypted_llm_key TEXT,
     encrypted_elevenlabs_key TEXT,
@@ -59,7 +78,10 @@ def _utcnow() -> str:
 
 def _row_to_record(row: Sequence[object]) -> BotRecord:
     keys = [column.strip() for column in _COLUMNS.split(",")]
-    return BotRecord.model_validate(dict(zip(keys, row, strict=True)))
+    values = dict(zip(keys, row, strict=True))
+    for key in ("asr_language_hints", "asr_keyterms"):
+        values[key] = json.loads(str(values[key]))
+    return BotRecord.model_validate(values)
 
 
 class BotStore:
@@ -89,14 +111,29 @@ class BotStore:
             if "encrypted_elevenlabs_key" not in columns:
                 await db.execute("ALTER TABLE bots ADD COLUMN encrypted_elevenlabs_key TEXT")
             migrations = (
+                "asr_model TEXT NOT NULL DEFAULT 'flux-general-en'",
+                "asr_language_hints TEXT NOT NULL DEFAULT '[]'",
+                "asr_eot_threshold REAL NOT NULL DEFAULT 0.7",
+                "asr_eot_timeout_ms INTEGER NOT NULL DEFAULT 5000",
+                "asr_keyterms TEXT NOT NULL DEFAULT '[]'",
+                "asr_profanity_filter INTEGER NOT NULL DEFAULT 0",
+                "asr_numerals INTEGER NOT NULL DEFAULT 0",
+                "asr_redact TEXT",
                 "tts_text_aggregation TEXT",
                 "tts_speed REAL NOT NULL DEFAULT 1.0",
+                "tts_dynamic_speed_enabled INTEGER NOT NULL DEFAULT 0",
+                "tts_speed_step REAL NOT NULL DEFAULT 0.10",
                 "tts_expressivity INTEGER NOT NULL DEFAULT 0",
                 "tts_stability REAL NOT NULL DEFAULT 0.5",
                 "tts_similarity_boost REAL NOT NULL DEFAULT 0.8",
+                "tts_model_improvement_opt_out INTEGER NOT NULL DEFAULT 0",
                 "tts_style REAL NOT NULL DEFAULT 0.0",
                 "tts_use_speaker_boost INTEGER NOT NULL DEFAULT 0",
                 "tts_text_normalization TEXT NOT NULL DEFAULT 'auto'",
+                "llm_max_response_tokens INTEGER NOT NULL DEFAULT 250",
+                "llm_temperature REAL NOT NULL DEFAULT 0.7",
+                "llm_request_timeout_seconds REAL NOT NULL DEFAULT 15.0",
+                "fallback_script TEXT NOT NULL DEFAULT ''",
             )
             for column_def in migrations:
                 if column_def.split()[0] not in columns:
@@ -108,6 +145,9 @@ class BotStore:
                        ELSE 'token'
                    END
                    WHERE tts_text_aggregation IS NULL"""
+            )
+            await db.execute(
+                "UPDATE bots SET reasoning_mode = 'minimal' WHERE reasoning_mode = 'lowest_latency'"
             )
             await db.commit()
 
@@ -145,10 +185,13 @@ class BotStore:
             updated_at=now,
         )
         async with aiosqlite.connect(self._db_path) as db:
+            values = record.model_dump()
+            values["asr_language_hints"] = json.dumps(values["asr_language_hints"])
+            values["asr_keyterms"] = json.dumps(values["asr_keyterms"])
             await db.execute(
                 f"INSERT INTO bots ({_COLUMNS}) VALUES "
                 f"({', '.join('?' for _ in _COLUMNS.split(','))})",
-                tuple(record.model_dump()[column.strip()] for column in _COLUMNS.split(",")),
+                tuple(values[column.strip()] for column in _COLUMNS.split(",")),
             )
             await db.commit()
         return record
@@ -176,6 +219,8 @@ class BotStore:
             updated_at=_utcnow(),
         )
         values = record.model_dump()
+        values["asr_language_hints"] = json.dumps(values["asr_language_hints"])
+        values["asr_keyterms"] = json.dumps(values["asr_keyterms"])
         mutable_columns = [
             column.strip() for column in _COLUMNS.split(",") if column.strip() != "id"
         ]

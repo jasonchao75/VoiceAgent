@@ -1,0 +1,25 @@
+{
+  "revision": "gate-1-candidate-1",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "now": "2026-09-08T12:00:00Z",
+  "bot": {
+    "id": "bot-ui-fixture-001",
+    "name": "Customer appointment assistant",
+    "asr_provider": "deepgram_flux",
+    "asr_model": "flux-general-en",
+    "asr_eot_threshold": 0.7,
+    "asr_eot_timeout_ms": 5000,
+    "asr_keyterms": ["Riyad Bank", "customer service"],
+    "asr_profanity_filter": false,
+    "asr_numerals": false,
+    "asr_redact": null,
+    "has_saved_keys": false
+  },
+  "catalog": {
+    "asr_provider": "Deepgram",
+    "model": "Flux ASR",
+    "languages": ["English", "Automatic"],
+    "audio_input": "PCM · 16 kHz"
+  }
+}

@@ -6,7 +6,7 @@ import asyncio
 import time
 import uuid
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlparse
 
 from google import genai
@@ -26,6 +26,8 @@ class LLMDiagnosticRequest(BaseModel):
     llm_provider: str | None = Field(default=None, max_length=50)
     llm_base_url: str | None = Field(default=None, max_length=500)
     llm_model: str | None = Field(default=None, max_length=200)
+    llm_temperature: float | None = Field(default=None, ge=0.0, le=2.0)
+    reasoning_mode: Literal["provider_default", "off", "minimal"] | None = None
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
 
@@ -59,6 +61,8 @@ class DiagnosticConfig:
     base_url: str
     model: str
     api_key: str
+    temperature: float = 0.7
+    reasoning_mode: Literal["provider_default", "off", "minimal"] = "provider_default"
     timeout: float = 15.0
 
 
@@ -155,7 +159,13 @@ def _reasoning_result(
 async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float, float, int | None]:
     capability = get_model_capability(config.provider, config.model)
     extra: dict[str, object] = {}
-    if capability and capability.control_name == "reasoning_effort":
+    if config.reasoning_mode == "off":
+        extra["reasoning_effort"] = "none"
+    elif (
+        config.reasoning_mode == "minimal"
+        and capability
+        and capability.control_name == "reasoning_effort"
+    ):
         extra["reasoning_effort"] = capability.control_value
     client = AsyncOpenAI(api_key=config.api_key, base_url=config.base_url.rstrip("/") + "/")
     started = time.monotonic()
@@ -167,6 +177,7 @@ async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float, float, int 
                 model=config.model,
                 messages=[{"role": "user", "content": "Reply with OK."}],
                 max_completion_tokens=8,
+                temperature=config.temperature,
                 stream=True,
                 stream_options={"include_usage": True},
                 **extra,
@@ -187,12 +198,22 @@ async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float, float, int 
 async def _diagnose_gemini(config: DiagnosticConfig) -> tuple[float, float, int | None]:
     capability = get_model_capability(config.provider, config.model)
     thinking = None
-    if capability and capability.control_name == "thinking_budget":
+    if config.reasoning_mode == "off":
+        thinking = types.ThinkingConfig(thinking_budget=0, include_thoughts=False)
+    elif (
+        config.reasoning_mode == "minimal"
+        and capability
+        and capability.control_name == "thinking_budget"
+    ):
         assert isinstance(capability.control_value, int)
         thinking = types.ThinkingConfig(
             thinking_budget=capability.control_value, include_thoughts=False
         )
-    elif capability and capability.control_name == "thinking_level":
+    elif (
+        config.reasoning_mode == "minimal"
+        and capability
+        and capability.control_name == "thinking_level"
+    ):
         thinking = types.ThinkingConfig(
             thinking_level=str(capability.control_value), include_thoughts=False
         )
@@ -207,6 +228,7 @@ async def _diagnose_gemini(config: DiagnosticConfig) -> tuple[float, float, int 
                 contents="Reply with OK.",
                 config=types.GenerateContentConfig(
                     max_output_tokens=8,
+                    temperature=config.temperature,
                     thinking_config=thinking,
                 ),
             )

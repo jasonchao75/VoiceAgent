@@ -1,18 +1,50 @@
 import { PipecatClient } from "@pipecat-ai/client-js";
-import { WebSocketTransport } from "@pipecat-ai/websocket-transport";
+import { WavMediaManager, WebSocketTransport } from "@pipecat-ai/websocket-transport";
 import "./styles.css";
+
+class OutputOnlyMediaManager extends WavMediaManager {
+  async initialize() {
+    if (this._initialized) return;
+    await this._wavStreamPlayer.connect();
+    this._initialized = true;
+  }
+
+  async connect() {
+    await this.initialize();
+  }
+
+  async disconnect() {
+    if (!this._initialized) return;
+    await this._wavStreamPlayer.interrupt();
+    this._initialized = false;
+  }
+}
 
 const app = document.querySelector("#app");
 
 app.innerHTML = `
   <main class="shell">
+    <aside class="product-rail expanded"><button id="toggle-product-rail" type="button" aria-label="Collapse product rail">☰</button><a href="/" aria-label="VoiceAgent"><span>V</span><b>VoiceAgent</b></a></aside>
     <header class="topbar">
       <a class="brand" href="/" aria-label="Flux Voice Lab home">
         <span class="brand-mark"><i></i><i></i><i></i></span>
-        <span>Flux Voice Lab</span>
+        <span>VoiceAgent</span>
       </a>
       <div class="environment"><span class="status-dot"></span>Local test environment</div>
     </header>
+    <nav class="product-tabs" aria-label="VoiceAgent sections">
+      <button class="active" type="button" data-page="settings">Bot settings</button>
+      <button type="button" data-page="sessions">Sessions</button>
+      <button type="button" data-page="advanced">Advanced</button>
+    </nav>
+    <section id="advanced-empty" class="advanced-empty" hidden>
+      <p class="eyebrow">Bot behavior</p><h2>Advanced settings</h2>
+      <p id="advanced-bot-context" class="advanced-bot-context">Select a Bot to configure its advanced behavior.</p>
+      <label for="bot-fallback-script">Fallback script</label>
+      <textarea id="bot-fallback-script" rows="4" maxlength="2000" placeholder="Sorry, I’m having trouble responding right now. Please try again."></textarea>
+      <p class="hint">Played through TTS when the LLM does not complete before its configured request timeout.</p>
+      <button id="save-advanced-settings" class="primary-button" type="button">Save advanced settings</button>
+    </section>
 
     <section class="workspace">
       <aside class="config-panel">
@@ -64,8 +96,37 @@ app.innerHTML = `
               <legend>Pipeline</legend>
               <label for="bot-asr">ASR provider</label>
               <select id="bot-asr">
-                <option value="deepgram_flux">Deepgram Flux (English)</option>
+                <option value="deepgram_flux">Deepgram</option>
               </select>
+              <label for="bot-asr-model">Model</label>
+              <select id="bot-asr-model" disabled></select>
+              <label for="bot-asr-language">Language</label>
+              <select id="bot-asr-language" disabled></select>
+              <div id="bot-asr-hints-field" hidden>
+                <label for="bot-asr-hints">Language hints</label>
+                <select id="bot-asr-hints" class="asr-hints-select" multiple></select>
+                <div id="bot-asr-hint-chips" class="language-grid" role="group" aria-label="Optional language hints"></div>
+                <p class="hint">Optional. Automatic detects English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian, and Dutch.</p>
+              </div>
+              <details class="voice-advanced">
+                <summary>ASR Advanced</summary>
+                <div class="voice-setting">
+                  <div>
+                    <label for="bot-asr-eot-threshold">EOT threshold</label>
+                    <output id="bot-asr-eot-threshold-value">0.70</output>
+                  </div>
+                  <input id="bot-asr-eot-threshold" type="range" min="0.5" max="1" step="0.05" value="0.7" />
+                  <small>Earlier turn completion ↔ More confidence</small>
+                </div>
+                <label for="bot-asr-eot-timeout">EOT timeout (ms)</label>
+                <input id="bot-asr-eot-timeout" type="number" min="500" max="60000" step="100" value="5000" />
+                <label for="bot-asr-keyterms">Keyterms · one plain phrase per line</label>
+                <textarea id="bot-asr-keyterms" rows="4" placeholder="Riyad Bank&#10;customer service"></textarea>
+                <label class="switch-row"><span><b>Profanity filter</b><small>Replace or remove recognized profanity.</small></span><input id="bot-asr-profanity" type="checkbox" /></label>
+                <label class="switch-row"><span><b>Numerals</b><small>Convert spoken numbers to numeric form.</small></span><input id="bot-asr-numerals" type="checkbox" /></label>
+                <label for="bot-asr-redact">Redact</label>
+                <select id="bot-asr-redact"><option value="">Off</option><option value="numbers">Numbers</option><option value="aggressive_numbers">Aggressive numbers</option></select>
+              </details>
 
               <label for="bot-tts">TTS provider</label>
               <select id="bot-tts">
@@ -93,7 +154,8 @@ app.innerHTML = `
             <fieldset id="flux-tuning">
               <legend>Deepgram Flux voice tuning</legend>
               <div class="voice-setting"><div><label for="bot-flux-expressivity">Expressivity</label><output id="bot-flux-expressivity-value">0</output></div><input id="bot-flux-expressivity" type="range" min="-2" max="2" step="1" value="0"><small>Calm (-2) · Neutral (0) · Animated (2)</small></div>
-              <div class="voice-setting"><div><label for="bot-flux-speed">Speed</label><output id="bot-flux-speed-value">1.00</output></div><input id="bot-flux-speed" type="range" min="0.85" max="1.15" step="0.05" value="1"><small>Slower ↔ Faster</small></div>
+              <label class="switch-row"><span><b>Model improvement opt-out</b><small>Do not use this session data for Deepgram model improvement.</small></span><input id="bot-flux-mip-opt-out" type="checkbox"></label>
+              <div class="voice-setting"><div><label for="bot-flux-speed">Initial speed</label><output id="bot-flux-speed-value">1.00</output></div><input id="bot-flux-speed" type="range" min="0.5" max="1.5" step="0.05" value="1"><small>Extreme values may sound less natural.</small></div>
               <p class="hint">Expressivity changes delivery style, not quality. Positive values sound more animated and may need voice-by-voice auditioning.</p>
             </fieldset>
 
@@ -107,12 +169,19 @@ app.innerHTML = `
                 <div class="voice-setting"><div><label for="bot-tts-stability">Stability</label><output id="bot-tts-stability-value">0.50</output></div><input id="bot-tts-stability" type="range" min="0" max="1" step="0.05" value="0.5"><small id="bot-tts-stability-scale">More variable ↔ More stable</small></div>
                 <div class="voice-setting"><div><label for="bot-tts-similarity">Clarity + Similarity</label><output id="bot-tts-similarity-value">0.80</output></div><input id="bot-tts-similarity" type="range" min="0" max="1" step="0.05" value="0.8"><small>Low ↔ High</small></div>
                 <div class="voice-setting"><div><label for="bot-tts-style">Style exaggeration</label><output id="bot-tts-style-value">0.00</output></div><input id="bot-tts-style" type="range" min="0" max="1" step="0.05" value="0"><small>Natural / faster ↔ Exaggerated</small></div>
-                <div class="voice-setting"><div><label for="bot-tts-speed">Speed</label><output id="bot-tts-speed-value">1.00</output></div><input id="bot-tts-speed" type="range" min="0.7" max="1.2" step="0.05" value="1"><small>Slower ↔ Faster</small></div>
+                <div class="voice-setting"><div><label for="bot-tts-speed">Initial speed</label><output id="bot-tts-speed-value">1.00</output></div><input id="bot-tts-speed" type="range" min="0.7" max="1.2" step="0.05" value="1"><small>Slower ↔ Faster</small></div>
                 <label class="switch-row"><span><b>Use speaker boost</b><small>May improve similarity at some generation cost.</small></span><input id="bot-tts-speaker-boost" type="checkbox"></label>
                 <label class="switch-row"><span><b>Auto mode <em id="bot-auto-mode-state">Off · derived</em></b><small id="bot-auto-mode-hint">Token input keeps ElevenLabs chunk scheduling enabled.</small></span><input id="bot-auto-mode" type="checkbox" disabled></label>
                 <label for="bot-text-normalization">Text normalization</label>
                 <select id="bot-text-normalization"><option value="auto">Auto · Recommended</option><option value="on">On · Force numbers/dates into spoken form</option><option value="off">Off · Synthesize original text</option></select>
               </details>
+            </fieldset>
+
+            <fieldset id="conversational-speed">
+              <legend>Conversational speed control</legend>
+              <label class="switch-row"><span><b>Allow in-call changes</b><small>Callers can ask the Agent to speak faster or slower for this session.</small></span><input id="bot-dynamic-speed" type="checkbox"></label>
+              <label for="bot-speed-step">Adjustment step</label><select id="bot-speed-step"><option value="0.05">0.05</option><option value="0.1" selected>0.10</option><option value="0.15">0.15</option><option value="0.2">0.20</option><option value="0.25">0.25</option></select>
+              <p id="dynamic-speed-hint" class="hint"></p>
             </fieldset>
 
             <fieldset>
@@ -130,11 +199,25 @@ app.innerHTML = `
                 <span>Choose a recommendation or type an exact model ID</span>
                 <a id="bot-llm-models-link" href="#" target="_blank" rel="noreferrer">Model docs ↗</a>
               </div>
+              <div class="voice-setting llm-temperature-setting">
+                <div><label for="bot-llm-temperature">Temperature</label><output id="bot-llm-temperature-value">0.7</output></div>
+                <input id="bot-llm-temperature" type="range" min="0" max="2" step="0.1" value="0.7" />
+                <small>Predictable ↔ Creative</small>
+              </div>
+              <details class="voice-advanced"><summary>Advanced</summary>
+                <label for="bot-thinking">Thinking</label>
+                <select id="bot-thinking"><option value="provider_default">Provider default · No override</option><option value="off">Off · Request no reasoning</option><option value="minimal">Minimal · Lowest reasoning effort</option></select>
+                <p class="hint">Capability is verified by the connection diagnostic; model names are never guessed.</p>
+                <label for="bot-llm-max-tokens">Max response tokens</label>
+                <input id="bot-llm-max-tokens" type="number" min="1" max="32768" step="1" value="250" />
+                <label for="bot-llm-request-timeout">Request timeout</label>
+                <div class="input-suffix"><input id="bot-llm-request-timeout" type="number" min="3" max="60" step="1" value="15" /><span>seconds</span></div>
+              </details>
 
               <label for="bot-system-prompt">System prompt</label>
               <textarea id="bot-system-prompt" rows="5" maxlength="30000" required></textarea>
 
-              <label for="bot-opening-script">Opening script</label>
+              <label for="bot-opening-script">Opening message</label>
               <textarea id="bot-opening-script" rows="3" maxlength="2000"></textarea>
               <p class="hint">Leave blank for a user-first conversation.</p>
               <button id="test-bot-llm" class="secondary-button diagnostic-button" type="button">Test LLM connection</button>
@@ -143,28 +226,28 @@ app.innerHTML = `
 
             <fieldset>
               <legend>API keys</legend>
-              <label class="checkbox-row" for="bot-save-keys">
-                <input id="bot-save-keys" type="checkbox" />
-                <span>Save API keys encrypted on the server</span>
-              </label>
-              <p id="keep-keys-hint" class="hint" hidden>
-                Keys are saved for this bot. Leave both fields blank to keep them, or enter new keys to replace them.
-              </p>
-              <div id="bot-key-fields" hidden>
-                <label for="bot-deepgram-key">Deepgram API key</label>
-                <div class="input-with-action">
-                  <input id="bot-deepgram-key" type="password" autocomplete="new-password" />
-                  <button class="text-button reveal" type="button" data-target="bot-deepgram-key">Show</button>
+              <div id="bot-key-fields">
+                <div id="bot-deepgram-key-field">
+                  <label for="bot-deepgram-key">Deepgram API key</label>
+                  <div class="input-with-action">
+                    <input id="bot-deepgram-key" type="password" autocomplete="new-password" />
+                    <button class="text-button reveal" type="button" data-target="bot-deepgram-key">Show</button>
+                  </div>
+                  <div class="field-help">
+                    <span>Encrypted before storage · never returned by the API</span>
+                    <a href="https://console.deepgram.com/" target="_blank" rel="noreferrer">Get a key ↗</a>
+                  </div>
                 </div>
-                <div class="field-help">
-                  <span>Encrypted before storage · never returned by the API</span>
-                  <a href="https://console.deepgram.com/" target="_blank" rel="noreferrer">Get a key ↗</a>
-                </div>
-
-                <label for="bot-llm-key">LLM API key</label>
-                <div class="input-with-action">
-                  <input id="bot-llm-key" type="password" autocomplete="new-password" />
-                  <button class="text-button reveal" type="button" data-target="bot-llm-key">Show</button>
+                <div id="bot-llm-key-field">
+                  <label for="bot-llm-key">LLM API key</label>
+                  <div class="input-with-action">
+                    <input id="bot-llm-key" type="password" autocomplete="new-password" />
+                    <button class="text-button reveal" type="button" data-target="bot-llm-key">Show</button>
+                  </div>
+                  <div class="field-help">
+                    <span>Encrypted before storage · never returned by the API</span>
+                    <a id="bot-llm-key-link" href="#" target="_blank" rel="noreferrer">Get a key ↗</a>
+                  </div>
                 </div>
 
                 <div id="bot-elevenlabs-key-field" hidden>
@@ -175,13 +258,16 @@ app.innerHTML = `
                   </div>
                   <p class="hint">Required only when ElevenLabs is the TTS provider.</p>
                 </div>
-                <div class="field-help">
-                  <span>Encrypted before storage · never returned by the API</span>
-                  <a id="bot-llm-key-link" href="#" target="_blank" rel="noreferrer">Get a key ↗</a>
-                </div>
               </div>
+              <label class="switch-row save-key-row" for="bot-save-keys">
+                <span><b>Save API key</b><small>Encrypt and store entered credentials with this Bot.</small></span>
+                <input id="bot-save-keys" type="checkbox" />
+              </label>
+              <p id="keep-keys-hint" class="hint" hidden>
+                Keys are saved for this bot. Leave fields blank to keep them, or enter new keys to replace them.
+              </p>
               <p id="byok-hint" class="hint">
-                Unchecked: keys are requested once per session and never saved (BYOK).
+                Unchecked: entered keys can be used by configuration tests, but are not submitted with or saved to the Bot.
               </p>
             </fieldset>
 
@@ -261,11 +347,17 @@ app.innerHTML = `
           </form>
         </details>
 
-        <section class="history-panel">
+        <section class="history-panel" hidden>
           <div class="list-head">
-            <h2>Call history</h2>
+            <h2>Session history</h2>
             <button id="refresh-history" class="inline-button" type="button">Refresh</button>
           </div>
+          <div class="history-filters">
+            <input id="history-from" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" aria-label="Sessions from date (YYYY-MM-DD)" />
+            <input id="history-to" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" aria-label="Sessions to date (YYYY-MM-DD)" />
+            <select id="history-type" aria-label="Session type"><option value="">All sessions</option><option value="web_call">Web call</option><option value="chat_test">Chat test</option></select>
+          </div>
+          <div class="history-table-header" aria-hidden="true"><span>Session</span><span>Started</span><span>Type</span><span>Duration / Turns</span><span></span></div>
           <div id="history-list" class="history-list"></div>
         </section>
       </aside>
@@ -280,6 +372,10 @@ app.innerHTML = `
             <span></span><b>Ready to start</b>
           </div>
         </div>
+        <nav class="test-tabs" aria-label="Test bot mode">
+          <button id="chat-test-tab" type="button">Chat test</button>
+          <button id="web-call-tab" class="active" type="button">Web call test</button>
+        </nav>
 
         <section class="stage" aria-live="polite">
           <div id="orb" class="orb" data-speaker="idle">
@@ -299,6 +395,10 @@ app.innerHTML = `
             <p>Your English conversation will appear here in real time.</p>
           </div>
         </section>
+        <form id="chat-composer" class="chat-composer" hidden>
+          <input id="chat-input" maxlength="10000" placeholder="Type a message…" disabled />
+          <button id="send-chat" class="primary-button" type="submit" disabled>Send</button>
+        </form>
 
         <section class="metrics-grid">
           <article><span>WebSocket</span><strong id="ws-status">Disconnected</strong></article>
@@ -313,15 +413,15 @@ app.innerHTML = `
           <button id="start-button" class="primary-button" type="button">
             <span class="mic-icon">●</span> Start session
           </button>
-          <button id="end-button" class="secondary-button" type="button" disabled>End session</button>
+          <button id="end-button" class="secondary-button" type="button" disabled>End test</button>
           <p id="privacy-note">User audio is saved for 7 days; transcripts and metrics for 30 days.</p>
         </footer>
       </section>
     </section>
-    <dialog id="history-dialog" class="history-dialog">
-      <button id="close-history" class="text-button dialog-close" type="button">Close</button>
+    <aside id="history-dialog" class="history-dialog" aria-label="Session details" hidden>
+      <header class="history-dialog-header"><strong>Session details</strong><button id="close-history" class="text-button dialog-close" type="button" aria-label="Close session details">×</button></header>
       <div id="history-detail"></div>
-    </dialog>
+    </aside>
     <dialog id="voice-picker-dialog" class="voice-picker-dialog">
       <button id="close-voice-picker" class="text-button dialog-close" type="button">Close</button>
       <p class="eyebrow">TTS voice</p>
@@ -364,12 +464,24 @@ const elements = {
   botForm: document.querySelector("#bot-form"),
   botName: document.querySelector("#bot-name"),
   botAsr: document.querySelector("#bot-asr"),
+  botAsrModel: document.querySelector("#bot-asr-model"),
+  botAsrLanguage: document.querySelector("#bot-asr-language"),
+  botAsrHintsField: document.querySelector("#bot-asr-hints-field"),
+  botAsrHints: document.querySelector("#bot-asr-hints"),
+  botAsrEotThreshold: document.querySelector("#bot-asr-eot-threshold"),
+  botAsrEotThresholdValue: document.querySelector("#bot-asr-eot-threshold-value"),
+  botAsrEotTimeout: document.querySelector("#bot-asr-eot-timeout"),
+  botAsrKeyterms: document.querySelector("#bot-asr-keyterms"),
+  botAsrProfanity: document.querySelector("#bot-asr-profanity"),
+  botAsrNumerals: document.querySelector("#bot-asr-numerals"),
+  botAsrRedact: document.querySelector("#bot-asr-redact"),
   botTts: document.querySelector("#bot-tts"),
   botTtsAggregation: document.querySelector("#bot-tts-aggregation"),
   botTtsModel: document.querySelector("#bot-tts-model"),
   fluxTuning: document.querySelector("#flux-tuning"),
   botFluxExpressivity: document.querySelector("#bot-flux-expressivity"),
   botFluxExpressivityValue: document.querySelector("#bot-flux-expressivity-value"),
+  botFluxMipOptOut: document.querySelector("#bot-flux-mip-opt-out"),
   botFluxSpeed: document.querySelector("#bot-flux-speed"),
   botFluxSpeedValue: document.querySelector("#bot-flux-speed-value"),
   elevenlabsTuning: document.querySelector("#elevenlabs-tuning"),
@@ -384,6 +496,9 @@ const elements = {
   botTtsSpeed: document.querySelector("#bot-tts-speed"),
   botTtsSpeedValue: document.querySelector("#bot-tts-speed-value"),
   botTtsSpeakerBoost: document.querySelector("#bot-tts-speaker-boost"),
+  botDynamicSpeed: document.querySelector("#bot-dynamic-speed"),
+  botSpeedStep: document.querySelector("#bot-speed-step"),
+  dynamicSpeedHint: document.querySelector("#dynamic-speed-hint"),
   botAutoMode: document.querySelector("#bot-auto-mode"),
   botAutoModeState: document.querySelector("#bot-auto-mode-state"),
   botAutoModeHint: document.querySelector("#bot-auto-mode-hint"),
@@ -396,16 +511,24 @@ const elements = {
   botProvider: document.querySelector("#bot-llm-provider"),
   botBaseUrl: document.querySelector("#bot-llm-base-url"),
   botModel: document.querySelector("#bot-llm-model"),
+  botLlmTemperature: document.querySelector("#bot-llm-temperature"),
+  botLlmTemperatureValue: document.querySelector("#bot-llm-temperature-value"),
+  botThinking: document.querySelector("#bot-thinking"),
+  botLlmMaxTokens: document.querySelector("#bot-llm-max-tokens"),
+  botLlmRequestTimeout: document.querySelector("#bot-llm-request-timeout"),
   botModelOptions: document.querySelector("#bot-model-options"),
   botLlmKeyLink: document.querySelector("#bot-llm-key-link"),
   botLlmModelsLink: document.querySelector("#bot-llm-models-link"),
   botSystemPrompt: document.querySelector("#bot-system-prompt"),
   botOpeningScript: document.querySelector("#bot-opening-script"),
+  botFallbackScript: document.querySelector("#bot-fallback-script"),
   testBotLlm: document.querySelector("#test-bot-llm"),
   botDiagnostic: document.querySelector("#bot-diagnostic-result"),
   botSaveKeys: document.querySelector("#bot-save-keys"),
   botKeyFields: document.querySelector("#bot-key-fields"),
+  botDeepgramKeyField: document.querySelector("#bot-deepgram-key-field"),
   botDeepgramKey: document.querySelector("#bot-deepgram-key"),
+  botLlmKeyField: document.querySelector("#bot-llm-key-field"),
   botLlmKey: document.querySelector("#bot-llm-key"),
   botElevenlabsKeyField: document.querySelector("#bot-elevenlabs-key-field"),
   botElevenlabsKey: document.querySelector("#bot-elevenlabs-key"),
@@ -442,12 +565,20 @@ const elements = {
   orb: document.querySelector("#orb"),
   speaker: document.querySelector("#speaker-label"),
   transcript: document.querySelector("#transcript"),
+  chatTestTab: document.querySelector("#chat-test-tab"),
+  webCallTab: document.querySelector("#web-call-tab"),
+  chatComposer: document.querySelector("#chat-composer"),
+  chatInput: document.querySelector("#chat-input"),
+  sendChat: document.querySelector("#send-chat"),
   wsStatus: document.querySelector("#ws-status"),
   pipelineStatus: document.querySelector("#pipeline-status"),
   e2eLatency: document.querySelector("#e2e-latency"),
   synthesisLatency: document.querySelector("#synthesis-latency"),
   error: document.querySelector("#error-banner"),
   historyList: document.querySelector("#history-list"),
+  historyFrom: document.querySelector("#history-from"),
+  historyTo: document.querySelector("#history-to"),
+  historyType: document.querySelector("#history-type"),
   refreshHistory: document.querySelector("#refresh-history"),
   historyDialog: document.querySelector("#history-dialog"),
   historyDetail: document.querySelector("#history-detail"),
@@ -470,6 +601,8 @@ const elements = {
   manualVoicePanel: document.querySelector("#manual-voice-panel"),
   manualVoiceId: document.querySelector("#manual-voice-id"),
   useManualVoice: document.querySelector("#use-manual-voice"),
+  productRail: document.querySelector(".product-rail"),
+  toggleProductRail: document.querySelector("#toggle-product-rail"),
 };
 
 let catalogs;
@@ -489,6 +622,10 @@ let currentAssistantBubble;
 let currentAssistantText = "";
 let interimUserBubble;
 let botSpeaking = false;
+let testMode = "web_call";
+let clientReady = false;
+let playbackReportPromise;
+let historyItems = [];
 
 function setSessionState(state, label) {
   elements.state.dataset.state = state;
@@ -510,6 +647,10 @@ function setFormLocked(locked) {
   for (const button of elements.botList.querySelectorAll("button")) button.disabled = locked;
   elements.start.disabled = locked || !selectedBotId;
   elements.end.disabled = !locked;
+  elements.chatInput.disabled = !locked || testMode !== "chat_test";
+  elements.sendChat.disabled = !locked || testMode !== "chat_test";
+  elements.chatTestTab.disabled = locked;
+  elements.webCallTab.disabled = locked;
 }
 
 function showError(message) {
@@ -540,11 +681,19 @@ async function apiRequest(path, { method = "GET", body } = {}) {
 function diagnosticPayload(kind) {
   if (kind === "bot") {
     const bot = editingBotId && bots.find((item) => item.id === editingBotId);
-    if (bot?.has_saved_keys && !elements.botLlmKey.value) return { bot_id: bot.id };
+    if (bot?.has_saved_keys && !elements.botLlmKey.value) {
+      return {
+        bot_id: bot.id,
+        reasoning_mode: elements.botThinking.value,
+        llm_temperature: Number(elements.botLlmTemperature.value),
+      };
+    }
     return {
       llm_provider: elements.botProvider.value,
       llm_base_url: elements.botBaseUrl.value,
       llm_model: elements.botModel.value,
+      llm_temperature: Number(elements.botLlmTemperature.value),
+      reasoning_mode: elements.botThinking.value,
       llm_api_key: elements.botLlmKey.value,
     };
   }
@@ -554,6 +703,244 @@ function diagnosticPayload(kind) {
     llm_model: elements.model.value,
     llm_api_key: elements.llmKey.value,
   };
+}
+
+function loadAsrCatalog(bot) {
+  const provider = catalogs.asr_providers?.providers?.[0];
+  const model = provider?.models?.[0];
+  if (!provider || !model) {
+    elements.botAsrModel.disabled = true;
+    elements.botAsrLanguage.disabled = true;
+    showError("ASR capabilities could not be loaded. Reload to retry.");
+    return;
+  }
+  elements.botAsr.replaceChildren(new Option(provider.name, provider.id));
+  elements.botAsrModel.replaceChildren(new Option(model.name, model.id));
+  elements.botAsrLanguage.replaceChildren(
+    ...model.languages.map((language) => new Option(language.name, language.provider_model)),
+  );
+  elements.botAsrHints.replaceChildren(
+    ...model.language_hints.map((language) => new Option(language.toUpperCase(), language)),
+  );
+  elements.botAsrModel.disabled = false;
+  elements.botAsrLanguage.disabled = false;
+  elements.botAsrLanguage.value = bot?.asr_model || "flux-general-en";
+  const selectedHints = new Set(bot?.asr_language_hints || []);
+  for (const option of elements.botAsrHints.options) option.selected = selectedHints.has(option.value);
+  const hintChips = document.querySelector("#bot-asr-hint-chips");
+  hintChips.replaceChildren(...[...elements.botAsrHints.options].map((option) => {
+    const chip = document.createElement("label");
+    chip.className = "check-chip";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = option.selected;
+    checkbox.addEventListener("change", () => { option.selected = checkbox.checked; });
+    chip.append(checkbox, document.createTextNode(option.textContent));
+    return chip;
+  }));
+  syncAsrLanguage();
+}
+
+function syncAsrLanguage() {
+  elements.botAsrHintsField.hidden = elements.botAsrLanguage.value !== "flux-general-multi";
+}
+
+function initializeComponentEditor() {
+  if (elements.botForm.dataset.componentized) return;
+  elements.botForm.dataset.componentized = "true";
+  const cards = document.createElement("div");
+  cards.className = "pipeline-cards";
+  cards.innerHTML = [
+    ["asr", "TRANSCRIBER · ASR", "Flux General English", "Deepgram · English", ["Mode", "Streaming", "Language", "English", "Audio input", "PCM · 16 kHz"]],
+    ["llm", "MODEL · LLM", "Configured model", "OpenAI-compatible", ["Endpoint", "Custom", "Thinking", "Default", "Response", "Streaming"]],
+    ["tts", "VOICE · TTS", "Configured voice", "Configured provider", ["Speed", "1.00", "Dynamic speed", "Off", "Aggregation", "Token"]],
+  ].map(([id, type, title, provider, stats]) => `<button class="pipeline-card ${id}" type="button" data-component="${id}"><span class="card-type"><i class="component-dot"></i>${type}</span><i class="edit-icon">↗</i><h3>${title}</h3><p>${provider}</p><div class="card-stats">${[0, 2, 4].map((index) => `<span><small>${stats[index]}</small><b>${stats[index + 1]}</b></span>`).join("")}</div></button>`).join("");
+  const drawer = document.createElement("aside");
+  drawer.className = "component-drawer";
+  drawer.hidden = true;
+  drawer.innerHTML = `<header><div><span class="eyebrow">Pipeline component</span><h2 id="component-drawer-title"></h2></div><button type="button" aria-label="Collapse component drawer">→</button></header><div data-panel="asr"></div><div data-panel="llm"></div><div data-panel="tts"></div><div class="component-credentials"></div>`;
+  const firstFieldset = elements.botAsr.closest("fieldset");
+  firstFieldset.before(cards);
+  firstFieldset.after(drawer);
+  const panels = Object.fromEntries([...drawer.querySelectorAll("[data-panel]")].map((node) => [node.dataset.panel, node]));
+  const move = (id, panel) => {
+    const control = document.querySelector(`#${id}`);
+    const label = document.querySelector(`label[for="${id}"]`);
+    if (label) panel.append(label);
+    if (control) panel.append(control);
+  };
+  for (const id of ["bot-asr", "bot-asr-model"]) move(id, panels.asr);
+  const asrInputGrid = document.createElement("div");
+  asrInputGrid.className = "component-grid-2 asr-input-grid";
+  const asrLanguageField = document.createElement("div");
+  asrLanguageField.className = "component-field";
+  move("bot-asr-language", asrLanguageField);
+  const asrAudioField = document.createElement("div");
+  asrAudioField.className = "component-field";
+  asrAudioField.innerHTML = `
+    <label>Audio input</label>
+    <div class="readonly-control" aria-label="Audio input PCM 16 kHz">PCM · 16 kHz</div>
+    <p class="hint">Current WebCall input contract · fixed at 16 kHz.</p>
+  `;
+  asrInputGrid.append(asrLanguageField, asrAudioField);
+  panels.asr.append(asrInputGrid);
+  panels.asr.append(elements.botAsrHintsField, elements.botAsrRedact.closest("details"));
+  for (const id of ["bot-llm-provider", "bot-llm-base-url", "bot-llm-model"]) move(id, panels.llm);
+  panels.llm.append(elements.botLlmTemperature.closest(".voice-setting"));
+  panels.llm.append(elements.botModelOptions, elements.botThinking.closest("details"), elements.testBotLlm, elements.botDiagnostic);
+  move("bot-tts", panels.tts);
+  const elevenModel = document.createElement("div");
+  elevenModel.id = "eleven-model-basic";
+  move("bot-tts-model", elevenModel);
+  elevenModel.append(elements.botTtsModelHint);
+  panels.tts.append(elevenModel);
+  move("bot-voice", panels.tts);
+  const voiceLinks = elements.botVoiceDocs.closest(".link-row");
+  voiceLinks.hidden = true;
+  panels.tts.append(elements.chooseBotVoice, elements.botVoiceCard, voiceLinks);
+  const initialSpeed = document.createElement("div");
+  initialSpeed.id = "tts-initial-speed";
+  const fluxSpeed = elements.botFluxSpeed.closest(".voice-setting");
+  const elevenSpeed = elements.botTtsSpeed.closest(".voice-setting");
+  fluxSpeed.dataset.providerSpeed = "deepgram_flux";
+  elevenSpeed.dataset.providerSpeed = "elevenlabs";
+  initialSpeed.append(fluxSpeed, elevenSpeed);
+  panels.tts.append(initialSpeed);
+  const ttsAdvanced = document.createElement("details");
+  ttsAdvanced.className = "voice-advanced tts-advanced";
+  ttsAdvanced.innerHTML = "<summary>Advanced</summary>";
+  const aggregationHint = elements.botTtsAggregation.nextElementSibling;
+  move("bot-tts-aggregation", ttsAdvanced);
+  if (aggregationHint?.classList.contains("hint")) ttsAdvanced.append(aggregationHint);
+  ttsAdvanced.append(document.querySelector("#conversational-speed"), elements.fluxTuning, elements.elevenlabsTuning);
+  panels.tts.append(ttsAdvanced);
+  const promptFieldset = elements.botSystemPrompt.closest("fieldset");
+  const pipeline = document.createElement("section");
+  pipeline.className = "pipeline-section";
+  pipeline.innerHTML = '<div class="pipeline-heading"><h3>Voice pipeline</h3><p>Choose each component separately. Click a card to configure it.</p></div>';
+  pipeline.append(cards);
+  const identity = document.createElement("section");
+  identity.className = "bot-identity prototype-section";
+  identity.innerHTML = "<h3>Bot identity</h3>";
+  move("bot-name", identity);
+  const firstMessage = document.createElement("section");
+  firstMessage.className = "prototype-section";
+  firstMessage.innerHTML = "<h3>First message</h3>";
+  move("bot-opening-script", firstMessage);
+  const systemPrompt = document.createElement("section");
+  systemPrompt.className = "prototype-section";
+  systemPrompt.innerHTML = "<h3>System prompt</h3>";
+  move("bot-system-prompt", systemPrompt);
+  firstFieldset.before(pipeline, identity, firstMessage, systemPrompt);
+  promptFieldset.hidden = true;
+  firstFieldset.hidden = true;
+  const keyFieldset = elements.botSaveKeys.closest("fieldset");
+  keyFieldset.classList.add("credential-card");
+  drawer.querySelector(".component-credentials").append(keyFieldset);
+  const syncDrawerCredentials = (component) => {
+    const credentialLegend = keyFieldset.querySelector("legend");
+    credentialLegend.hidden = true;
+    keyFieldset.setAttribute("aria-label", `${component.toUpperCase()} credentials`);
+    elements.botDeepgramKeyField.hidden = component !== "asr" && !(
+      component === "tts" && elements.botTts.value === "deepgram_flux"
+    );
+    elements.botLlmKeyField.hidden = component !== "llm";
+    elements.botElevenlabsKeyField.hidden = component !== "tts" || elements.botTts.value !== "elevenlabs";
+    if (component === "tts") {
+      const voiceLabel = panels.tts.querySelector('label[for="bot-voice"]');
+      panels.tts.insertBefore(keyFieldset, voiceLabel);
+    } else if (component === "llm") {
+      panels.llm.insertBefore(keyFieldset, elements.testBotLlm);
+    } else {
+      panels.asr.append(keyFieldset);
+    }
+  };
+  const close = () => {
+    drawer.hidden = true;
+    elements.botForm.classList.remove("drawer-open");
+    cards.querySelectorAll("button").forEach((button) => button.classList.remove("active"));
+  };
+  drawer.querySelector("header button").addEventListener("click", close);
+  cards.querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
+    if (!drawer.hidden && button.classList.contains("active")) return close();
+    cards.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
+    Object.entries(panels).forEach(([name, panel]) => { panel.hidden = name !== button.dataset.component; });
+    drawer.querySelector("#component-drawer-title").textContent = `${button.dataset.component.toUpperCase()} configuration`;
+    drawer.dataset.component = button.dataset.component;
+    syncDrawerCredentials(button.dataset.component);
+    drawer.hidden = false;
+    elements.botForm.classList.add("drawer-open");
+  }));
+}
+
+function initializePrototypeLayout() {
+  const configPanel = document.querySelector(".config-panel");
+  const workspace = document.querySelector(".workspace");
+  const editor = elements.editor;
+  const history = document.querySelector(".history-panel");
+  const advanced = document.querySelector("#advanced-empty");
+  document.querySelector(".panel-heading").hidden = true;
+  document.querySelector(".quick-start").hidden = true;
+  elements.sessionKeys.hidden = true;
+  configPanel.insertAdjacentHTML("afterbegin", '<div class="prototype-side-title">Voice bots <small id="bot-count">0</small></div><div class="bot-search"><span>⌕</span><input id="bot-search-input" placeholder="Search bots" /></div>');
+  configPanel.querySelector(".bot-panel").prepend(configPanel.querySelector(".bot-search"));
+  configPanel.querySelector(".list-head h2").hidden = true;
+  elements.newBot.textContent = "Create bot";
+  document.querySelector("#save-bot-button").textContent = "Save bot settings";
+  elements.cancelBot.textContent = "Discard changes";
+  editor.classList.add("settings-page");
+  workspace.prepend(editor);
+  workspace.append(history);
+  workspace.append(advanced);
+  const conversation = document.querySelector(".conversation-panel");
+  const conversationHeader = conversation.querySelector(".conversation-header");
+  const headerCopy = conversationHeader.querySelector("div");
+  const lifecycleControls = conversation.querySelector(".controls");
+  const lifecycleButtons = document.createElement("div");
+  lifecycleButtons.className = "test-lifecycle-controls";
+  lifecycleButtons.append(elements.start, elements.end);
+  const testBackButton = Object.assign(document.createElement("button"), {
+    className: "secondary-button test-back-button",
+    type: "button",
+    textContent: "‹",
+    ariaLabel: "Back to bot settings",
+  });
+  testBackButton.addEventListener("click", () => document.querySelector('[data-page="settings"]').click());
+  conversationHeader.prepend(testBackButton);
+  conversationHeader.append(lifecycleButtons);
+  headerCopy.querySelector(".eyebrow").textContent = "Live ASR → LLM → TTS test with real-time captions.";
+  lifecycleControls.classList.add("test-retention-note");
+  conversation.querySelector(".test-tabs").hidden = true;
+  document.querySelector(".topbar").innerHTML = '<div class="prototype-title"><b id="current-bot-title">Select a bot</b><span>Draft <i>Saved locally</i></span></div><div class="top-actions"><details class="test-menu"><summary>Test bot⌄</summary><button type="button" data-test-mode="chat">Chat test<small>Text → LLM → TTS</small></button><button type="button" data-test-mode="web">Web call test<small>ASR → LLM → TTS</small></button></details><button class="publish-button" type="button">Publish</button></div>';
+  document.querySelector("#bot-search-input").addEventListener("input", renderBotList);
+  document.querySelectorAll("[data-test-mode]").forEach((button) => button.addEventListener("click", () => {
+    document.querySelector(".test-menu").open = false;
+    editor.hidden = true;
+    history.hidden = true;
+    document.querySelector(".conversation-panel").hidden = false;
+    (button.dataset.testMode === "chat" ? elements.chatTestTab : elements.webCallTab).click();
+  }));
+}
+
+function updatePipelineSummaries(bot) {
+  if (!bot) return;
+  const cards = document.querySelectorAll(".pipeline-card");
+  const asr = cards[0];
+  const llm = cards[1];
+  const tts = cards[2];
+  const automatic = bot.asr_model === "flux-general-multi";
+  asr.querySelector("h3").textContent = automatic ? "Flux General Multilingual" : "Flux General English";
+  asr.querySelector("p").textContent = `Deepgram · ${automatic ? "Automatic" : "English"}`;
+  asr.querySelector(".card-stats span:nth-child(2) b").textContent = automatic ? "Automatic" : "English";
+  llm.querySelector("h3").textContent = bot.llm_model;
+  llm.querySelector("p").textContent = `${bot.llm_provider} · OpenAI-compatible`;
+  llm.querySelector(".card-stats span:nth-child(2) b").textContent = (bot.reasoning_mode || "provider_default").replace("provider_default", "Default");
+  const voice = voiceEntry(bot.tts_voice);
+  tts.querySelector("h3").textContent = voice?.name || bot.tts_voice;
+  tts.querySelector("p").textContent = bot.tts_provider === "elevenlabs" ? `ElevenLabs · ${bot.tts_model}` : "Deepgram · Flux TTS v2";
+  tts.querySelector(".card-stats span:nth-child(1) b").textContent = Number(bot.tts_speed).toFixed(2);
+  tts.querySelector(".card-stats span:nth-child(2) b").textContent = bot.tts_dynamic_speed_enabled ? "On" : "Off";
+  tts.querySelector(".card-stats span:nth-child(3) b").textContent = bot.tts_text_aggregation === "sentence" ? "Sentence" : "Token";
 }
 
 function escapeHtml(text) {
@@ -679,19 +1066,40 @@ async function testLlm(kind) {
 
 async function loadHistory() {
   const data = await apiRequest("/api/history?limit=25&offset=0");
-  if (!data.items.length) {
+  historyItems = data.items;
+  renderHistory();
+}
+
+function renderHistory() {
+  const from = elements.historyFrom.value ? new Date(`${elements.historyFrom.value}T00:00:00`) : null;
+  const to = elements.historyTo.value ? new Date(`${elements.historyTo.value}T23:59:59`) : null;
+  const items = historyItems.filter((call) => {
+    const started = new Date(call.started_at);
+    return (!from || started >= from) && (!to || started <= to) && (!elements.historyType.value || call.session_type === elements.historyType.value);
+  });
+  if (!items.length) {
     elements.historyList.innerHTML = '<p class="empty-bots">No calls recorded yet.</p>';
     return;
   }
-  elements.historyList.replaceChildren(...data.items.map((call) => {
+  elements.historyList.replaceChildren(...items.map((call) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "history-card";
-    const duration = call.duration_ms === null ? "pending" : `${Math.round(call.duration_ms / 1000)}s`;
-    button.textContent = `${call.bot_name || "One-off session"} · ${duration}\n${new Date(call.started_at).toLocaleString()} · ${call.status}`;
+    button.className = "history-row";
+    const durationSeconds = call.duration_ms === null ? null : Math.round(call.duration_ms / 1000);
+    const duration = durationSeconds === null ? "Pending" : `${String(Math.floor(durationSeconds / 60)).padStart(2, "0")}:${String(durationSeconds % 60).padStart(2, "0")}`;
+    const type = call.session_type === "chat_test" ? "Chat test" : "Web call";
+    const turns = call.turn_count ?? call.turns_count ?? "—";
+    const pipeline = call.session_type === "chat_test" ? "LLM + TTS" : "ASR + LLM + TTS";
+    const started = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(call.started_at));
+    button.innerHTML = `<span><strong>${escapeHtml(call.id)}</strong><small>${escapeHtml(call.bot_name || "One-off session")}</small></span><span><strong>${escapeHtml(started)}</strong><small>${escapeHtml(call.status)}</small></span><span><strong>${type}</strong><small>${pipeline}</small></span><span><strong>${duration}</strong><small>${turns === "—" ? "Turn count unavailable" : `${turns} turns`}</small></span><span class="history-view">View</span>`;
     button.addEventListener("click", () => showHistory(call.id));
     return button;
   }));
+}
+
+function closeHistoryDrawer() {
+  elements.historyDialog.querySelectorAll("audio").forEach((audio) => audio.pause());
+  elements.historyDialog.hidden = true;
 }
 
 async function showHistory(callId) {
@@ -703,17 +1111,31 @@ async function showHistory(callId) {
   meta.textContent = `${new Date(call.started_at).toLocaleString()} · ${call.llm_provider}/${call.llm_model} · ${call.tts_provider}/${call.tts_model} · ${call.tts_text_aggregation} input · ${call.status}`;
   elements.historyDetail.append(heading, meta);
   if (call.has_recording) {
+    const recordingMeta = document.createElement("p");
+    recordingMeta.className = "hint";
+    recordingMeta.textContent = `${call.audio_format.toUpperCase()} · mono · ${call.sample_rate / 1000} kHz · user uplink only · Agent TTS is not retained`;
     const audio = document.createElement("audio");
     audio.controls = true;
     audio.src = `/api/history/${call.id}/recording`;
-    elements.historyDetail.append(audio);
+    elements.historyDetail.append(recordingMeta, audio);
+  } else {
+    const unavailable = document.createElement("p");
+    unavailable.className = "recording-unavailable";
+    unavailable.textContent = call.recording_status === "not_applicable"
+      ? "Chat test uses text input and has no user recording."
+      : `User recording unavailable: ${call.recording_status.replaceAll("_", " ")}.`;
+    elements.historyDetail.append(unavailable);
   }
-  for (const turn of call.turns) addHistoryTurn(turn);
   const metricHelp = document.createElement("p");
   metricHelp.className = "hint";
   metricHelp.textContent = "TTS initial measures pipeline handoff to the TTS request; TTS TTFT measures first synthesized audio. In sentence mode, TTS initial therefore includes the wait for the first complete sentence.";
   elements.historyDetail.append(metricHelp);
-  for (const metric of call.metrics) {
+  let interactionIndex = 0;
+  for (const turn of call.turns) {
+    addHistoryTurn(turn);
+    if (turn.role !== "assistant") continue;
+    const metric = call.metrics[interactionIndex++];
+    if (!metric) continue;
     const row = document.createElement("p");
     row.className = "history-metric";
     const reasons = {
@@ -739,21 +1161,19 @@ async function showHistory(callId) {
   remove.addEventListener("click", async () => {
     if (!window.confirm("Delete this call, transcript, metrics, and recording?")) return;
     await apiRequest(`/api/history/${call.id}`, { method: "DELETE" });
-    elements.historyDialog.close();
+    closeHistoryDrawer();
     await loadHistory();
   });
   elements.historyDetail.append(remove);
-  elements.historyDialog.showModal();
+  elements.historyDialog.hidden = false;
 }
 
 function addHistoryTurn(turn) {
   const item = document.createElement("article");
   item.className = `message ${turn.role === "user" ? "user" : "agent"}`;
-  const label = document.createElement("span");
-  label.textContent = turn.role === "user" ? "You" : "Agent";
   const text = document.createElement("p");
   text.textContent = turn.text;
-  item.append(label, text);
+  item.append(text);
   elements.historyDetail.append(item);
 }
 
@@ -769,6 +1189,22 @@ function addTranscript(role, text, { interim = false } = {}) {
   elements.transcript.append(bubble);
   elements.transcript.scrollTop = elements.transcript.scrollHeight;
   return bubble;
+}
+
+function resetLiveTestView() {
+  const message = testMode === "chat_test"
+    ? "Opening message and text replies will play through the configured TTS."
+    : "Caller and Agent captions will appear here in real time.";
+  elements.transcript.innerHTML = `<div class="empty-state"><span>Transcript</span><p>${message}</p></div>`;
+  elements.e2eLatency.textContent = "—";
+  elements.synthesisLatency.textContent = "—";
+  elements.chatInput.value = "";
+  userStoppedAt = undefined;
+  llmFirstTokenAt = undefined;
+  currentAssistantBubble = undefined;
+  currentAssistantText = "";
+  interimUserBubble = undefined;
+  playbackReportPromise = undefined;
 }
 
 function voiceEntry(modelId) {
@@ -803,21 +1239,38 @@ function fillVoiceSelect(selectEl, selectedId) {
 
 function syncTtsFields() {
   const elevenlabs = elements.botTts.value === "elevenlabs";
+  const modelLabels = {
+    "flux-general-en": "Flux TTS · v2",
+    eleven_flash_v2_5: "Eleven Flash v2.5 · Lowest latency",
+    eleven_turbo_v2_5: "Eleven Turbo v2.5 · Balanced",
+    eleven_multilingual_v2: "Eleven Multilingual v2",
+    eleven_v3: "Eleven v3 · Most expressive",
+  };
   elements.botTtsModel.replaceChildren(
     ...(
       elevenlabs
         ? ["eleven_flash_v2_5", "eleven_turbo_v2_5", "eleven_multilingual_v2", "eleven_v3"]
         : ["flux-general-en"]
-    ).map((model) => new Option(model, model)),
+    ).map((model) => new Option(modelLabels[model] || model, model)),
   );
   elements.botElevenlabsKeyField.hidden = !elevenlabs;
+  if (document.querySelector(".component-drawer")?.dataset.component === "tts") {
+    elements.botDeepgramKeyField.hidden = elevenlabs;
+    elements.botElevenlabsKeyField.hidden = !elevenlabs;
+  }
+  const elevenModel = document.querySelector("#eleven-model-basic");
+  if (elevenModel) elevenModel.hidden = false;
+  const fluxSpeed = document.querySelector('[data-provider-speed="deepgram_flux"]');
+  const elevenSpeed = document.querySelector('[data-provider-speed="elevenlabs"]');
+  if (fluxSpeed) fluxSpeed.hidden = elevenlabs;
+  if (elevenSpeed) elevenSpeed.hidden = !elevenlabs;
   elements.fluxTuning.hidden = elevenlabs;
   elements.elevenlabsTuning.hidden = !elevenlabs;
   elements.sessionElevenlabsKeyField.hidden = !(
     selectedBot()?.tts_provider === "elevenlabs" && !selectedBot()?.has_saved_keys
   );
   elements.manualVoicePanel.hidden = !elevenlabs;
-  elements.voiceDiscoveryKeyField.hidden = !elevenlabs;
+  elements.voiceDiscoveryKeyField.hidden = true;
   if (!elevenlabs && !voiceEntry(elements.botVoice.value)) {
     fillVoiceSelect(elements.botVoice, catalogs.defaults.flux_voice);
   }
@@ -825,6 +1278,21 @@ function syncTtsFields() {
   syncElevenlabsSettings();
   syncFluxSettings();
   syncKeyFieldVisibility();
+  syncTtsVoiceAvailability();
+}
+
+function syncTtsVoiceAvailability() {
+  const requiresKey = elements.botTts.value === "elevenlabs";
+  const editingHasKeys = Boolean(
+    editingBotId && bots.find((bot) => bot.id === editingBotId)?.has_saved_keys,
+  );
+  const available = !requiresKey || Boolean(elements.botElevenlabsKey.value) || editingHasKeys;
+  elements.chooseBotVoice.disabled = !available;
+  elements.chooseBotVoice.textContent = !available
+    ? "Enter ElevenLabs API key to choose a voice"
+    : (voiceEntry(elements.botVoice.value)?.name
+      ? `${voiceEntry(elements.botVoice.value).name} — Change voice`
+      : "Choose voice");
 }
 
 function syncFluxSettings() {
@@ -855,6 +1323,12 @@ function syncElevenlabsSettings() {
   elements.botTtsSpeakerBoost.disabled = isV3;
   elements.botTtsSimilarity.closest(".voice-setting").classList.toggle("is-disabled", isV3);
   elements.botTtsSpeakerBoost.closest(".switch-row").classList.toggle("is-disabled", isV3);
+  elements.botDynamicSpeed.disabled = isV3;
+  elements.botSpeedStep.disabled = isV3 || !elements.botDynamicSpeed.checked;
+  if (isV3) elements.botDynamicSpeed.checked = false;
+  elements.dynamicSpeedHint.textContent = isV3
+    ? "Eleven v3 does not support precise in-call speed changes."
+    : "Session-only state; the saved Initial speed is never overwritten.";
   const sentence = elements.botTtsAggregation.value === "sentence";
   elements.botAutoMode.checked = sentence;
   elements.botAutoModeState.textContent = sentence ? "On · derived" : "Off · derived";
@@ -874,6 +1348,7 @@ function updateBotVoiceDisplay() {
   const name = voice?.name || elements.botVoice.selectedOptions[0]?.textContent || elements.botVoice.value;
   elements.chooseBotVoice.textContent = name ? `${name} — Change voice` : "Choose voice";
   updateVoiceCard(elements.botVoice, elements.botVoiceCard);
+  elements.botVoiceCard.hidden = !voice;
 }
 
 function normalizedDeepgramVoices() {
@@ -909,7 +1384,8 @@ function renderVoicePicker() {
       card.setAttribute("role", "radio");
       card.setAttribute("aria-checked", String(voice.voice_id === pendingVoice?.voice_id));
       card.dataset.selected = String(voice.voice_id === pendingVoice?.voice_id);
-      card.innerHTML = `<i class="voice-radio"></i><div class="voice-option-copy"><strong></strong><span></span><em></em></div>`;
+      card.innerHTML = `<i class="voice-radio"></i><b class="voice-initial" aria-hidden="true"></b><div class="voice-option-copy"><strong></strong><span></span><em></em></div>`;
+      card.querySelector(".voice-initial").textContent = voice.name.trim().charAt(0).toUpperCase() || "?";
       card.querySelector("strong").textContent = voice.name;
       card.querySelector("span").textContent = [voice.labels.language, voice.labels.accent, voice.labels.gender].filter(Boolean).join(" · ");
       card.querySelector("em").textContent = voice.description || voice.category;
@@ -1051,11 +1527,15 @@ const botProviderRefs = {
 // --- Bot list and editor ----------------------------------------------------
 
 function renderBotList() {
-  if (!bots.length) {
+  const query = document.querySelector("#bot-search-input")?.value.trim().toLowerCase() || "";
+  const visibleBots = bots.filter((bot) => bot.name.toLowerCase().includes(query));
+  const count = document.querySelector("#bot-count");
+  if (count) count.textContent = String(bots.length);
+  if (!visibleBots.length) {
     elements.botList.innerHTML = `<p class="empty-bots">No bots yet. Create your first bot to skip re-entering the configuration every time.</p>`;
   } else {
     elements.botList.replaceChildren(
-      ...bots.map((bot) => {
+      ...visibleBots.map((bot) => {
         const voice = voiceEntry(bot.tts_voice);
         const card = document.createElement("article");
         card.className = "bot-card";
@@ -1063,22 +1543,17 @@ function renderBotList() {
         card.innerHTML = `
           <header>
             <strong></strong>
-            ${bot.has_saved_keys ? '<span class="badge">Keys saved</span>' : '<span class="badge byok">BYOK</span>'}
+            <span class="badge">v1</span>
           </header>
           <p></p>
-          <div class="card-actions">
-            <button class="card-button select-bot" type="button"></button>
-            <button class="card-button edit-bot" type="button">Edit</button>
-            <button class="card-button danger delete-bot" type="button">Delete</button>
-          </div>
         `;
         card.querySelector("strong").textContent = bot.name;
-        card.querySelector("p").textContent = `${bot.llm_model} · ${voice ? voice.name : bot.tts_voice}`;
-        const selectButton = card.querySelector(".select-bot");
-        selectButton.textContent = bot.id === selectedBotId ? "Selected" : "Select";
-        selectButton.addEventListener("click", () => selectBot(bot.id));
-        card.querySelector(".edit-bot").addEventListener("click", () => openEditor(bot));
-        card.querySelector(".delete-bot").addEventListener("click", () => deleteBot(bot));
+        card.querySelector("p").textContent = `Deepgram · ${bot.llm_provider} · ${bot.tts_provider === "elevenlabs" ? "ElevenLabs" : (voice?.name || "Flux")}`;
+        card.tabIndex = 0;
+        card.addEventListener("click", () => selectBot(bot.id));
+        card.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") selectBot(bot.id);
+        });
         return card;
       }),
     );
@@ -1097,6 +1572,8 @@ function selectedBot() {
 function selectBot(botId) {
   selectedBotId = botId;
   renderBotList();
+  const bot = selectedBot();
+  if (bot) openEditor(bot);
 }
 
 async function loadBots() {
@@ -1110,7 +1587,7 @@ function syncKeyFieldVisibility() {
   const editingHasKeys = Boolean(
     editingBotId && bots.find((bot) => bot.id === editingBotId)?.has_saved_keys,
   );
-  elements.botKeyFields.hidden = !saving;
+  elements.botKeyFields.hidden = false;
   elements.byokHint.hidden = saving;
   elements.keepKeysHint.hidden = !(saving && editingHasKeys);
   const keysOptional = saving && editingHasKeys;
@@ -1120,12 +1597,27 @@ function syncKeyFieldVisibility() {
     saving && elements.botTts.value === "elevenlabs" && !keysOptional;
 }
 
+function syncAsrAdvancedFields() {
+  elements.botAsrEotThresholdValue.value = Number(
+    elements.botAsrEotThreshold.value,
+  ).toFixed(2);
+}
+
 function openEditor(bot) {
   clearError();
   editingBotId = bot ? bot.id : null;
   elements.editorTitle.textContent = bot ? `Edit bot` : "New bot";
+  const title = document.querySelector("#current-bot-title");
+  if (title) title.textContent = bot?.name || "New bot";
   elements.botName.value = bot ? bot.name : "";
-  elements.botAsr.value = bot ? bot.asr_provider : "deepgram_flux";
+  loadAsrCatalog(bot);
+  elements.botAsrEotThreshold.value = bot?.asr_eot_threshold ?? 0.7;
+  syncAsrAdvancedFields();
+  elements.botAsrEotTimeout.value = bot?.asr_eot_timeout_ms ?? 5000;
+  elements.botAsrKeyterms.value = (bot?.asr_keyterms || []).join("\n");
+  elements.botAsrProfanity.checked = bot?.asr_profanity_filter ?? false;
+  elements.botAsrNumerals.checked = bot?.asr_numerals ?? false;
+  elements.botAsrRedact.value = bot?.asr_redact ?? "";
   elements.botTts.value = bot ? bot.tts_provider : "deepgram_flux";
   elements.botTtsAggregation.value = bot
     ? (bot.tts_text_aggregation || (bot.tts_provider === "elevenlabs" ? "sentence" : "token"))
@@ -1135,10 +1627,13 @@ function openEditor(bot) {
   elements.botTtsSpeed.value = bot?.tts_speed ?? 1;
   elements.botFluxSpeed.value = bot?.tts_speed ?? 1;
   elements.botFluxExpressivity.value = bot?.tts_expressivity ?? 0;
+  elements.botFluxMipOptOut.checked = bot?.tts_model_improvement_opt_out ?? false;
   elements.botTtsStability.value = bot?.tts_stability ?? 0.5;
   elements.botTtsSimilarity.value = bot?.tts_similarity_boost ?? 0.8;
   elements.botTtsStyle.value = bot?.tts_style ?? 0;
   elements.botTtsSpeakerBoost.checked = bot?.tts_use_speaker_boost ?? false;
+  elements.botDynamicSpeed.checked = bot?.tts_dynamic_speed_enabled ?? false;
+  elements.botSpeedStep.value = String(bot?.tts_speed_step ?? 0.1);
   elements.botTextNormalization.value = bot?.tts_text_normalization ?? "auto";
   syncElevenlabsSettings();
   syncFluxSettings();
@@ -1154,20 +1649,48 @@ function openEditor(bot) {
     elements.botBaseUrl.value = bot.llm_base_url;
     elements.botModel.value = bot.llm_model;
   }
+  elements.botThinking.value = bot?.reasoning_mode ?? "provider_default";
+  elements.botLlmTemperature.value = bot?.llm_temperature ?? 0.7;
+  elements.botLlmTemperatureValue.value = Number(elements.botLlmTemperature.value).toFixed(1);
+  elements.botLlmMaxTokens.value = bot?.llm_max_response_tokens ?? 250;
+  elements.botLlmRequestTimeout.value = bot?.llm_request_timeout_seconds ?? 15;
   elements.botSystemPrompt.value = bot ? bot.system_prompt : catalogs.defaults.system_prompt;
   elements.botOpeningScript.value = bot ? bot.opening_script : catalogs.defaults.opening_script;
+  elements.botFallbackScript.value = bot?.fallback_script ?? "";
+  syncAdvancedBotContext();
   elements.botSaveKeys.checked = bot ? bot.has_saved_keys : false;
   elements.botDeepgramKey.value = "";
   elements.botLlmKey.value = "";
   elements.botElevenlabsKey.value = "";
   syncKeyFieldVisibility();
   elements.editor.hidden = false;
-  elements.editor.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  elements.editor.dataset.open = "true";
+  document.querySelector(".conversation-panel").hidden = true;
+  document.querySelector(".history-panel").hidden = true;
+  updatePipelineSummaries(bot || {
+    asr_model: "flux-general-en", llm_model: catalogs.defaults.llm_model,
+    llm_provider: catalogs.defaults.llm_provider, reasoning_mode: "provider_default",
+    tts_voice: catalogs.defaults.flux_voice, tts_provider: "deepgram_flux",
+    tts_model: "flux-general-en", tts_speed: 1, tts_dynamic_speed_enabled: false,
+    tts_text_aggregation: "token",
+  });
 }
 
 function closeEditor() {
   elements.editor.hidden = true;
+  elements.editor.dataset.open = "false";
   editingBotId = null;
+  syncAdvancedBotContext();
+}
+
+function syncAdvancedBotContext() {
+  const bot = editingBotId && bots.find((item) => item.id === editingBotId);
+  const context = document.querySelector("#advanced-bot-context");
+  const save = document.querySelector("#save-advanced-settings");
+  context.textContent = bot
+    ? `Bot-specific settings for ${bot.name}.`
+    : "Select a Bot to configure its advanced behavior.";
+  save.disabled = !bot;
 }
 
 async function saveBot(event) {
@@ -1195,12 +1718,23 @@ async function saveBot(event) {
   const payload = {
     name: elements.botName.value.trim(),
     asr_provider: elements.botAsr.value,
+    asr_model: elements.botAsrLanguage.value,
+    asr_language_hints: [...elements.botAsrHints.selectedOptions].map((option) => option.value),
+    asr_eot_threshold: Number(elements.botAsrEotThreshold.value),
+    asr_eot_timeout_ms: Number(elements.botAsrEotTimeout.value),
+    asr_keyterms: elements.botAsrKeyterms.value.split("\n").map((term) => term.trim()).filter(Boolean),
+    asr_profanity_filter: elements.botAsrProfanity.checked,
+    asr_numerals: elements.botAsrNumerals.checked,
+    asr_redact: elements.botAsrRedact.value || null,
     tts_provider: elements.botTts.value,
     tts_voice: elements.botVoice.value,
     tts_model: elements.botTtsModel.value,
     tts_text_aggregation: elements.botTtsAggregation.value,
     tts_speed: Number(elements.botTts.value === "elevenlabs" ? elements.botTtsSpeed.value : elements.botFluxSpeed.value),
+    tts_dynamic_speed_enabled: elements.botDynamicSpeed.checked,
+    tts_speed_step: Number(elements.botSpeedStep.value),
     tts_expressivity: Number(elements.botFluxExpressivity.value),
+    tts_model_improvement_opt_out: elements.botFluxMipOptOut.checked,
     tts_stability: Number(elements.botTtsStability.value),
     tts_similarity_boost: Number(elements.botTtsSimilarity.value),
     tts_style: Number(elements.botTtsStyle.value),
@@ -1209,8 +1743,13 @@ async function saveBot(event) {
     llm_provider: elements.botProvider.value,
     llm_base_url: elements.botBaseUrl.value,
     llm_model: elements.botModel.value,
+    llm_temperature: Number(elements.botLlmTemperature.value),
+    reasoning_mode: elements.botThinking.value,
+    llm_max_response_tokens: Number(elements.botLlmMaxTokens.value),
+    llm_request_timeout_seconds: Number(elements.botLlmRequestTimeout.value),
     system_prompt: elements.botSystemPrompt.value,
     opening_script: elements.botOpeningScript.value,
+    fallback_script: elements.botFallbackScript.value,
     save_keys: saving,
   };
   if (saving && deepgramKey && llmKey) {
@@ -1269,13 +1808,6 @@ function ensureSecureContext() {
   return true;
 }
 
-function confirmUnverifiedReasoning(provider) {
-  if (provider !== "custom") return true;
-  return window.confirm(
-    "This custom model has no verified reasoning-disable profile. It may add latency. Continue anyway?",
-  );
-}
-
 function deviceErrorMessage(error) {
   const messages = {
     permissions: "Microphone permission is blocked. Allow it in browser and system settings.",
@@ -1288,7 +1820,7 @@ function deviceErrorMessage(error) {
   return messages[error?.type] || messages.unknown;
 }
 
-async function reportBrowserEvent(event) {
+async function reportBrowserEvent(event, text) {
   if (!sessionId || !sessionToken || !sessionStartedAt) return;
   const elapsedMs = performance.now() - sessionStartedAt;
   try {
@@ -1298,7 +1830,7 @@ async function reportBrowserEvent(event) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${sessionToken}`,
       },
-      body: JSON.stringify({ event, elapsed_ms: elapsedMs }),
+      body: JSON.stringify({ event, elapsed_ms: elapsedMs, ...(text ? { text } : {}) }),
       keepalive: true,
     });
   } catch {
@@ -1306,15 +1838,70 @@ async function reportBrowserEvent(event) {
   }
 }
 
+async function addLiveMetricCard(bubble) {
+  if (!bubble || bubble.querySelector(".live-turn-metrics")) return;
+  if (!userStoppedAt || !sessionId || !sessionToken) return;
+  try {
+    await playbackReportPromise;
+  } catch {
+    // The metric request below will expose the missing playback reason.
+  }
+  const response = await fetch(`/api/sessions/${sessionId}/metrics`, {
+    headers: { Accept: "application/json", Authorization: `Bearer ${sessionToken}` },
+  });
+  if (!response.ok) return;
+  const payload = await response.json();
+  const metric = payload.metrics?.at(-1);
+  if (!metric) return;
+  const reasons = {
+    word_timing_unavailable: "ASR word timing unavailable",
+    audio_clock_mismatch: "ASR audio clock mismatch",
+    interrupted_before_llm_first_token: "interrupted before LLM first token",
+    session_ended_before_llm_first_token: "session ended before LLM first token",
+    interrupted_before_tts_audio: "interrupted before TTS audio",
+    session_ended_before_tts_audio: "session ended before TTS audio",
+    interrupted_before_playback: "interrupted before playback",
+    session_ended_before_playback: "session ended before playback",
+  };
+  const fmt = (value, reason) => value !== null && value !== undefined
+    ? `${value} ms`
+    : `not available (${reasons[reason] || "event not observed"})`;
+  const parts = [];
+  if (payload.session_type !== "chat_test") {
+    parts.push(`ASR final ${fmt(metric.asr_final_latency_ms, metric.asr_final_reason)}`);
+  }
+  parts.push(
+    `LLM splicing ${fmt(metric.llm_request_splicing_ms, metric.incomplete_reason)}`,
+    `LLM TTFT ${fmt(metric.llm_first_token_ms, metric.incomplete_reason)}`,
+    `TTS initial ${fmt(metric.tts_initial_ms, metric.incomplete_reason)}`,
+    `TTS TTFT ${fmt(metric.tts_first_audio_ms, metric.incomplete_reason)}`,
+    `playback ${fmt(metric.playback_ms, metric.incomplete_reason)}`,
+    `e2e latency ${fmt(metric.turn_to_playback_ms, metric.incomplete_reason)}`,
+    `reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`,
+  );
+  const card = document.createElement("div");
+  card.className = "history-metric live-turn-metrics";
+  card.textContent = `Turn ${metric.turn_index + 1}: ${parts.join(" · ")}`;
+  bubble.append(card);
+}
+
 function createClient() {
+  clientReady = false;
   currentAssistantBubble = undefined;
   currentAssistantText = "";
-  return new PipecatClient({
-    transport: new WebSocketTransport({
+  const transportOptions = {
       recorderSampleRate: catalogs.defaults.audio.input_sample_rate,
       playerSampleRate: catalogs.defaults.audio.output_sample_rate,
-    }),
-    enableMic: true,
+    };
+  if (testMode === "chat_test") {
+    transportOptions.mediaManager = new OutputOnlyMediaManager(
+      undefined,
+      catalogs.defaults.audio.input_sample_rate,
+    );
+  }
+  return new PipecatClient({
+    transport: new WebSocketTransport(transportOptions),
+    enableMic: testMode === "web_call",
     enableCam: false,
     disconnectOnBotDisconnect: true,
     callbacks: {
@@ -1324,13 +1911,24 @@ function createClient() {
         setSessionState("connected", "Live");
       },
       onDisconnected: () => {
+        clientReady = false;
+        client = undefined;
         elements.wsStatus.textContent = "Disconnected";
         elements.pipelineStatus.textContent = "Standby";
+        setFormLocked(false);
+        setSessionState("idle", "Ready to start");
+        elements.chatInput.disabled = true;
+        elements.sendChat.disabled = true;
       },
       onTransportStateChanged: (state) => {
         elements.wsStatus.textContent = state[0].toUpperCase() + state.slice(1);
       },
       onBotReady: () => {
+        clientReady = true;
+        if (testMode === "chat_test") {
+          elements.chatInput.disabled = false;
+          elements.sendChat.disabled = false;
+        }
         setSpeaker("idle", "Listening for the conversation");
       },
       onDeviceError: (error) => {
@@ -1384,12 +1982,13 @@ function createClient() {
         if (llmFirstTokenAt) {
           elements.synthesisLatency.textContent = `${Math.round(now - llmFirstTokenAt)} ms`;
         }
-        reportBrowserEvent("first_playback");
+        playbackReportPromise = reportBrowserEvent("first_playback");
       },
-      onBotStoppedSpeaking: () => {
+      onBotStoppedSpeaking: async () => {
         botSpeaking = false;
         setSpeaker("idle", "Listening");
         elements.pipelineStatus.textContent = "Ready";
+        await addLiveMetricCard(currentAssistantBubble);
         currentAssistantBubble = undefined;
         currentAssistantText = "";
       },
@@ -1429,8 +2028,13 @@ async function connectSession(session) {
   sessionToken = session.session_token;
   sessionStartedAt = performance.now();
   client = createClient();
-  await client.initDevices();
-  await client.connect({ wsUrl: websocketUrl(session.websocket_path) });
+  if (testMode === "web_call") await client.initDevices();
+  await Promise.race([
+    client.connect({ wsUrl: websocketUrl(session.websocket_path) }),
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error("Connection timed out. End the test and retry.")), 15000);
+    }),
+  ]);
 }
 
 async function startBotSession() {
@@ -1441,9 +2045,7 @@ async function startBotSession() {
     return;
   }
   if (!ensureSecureContext()) return;
-  if (!confirmUnverifiedReasoning(bot.llm_provider)) return;
-
-  const payload = { bot_id: bot.id };
+  const payload = { bot_id: bot.id, session_type: testMode };
   if (!bot.has_saved_keys) {
     if (!elements.sessionDeepgramKey.value || !elements.sessionLlmKey.value) {
       showError("This bot has no saved keys. Enter both API keys for this session.");
@@ -1460,9 +2062,14 @@ async function startBotSession() {
     }
   }
 
+  resetLiveTestView();
   setFormLocked(true);
   setSessionState("connecting", "Connecting");
-  setSpeaker("thinking", "Requesting microphone access");
+  setSpeaker("thinking", testMode === "chat_test" ? "Connecting text test" : "Requesting microphone access");
+  if (testMode === "chat_test") {
+    elements.chatInput.disabled = true;
+    elements.sendChat.disabled = true;
+  }
   try {
     const session = await apiRequest("/api/sessions", { method: "POST", body: payload });
     elements.sessionDeepgramKey.value = "";
@@ -1481,7 +2088,6 @@ async function startQuickSession(event) {
   event.preventDefault();
   clearError();
   if (!ensureSecureContext()) return;
-  if (!confirmUnverifiedReasoning(elements.provider.value)) return;
   if (!elements.quickForm.reportValidity()) return;
   setFormLocked(true);
   setSessionState("connecting", "Connecting");
@@ -1517,6 +2123,7 @@ async function endSession({ preserveError = false } = {}) {
   } catch {
     // The server still expires and clears the session lease.
   }
+  clientReady = false;
   client = undefined;
   sessionId = undefined;
   sessionToken = undefined;
@@ -1527,6 +2134,7 @@ async function endSession({ preserveError = false } = {}) {
   currentAssistantText = "";
   interimUserBubble = undefined;
   botSpeaking = false;
+  playbackReportPromise = undefined;
   setFormLocked(false);
   setSessionState("idle", "Ready to start");
   setSpeaker("idle", "Select a bot, then start a session");
@@ -1537,6 +2145,79 @@ async function endSession({ preserveError = false } = {}) {
 }
 
 // --- Wiring -------------------------------------------------------------------
+
+elements.toggleProductRail.addEventListener("click", () => {
+  elements.productRail.classList.toggle("expanded");
+  elements.toggleProductRail.setAttribute(
+    "aria-label",
+    elements.productRail.classList.contains("expanded") ? "Collapse product rail" : "Expand product rail",
+  );
+});
+
+document.querySelectorAll(".product-tabs button").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (!elements.historyDialog.hidden) closeHistoryDrawer();
+    document.querySelector(".component-drawer:not([hidden])")?.querySelector("header button")?.click();
+    document.querySelectorAll(".product-tabs button").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    const page = button.dataset.page;
+    document.querySelector(".workspace").hidden = false;
+    document.querySelector("#advanced-empty").hidden = page !== "advanced";
+    document.querySelector(".history-panel").hidden = page !== "sessions";
+    elements.editor.hidden = page !== "settings" || elements.editor.dataset.open !== "true";
+    document.querySelector(".conversation-panel").hidden = true;
+    if (page === "advanced") syncAdvancedBotContext();
+    if (page === "sessions") loadHistory().catch((error) => showError(error.message));
+  });
+});
+
+function selectTestMode(mode) {
+  testMode = mode;
+  const chat = mode === "chat_test";
+  elements.chatTestTab.classList.toggle("active", chat);
+  elements.webCallTab.classList.toggle("active", !chat);
+  elements.chatComposer.hidden = !chat;
+  elements.start.textContent = "Start test";
+  const conversationHeader = document.querySelector(".conversation-header");
+  conversationHeader.querySelector("h2").textContent = chat ? "Chat test" : "Web call test";
+  conversationHeader.querySelector(".eyebrow").textContent = chat
+    ? "Text → LLM → TTS test with Agent audio playback."
+    : "Live ASR → LLM → TTS test with real-time captions.";
+  elements.speaker.textContent = chat
+    ? "Start to test text → LLM → TTS"
+    : "Select a bot, then start a Web call";
+  elements.transcript.querySelector(".empty-state p")?.replaceChildren(
+    chat
+      ? "Opening message and text replies will play through the configured TTS."
+      : "Caller and Agent captions will appear here in real time.",
+  );
+}
+
+elements.chatTestTab.addEventListener("click", () => selectTestMode("chat_test"));
+elements.webCallTab.addEventListener("click", () => selectTestMode("web_call"));
+elements.chatComposer.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const text = elements.chatInput.value.trim();
+  if (!text) return;
+  if (!client || !clientReady) {
+    showError("Chat test is not connected. Start the test and wait until it is ready.");
+    return;
+  }
+  const interrupted = botSpeaking;
+  if (interrupted) reportBrowserEvent("browser_interruption");
+  addTranscript("user", text);
+  await reportBrowserEvent("chat_text", text);
+  elements.chatInput.value = "";
+  userStoppedAt = performance.now();
+  llmFirstTokenAt = undefined;
+  currentAssistantBubble = undefined;
+  currentAssistantText = "";
+  try {
+    await client.sendText(text, { run_immediately: true, audio_response: true });
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Could not send the chat message.");
+  }
+});
 
 document.querySelectorAll(".reveal").forEach((button) => {
   button.addEventListener("click", () => {
@@ -1549,12 +2230,26 @@ document.querySelectorAll(".reveal").forEach((button) => {
 elements.newBot.addEventListener("click", () => openEditor(null));
 elements.cancelBot.addEventListener("click", closeEditor);
 elements.botForm.addEventListener("submit", saveBot);
+document.querySelector("#save-advanced-settings").addEventListener("click", () => {
+  if (!editingBotId) {
+    showError("Create or select a Bot before saving advanced settings.");
+    return;
+  }
+  elements.botForm.requestSubmit();
+});
 elements.botSaveKeys.addEventListener("change", syncKeyFieldVisibility);
+elements.botElevenlabsKey.addEventListener("input", syncTtsVoiceAvailability);
 elements.botTts.addEventListener("change", () => {
   elements.botVoice.replaceChildren();
   syncTtsFields();
 });
 elements.botTtsModel.addEventListener("change", syncElevenlabsSettings);
+elements.botAsrLanguage.addEventListener("change", syncAsrLanguage);
+elements.botAsrEotThreshold.addEventListener("input", syncAsrAdvancedFields);
+elements.botLlmTemperature.addEventListener("input", () => {
+  elements.botLlmTemperatureValue.value = Number(elements.botLlmTemperature.value).toFixed(1);
+});
+elements.botDynamicSpeed.addEventListener("change", syncElevenlabsSettings);
 elements.botTtsAggregation.addEventListener("change", syncElevenlabsSettings);
 elements.botFluxExpressivity.addEventListener("input", syncFluxSettings);
 elements.botFluxSpeed.addEventListener("input", syncFluxSettings);
@@ -1599,9 +2294,17 @@ elements.testSessionLlm.addEventListener("click", () => testLlm("session"));
 elements.refreshHistory.addEventListener("click", () =>
   loadHistory().catch((error) => showError(error.message)),
 );
-elements.closeHistory.addEventListener("click", () => elements.historyDialog.close());
+for (const filter of [elements.historyFrom, elements.historyTo, elements.historyType]) {
+  filter.addEventListener("change", renderHistory);
+}
+elements.closeHistory.addEventListener("click", (event) => {
+  event.preventDefault();
+  closeHistoryDrawer();
+});
 
 async function boot() {
+  initializeComponentEditor();
+  initializePrototypeLayout();
   try {
     catalogs = await apiRequest("/api/catalogs");
   } catch {
@@ -1625,6 +2328,8 @@ async function boot() {
   try {
     await loadBots();
     await loadHistory();
+    if (selectedBot()) openEditor(selectedBot());
+    else openEditor(null);
   } catch {
     showError("Could not load your bots. Reload the page to try again.");
   }

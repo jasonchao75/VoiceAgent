@@ -25,12 +25,25 @@ class BotConfigFields(BaseModel):
 
     name: str = Field(min_length=1, max_length=100)
     asr_provider: str = Field(min_length=1, max_length=50)
+    asr_model: Literal["flux-general-en", "flux-general-multi"] = "flux-general-en"
+    asr_language_hints: list[
+        Literal["en", "es", "fr", "de", "hi", "ru", "pt", "ja", "it", "nl"]
+    ] = Field(default_factory=list, max_length=10)
+    asr_eot_threshold: float = Field(default=0.7, ge=0.5, le=1.0)
+    asr_eot_timeout_ms: int = Field(default=5000, ge=500, le=60000)
+    asr_keyterms: list[str] = Field(default_factory=list, max_length=100)
+    asr_profanity_filter: bool = False
+    asr_numerals: bool = False
+    asr_redact: Literal["numbers", "aggressive_numbers"] | None = None
     tts_provider: str = Field(min_length=1, max_length=50)
     tts_voice: str = Field(min_length=1, max_length=100)
     tts_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
     tts_text_aggregation: Literal["token", "sentence"] = "token"
-    tts_speed: float = Field(default=1.0, ge=0.7, le=1.2, multiple_of=0.05)
+    tts_speed: float = Field(default=1.0, ge=0.5, le=1.5, multiple_of=0.05)
+    tts_dynamic_speed_enabled: bool = False
+    tts_speed_step: float = Field(default=0.10, ge=0.05, le=0.25, multiple_of=0.05)
     tts_expressivity: Literal[-2, -1, 0, 1, 2] = 0
+    tts_model_improvement_opt_out: bool = False
     tts_stability: float = Field(default=0.5, ge=0, le=1)
     tts_similarity_boost: float = Field(default=0.8, ge=0, le=1)
     tts_style: float = Field(default=0.0, ge=0, le=1)
@@ -39,9 +52,35 @@ class BotConfigFields(BaseModel):
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)
-    reasoning_mode: Literal["lowest_latency"] = "lowest_latency"
+    llm_temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    reasoning_mode: Literal["provider_default", "off", "minimal"] = "provider_default"
+    llm_max_response_tokens: int = Field(default=250, ge=1, le=32768)
+    llm_request_timeout_seconds: float = Field(default=15.0, ge=3.0, le=60.0)
     system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
+    fallback_script: str = Field(default="", max_length=2000)
+
+    @field_validator("asr_keyterms")
+    @classmethod
+    def validate_keyterms(cls, value: list[str]) -> list[str]:
+        """Keep user-entered phrases plain while rejecting empty or oversized entries."""
+        normalized = [term.strip() for term in value]
+        if any(not term or len(term) > 200 for term in normalized):
+            raise ValueError("ASR keyterms must be non-empty and at most 200 characters")
+        if len(normalized) != len(set(normalized)):
+            raise ValueError("ASR keyterms must be unique")
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_provider_dependencies(self) -> BotConfigFields:
+        """Reject combinations unsupported by the selected ASR and TTS models."""
+        if self.asr_model == "flux-general-en" and self.asr_language_hints:
+            raise ValueError("Language hints require Automatic language detection")
+        if self.tts_provider == "elevenlabs" and not 0.7 <= self.tts_speed <= 1.2:
+            raise ValueError("ElevenLabs speed must be between 0.7 and 1.2")
+        if self.tts_model == "eleven_v3" and self.tts_dynamic_speed_enabled:
+            raise ValueError("Eleven v3 does not support conversational speed control")
+        return self
 
 
 class BotCreateRequest(BotConfigFields):

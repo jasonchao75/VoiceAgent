@@ -26,12 +26,22 @@ def create_llm_service(*, api_key: str, config: LLMConfig, system_prompt: str) -
     capability = get_model_capability(config.provider, config.model)
     if config.provider == "google_gemini":
         thinking: GoogleLLMService.ThinkingConfig | None = None
-        if capability and capability.control_name == "thinking_budget":
+        if config.reasoning_mode == "off":
+            thinking = GoogleLLMService.ThinkingConfig(thinking_budget=0, include_thoughts=False)
+        elif (
+            config.reasoning_mode == "minimal"
+            and capability
+            and capability.control_name == "thinking_budget"
+        ):
             assert isinstance(capability.control_value, int)
             thinking = GoogleLLMService.ThinkingConfig(
                 thinking_budget=capability.control_value, include_thoughts=False
             )
-        elif capability and capability.control_name == "thinking_level":
+        elif (
+            config.reasoning_mode == "minimal"
+            and capability
+            and capability.control_name == "thinking_level"
+        ):
             thinking = GoogleLLMService.ThinkingConfig(
                 thinking_level=str(capability.control_value), include_thoughts=False
             )
@@ -40,7 +50,9 @@ def create_llm_service(*, api_key: str, config: LLMConfig, system_prompt: str) -
             settings=GoogleLLMService.Settings(
                 model=config.model,
                 system_instruction=system_prompt,
+                temperature=config.temperature,
                 thinking=thinking,
+                max_tokens=config.max_response_tokens,
             ),
             retry_timeout_secs=config.timeout_seconds,
             retry_on_timeout=False,
@@ -49,7 +61,13 @@ def create_llm_service(*, api_key: str, config: LLMConfig, system_prompt: str) -
 
     if config.provider in {"openai", "custom"}:
         extra: dict[str, object] = {}
-        if capability and capability.control_name == "reasoning_effort":
+        if config.reasoning_mode == "off":
+            extra["reasoning_effort"] = "none"
+        elif (
+            config.reasoning_mode == "minimal"
+            and capability
+            and capability.control_name == "reasoning_effort"
+        ):
             extra["reasoning_effort"] = capability.control_value
         return OpenAILLMService(
             api_key=api_key,
@@ -60,6 +78,8 @@ def create_llm_service(*, api_key: str, config: LLMConfig, system_prompt: str) -
             settings=OpenAILLMService.Settings(
                 model=config.model,
                 system_instruction=system_prompt,
+                temperature=config.temperature,
+                max_completion_tokens=config.max_response_tokens,
                 extra=extra,
             ),
         )

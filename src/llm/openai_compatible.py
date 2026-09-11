@@ -31,5 +31,7 @@ def create_openai_compatible_llm(
         settings=OpenAILLMService.Settings(
             model=config.model,
             system_instruction=system_prompt,
+            temperature=config.temperature,
+            max_completion_tokens=config.max_response_tokens,
         ),
     )

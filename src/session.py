@@ -12,6 +12,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 from src.config import (
+    ASRConfig,
     LLMConfig,
     LLMProviderCatalog,
     RuntimeConfig,
@@ -24,6 +25,7 @@ class SessionRequest(BaseModel):
     """Initial session request; secret values are masked in repr and serialization."""
 
     model_config = ConfigDict(extra="forbid")
+    session_type: Literal["web_call", "chat_test"] = "web_call"
 
     deepgram_api_key: SecretStr = Field(min_length=8, max_length=500)
     llm_api_key: SecretStr = Field(min_length=8, max_length=500)
@@ -31,15 +33,32 @@ class SessionRequest(BaseModel):
     llm_provider: str = Field(min_length=1, max_length=50)
     llm_base_url: str = Field(min_length=8, max_length=500)
     llm_model: str = Field(min_length=1, max_length=200)
-    reasoning_mode: Literal["lowest_latency"] = "lowest_latency"
+    llm_temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    reasoning_mode: Literal["provider_default", "off", "minimal"] = "provider_default"
+    llm_max_response_tokens: int = Field(default=250, ge=1, le=32768)
+    llm_request_timeout_seconds: float = Field(default=15.0, ge=3.0, le=60.0)
     system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
+    fallback_script: str = Field(default="", max_length=2000)
+    asr_model: Literal["flux-general-en", "flux-general-multi"] = "flux-general-en"
+    asr_language_hints: list[
+        Literal["en", "es", "fr", "de", "hi", "ru", "pt", "ja", "it", "nl"]
+    ] = Field(default_factory=list, max_length=10)
+    asr_eot_threshold: float = Field(default=0.7, ge=0.5, le=1.0)
+    asr_eot_timeout_ms: int = Field(default=5000, ge=500, le=60000)
+    asr_keyterms: list[str] = Field(default_factory=list, max_length=100)
+    asr_profanity_filter: bool = False
+    asr_numerals: bool = False
+    asr_redact: Literal["numbers", "aggressive_numbers"] | None = None
     flux_voice: str = Field(min_length=8, max_length=100)
     tts_provider: Literal["deepgram_flux", "elevenlabs"] = "deepgram_flux"
     tts_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
     tts_text_aggregation: Literal["token", "sentence"] = "token"
-    tts_speed: float = Field(default=1.0, ge=0.7, le=1.2, multiple_of=0.05)
+    tts_speed: float = Field(default=1.0, ge=0.5, le=1.5, multiple_of=0.05)
+    tts_dynamic_speed_enabled: bool = False
+    tts_speed_step: float = Field(default=0.10, ge=0.05, le=0.25, multiple_of=0.05)
     tts_expressivity: Literal[-2, -1, 0, 1, 2] = 0
+    tts_model_improvement_opt_out: bool = False
     tts_stability: float = Field(default=0.5, ge=0, le=1)
     tts_similarity_boost: float = Field(default=0.8, ge=0, le=1)
     tts_style: float = Field(default=0.0, ge=0, le=1)
@@ -69,6 +88,7 @@ class BotSessionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     bot_id: str = Field(min_length=1, max_length=100)
+    session_type: Literal["web_call", "chat_test"] = "web_call"
     deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
@@ -100,9 +120,11 @@ class SessionConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     llm: LLMConfig
+    asr: ASRConfig
     tts: TTSConfig
     system_prompt: str
     opening_script: str
+    fallback_script: str
 
 
 @dataclass(slots=True, repr=False)
@@ -128,6 +150,7 @@ class SessionLease:
     token: str
     credentials: SessionCredentials
     config: SessionConfig
+    session_type: Literal["web_call", "chat_test"]
     created_at: float
     expires_at: float
     claimed: bool = False
@@ -209,6 +232,7 @@ class SessionStore:
                     elevenlabs_api_key=request.elevenlabs_api_key,
                 ),
                 config=session_config,
+                session_type=request.session_type,
                 created_at=now,
                 expires_at=now + self._token_ttl_seconds,
             )
@@ -301,6 +325,8 @@ def build_session_config(
             raise ValueError("Select a Flux voice from the server catalog")
         if request.tts_model != "flux-general-en":
             raise ValueError("Unsupported Deepgram Flux TTS model")
+        if not 0.5 <= request.tts_speed <= 1.5:
+            raise ValueError("Deepgram Flux speed must be between 0.5 and 1.5")
     else:
         if request.elevenlabs_api_key is None:
             raise ValueError("ElevenLabs API key is required for ElevenLabs TTS")
@@ -313,6 +339,11 @@ def build_session_config(
             raise ValueError("Unsupported ElevenLabs TTS model")
         if request.tts_model == "eleven_v3" and request.tts_stability not in {0.0, 0.5, 1.0}:
             raise ValueError("Eleven v3 stability must be Creative, Natural, or Robust")
+        if request.tts_model == "eleven_v3" and request.tts_dynamic_speed_enabled:
+            raise ValueError("Eleven v3 does not support conversational speed control")
+
+    if request.asr_model == "flux-general-en" and request.asr_language_hints:
+        raise ValueError("Language hints require Automatic language detection")
 
     providers = {provider.id: provider for provider in llm_catalog.providers}
     provider = providers.get(request.llm_provider)
@@ -328,8 +359,10 @@ def build_session_config(
         provider=provider.id,
         base_url=base_url,
         model=request.llm_model.strip(),
+        temperature=request.llm_temperature,
         reasoning_mode=request.reasoning_mode,
-        timeout_seconds=runtime.llm.timeout_seconds,
+        max_response_tokens=request.llm_max_response_tokens,
+        timeout_seconds=request.llm_request_timeout_seconds,
     )
     tts = TTSConfig(
         provider=request.tts_provider,
@@ -337,7 +370,10 @@ def build_session_config(
         model=request.tts_model,
         text_aggregation=request.tts_text_aggregation,
         speed=request.tts_speed,
+        dynamic_speed_enabled=request.tts_dynamic_speed_enabled,
+        speed_step=request.tts_speed_step,
         expressivity=request.tts_expressivity,
+        model_improvement_opt_out=request.tts_model_improvement_opt_out,
         stability=request.tts_stability,
         similarity_boost=request.tts_similarity_boost,
         style=request.tts_style,
@@ -346,7 +382,19 @@ def build_session_config(
     )
     return SessionConfig(
         llm=llm,
+        asr=ASRConfig(
+            model=request.asr_model,
+            language_hints=request.asr_language_hints,
+            eager_eot_threshold=None,
+            eot_threshold=request.asr_eot_threshold,
+            eot_timeout_ms=request.asr_eot_timeout_ms,
+            keyterms=request.asr_keyterms,
+            profanity_filter=request.asr_profanity_filter,
+            numerals=request.asr_numerals,
+            redact=request.asr_redact,
+        ),
         tts=tts,
         system_prompt=request.system_prompt.strip(),
         opening_script=request.opening_script.strip(),
+        fallback_script=request.fallback_script.strip(),
     )

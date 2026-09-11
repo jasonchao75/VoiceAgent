@@ -156,8 +156,9 @@ class BrowserEvent(BaseModel):
     """Whitelisted browser playback event used for interruption timing."""
 
     model_config = ConfigDict(extra="forbid")
-    event: str = Field(pattern="^(first_playback|audio_stopped|browser_interruption)$")
+    event: str = Field(pattern="^(first_playback|audio_stopped|browser_interruption|chat_text)$")
     elapsed_ms: float = Field(ge=0, le=7_200_000)
+    text: str | None = Field(default=None, max_length=10000)
 
 
 class VoiceDiscoveryRequest(BaseModel):
@@ -302,6 +303,44 @@ def create_app() -> FastAPI:
             },
             "flux_voices": voices.model_dump(),
             "llm_providers": llm_providers.model_dump(),
+            "asr_providers": {
+                "providers": [
+                    {
+                        "id": "deepgram_flux",
+                        "name": "Deepgram",
+                        "models": [
+                            {
+                                "id": "flux_asr",
+                                "name": "Flux ASR",
+                                "languages": [
+                                    {
+                                        "id": "english",
+                                        "name": "English",
+                                        "provider_model": "flux-general-en",
+                                    },
+                                    {
+                                        "id": "automatic",
+                                        "name": "Automatic",
+                                        "provider_model": "flux-general-multi",
+                                    },
+                                ],
+                                "language_hints": [
+                                    "en",
+                                    "es",
+                                    "fr",
+                                    "de",
+                                    "hi",
+                                    "ru",
+                                    "pt",
+                                    "ja",
+                                    "it",
+                                    "nl",
+                                ],
+                            }
+                        ],
+                    }
+                ]
+            },
         }
 
     def _config_fields(request: BotCreateRequest | BotUpdateRequest) -> BotConfigFields:
@@ -478,22 +517,38 @@ def create_app() -> FastAPI:
                     detail="This bot uses ElevenLabs; provide an ElevenLabs API key",
                 )
         return SessionRequest(
+            session_type=request.session_type,
             deepgram_api_key=deepgram_key,
             llm_api_key=llm_key,
             elevenlabs_api_key=elevenlabs_key,
             llm_provider=record.llm_provider,
             llm_base_url=record.llm_base_url,
             llm_model=record.llm_model,
+            llm_temperature=record.llm_temperature,
             reasoning_mode=record.reasoning_mode,
+            llm_max_response_tokens=record.llm_max_response_tokens,
+            llm_request_timeout_seconds=record.llm_request_timeout_seconds,
             system_prompt=record.system_prompt,
             opening_script=record.opening_script,
+            fallback_script=record.fallback_script,
+            asr_model=record.asr_model,
+            asr_language_hints=record.asr_language_hints,
+            asr_eot_threshold=record.asr_eot_threshold,
+            asr_eot_timeout_ms=record.asr_eot_timeout_ms,
+            asr_keyterms=record.asr_keyterms,
+            asr_profanity_filter=record.asr_profanity_filter,
+            asr_numerals=record.asr_numerals,
+            asr_redact=record.asr_redact,
             flux_voice=record.tts_voice,
             tts_provider=record.tts_provider,
             tts_model=record.tts_model,
             tts_text_aggregation=record.tts_text_aggregation
             or ("sentence" if record.tts_provider == "elevenlabs" else "token"),
             tts_speed=record.tts_speed,
+            tts_dynamic_speed_enabled=record.tts_dynamic_speed_enabled,
+            tts_speed_step=record.tts_speed_step,
             tts_expressivity=record.tts_expressivity,
+            tts_model_improvement_opt_out=record.tts_model_improvement_opt_out,
             tts_stability=record.tts_stability,
             tts_similarity_boost=record.tts_similarity_boost,
             tts_style=record.tts_style,
@@ -593,6 +648,12 @@ def create_app() -> FastAPI:
                 base_url=record.llm_base_url,
                 model=record.llm_model,
                 api_key=key.get_secret_value(),
+                temperature=(
+                    request.llm_temperature
+                    if request.llm_temperature is not None
+                    else record.llm_temperature
+                ),
+                reasoning_mode=request.reasoning_mode or record.reasoning_mode,
                 timeout=runtime.llm.timeout_seconds,
             )
 
@@ -614,6 +675,10 @@ def create_app() -> FastAPI:
             llm_provider=request.llm_provider,
             llm_base_url=request.llm_base_url,
             llm_model=request.llm_model,
+            llm_temperature=(
+                request.llm_temperature if request.llm_temperature is not None else 0.7
+            ),
+            reasoning_mode=request.reasoning_mode or "provider_default",
             system_prompt="Diagnostic only.",
             opening_script="",
             flux_voice=runtime.tts.voice,
@@ -629,6 +694,8 @@ def create_app() -> FastAPI:
             base_url=validated.llm.base_url,
             model=validated.llm.model,
             api_key=request.llm_api_key.get_secret_value(),
+            temperature=validated.llm.temperature,
+            reasoning_mode=validated.llm.reasoning_mode,
             timeout=validated.llm.timeout_seconds,
         )
 
@@ -679,14 +746,15 @@ def create_app() -> FastAPI:
             call_id=lease.session_id,
             bot_id=bot_id,
             bot_name=bot_name,
+            session_type=lease.session_type,
             llm_provider=lease.config.llm.provider,
             llm_model=lease.config.llm.model,
             tts_provider=lease.config.tts.provider,
             tts_model=lease.config.tts.model,
             tts_voice=lease.config.tts.voice,
             tts_text_aggregation=lease.config.tts.text_aggregation,
-            asr_provider=runtime.asr.provider,
-            asr_model=runtime.asr.model,
+            asr_provider=lease.config.asr.provider,
+            asr_model=lease.config.asr.model,
             language=runtime.language,
             sample_rate=runtime.audio.input_sample_rate,
             channels=runtime.audio.channels,
@@ -712,7 +780,10 @@ def create_app() -> FastAPI:
         event_buffers[session_id].add(event.event, event.elapsed_ms)
         capture = call_captures.get(session_id)
         if capture is not None:
-            capture.browser_event(event.event, event.elapsed_ms)
+            if event.event == "chat_text" and event.text:
+                capture.chat_text(event.text)
+            else:
+                capture.browser_event(event.event, event.elapsed_ms)
         logger.info(
             "browser_event session_id=%s event=%s elapsed_ms=%.1f",
             lease.session_id,
@@ -731,6 +802,22 @@ def create_app() -> FastAPI:
             ) from None
         return {"events": event_buffers[session_id].snapshot()}
 
+    @app.get("/api/sessions/{session_id}/metrics")
+    async def session_metrics(session_id: str, request: Request) -> dict[str, object]:
+        """Return in-progress Turn metrics for adjacent live-test rendering."""
+        token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        try:
+            lease = await store.get_active(session_id=session_id, token=token)
+        except SessionTokenError:
+            raise HTTPException(
+                status_code=401, detail="Session authorization is invalid"
+            ) from None
+        capture = call_captures.get(session_id)
+        return {
+            "session_type": lease.session_type,
+            "metrics": [] if capture is None else capture.metrics_snapshot(),
+        }
+
     @app.websocket("/api/ws/{token}")
     async def voice_websocket(websocket: WebSocket, token: str) -> None:
         try:
@@ -741,13 +828,20 @@ def create_app() -> FastAPI:
             return
 
         await websocket.accept()
+        is_chat = lease.session_type == "chat_test"
         recording_path = history_store.recordings_dir / f"{uuid.uuid4()}.flac"
-        recorder = AudioRecorder(recording_path, sample_rate=runtime.audio.input_sample_rate)
-        await recorder.start()
+        recorder = (
+            None
+            if is_chat
+            else AudioRecorder(recording_path, sample_rate=runtime.audio.input_sample_rate)
+        )
+        if recorder is not None:
+            await recorder.start()
         capture = CallCapture(
             provider=lease.config.llm.provider,
             model=lease.config.llm.model,
             recorder=recorder,
+            chat_mode=is_chat,
         )
         call_captures[lease.session_id] = capture
         call_status = "completed"
@@ -783,16 +877,18 @@ def create_app() -> FastAPI:
                 await websocket.close(code=1011, reason="Voice service error")
         finally:
             try:
-                await recorder.stop()
+                if recorder is not None:
+                    await recorder.stop()
                 turns, metrics = capture.finalize()
+                recording_status = "not_applicable" if recorder is None else recorder.status
                 await history_store.finish_call(
                     call_id=lease.session_id,
                     status=call_status,
                     duration_ms=(time.monotonic() - capture.started) * 1000,
                     turns=turns,
                     metrics=metrics,
-                    recording_path=recording_path,
-                    recording_status=recorder.status,
+                    recording_path=None if is_chat else recording_path,
+                    recording_status=recording_status,
                     error_category=error_category,
                     diagnostic_id=diagnostic_id,
                 )

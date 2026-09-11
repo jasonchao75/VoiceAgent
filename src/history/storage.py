@@ -44,6 +44,7 @@ class HistoryStore:
                     id TEXT PRIMARY KEY,
                     bot_id TEXT,
                     bot_name TEXT,
+                    session_type TEXT NOT NULL DEFAULT 'web_call',
                     started_at TEXT NOT NULL,
                     ended_at TEXT,
                     status TEXT NOT NULL,
@@ -109,6 +110,7 @@ class HistoryStore:
     async def _migrate_calls(self, database: aiosqlite.Connection) -> None:
         """Add provider-neutral TTS snapshot columns idempotently."""
         for column_def in (
+            "session_type TEXT NOT NULL DEFAULT 'web_call'",
             "tts_provider TEXT NOT NULL DEFAULT 'deepgram_flux'",
             "tts_model TEXT NOT NULL DEFAULT 'flux-general-en'",
             "tts_voice TEXT NOT NULL DEFAULT ''",
@@ -143,6 +145,7 @@ class HistoryStore:
         call_id: str,
         bot_id: str | None,
         bot_name: str | None,
+        session_type: str = "web_call",
         llm_provider: str,
         llm_model: str,
         tts_provider: str = "deepgram_flux",
@@ -159,14 +162,15 @@ class HistoryStore:
         async with aiosqlite.connect(self.database_path) as database:
             await database.execute(
                 """INSERT INTO calls (
-                    id, bot_id, bot_name, started_at, status, llm_provider, llm_model,
+                    id, bot_id, bot_name, session_type, started_at, status, llm_provider, llm_model,
                     tts_provider, tts_model, tts_voice, tts_text_aggregation,
                     asr_provider, asr_model, language, audio_format, sample_rate, channels
-                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'flac', ?, ?)""",
+                ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'flac', ?, ?)""",
                 (
                     call_id,
                     bot_id,
                     bot_name,
+                    session_type,
                     datetime.now(UTC).isoformat(),
                     llm_provider,
                     llm_model,
@@ -414,6 +418,7 @@ def _summary(row: aiosqlite.Row) -> CallSummary:
         id=row["id"],
         bot_id=row["bot_id"],
         bot_name=row["bot_name"],
+        session_type=row["session_type"],
         started_at=row["started_at"],
         ended_at=row["ended_at"],
         status=row["status"],

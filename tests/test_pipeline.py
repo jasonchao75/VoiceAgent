@@ -103,6 +103,10 @@ class _FakeRegistry:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("opening_script, expected_frames", [("Hello there.", 1), ("", 0)])
+@pytest.mark.parametrize(
+    "session_type, expected_audio_input, expected_stt_calls",
+    [("web_call", True, 1), ("chat_test", False, 0)],
+)
 async def test_pipeline_order_and_opening_behavior_without_paid_apis(
     monkeypatch: pytest.MonkeyPatch,
     session_request: SessionRequest,
@@ -111,11 +115,15 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
     llm_catalog: LLMProviderCatalog,
     opening_script: str,
     expected_frames: int,
+    session_type: str,
+    expected_audio_input: bool,
+    expected_stt_calls: int,
 ) -> None:
-    """Build the seven-stage cascade and verify assistant-first/user-first behavior."""
+    """Build the mode-specific cascade and verify opening behavior without providers."""
+    request = session_request.model_copy(update={"session_type": session_type})
     store = SessionStore(token_ttl_seconds=120, max_sessions=1)
     pending = await store.create(
-        request=session_request,
+        request=request,
         runtime=runtime_config,
         voice_catalog=voice_catalog,
         llm_catalog=llm_catalog,
@@ -128,9 +136,20 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
     fake_worker = _FakeWorker()
     stt, user_aggregator, llm, tts, assistant_aggregator = (object() for _ in range(5))
     captured_pipeline: list[object] = []
+    captured_transport_params: list[Any] = []
+    stt_calls = 0
 
-    monkeypatch.setattr(voice_agent, "FastAPIWebsocketTransport", lambda **_kwargs: fake_transport)
-    monkeypatch.setattr(voice_agent, "create_flux_stt", lambda **_kwargs: stt)
+    def fake_transport_factory(**kwargs: Any) -> _FakeTransport:
+        captured_transport_params.append(kwargs["params"])
+        return fake_transport
+
+    def fake_stt_factory(**_kwargs: Any) -> object:
+        nonlocal stt_calls
+        stt_calls += 1
+        return stt
+
+    monkeypatch.setattr(voice_agent, "FastAPIWebsocketTransport", fake_transport_factory)
+    monkeypatch.setattr(voice_agent, "create_flux_stt", fake_stt_factory)
     monkeypatch.setattr(voice_agent, "create_llm_service", lambda **_kwargs: llm)
     monkeypatch.setattr(voice_agent, "LLMContext", lambda: fake_context)
     monkeypatch.setattr(
@@ -155,15 +174,19 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
         event_buffer=SessionEventBuffer(),
     )
 
-    assert captured_pipeline == [
+    expected_pipeline = [
         fake_transport.input_processor,
-        stt,
         user_aggregator,
         llm,
         tts,
         fake_transport.output_processor,
         assistant_aggregator,
     ]
+    if session_type == "web_call":
+        expected_pipeline.insert(1, stt)
+    assert captured_pipeline == expected_pipeline
+    assert captured_transport_params[0].audio_in_enabled is expected_audio_input
+    assert stt_calls == expected_stt_calls
     assert len(fake_worker.queued) == expected_frames
     if opening_script:
         assert isinstance(fake_worker.queued[0], TTSSpeakFrame)

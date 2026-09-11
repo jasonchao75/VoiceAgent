@@ -27,6 +27,22 @@ VALID_CONFIG = {
     "opening_script": "Hi there!",
 }
 
+
+def test_bot_persists_llm_limits_and_fallback_script(client: TestClient) -> None:
+    """Per-Bot LLM limits and fallback behavior must round-trip through the API."""
+    bot = _create_bot(
+        client,
+        llm_max_response_tokens=512,
+        llm_temperature=0.3,
+        llm_request_timeout_seconds=12,
+        fallback_script="Please try again in a moment.",
+    )
+    assert bot["llm_max_response_tokens"] == 512
+    assert bot["llm_temperature"] == 0.3
+    assert bot["llm_request_timeout_seconds"] == 12
+    assert bot["fallback_script"] == "Please try again in a moment."
+
+
 DEEPGRAM_KEY = "dg-test-key-0000000001"
 LLM_KEY = "llm-test-key-0000000001"
 ELEVENLABS_KEY = "elevenlabs-test-key-0000000001"
@@ -190,8 +206,11 @@ def test_bot_validation_uses_catalogs(client: TestClient) -> None:
     )
     assert response.status_code == 400
 
-    response = client.post("/api/bots", json={**VALID_CONFIG, "tts_speed": 1.2}, headers=ORIGIN)
-    assert response.status_code == 400
+    response = client.post("/api/bots", json={**VALID_CONFIG, "tts_speed": 1.5}, headers=ORIGIN)
+    assert response.status_code == 201
+
+    response = client.post("/api/bots", json={**VALID_CONFIG, "tts_speed": 1.55}, headers=ORIGIN)
+    assert response.status_code == 422
 
     response = client.post(
         "/api/bots", json={**VALID_CONFIG, "tts_expressivity": 1.5}, headers=ORIGIN

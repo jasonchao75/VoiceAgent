@@ -28,5 +28,12 @@ def create_flux_stt(
             eager_eot_threshold=config.eager_eot_threshold,
             eot_threshold=config.eot_threshold,
             eot_timeout_ms=config.eot_timeout_ms,
+            language_hints=config.language_hints or None,
+            keyterm=config.keyterms,
+            numerals=config.numerals,
+            extra={
+                "profanity_filter": config.profanity_filter,
+                **({"redact": config.redact} if config.redact else {}),
+            },
         ),
     )

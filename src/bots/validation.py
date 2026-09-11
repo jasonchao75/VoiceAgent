@@ -31,6 +31,10 @@ def validate_bot_config(
     """
     if config.asr_provider not in SUPPORTED_ASR_PROVIDERS:
         raise ValueError("Unsupported ASR provider")
+    if config.asr_model not in {"flux-general-en", "flux-general-multi"}:
+        raise ValueError("Unsupported Flux ASR model")
+    if config.asr_model == "flux-general-en" and config.asr_language_hints:
+        raise ValueError("Language hints require Automatic language detection")
     if config.tts_provider not in tts_providers:
         raise ValueError("Unsupported TTS provider")
     if config.tts_provider == "deepgram_flux":
@@ -39,8 +43,8 @@ def validate_bot_config(
             raise ValueError("Select a TTS voice from the server catalog")
         if config.tts_model != "flux-general-en":
             raise ValueError("Unsupported Deepgram Flux TTS model")
-        if not 0.85 <= config.tts_speed <= 1.15:
-            raise ValueError("Deepgram Flux speed must be between 0.85 and 1.15")
+        if not 0.5 <= config.tts_speed <= 1.5:
+            raise ValueError("Deepgram Flux speed must be between 0.5 and 1.5")
     elif config.tts_provider == "elevenlabs":
         if config.tts_model not in {
             "eleven_flash_v2_5",
@@ -51,6 +55,8 @@ def validate_bot_config(
             raise ValueError("Unsupported ElevenLabs TTS model")
         if config.tts_model == "eleven_v3" and config.tts_stability not in {0.0, 0.5, 1.0}:
             raise ValueError("Eleven v3 stability must be Creative, Natural, or Robust")
+        if config.tts_model == "eleven_v3" and config.tts_dynamic_speed_enabled:
+            raise ValueError("Eleven v3 does not support conversational speed control")
         if not config.tts_voice.strip() or len(config.tts_voice) > 100:
             raise ValueError("Enter a valid ElevenLabs voice ID")
 

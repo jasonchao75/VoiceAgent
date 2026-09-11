@@ -18,6 +18,7 @@
     "provider": "openai",
     "base_url": "https://api.openai.com/v1",
     "model": "gpt-4.1-mini",
+    "reasoning_mode": "provider_default",
     "timeout_seconds": 15.0
   },
   "tts": {

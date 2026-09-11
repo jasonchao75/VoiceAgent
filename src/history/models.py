@@ -46,6 +46,7 @@ class CallSummary(BaseModel):
     id: str
     bot_id: str | None
     bot_name: str | None
+    session_type: str = "web_call"
     started_at: str
     ended_at: str | None
     status: str

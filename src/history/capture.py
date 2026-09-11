@@ -49,6 +49,7 @@ class CallCapture:
     provider: str
     model: str
     recorder: AudioRecorder | None = None
+    chat_mode: bool = False
     started: float = field(default_factory=time.monotonic)
     turns: list[HistoryTurn] = field(default_factory=list)
     _current: _TurnState = field(default_factory=lambda: _TurnState(index=0))
@@ -136,9 +137,26 @@ class CallCapture:
             # timestamp is still logged separately for client-side telemetry.
             self._current.browser_playback_ms = self.elapsed_ms()
 
+    def chat_text(self, text: str) -> None:
+        """Start a text-input turn so Chat test reuses LLM and TTS capture."""
+        elapsed = self.elapsed_ms()
+        self._flush_assistant(elapsed)
+        if self._has_user_content(self._current):
+            self._states.append(self._current)
+        self._current = _TurnState(index=len(self._states))
+        self._current.user_stop_ms = elapsed
+        self._current.asr_final_ms = elapsed
+        self.turns.append(
+            HistoryTurn(sequence=len(self.turns), role="user", text=text, created_ms=elapsed)
+        )
+
     def finalize(self) -> tuple[list[HistoryTurn], list[TurnMetric]]:
         """Flush final assistant text and return immutable snapshots."""
         self._flush_assistant(self.elapsed_ms())
+        return list(self.turns), self.metrics_snapshot()
+
+    def metrics_snapshot(self) -> list[TurnMetric]:
+        """Return current Turn metrics without closing or mutating the capture."""
         states = [s for s in [*self._states, self._current] if self._has_user_content(s)]
         capability = get_model_capability(self.provider, self.model)
         control = None
@@ -158,7 +176,7 @@ class CallCapture:
             # The breakdown is a telescoping chain; summing the parts guarantees it
             # equals the end-to-end latency even after per-step rounding.
             breakdown = [
-                asr_final_latency,
+                *([] if self.chat_mode else [asr_final_latency]),
                 llm_request_splicing,
                 llm_first_token,
                 tts_initial,
@@ -189,7 +207,7 @@ class CallCapture:
                     reasoning_control=control,
                 )
             )
-        return list(self.turns), metrics
+        return metrics
 
     def _capture_asr_latency(self, frame: TranscriptionFrame) -> None:
         """Measure Flux EOT latency from its final word timing and audio clock."""
