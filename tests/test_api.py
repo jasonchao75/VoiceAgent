@@ -1,7 +1,5 @@
 """Non-paid FastAPI contract and secret-safe error tests."""
 
-import base64
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -114,25 +112,53 @@ def test_byok_rejects_unapproved_page_origin() -> None:
     assert response.status_code == 403
 
 
-def test_basic_auth_protects_public_routes_but_not_health(
+def test_product_login_protects_routes_without_native_auth_challenge(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Public demos should challenge page/API requests without hiding health checks."""
+    """The product login should issue a secure Cookie and never request native Basic Auth."""
     username = "demo-user"
     password = "test-password-long-enough"
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_USERNAME", username)
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", password)
-    token = base64.b64encode(f"{username}:{password}".encode()).decode()
 
-    with TestClient(create_app()) as client:
+    with TestClient(create_app(), base_url="https://testserver") as client:
         health = client.get("/health")
         unauthorized = client.get("/api/catalogs")
-        authorized = client.get("/api/catalogs", headers={"Authorization": f"Basic {token}"})
+        login = client.post(
+            "/api/auth/login",
+            json={"username": username, "password": password, "next": "/?page=sessions"},
+        )
+        authorized = client.get("/api/catalogs")
+        session = client.get("/api/auth/session")
 
     assert health.status_code == 200
     assert unauthorized.status_code == 401
-    assert unauthorized.headers["www-authenticate"].startswith("Basic ")
+    assert "www-authenticate" not in unauthorized.headers
+    assert login.status_code == 200
+    assert login.json()["next"] == "/?page=sessions"
+    assert "HttpOnly" in login.headers["set-cookie"]
+    assert "Secure" in login.headers["set-cookie"]
     assert authorized.status_code == 200
+    assert session.json()["auth_enabled"] is True
+
+
+def test_logout_revokes_website_session(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Logging out should make the old server-side session unusable."""
+    monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_USERNAME", "demo-user")
+    monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", "test-password-long-enough")
+    with TestClient(create_app(), base_url="https://testserver") as client:
+        client.post(
+            "/api/auth/login",
+            json={"username": "demo-user", "password": "test-password-long-enough"},
+        )
+        token = client.cookies.get("voiceagent_demo_session")
+        logout = client.post("/api/auth/logout")
+        rejected = client.get(
+            "/api/catalogs", headers={"Cookie": f"voiceagent_demo_session={token}"}
+        )
+
+    assert logout.status_code == 204
+    assert rejected.status_code == 401
 
 
 def test_session_bearer_failure_does_not_trigger_basic_auth_prompt(
@@ -142,15 +168,19 @@ def test_session_bearer_failure_does_not_trigger_basic_auth_prompt(
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_USERNAME", "demo-user")
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", "test-password-long-enough")
 
-    with TestClient(create_app()) as client:
-        response = client.get(
-            "/api/sessions/not-active/events",
-            headers={"Authorization": "Bearer invalid-session-token"},
-        )
+    with TestClient(create_app(), base_url="https://testserver") as client:
+        responses = [
+            client.get(
+                f"/api/sessions/not-active/{resource}",
+                headers={"Authorization": "Bearer invalid-session-token"},
+            )
+            for resource in ("events", "metrics")
+        ]
 
-    assert response.status_code == 401
-    assert "www-authenticate" not in response.headers
-    assert response.json()["detail"] == "Session authorization is invalid"
+    for response in responses:
+        assert response.status_code == 401
+        assert "www-authenticate" not in response.headers
+        assert response.json()["detail"] == "Session authorization is invalid"
 
 
 def test_basic_auth_rejects_incomplete_or_placeholder_configuration(

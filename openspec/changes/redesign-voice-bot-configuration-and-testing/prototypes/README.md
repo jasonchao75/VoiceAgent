@@ -1,12 +1,13 @@
 # Voice Bot Configuration and Testing Prototype
 
-Status: approved for implementation by the product owner on 2026-09-08
+Status: application prototype approved on 2026-09-08; login prototype approved on 2026-09-10 after removing architecture-specific pipeline copy
 
-Open `index.html` directly in a browser. This is the UI baseline for the componentized Bot editor, component drawers, Chat/Web call tests and Sessions history detail.
+Open `index.html` directly in a browser for the application baseline. Open `login.html` for the confirmed product-owned login direction. Together they cover the componentized Bot editor, component drawers, Chat/Web call tests, Sessions history detail and website access states.
 
 ## Confirmed product decisions
 
-- Product rail contains only VoiceAgent and supports collapsed/expanded states; account and SIP line management are deferred.
+- The user-facing platform name is `VoiceAgent Demo` everywhere. Product rail supports collapsed/expanded states; account and SIP line management are deferred.
+- Login is a styled `VoiceAgent Demo` page rather than a browser Basic Auth popup. It uses the same visual system, returns to the requested page, and keeps website login separate from call tokens.
 - Bot settings contains only Bot name, Opening message and System prompt. ASR/LLM/TTS configuration and credentials live in non-modal right drawers.
 - Component cards contain configuration facts only; unmeasured latency is not displayed.
 - Top-level Advanced contains only the Bot-level LLM timeout Fallback script; Evaluation, speaking order and prompt generation are deferred.
@@ -25,6 +26,8 @@ Open `index.html` directly in a browser. This is the UI baseline for the compone
 
 | Prototype area | Delta requirement / scenario |
 |---|---|
+| `login.html` identity and form | `bot-config` / Product-owned login experience |
+| Login error/expiry presentation | `bot-config` / Invalid credentials; Website login expires |
 | Product rail, tabs and Bot settings | `bot-config` / Componentized Bot editor |
 | ASR card and drawer | `bot-config` / ASR catalog, WebCall format, Bot-scoped Flux settings |
 | LLM card, Thinking and diagnostic | `bot-config` / LLM Thinking override and connection diagnostic |

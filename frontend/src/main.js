@@ -24,11 +24,11 @@ const app = document.querySelector("#app");
 
 app.innerHTML = `
   <main class="shell">
-    <aside class="product-rail expanded"><button id="toggle-product-rail" type="button" aria-label="Collapse product rail">☰</button><a href="/" aria-label="VoiceAgent"><span>V</span><b>VoiceAgent</b></a></aside>
+    <aside class="product-rail expanded"><button id="toggle-product-rail" type="button" aria-label="Collapse product rail">☰</button><a href="/" aria-label="VoiceAgent Demo home"><span>V</span><b>VoiceAgent Demo</b></a><div class="account-control"><button id="account-avatar" type="button" aria-haspopup="true" aria-expanded="false" aria-label="User menu">V</button><div class="account-menu"><span>Shared demo user</span><button id="logout-button" type="button">Log out</button></div></div></aside>
     <header class="topbar">
-      <a class="brand" href="/" aria-label="Flux Voice Lab home">
+      <a class="brand" href="/" aria-label="VoiceAgent Demo home">
         <span class="brand-mark"><i></i><i></i><i></i></span>
-        <span>VoiceAgent</span>
+        <span>VoiceAgent Demo</span>
       </a>
       <div class="environment"><span class="status-dot"></span>Local test environment</div>
     </header>
@@ -37,6 +37,7 @@ app.innerHTML = `
       <button type="button" data-page="sessions">Sessions</button>
       <button type="button" data-page="advanced">Advanced</button>
     </nav>
+    <aside id="session-expiry" class="session-expiry" role="status" hidden><span>Your login will expire in 5 minutes.</span><button id="continue-session" type="button">Stay signed in</button></aside>
     <section id="advanced-empty" class="advanced-empty" hidden>
       <p class="eyebrow">Bot behavior</p><h2>Advanced settings</h2>
       <p id="advanced-bot-context" class="advanced-bot-context">Select a Bot to configure its advanced behavior.</p>
@@ -603,6 +604,10 @@ const elements = {
   useManualVoice: document.querySelector("#use-manual-voice"),
   productRail: document.querySelector(".product-rail"),
   toggleProductRail: document.querySelector("#toggle-product-rail"),
+  accountAvatar: document.querySelector("#account-avatar"),
+  logoutButton: document.querySelector("#logout-button"),
+  sessionExpiry: document.querySelector("#session-expiry"),
+  continueSession: document.querySelector("#continue-session"),
 };
 
 let catalogs;
@@ -626,6 +631,8 @@ let testMode = "web_call";
 let clientReady = false;
 let playbackReportPromise;
 let historyItems = [];
+let authWarningTimer;
+let recentUserActivityAt = Date.now();
 
 function setSessionState(state, label) {
   elements.state.dataset.state = state;
@@ -669,6 +676,10 @@ async function apiRequest(path, { method = "GET", body } = {}) {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+  if (response.status === 401 && !path.startsWith("/api/sessions/")) {
+    redirectToLogin();
+    throw new Error("Website login required");
+  }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     const message = typeof error.detail === "string" ? error.detail : `Request failed (${response.status}).`;
@@ -676,6 +687,51 @@ async function apiRequest(path, { method = "GET", body } = {}) {
   }
   if (response.status === 204) return undefined;
   return response.json();
+}
+
+function redirectToLogin() {
+  const activePage = document.querySelector(".product-tabs button.active")?.dataset.page;
+  if (activePage) sessionStorage.setItem("voiceagent-return-page", activePage);
+  const next = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+  window.location.assign(`/login?expired=1&next=${next}`);
+}
+
+function scheduleAuthWarning(payload) {
+  window.clearTimeout(authWarningTimer);
+  elements.sessionExpiry.hidden = true;
+  if (!payload?.auth_enabled || !payload.idle_expires_at) return;
+  const warningDelay = Math.max(0, payload.idle_expires_at * 1000 - Date.now() - 300000);
+  authWarningTimer = window.setTimeout(() => {
+    elements.sessionExpiry.hidden = false;
+  }, warningDelay);
+}
+
+async function refreshWebsiteSession() {
+  const response = await fetch("/api/auth/session", { headers: { Accept: "application/json" } });
+  if (response.status === 401) {
+    redirectToLogin();
+    return;
+  }
+  if (response.ok) scheduleAuthWarning(await response.json());
+}
+
+function initializeWebsiteSession() {
+  for (const eventName of ["pointerdown", "keydown", "input"]) {
+    document.addEventListener(eventName, () => { recentUserActivityAt = Date.now(); }, { passive: true });
+  }
+  window.setInterval(() => {
+    if (Date.now() - recentUserActivityAt < 300000) refreshWebsiteSession().catch(() => {});
+  }, 300000);
+  elements.continueSession.addEventListener("click", () => refreshWebsiteSession().catch(() => {}));
+  elements.accountAvatar.addEventListener("click", () => {
+    const expanded = elements.accountAvatar.getAttribute("aria-expanded") !== "true";
+    elements.accountAvatar.setAttribute("aria-expanded", String(expanded));
+  });
+  elements.logoutButton.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    window.location.assign("/login");
+  });
+  refreshWebsiteSession().catch(() => {});
 }
 
 function diagnosticPayload(kind) {
@@ -2303,6 +2359,7 @@ elements.closeHistory.addEventListener("click", (event) => {
 });
 
 async function boot() {
+  initializeWebsiteSession();
   initializeComponentEditor();
   initializePrototypeLayout();
   try {
@@ -2330,6 +2387,11 @@ async function boot() {
     await loadHistory();
     if (selectedBot()) openEditor(selectedBot());
     else openEditor(null);
+    const returnPage = sessionStorage.getItem("voiceagent-return-page");
+    if (returnPage) {
+      sessionStorage.removeItem("voiceagent-return-page");
+      document.querySelector(`.product-tabs button[data-page="${returnPage}"]`)?.click();
+    }
   } catch {
     showError("Could not load your bots. Reload the page to try again.");
   }

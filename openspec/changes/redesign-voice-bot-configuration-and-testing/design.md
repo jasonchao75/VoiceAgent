@@ -55,6 +55,55 @@ This Change is High risk because it changes navigation, three provider drawers, 
 2. **Gate 2 — static shell:** render fixture data without provider calls; compare page geometry, component hierarchy, control types and responsive direction. Business wiring remains out of scope for this review.
 3. **Gate 3 — final:** cover loading/empty/error/disabled/long-content/provider states, functional tests and accessibility checks; generate actual screenshots and diffs. User acceptance remains mandatory.
 
+## Product login flow (supplement pending confirmation)
+
+Product confirmed the shared-account, idle-expiry, return-path and avatar/logout decisions. The public product name is `VoiceAgent Demo` across the login page, document title, navigation brand and user-facing metadata. Historical names such as `Flux Agent Platform` and `Flux Voice Lab` must not remain visible.
+
+### What problem this solves
+
+The current production site uses the browser's built-in login dialog. After the user has logged in, Chat test requests Turn metrics with a short-lived call token. That request carries `Authorization: Bearer ...`, so it cannot simultaneously carry the page's Basic Auth value. The current middleware exempts `/events` but accidentally still challenges `/metrics`; the browser sees that challenge and opens the native login dialog again.
+
+Adding only a visually separate login page would not fix that header collision. The login mechanism must change with the page.
+
+### User-visible flow
+
+1. A visitor opens any protected VoiceAgent URL.
+2. If there is no valid login session, VoiceAgent shows its own full-page login screen instead of a browser popup.
+3. The visitor enters the same deployment-level shared username and password used today.
+4. On success, VoiceAgent returns to the originally requested page and keeps the user signed in with a secure browser Cookie.
+5. Page APIs use that Cookie. Active Chat/Web call telemetry continues to use its separate, short-lived Bearer Token. The two credentials no longer compete for the same header.
+6. When login expires, the next ordinary page/API action returns the user to the login screen with a clear “session expired” message. It must not summon a native browser dialog.
+7. The user can explicitly sign out from the product UI.
+
+### Visual direction
+
+The login screen is a full product page, not a generic browser or admin form. It reuses the platform's dark canvas, restrained green glow/accent, system sans typography, 8–10 px control radius and subtle bordered surfaces. The `VoiceAgent Demo` identity is visually primary; supporting copy explains that this is the protected voice-agent configuration and testing workspace. Desktop uses a balanced identity-and-form composition, while narrow screens collapse to one column without horizontal overflow.
+
+### Responsibilities in plain language
+
+| Part | Responsibility |
+|---|---|
+| Login page | Collect the shared username/password and show success/failure without browser-native prompts |
+| Server login session | Remember that this browser has logged in for a limited time; the Cookie is unreadable to page JavaScript |
+| Page/API protection | Allow logged-in page requests; redirect or return a normal JSON `401` when expired, never a Basic challenge |
+| Call token | Authorize only one active Chat/Web call and its events/metrics; it is not a website login credential |
+| Logout | End the website login session and return to the login page |
+
+### Security and scope boundaries
+
+- Reuse the existing deployment username/password source; do not store credentials in frontend code, localStorage, URLs or logs.
+- Use an `HttpOnly`, `Secure`, `SameSite` Cookie with a signed server-side session value and an explicit expiry.
+- Login errors use one generic message so the page does not reveal whether the username or password was wrong.
+- Apply rate limiting or a bounded retry delay to repeated login failures.
+- State-changing requests must retain same-origin protection; introducing Cookie authentication must not weaken current Origin checks.
+- This remains a shared demo login. Registration, password reset, per-user accounts, roles and audit identity are separate future work.
+
+### Product decisions required before implementation
+
+Recommended defaults are: keep one shared account; expire after 12 hours of inactivity while extending the session during active use; warn five minutes before idle expiry; require fresh login after an absolute maximum of seven days; return to the originally requested page after login; place a user avatar at the bottom of the left rail and reveal `Log out` on hover/focus or touch activation. The shared-account, expiry and return-path choices require product confirmation; the avatar/logout behavior is already confirmed. Cookie signing, route separation, tests and security details are engineering responsibilities and do not require product review unless they change visible behavior.
+
+The avatar menu must remain keyboard and touch accessible: desktop pointer hover may reveal it, but keyboard focus and tapping/clicking the avatar must provide the same action. The menu must not create horizontal overflow in either expanded or collapsed rail states.
+
 ## Proposed visual test design (pending approval)
 
 - Add Playwright only as a frontend dev dependency, not a production dependency.

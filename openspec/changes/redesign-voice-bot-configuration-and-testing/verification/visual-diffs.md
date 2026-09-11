@@ -4,6 +4,8 @@ Status: Gate 1 approved and Gate 2 visual direction accepted. Playwright actual 
 
 | Scenario | Prototype baseline | Actual | Diff | Ratio | Known difference / decision | Result |
 |---|---|---|---|---:|---|---|
+| auth.login.default | Approved `prototypes/login.html` | `actual/gate3.login.desktop-chromium.png` | Automated structural comparison | — | `VoiceAgent Demo` visual direction, field hierarchy and no horizontal overflow | Pass |
+| auth.login.expired | Approved expired-state copy | `actual/gate3.login.narrow-chromium.png` | Automated structural comparison | — | Narrow layout and neutral inactivity-expiry explanation | Pass |
 | bot-settings.asr.english.default | Approved prototype / ASR drawer | `actual/bot-settings.asr.english.default.jpg` | Manual side-by-side | — | Audio input, Advanced control shapes and isolated editable credential card now match the approved structure | Pass (manual) |
 | bot-settings.asr.automatic.hints | Approved Automatic state | `actual/bot-settings.asr.automatic.hints.jpg` | Manual side-by-side | — | Optional ten-language checkbox grid is shown only for Automatic | Pass (manual) |
 | bot-settings.llm.default | Approved prototype / LLM drawer | `actual/bot-settings.llm.default.jpg` | Manual side-by-side | — | Temperature, Advanced fields, component credential and connection test order checked | Pass (manual) |

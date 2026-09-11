@@ -55,6 +55,14 @@
 - Gate 1 确认规格、原型、标注、状态矩阵和 baseline；Gate 2 验收静态页面壳；Gate 3 完成功能、可访问性与视觉回归后提交最终验收。
 - 视觉回归优先采用 Playwright 固定视口截图的轻量方案；新增 dev dependency、CI job 和 baseline 生成命令必须在本 Change 再次确认后实施。
 
+### 登录体验与重复弹窗修复（待补充确认）
+
+- 保留当前“一个共享账号保护演示站”的范围，不扩展为注册、找回密码、用户管理或多角色权限系统。
+- 以产品内登录页替代浏览器原生 Basic Auth 弹窗。登录成功后由浏览器安全 Cookie 维持登录状态；页面 API 与通话内 Bearer Token 各自负责自己的鉴权，不再互相覆盖。
+- 未登录或登录过期时统一回到登录页，并保留用户原本准备访问的位置；任何业务接口或会话指标请求都不得触发浏览器原生登录弹窗。
+- 提供明确的登录失败提示和退出登录入口。登录保持时长、是否保留原访问位置等产品行为先由产品确认，再实现。
+- 全站面向用户的平台名称统一为 `VoiceAgent Demo`，不得继续显示 `Flux Agent Platform`、`Flux Voice Lab` 或其他历史平台名。登录页 MUST 延续现有深色背景、绿色强调色、字体层级、间距与圆角语言，保持与产品主界面一致的设计感。
+
 ## Deferred / Not in Scope
 
 - Evaluation 页面、Bot/Customer speaks first、System prompt 自动生成。
@@ -64,7 +72,7 @@
 
 ## Impact
 
-- Affected specs: `bot-config`, `voice-pipeline`, `call-history`
+- Affected specs: `bot-config`, `voice-pipeline`, `call-history`，以及本 Change 内新增的平台访问契约
 - Affected code: Bot schema/storage/API、capability catalog、Bot editor、LLM diagnostic、Chat/Web call test、Sessions、ASR/TTS adapters、session speed controller、UI tests and observability
 - Provider dependencies: Deepgram Flux ASR、Deepgram Flux TTS `/v2/speak`、ElevenLabs streaming TTS、Custom OpenAI-compatible LLM endpoints
 - Change dependencies: `add-flux-voice-controls` and `add-call-history-and-metrics` establish existing provider controls and retained recording/metric contracts and must be reconciled before archive

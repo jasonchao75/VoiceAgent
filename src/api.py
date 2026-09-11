@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
-import binascii
 import logging
 import os
 import secrets
@@ -19,13 +17,18 @@ import httpx
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
-from starlette.datastructures import Headers
-from starlette.responses import PlainTextResponse
-from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.responses import Response
 
+from src.auth import (
+    AUTH_COOKIE,
+    AuthSessionStore,
+    LoginAttemptLimiter,
+    ProductAuthMiddleware,
+    safe_return_path,
+)
 from src.bots.crypto import BotKeyCipher, StorageKeyError
 from src.bots.models import (
     BotConfigFields,
@@ -65,71 +68,6 @@ logging.basicConfig(
 )
 
 
-class BasicAuthMiddleware:
-    """Protect public HTTP routes while leaving health and tokenized WebSockets usable."""
-
-    def __init__(self, app: ASGIApp, *, username: str, password: str) -> None:
-        """Initialize constant-time Basic Auth checks.
-
-        Args:
-            app: Wrapped ASGI application.
-            username: Deployment-only HTTP Basic username.
-            password: Deployment-only HTTP Basic password.
-        """
-        self._app = app
-        self._username = username
-        self._password = password
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        """Challenge unauthorized HTTP requests and pass other scopes through."""
-        if (
-            scope["type"] != "http"
-            or scope.get("path") == "/health"
-            or self._uses_session_bearer_auth(scope)
-        ):
-            await self._app(scope, receive, send)
-            return
-
-        authorization = Headers(scope=scope).get("authorization", "")
-        if self._is_authorized(authorization):
-            await self._app(scope, receive, send)
-            return
-
-        response = PlainTextResponse(
-            "Authentication required",
-            status_code=401,
-            headers={"WWW-Authenticate": 'Basic realm="VoiceAgent Demo", charset="UTF-8"'},
-        )
-        await response(scope, receive, send)
-
-    @staticmethod
-    def _uses_session_bearer_auth(scope: Scope) -> bool:
-        """Leave session telemetry authorization to its single-use bearer token.
-
-        Basic Auth must not challenge these requests because browsers interpret
-        that challenge as a fresh login prompt, even when a valid bearer token
-        was supplied by the active voice session.
-        """
-        parts = scope.get("path", "").rstrip("/").split("/")
-        return len(parts) == 5 and parts[1:3] == ["api", "sessions"] and parts[4] == "events"
-
-    def _is_authorized(self, authorization: str) -> bool:
-        """Validate one Basic Authorization header without logging credentials."""
-        scheme, separator, encoded = authorization.partition(" ")
-        if not separator or scheme.lower() != "basic":
-            return False
-        try:
-            decoded = base64.b64decode(encoded, validate=True).decode("utf-8")
-        except (binascii.Error, UnicodeDecodeError, ValueError):
-            return False
-        username, separator, password = decoded.partition(":")
-        if not separator:
-            return False
-        username_matches = secrets.compare_digest(username, self._username)
-        password_matches = secrets.compare_digest(password, self._password)
-        return username_matches and password_matches
-
-
 def _basic_auth_credentials() -> tuple[str, str] | None:
     """Load optional public-demo credentials and reject partial configuration."""
     username = os.getenv("VOICE_AGENT_BASIC_AUTH_USERNAME", "").strip()
@@ -150,6 +88,15 @@ class SessionResponse(BaseModel):
     session_token: str
     websocket_path: str
     expires_in_seconds: int
+
+
+class LoginRequest(BaseModel):
+    """Credentials submitted by the product-owned login page."""
+
+    model_config = ConfigDict(extra="forbid")
+    username: str = Field(min_length=1, max_length=200)
+    password: SecretStr = Field(min_length=1, max_length=500)
+    next: str = Field(default="/", max_length=2000)
 
 
 class BrowserEvent(BaseModel):
@@ -214,6 +161,9 @@ def create_app() -> FastAPI:
     event_buffers: dict[str, SessionEventBuffer] = {}
     call_captures: dict[str, CallCapture] = {}
     history_store = HistoryStore(_bot_data_dir())
+    website_auth = _basic_auth_credentials()
+    auth_sessions = AuthSessionStore()
+    login_limiter = LoginAttemptLimiter()
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
@@ -250,6 +200,7 @@ def create_app() -> FastAPI:
     app.state.bot_store = bot_store
     app.state.bot_cipher = bot_cipher
     app.state.history_store = history_store
+    app.state.auth_sessions = auth_sessions
 
     app.add_middleware(
         CORSMiddleware,
@@ -258,12 +209,10 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "DELETE"],
         allow_headers=["Content-Type", "Authorization"],
     )
-    basic_auth = _basic_auth_credentials()
-    if basic_auth is not None:
+    if website_auth is not None:
         app.add_middleware(
-            BasicAuthMiddleware,
-            username=basic_auth[0],
-            password=basic_auth[1],
+            ProductAuthMiddleware,
+            sessions=auth_sessions,
         )
 
     @app.exception_handler(RequestValidationError)
@@ -287,6 +236,76 @@ def create_app() -> FastAPI:
             "pending_sessions": pending,
             "active_sessions": active,
         }
+
+    @app.get("/login", include_in_schema=False)
+    async def login_page() -> Response:
+        """Serve the product-owned sign-in page without a native browser challenge."""
+        login_file = FRONTEND_DIST / "login.html"
+        if login_file.is_file():
+            return FileResponse(login_file)
+        return HTMLResponse(
+            "<h1>VoiceAgent Demo</h1><p>The login page has not been built yet.</p>",
+            status_code=503,
+        )
+
+    @app.post("/api/auth/login")
+    async def website_login(payload: LoginRequest, request: Request) -> Response:
+        """Create a revocable website session after constant-time credential checks."""
+        if website_auth is None:
+            return JSONResponse({"next": safe_return_path(payload.next), "auth_enabled": False})
+        client = request.client.host if request.client else "unknown"
+        if not login_limiter.allow(client):
+            return JSONResponse(
+                {"detail": "Too many sign-in attempts. Please wait and try again."},
+                status_code=429,
+            )
+        username_ok = secrets.compare_digest(payload.username, website_auth[0])
+        password_ok = secrets.compare_digest(payload.password.get_secret_value(), website_auth[1])
+        if not username_ok or not password_ok:
+            login_limiter.fail(client)
+            return JSONResponse(
+                {"detail": "We could not sign you in. Check the shared details and try again."},
+                status_code=401,
+            )
+        login_limiter.clear(client)
+        token, idle_expires_at, absolute_expires_at = auth_sessions.create()
+        response = JSONResponse(
+            {
+                "next": safe_return_path(payload.next),
+                "idle_expires_at": idle_expires_at,
+                "absolute_expires_at": absolute_expires_at,
+            }
+        )
+        response.set_cookie(
+            AUTH_COOKIE,
+            token,
+            max_age=auth_sessions.idle_seconds,
+            httponly=True,
+            secure=True,
+            samesite="strict",
+            path="/",
+        )
+        return response
+
+    @app.get("/api/auth/session")
+    async def website_session(request: Request) -> dict[str, object]:
+        """Return safe expiry metadata and refresh activity through middleware."""
+        if website_auth is None:
+            return {"auth_enabled": False}
+        return {
+            "auth_enabled": True,
+            "idle_expires_at": request.state.auth_idle_expires_at,
+            "absolute_expires_at": request.state.auth_absolute_expires_at,
+        }
+
+    @app.post("/api/auth/logout", status_code=204)
+    async def website_logout(request: Request) -> Response:
+        """Revoke the current website session and clear its browser Cookie."""
+        token = request.cookies.get(AUTH_COOKIE, "")
+        auth_sessions.revoke(token)
+        response = Response(status_code=204)
+        response.delete_cookie(AUTH_COOKIE, path="/", secure=True, samesite="strict")
+        return response
 
     @app.get("/api/catalogs")
     async def catalogs() -> dict[str, object]:

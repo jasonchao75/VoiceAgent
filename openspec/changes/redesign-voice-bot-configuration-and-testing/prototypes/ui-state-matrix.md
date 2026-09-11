@@ -4,6 +4,10 @@ Status: Gate 1 candidate; scenario IDs are stable screenshot/test identifiers.
 
 | ID | Page/region | Data state | Interaction/error state | Viewport | Delta mapping | Evidence required |
 |---|---|---|---|---|---|---|
+| auth.login.default | Login | Signed out | Default/hover/focus | desktop+narrow | Product-owned login experience | baseline/actual/diff+a11y |
+| auth.login.invalid | Login | Invalid credentials | Error | desktop+narrow | Submit invalid login credentials | baseline/actual/diff+functional+a11y |
+| auth.login.expired | Login | Expired website session | Informational | desktop+narrow | Website login expires | baseline/actual/diff+functional |
+| auth.avatar.logout | Product rail | Signed in | Hover/focus/touch menu | desktop+narrow | Sign out | baseline/actual/diff+functional+a11y |
 | bot-settings.base.empty | Bot settings | No Bots | Empty | desktop | Componentized Bot editor | baseline/actual/diff |
 | bot-settings.base.long | Bot settings | Long names/prompts | Default | desktop+narrow | Approved prototype conformance | baseline/actual/diff |
 | bot-settings.asr.english.default | ASR drawer | English Flux | Expanded | desktop | Current WebCall input format; Persist Flux ASR settings | baseline/actual/diff+a11y |

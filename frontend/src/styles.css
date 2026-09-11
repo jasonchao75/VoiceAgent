@@ -112,6 +112,15 @@ button:disabled { opacity: .45; cursor: not-allowed; }.mic-icon { font-size: 8px
 .product-rail a span { flex-basis:34px; height:34px; background:#10241b; color:var(--accent); }
 .product-rail b { display:none; }
 body:has(.product-rail.expanded) .shell { padding-left:318px; }
+.account-control { position:absolute; left:7px; bottom:14px; width:34px; }
+.account-control > button { width:34px; height:34px; padding:0; border-color:#315843; border-radius:50%; background:#153c2c; color:var(--accent); font-weight:800; }
+.account-menu { position:fixed; z-index:80; left:8px; bottom:56px; width:154px; padding:8px; border:1px solid var(--line); border-radius:9px; background:#151a18; box-shadow:0 16px 36px rgba(0,0,0,.4); opacity:0; visibility:hidden; transform:translateY(4px); transition:.15s; }
+.account-control:hover .account-menu,.account-control:focus-within .account-menu,.account-control > button[aria-expanded="true"] + .account-menu { opacity:1; visibility:visible; transform:none; }
+.account-menu span { display:block; padding:5px 7px 8px; color:var(--muted); font-size:10px; }
+.account-menu button { width:100%; height:32px; border:0; background:#202623; text-align:left; padding:0 9px; }
+.account-menu button:hover,.account-menu button:focus-visible { background:#2a322e; color:#fff; }
+.session-expiry { position:fixed; z-index:100; top:14px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:14px; max-width:calc(100vw - 28px); padding:10px 12px; border:1px solid #5b744f; border-radius:9px; background:#182218; box-shadow:0 14px 35px rgba(0,0,0,.35); color:#dbe9db; font-size:12px; }
+.session-expiry button { border:0; border-radius:7px; padding:7px 10px; background:var(--accent); color:#07110c; font-weight:700; white-space:nowrap; cursor:pointer; }
 .config-panel { position:fixed; z-index:10; left:48px; top:0; width:270px; height:100vh; padding:0 12px; border-right:1px solid var(--line); background:#0d100f; }
 .prototype-side-title { height:52px; display:flex; align-items:center; padding:0 5px; border-bottom:1px solid var(--line); font-weight:700; }
 .prototype-side-title small { margin-left:6px; color:#646b68; font-weight:400; }

@@ -88,3 +88,13 @@
 - [ ] 9.6 Push after product approval, verify CI/CD and check production health
 
 Gate 3 note (2026-09-10): Playwright desktop/narrow state tests pass 14/14 and actual screenshots are recorded. BYOK LLM diagnostic, Deepgram Flux Chat and ElevenLabs Chat passed. Web call remains unverified on this host because no microphone is available; immutable pixel baselines/diffs and final product acceptance remain open.
+
+## 10. Product login and authentication separation (scope pending product confirmation)
+
+- [x] 10.1 Product confirms shared account, idle/absolute expiry, return path, product name and avatar/logout behavior in `verification/login-flow-review.md`
+- [x] 10.2 Add and approve a `VoiceAgent Demo` login-page prototype plus signed-out, invalid, expired, narrow-screen and left-rail avatar/logout states before implementation
+- [x] 10.3 Replace browser Basic Auth challenges with secure Cookie-based website sessions while retaining the existing shared deployment credential source
+- [x] 10.4 Keep Chat/Web call Bearer events and metrics authorization separate from the website session
+- [x] 10.5 Add login/logout, expiry return-path, generic-error, retry-limiting and no-native-popup backend tests
+- [x] 10.6 Add Playwright coverage for login success/failure/expiry/logout and Chat metrics after login
+- [ ] 10.7 Complete fixed-viewport screenshots and Gate 2/3 evidence before production deployment

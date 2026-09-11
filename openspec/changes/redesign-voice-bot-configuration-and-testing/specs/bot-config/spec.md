@@ -1,5 +1,44 @@
 ## ADDED Requirements
 
+### Requirement: Product-owned login experience
+
+系统 MUST 使用 VoiceAgent 自有登录页保护生产演示站，并在登录成功后用安全 Cookie 维持网站登录状态。系统 MUST 保持网站登录与单次 Chat/Web call 的 Bearer Token 相互独立。任何页面 API、会话事件或会话指标请求失败时均不得返回 Basic Auth challenge 或触发浏览器原生登录弹窗。
+
+面向用户的平台名称 MUST 全局统一为 `VoiceAgent Demo`。登录页 MUST 与平台已确认的深色视觉、绿色强调、字体层级、间距、控件和响应式风格一致，不得显示 `Flux Agent Platform`、`Flux Voice Lab` 等历史名称，也不得使用脱离平台风格的通用登录模板。
+
+#### Scenario: Open a protected page while signed out
+
+- **WHEN** 用户未登录或网站登录已过期，并打开任意受保护页面
+- **THEN** 系统展示 VoiceAgent 登录页，不展示浏览器原生登录弹窗
+- **AND** 登录成功后返回用户原本准备访问的站内位置
+
+#### Scenario: View consistent product identity
+
+- **WHEN** 用户查看登录页、浏览器标题或登录后的主界面品牌区域
+- **THEN** 用户可见平台名称均为 `VoiceAgent Demo`，且登录页视觉与主界面属于同一设计体系
+
+#### Scenario: Use Chat test after signing in
+
+- **WHEN** 已登录用户开始 Chat test，页面使用单次会话 Bearer Token 读取 events 或 metrics
+- **THEN** 网站登录保持有效，Turn 指标正常返回，浏览器不再次要求输入网站用户名和密码
+
+#### Scenario: Submit invalid login credentials
+
+- **WHEN** 用户提交错误用户名或密码
+- **THEN** 页面显示不区分用户名或密码的通用失败提示，不泄露凭证、不刷新为浏览器原生弹窗
+
+#### Scenario: Website login expires
+
+- **WHEN** 网站登录过期且用户进行下一次页面操作
+- **THEN** 页面进入登录页并说明登录已过期；重新登录后返回原站内位置
+
+#### Scenario: Sign out
+
+- **WHEN** 用户在左侧栏底部 hover/focus 用户头像，或在触屏设备点击头像
+- **THEN** 页面显示 `Log out` 操作，且折叠/展开侧栏和窄屏均可使用
+- **WHEN** 用户点击 `Log out`
+- **THEN** 网站登录会话立即失效并返回登录页，后续受保护请求不能继续使用旧 Cookie
+
 ### Requirement: Componentized Bot editor
 
 系统 MUST 将 Bot-owned 配置与 provider-owned 配置分离。Bot settings 主页面 MUST 只保留 Bot 名称、Opening message 和 System prompt；ASR、LLM、TTS 参数及凭证 MUST 分别进入对应组件的非模态右侧抽屉。抽屉打开时 MUST 压缩主工作区而不是使用阻塞遮罩。

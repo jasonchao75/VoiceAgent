@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sign in to VoiceAgent Demo" />
+    <title>Sign in · VoiceAgent Demo</title>
+  </head>
+  <body>
+    <main class="login-shell">
+      <section class="login-intro" aria-labelledby="product-title">
+        <div class="login-brand"><span class="login-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span>VoiceAgent Demo</span></div>
+        <p class="login-eyebrow">Voice AI workspace</p>
+        <h1 id="product-title">Build, test and understand every conversation.</h1>
+        <p class="login-lead">Configure voice experiences, run live tests, and inspect turn-level latency in one protected workspace.</p>
+        <div class="login-features" aria-label="Platform capabilities"><span>Voice bot configuration</span><span>Live testing</span><span>Turn metrics</span></div>
+      </section>
+      <section class="login-card" aria-labelledby="sign-in-title">
+        <p class="login-eyebrow">Protected workspace</p>
+        <h2 id="sign-in-title">Sign in</h2>
+        <p class="login-hint">Use the shared access details provided for this demo.</p>
+        <div class="login-notice" id="login-notice" role="status" hidden></div>
+        <form id="login-form">
+          <label for="username">Username</label>
+          <input id="username" name="username" autocomplete="username" required />
+          <label for="password">Password</label>
+          <div class="login-input-action"><input id="password" name="password" type="password" autocomplete="current-password" required /><button id="show-password" type="button">Show</button></div>
+          <button class="login-submit" type="submit">Continue to VoiceAgent Demo</button>
+        </form>
+        <p class="login-security"><span aria-hidden="true">◆</span> Secure session · credentials are never stored in this browser</p>
+        <footer>VoiceAgent Demo</footer>
+      </section>
+    </main>
+    <script type="module" src="/src/login.js"></script>
+  </body>
+</html>

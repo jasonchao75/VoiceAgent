@@ -55,3 +55,12 @@ Order: Provider → Model → Language + read-only Audio input → Advanced → 
 ## Required component states
 
 All interactive controls require default, hover, keyboard focus, disabled and validation-error annotations. Async regions additionally require loading, empty and request-error states. Long Bot/model/voice names, 100 Keyterms and narrow drawer wrapping must not overlap, clip required actions or change component ownership.
+
+## Login page
+
+- Strict product name: `VoiceAgent Demo`; no historical product name may appear in title, heading, navigation or metadata.
+- Desktop composition: centered shell up to 960 px, identity region and 400 px login card; narrow viewport becomes a single column.
+- Login inputs and action reuse the platform field height, border, focus ring, radius and accent tokens.
+- Invalid credentials use a generic inline alert without revealing which value was wrong. Expired sessions use neutral explanatory copy rather than an error-colored failure.
+- Password visibility control, submit loading/disabled state, keyboard focus order and Enter submission are required.
+- Login and avatar menus must satisfy the global no-horizontal-overflow redline.

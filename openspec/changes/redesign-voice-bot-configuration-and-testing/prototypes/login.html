@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · VoiceAgent Demo</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#0a0d0c; color:#edf2ef; }
+    * { box-sizing:border-box; min-width:0; }
+    body { margin:0; min-height:100vh; overflow-x:hidden; background:radial-gradient(circle at 72% 22%,rgba(31,117,80,.16),transparent 32%),#0a0d0c; }
+    .shell { width:min(960px,calc(100% - 40px)); min-height:100vh; margin:auto; display:grid; grid-template-columns:1fr 400px; gap:72px; align-items:center; }
+    .brand { display:flex; align-items:center; gap:12px; font-size:16px; font-weight:700; }
+    .mark { width:38px; height:38px; border:1px solid #2e5c47; border-radius:10px; background:#10251c; display:grid; place-items:center; color:#78f0b3; }
+    .bars { display:flex; align-items:center; gap:3px; height:18px; }
+    .bars i { display:block; width:2px; border-radius:2px; background:currentColor; }
+    .bars i:nth-child(1),.bars i:nth-child(5){height:6px}.bars i:nth-child(2),.bars i:nth-child(4){height:12px}.bars i:nth-child(3){height:18px}
+    .eyebrow { margin:60px 0 12px; color:#78f0b3; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { max-width:540px; margin:0; font-size:clamp(38px,5vw,64px); line-height:1.02; letter-spacing:-.045em; }
+    .lead { max-width:500px; margin:22px 0 0; color:#8f9a95; font-size:16px; line-height:1.65; }
+    .features { display:flex; flex-wrap:wrap; gap:8px; margin-top:30px; }
+    .features span { padding:7px 10px; border:1px solid #29302d; border-radius:999px; color:#aeb8b3; font-size:11px; background:#111514; }
+    .card { position:relative; padding:30px; border:1px solid #29302d; border-radius:14px; background:rgba(17,21,20,.96); box-shadow:0 28px 80px rgba(0,0,0,.38); overflow:hidden; }
+    .card:before { content:""; position:absolute; inset:0 auto auto 0; width:100%; height:2px; background:linear-gradient(90deg,#78f0b3,transparent 75%); }
+    h2 { margin:5px 0 8px; font-size:24px; letter-spacing:-.025em; }
+    .hint { margin:0 0 24px; color:#8f9a95; font-size:13px; line-height:1.5; }
+    label { display:block; margin:15px 0 7px; font-size:12px; font-weight:650; }
+    .input-wrap { position:relative; }
+    input { width:100%; height:42px; padding:0 12px; border:1px solid #34403b; border-radius:9px; outline:none; background:#0c100f; color:#edf2ef; font:inherit; }
+    input:focus { border-color:#78f0b3; box-shadow:0 0 0 3px rgba(120,240,179,.12); }
+    .show { position:absolute; right:5px; top:5px; height:32px; padding:0 9px; border:0; background:transparent; color:#78f0b3; cursor:pointer; }
+    .submit { width:100%; height:42px; margin-top:22px; border:0; border-radius:9px; background:#78f0b3; color:#07110c; font-weight:750; cursor:pointer; }
+    .submit:hover { background:#8df5c1; }
+    .submit:focus-visible,.show:focus-visible { outline:2px solid #edf2ef; outline-offset:2px; }
+    .security { display:flex; align-items:center; gap:7px; margin:16px 0 0; color:#77817d; font-size:10px; }
+    .notice { display:none; margin:0 0 18px; padding:10px 12px; border:1px solid #765037; border-radius:8px; background:#21180f; color:#f0c49c; font-size:12px; line-height:1.4; }
+    .notice.visible { display:block; }
+    footer { margin-top:28px; color:#5f6965; font-size:10px; }
+    @media (max-width:760px) { .shell { width:min(100% - 28px,440px); grid-template-columns:1fr; gap:30px; padding:42px 0; align-content:center; } .intro .eyebrow{margin-top:38px} h1{font-size:40px}.lead{font-size:14px}.features{display:none}.card{padding:24px} }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="intro" aria-labelledby="product-title">
+      <div class="brand"><span class="mark" aria-hidden="true"><span class="bars"><i></i><i></i><i></i><i></i><i></i></span></span><span>VoiceAgent Demo</span></div>
+      <p class="eyebrow">Voice AI workspace</p>
+      <h1 id="product-title">Build, test and understand every conversation.</h1>
+      <p class="lead">Configure voice experiences, run live tests, and inspect turn-level latency in one protected workspace.</p>
+      <div class="features" aria-label="Platform capabilities"><span>Voice bot configuration</span><span>Live testing</span><span>Turn metrics</span></div>
+    </section>
+    <section class="card" aria-labelledby="sign-in-title">
+      <p class="eyebrow" style="margin:0 0 8px">Protected workspace</p>
+      <h2 id="sign-in-title">Sign in</h2>
+      <p class="hint">Use the shared access details provided for this demo.</p>
+      <div class="notice" id="notice" role="status"></div>
+      <form id="loginForm">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required>
+        <label for="password">Password</label>
+        <div class="input-wrap"><input id="password" name="password" type="password" autocomplete="current-password" required><button class="show" id="showPassword" type="button">Show</button></div>
+        <button class="submit" type="submit">Continue to VoiceAgent Demo</button>
+      </form>
+      <p class="security"><span aria-hidden="true">◆</span> Secure session · credentials are never stored in this browser</p>
+      <footer>VoiceAgent Demo</footer>
+    </section>
+  </main>
+  <script>
+    const params=new URLSearchParams(location.search),notice=document.querySelector('#notice');
+    if(params.has('invalid')){notice.textContent='We could not sign you in. Check the shared username and password, then try again.';notice.classList.add('visible')}
+    if(params.has('expired')){notice.textContent='Your session expired after a period of inactivity. Sign in to continue where you left off.';notice.classList.add('visible')}
+    document.querySelector('#showPassword').onclick=()=>{const input=document.querySelector('#password'),show=input.type==='password';input.type=show?'text':'password';document.querySelector('#showPassword').textContent=show?'Hide':'Show'};
+    document.querySelector('#loginForm').onsubmit=event=>{event.preventDefault();notice.textContent='Prototype only — authentication is not connected yet.';notice.classList.add('visible')};
+  </script>
+</body>
+</html>

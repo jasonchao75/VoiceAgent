@@ -7,7 +7,7 @@ Status: Gate 1 approved on 2026-09-08; Gate 2 visual direction accepted on 2026-
 | Item | Value |
 |---|---|
 | Risk | High |
-| Prototype | `prototypes/index.html` |
+| Prototype | `prototypes/index.html`, `prototypes/login.html` |
 | Annotations | `prototypes/ui-annotations.md` |
 | State matrix | `prototypes/ui-state-matrix.md` |
 | Fixture | `tests/ui/fixtures/voice-bot-editor.json` |
@@ -38,6 +38,9 @@ Status: Gate 1 approved on 2026-09-08; Gate 2 visual direction accepted on 2026-
 
 ## Gate 3 — behavior and states
 
+- [x] Product-owned login, invalid/expired messages, secure Cookie, logout and return path pass
+- [x] Chat/Web call Bearer metrics remain separate and never return a browser Basic Auth challenge
+- [x] Login and avatar/logout controls use `VoiceAgent Demo`; historical platform names are absent from user-facing frontend
 - [x] Catalog success/failure and disabled unsafe-action states pass functional checks
 - [x] Automatic language/hints and credential editability states pass
 - [x] LLM diagnostic succeeds with real TTFT; error contracts remain covered by backend tests
@@ -59,11 +62,14 @@ Status: Gate 1 approved on 2026-09-08; Gate 2 visual direction accepted on 2026-
 | Test pages | Formal UI retained the old Conversation shell | Agent self-check, 2026-09-08 | Fixed; Chat/WebCall shells captured |
 | Voice picker | Three-column cards truncated voice metadata | Agent self-check, 2026-09-08 | Fixed; readable row list captured |
 | Voice picker | Horizontal scrollbar appeared with a populated ElevenLabs catalog | User review, 2026-09-10 | Fixed; desktop and narrow Playwright overflow assertions pass |
+| Production login | Chat metrics Bearer request triggered a second native Basic Auth dialog | User screenshot and code diagnosis, 2026-09-10 | Fixed locally; metrics bypass website Cookie middleware and returns no Basic challenge |
+| Product identity | Historical platform naming and architecture-specific login copy would limit future pipelines | Product review, 2026-09-10 | Fixed; login and application identity use `VoiceAgent Demo`, pipeline-specific lead removed |
 
 ## Automated and BYOK results — 2026-09-10
 
-- Playwright fixed viewport suite: 14/14 passed at 1440 × 1000 and 1024 × 1000.
-- Backend suite: 85/85 passed; Ruff, Mypy, build, safety checks and strict OpenSpec validation passed.
+- Playwright application suite: 14/14 passed at 1440 × 1000 and 1024 × 1000; login suite adds 4/4 passed desktop/narrow checks.
+- Backend suite: 91/91 passed; Ruff, Mypy, build, safety checks and strict OpenSpec validation passed.
+- Product login: sign-in, generic failure, expiry presentation, secure Cookie, immediate logout, safe local return path and no horizontal overflow covered.
 - Gemini diagnostic: connected, measured TTFT 1019.5 ms; no Key value logged or captured.
 - Deepgram Flux Chat: opening playback and reply succeeded; Turn 1 E2E 2241 ms with all five Chat components displayed.
 - ElevenLabs Chat: opening playback and reply succeeded; Turn 1 E2E 1541.6 ms with all five Chat components displayed.
