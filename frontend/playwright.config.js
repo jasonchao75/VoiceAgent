@@ -6,6 +6,9 @@ export default defineConfig({
   testDir: "./tests/ui",
   outputDir: "../test-results/playwright",
   fullyParallel: false,
+  // Runtime projects mutate one shared acceptance database; serialize them so
+  // optimistic-version checks exercise user flows instead of test races.
+  workers: 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"], ["html", { outputFolder: "../test-results/playwright-report", open: "never" }]],

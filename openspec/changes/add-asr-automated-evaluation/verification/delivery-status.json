@@ -1,0 +1,1371 @@
+{
+  "phase": "user_gate_2_pending",
+  "product_acceptance": "pending",
+  "local_acceptance_deployment": "pd030_image_rebuilt_and_running_healthy_at_127.0.0.1_8000_on_2026-09-19;_display_translation_route_present;_EV-20260918-2655_remains_awaiting_review",
+  "production_paths": [
+    "src/evaluation",
+    "frontend/src/evaluation-runtime.js",
+    "frontend/evaluation.html"
+  ],
+  "allowed_mock_files": [],
+  "ui_delivery": {
+    "model": "two-user-gates-three-engineering-checkpoints",
+    "fixture_uses_production_ui": true,
+    "production_routes": [
+      "frontend/evaluation.html",
+      "frontend/src/evaluation-runtime.js"
+    ],
+    "engineering_checkpoints": [
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorizes production deployment of this Change after final verification, with an empty production Evaluation history and preserved non-Evaluation configuration.",
+  "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
+  "independent_release_review": {
+    "status": "PASS",
+    "reviewed_at": "2026-09-20",
+    "evidence": "verification/independent-review.md",
+    "deployment_execution": "pending; task 13.3 and UV-017 remain mandatory deployment-time checks"
+  },
+  "external_calls": [
+    {
+      "provider": "DeepSeek / deepseek-flash",
+      "data_scope": "Actual: 53 of 56 conversations with candidates, 159 three-provider ASR results, 120 unique candidates; authorized scope was all 56 conversations",
+      "cost_ceiling": "Not established before call; control failure. Estimated call cost at the configured static rate: USD 0.317332; actual isolated charge unavailable",
+      "stop_condition": "One request only, no retry, do not mutate business results; stopped with finish_reason=length and no valid JSON",
+      "authorization_decision_id": "PD-014",
+      "evidence": "verification/whole-batch-pass2-probe-2026-09-16.md"
+    },
+    {
+      "provider": "The selected batch's frozen Pass 1 LLM provider/model",
+      "data_scope": "Only the original transcript text for events in the report conversation explicitly opened by the user in Chinese mode; no UI/system copy, credentials, audio, report metrics or Benchmark labels",
+      "cost_ceiling": "The remaining frozen USD hard budget of that batch; a rejected translation cannot change the batch lifecycle status",
+      "stop_condition": "One request for the visible conversation per browser session, no automatic retry; stop on budget rejection, provider failure, malformed output or drawer/page change",
+      "authorization_decision_id": "PD-030",
+      "status": "Authorized for explicit user-triggered UI use; not executed by the Agent",
+      "evidence": "decisions/decision-log.md#pd-030--中文对照按需复用第一轮-llm系统文案仅本地翻译"
+    },
+    {
+      "provider": "Soniox stt-async-v5, Speechmatics melia-1, ElevenLabs scribe_v2",
+      "data_scope": "Only the 2.033-second pure-user WAV slice for conversation 1030000000082501 event R15, bounded at 51.222-53.255 seconds; no full-call robot channel, transcript workbook, credentials or neighboring events",
+      "cost_ceiling": "USD 0.05 total; configured duration-rate estimate is approximately USD 0.0003 before provider minimum billing",
+      "stop_condition": "At most one dispatch to each provider, no automatic retry; stop after the three attempts or immediately before any call that would exceed the total ceiling",
+      "authorization_decision_id": "PD-035",
+      "status": "Executed once on 2026-09-20 after the user explicitly named the real R15 audio and all three recipients; Soniox and ElevenLabs returned text, Speechmatics returned an empty transcript, and no retry was made",
+      "evidence": "verification/pure-user-event-asr-2026-09-20.md"
+    },
+    {
+      "provider": "The Qwen provider/model frozen as Pass 1 for EV-20260920-9D33",
+      "data_scope": "One Chinese-mode report render: only Arabic-containing production transcripts and event-level Soniox, Speechmatics, and ElevenLabs transcript strings persisted in EV-20260920-9D33; no audio, credentials, system/UI copy, report metrics, or unrelated batch data",
+      "cost_ceiling": "USD 0.10 total",
+      "stop_condition": "One user-interface trigger only; stop on provider failure, budget rejection, malformed output, or completion; do not repeat the real report translation verification",
+      "authorization_decision_id": "PD-042",
+      "status": "Executed exactly once on 2026-09-20: 179 unique Arabic-containing report strings, one Qwen request, attempt_count=1, split_used=false, failed_count=0; no retry",
+      "evidence": "Local evaluation_audit action display_translation.requested for EV-20260920-9D33 plus browser-visible Chinese comparisons"
+    }
+  ],
+  "known_issues": [
+    {
+      "id": "KI-001",
+      "status": "resolved",
+      "summary": "The frozen Gate 2 scenario-tag shell does not render the five baseline tag cards, although the runtime page loads persisted tags.",
+      "impact": "The static baseline and Gate 2 UI regression tests no longer represent the confirmed prototype.",
+      "source": "Playwright evaluation.spec.js desktop and narrow failures on 2026-09-17",
+      "resolution": "Restored the five frozen cards in frontend/evaluation.html; the runtime still replaces them from the persisted tag API. The 62-test Evaluation browser suite passed serially on 2026-09-17.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-002",
+      "status": "resolved",
+      "summary": "Changing a report scenario filter only stops playback when the active row becomes hidden; the confirmed interaction expects playback to reset on every filter change.",
+      "impact": "An expanded or playing case can remain active after the report filter changes.",
+      "source": "Playwright evaluation.spec.js desktop and narrow failures on 2026-09-17",
+      "resolution": "Every scenario-filter change now stops and collapses the active inline player. The 62-test Evaluation browser suite passed serially on 2026-09-17.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-003",
+      "status": "resolved",
+      "summary": "UI mutation tests share one SQLite database across desktop and narrow projects, causing optimistic version conflicts under parallel execution.",
+      "impact": "Parallel UI validation can fail nondeterministically even when the single-user workflow is correct.",
+      "source": "Playwright evaluation-gate3.spec.js failure on 2026-09-17",
+      "resolution": "Playwright runtime projects are serialized because they intentionally mutate one shared acceptance database; 22 real-API browser tests passed with one worker.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-004",
+      "status": "resolved",
+      "summary": "Second-pass processing currently evaluates only suspected candidates and does not implement the confirmed 1:1 Good Case to Bad Case balancing pool.",
+      "impact": "Benchmark output cannot yet satisfy the confirmed balanced sampling requirement.",
+      "source": "Code audit of src/evaluation/executor.py on 2026-09-17",
+      "resolution": "Pass 1 pass-events from suspect conversations now form a deterministic conversation-round-robin pool; Pass 2 continues selecting controls until 1:1 is reached or the pool is exhausted, and stores origin plus shortage disclosure.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-005",
+      "status": "resolved",
+      "summary": "Normalized ASR segment identifiers are provider-local indexes and do not include the full conversation and provider identity required by the specification.",
+      "impact": "Evidence references can become ambiguous when multiple conversations are packed into one second-pass request.",
+      "source": "Code audit of src/evaluation/executor.py on 2026-09-17",
+      "resolution": "All three adapters now emit <full conversation ID>:<provider>:<index>, covered by regression tests.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-006",
+      "status": "resolved",
+      "summary": "Second-pass output validation does not yet prove that every referenced evidence segment exists or fully validate the proposed-tag and listening-evidence schema.",
+      "impact": "Malformed model output can be persisted without complete traceable evidence.",
+      "source": "Code audit of src/evaluation/executor.py on 2026-09-17",
+      "resolution": "Pass 2 now validates the complete decision contract, bilingual proposed tags, forbidden confidence fields, positioning quality, and every referenced segment ID; degraded full-recording/unavailable locations can only route to manual review.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-007",
+      "status": "resolved",
+      "summary": "Unified playback alignment and positioning-quality states are not fully implemented from provider evidence ranges.",
+      "impact": "Manual review may play a coarse historical-event range instead of the confirmed aligned evidence window.",
+      "source": "Code and UI audit on 2026-09-17",
+      "resolution": "Persisted recommended segment IDs are merged, padded, clipped to user-audio bounds, and exposed as exact/expanded/full_recording/unavailable in review and report payloads.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-008",
+      "status": "resolved",
+      "summary": "The evaluation worker is process-local and lacks durable multi-process leases and ownership recovery.",
+      "impact": "Restart recovery exists, but concurrent server processes can duplicate work.",
+      "source": "Code audit of src/evaluation/executor.py on 2026-09-17",
+      "resolution": "Added SQLite batch-worker leases with expiry recovery, periodic renewal, owner-safe release, and duplicate-worker regression coverage.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-009",
+      "status": "resolved",
+      "summary": "The batch total still includes projected or reserved cost paths even though an actual ASR and LLM ledger exists.",
+      "impact": "Displayed batch totals may not reconcile exactly to provider bills or enforce the budget using actual usage.",
+      "source": "Cost-path audit on 2026-09-17",
+      "resolution": "Projected pass totals no longer overwrite the batch actual cost. Every completed ASR/LLM call appends an idempotent ledger row from returned usage, records input/cached-input/reasoning/output tokens separately, and recomputes the displayed batch total from the frozen pricing version.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-011",
+      "status": "resolved",
+      "summary": "The required ElevenLabs webhook/correlation lifecycle with synchronous fallback is incomplete.",
+      "impact": "ElevenLabs currently uses a synchronous request instead of the specified recoverable asynchronous lifecycle.",
+      "source": "Adapter audit on 2026-09-17",
+      "resolution": "Speechmatics remote jobs are deleted with bounded cleanup retries. ElevenLabs now uses webhook=true plus persisted request/correlation state when a webhook ID and HMAC secret are configured, exposes a public signature-verified idempotent callback, recovers completed callbacks after restart, and otherwise uses the provider's documented synchronous response. No unsupported provider polling or deletion endpoint is claimed; real-provider verification remains UV-001.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-012",
+      "status": "resolved",
+      "summary": "Benchmark ZIP export now runs as a durable asynchronous 24-hour artifact job with manifest and download auditing.",
+      "impact": "Large exports must not block a request or leave untracked downloadable artifacts.",
+      "source": "Benchmark export audit on 2026-09-17",
+      "resolution": "Added frozen selected-ID jobs, restart-safe rescheduling, background WAV clipping, pending/ready/failed/expired states, 24-hour expiry, authenticated download, partial-failure manifest and persisted download audit; backend regression coverage verifies the ZIP and audit record.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-013",
+      "status": "resolved",
+      "summary": "Audio playback uses direct streaming endpoints instead of short-lived authorization-scoped URLs.",
+      "impact": "A direct endpoint would be unsafe if it bypassed the product authorization layer.",
+      "source": "Audio endpoint audit on 2026-09-17",
+      "resolution": "The confirmed design explicitly allows authorization-checked streaming endpoints as an alternative to short-lived URLs. ProductAuthMiddleware protects all evaluation audio endpoints when website authentication is enabled, and a regression test now verifies unauthorized denial plus authorized playback.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-010",
+      "status": "resolved",
+      "summary": "The confirmed ten-year retention policy is documented but not enforced by storage lifecycle code.",
+      "impact": "Data currently has no automatic retention expiry or deletion enforcement.",
+      "source": "Storage audit on 2026-09-17",
+      "resolution": "Each new batch freezes evaluation_10y retention metadata and an exact ten-year expiry; evaluation data remains isolated from ordinary history cleanup.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-014",
+      "status": "resolved",
+      "summary": "The frozen Gate 2 tag editor still referenced removed single-language field IDs after the confirmed bilingual CRUD form replaced them.",
+      "impact": "Editing an AI-proposed tag in the static baseline timed out and could not save the bilingual version.",
+      "source": "Isolated Playwright failure on 2026-09-17",
+      "resolution": "The static baseline now reads and writes the four bilingual fields; desktop and narrow regression tests pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-015",
+      "status": "resolved",
+      "summary": "Changing the frozen report scenario filter did not collapse a player when media playback had failed before becoming the active player.",
+      "impact": "A visually expanded audio control could remain open after filtering.",
+      "source": "Isolated Playwright failure on 2026-09-17",
+      "resolution": "Filter changes now reset every inline player, not only the actively playing element; desktop and narrow regression tests pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-016",
+      "status": "resolved",
+      "summary": "The cost configuration mixes Qwen CNY rates with a USD batch budget without a confirmed currency-conversion rule.",
+      "impact": "A combined total and stop-before-new-call budget gate would be financially misleading until Q-007 is decided.",
+      "source": "Cost-path audit on 2026-09-17",
+      "resolution": "PD-023 selected native-currency ledgers plus a version-frozen CNY-to-USD rate. Pricing versions are immutable, new batches freeze the active version, and cost summaries retain native totals alongside converted USD.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-017",
+      "status": "resolved",
+      "summary": "The runtime report uses the frozen shell but omits language and exclusion distributions, does not update filtered Case counts, and leaves proposed-tag audio as a placeholder.",
+      "impact": "A completed real batch report does not yet expose all frozen-report evidence and interactions, which explains the observed mismatch with the approved prototype.",
+      "source": "Runtime report-to-baseline audit on 2026-09-17",
+      "resolution": "The immutable report now stores language distribution, source/user-event coverage, exclusions, warnings and evidence-linked observations; the runtime renders them in the frozen report shell, supports proposed-tag audio, and updates matching/total counts when filtering. Desktop and narrow browser regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-018",
+      "status": "resolved",
+      "summary": "Formal Benchmark rows did not have recoverable managed-clip states and ZIP export cut directly from mutable source files.",
+      "impact": "A failed or historically misaligned clip could be presented as downloadable without a durable processing result or trace.",
+      "source": "Benchmark lifecycle audit against design.md and benchmark-library/spec.md on 2026-09-17",
+      "resolution": "Benchmark admission now persists pending/ready/failed clip state, restarts pending work, rejects unreliable precise cuts, stores processing trace, serves only ready managed clips, and exports from those immutable clips with a failure manifest.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-019",
+      "status": "resolved",
+      "summary": "Benchmark label, language and scenario corrections overwrote no explicit immutable revision history because no correction path existed.",
+      "impact": "Later classification changes could not satisfy the frozen provenance contract.",
+      "source": "Benchmark lifecycle audit against design.md and benchmark-library/spec.md on 2026-09-17",
+      "resolution": "Added optimistic Benchmark correction APIs and append-only revisions preserving every label, language, tag, source and timestamp; stale edits are rejected.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-020",
+      "status": "resolved",
+      "summary": "The frozen Benchmark prototype omits the Good/Bad filter and sample-correction controls required by the confirmed behavior specification.",
+      "impact": "Finishing the normal user workflow requires either a deliberate baseline update or a deliberate reduction of the specification; this cannot be silently decided in code.",
+      "source": "Runtime, frozen-prototype and Delta Spec comparison on 2026-09-17",
+      "resolution": "PD-024 authorized the baseline update. Prototype and runtime now provide All/Good/Bad filtering, 20-row paging, sample detail/edit and optimistic append-only revision saving; API and dual-viewport browser regressions cover the path.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-021",
+      "status": "resolved",
+      "summary": "A conversation with all selected evaluation-ASR providers failed could still be sent to Pass 2 and become a manual-review conclusion.",
+      "impact": "The system could manufacture a downstream decision without the minimum evidence required by the frozen specification.",
+      "source": "Execution failure-path audit on 2026-09-17",
+      "resolution": "Pass 2 now receives only conversations with at least one completed evaluation-ASR result. All-provider failures remain retryable at the ASR stage, single-provider success continues with incomplete evidence, and completed provider jobs are reused across Cases and retries.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-022",
+      "status": "resolved",
+      "summary": "Configuration, batch, review, playback, download and edit mutations required complete audit coverage.",
+      "impact": "Missing audit rows would prevent a ten-year evidence trail from explaining who changed or accessed evaluation data.",
+      "source": "Audit-event coverage review on 2026-09-17",
+      "resolution": "The storage and API paths now append audit rows for configuration changes, batch commands, reviews including early completion, authorized playback, exports and Benchmark revisions; focused API regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-023",
+      "status": "resolved",
+      "summary": "Runtime Benchmark scenario editing could diverge from persisted scenario-tag identifiers.",
+      "impact": "A user could save a display category that was not a valid current tag reference.",
+      "source": "Benchmark edit-path review on 2026-09-17",
+      "resolution": "Benchmark editing uses persisted scenario-tag identifiers and preserves unknown historical identifiers for audit display instead of silently remapping them.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-024",
+      "status": "resolved",
+      "summary": "Repeated early-completion commands did not return the original command response before version checks.",
+      "impact": "A network retry could receive a conflict even though the first command had already completed successfully.",
+      "source": "Early-completion idempotency regression on 2026-09-17",
+      "resolution": "Command results are persisted and replayed by idempotency key before mutable version/status validation; unclear and unreviewed exclusions remain non-Benchmark evidence.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-025",
+      "status": "resolved",
+      "summary": "The stop-before-new-call budget gate still relies on conservative static reserves instead of the full batch-frozen model-rate table.",
+      "impact": "Actual completed-call accounting is auditable, but a future request may be paused too early or admitted too close to the limit until task 4.4 is completed.",
+      "source": "Post-PD-023 budget-control review on 2026-09-17",
+      "resolution": "Each LLM attempt and ASR provider job now obtains an atomic SQLite reservation immediately before dispatch using the batch-frozen model-specific rate catalog and FX version. Concurrent reservations cannot exceed the hard USD limit; the rejected next call moves the batch to budget_paused, releases failed-call reservations, settles successful reservations into the separate ledger, and can resume after an explicit budget/status action. The unreliable whole-stage preflight gate was removed and concurrency/idempotency regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-026",
+      "status": "resolved",
+      "summary": "Legacy persisted manual-review results can contain Chinese model-authored text in issue_en and question_en, which leaks into the English UI.",
+      "impact": "The English manual-review queue and verification question are not language-pure for existing batches, although source Arabic transcripts must remain unchanged.",
+      "source": "User screenshot and live API audit of 33 pending reviews on 2026-09-17",
+      "resolution": "Legacy review payloads are normalized on read using stable scenario keys, and the frontend independently rejects CJK text in English generated-copy fields. The live 33-review API now returns controlled English while preserving Arabic source evidence; backend and browser regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-027",
+      "status": "resolved",
+      "summary": "The real EV-20260916-1400 batch reached manual review without a frozen preliminary report, and its run page always renders an empty Candidate Results table despite persisted Pass 1 and Pass 2 rows.",
+      "impact": "The confirmed preliminary-report workflow is inaccessible and the batch detail contradicts the persisted 122 candidates and 111 completed second-pass decisions.",
+      "source": "User screenshot plus live report API 404 and runtime rendering audit on 2026-09-17",
+      "resolution": "Storage initialization now recovers a missing immutable preliminary report from persisted second-pass evidence, while the run page renders all 120 unique persisted candidates and links to the report. The live recovered report exposes the frozen funnel, distributions, observations, proposal state, and complete Case table; legacy scenario labels are normalized for English, the static proposal count is replaced by report data, and the duplicate scenario filter is removed. Backend recovery, desktop/narrow browser regression, production build, and the deployed EV-20260916-1400 page were verified.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-028",
+      "status": "resolved",
+      "summary": "Evaluation contexts stored enabled/default fields but exposed no persisted controls, and New Evaluation listed disabled contexts.",
+      "impact": "Administrators could not manage the context used by future batches even though versioned context content itself was editable.",
+      "source": "Task 2.2 implementation audit on 2026-09-17",
+      "resolution": "Added optimistic persisted default/enable/disable transitions with audit records, protected the active default, exposed controls in the context table, and limited New Evaluation to enabled contexts with the default preselected. Backend regression and frontend build pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-029",
+      "status": "resolved",
+      "summary": "The deployed active Prompt versions are shortened runtime constants without the frozen {{variable}} slots, even though the approved fixture files and preview contract require complete slot-bearing templates.",
+      "impact": "The configuration preview cannot truthfully map stored templates to runtime session values, and task 12.4 was incorrectly marked complete.",
+      "source": "Deployed Prompt textarea audit against frozen fixtures on 2026-09-17",
+      "resolution": "The runtime now loads the exact approved Prompt fixtures as its single source, migrates any active slot-less template by appending a preserved new version, validates every required input slot on save, renders exact serialized session values before dispatch, and supplies grouped aliases for dynamically packed Pass 2 requests. Regression tests cover slot presence, replacement, and unresolved-slot failure.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-030",
+      "status": "resolved",
+      "summary": "The recovered preliminary report exposes all 120 rows, but repeats whole-conversation provider transcripts in every Case and counts nine incomplete second-pass rows as evaluated Cases.",
+      "impact": "The report is technically reachable but does not provide the concise Case-level evidence hierarchy or truthful completed/incomplete totals required by the frozen report baseline.",
+      "source": "User screenshot plus deployed EV-20260916-1400 report/API audit on 2026-09-17",
+      "resolution": "New immutable reports now count and aggregate only completed second-pass decisions, disclose incomplete Cases separately, and persist only provider quotations linked to each Case. The runtime also repairs the legacy report presentation without mutating its frozen payload: it shows 111/120 decision coverage with 9 incomplete, restores the 78-sample Benchmark metric, excludes incomplete rows from decision distributions, collapses legacy full-call provider text, shows the decision reason, and aligns the Audio/table columns. Backend, build, desktop/narrow browser, and deployed-page checks passed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-031",
+      "status": "resolved",
+      "summary": "A persisted preliminary report can load successfully after the batch detail is rendered while the stale batch snapshot still has no report_type, so the task page omits the Evaluation report button.",
+      "impact": "Users can see completed report facts in the task page but cannot discover or open the full immutable report from that page.",
+      "source": "User screenshot and runtime renderRun/refreshRunReport audit on 2026-09-17",
+      "resolution": "The task page now adds the report action immediately after the immutable report API succeeds and synchronizes the in-memory batch snapshot. A regression with report_type absent from bootstrap passes in desktop and narrow viewports, and the deployed EV-20260916-1400 task now exposes the Evaluation report button.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-032",
+      "status": "resolved",
+      "summary": "Prompt saving validates required terms but does not reject a confidence output field in the persisted API path.",
+      "impact": "A future batch could freeze a Prompt contract that reintroduces unsupported confidence scores even though the confirmed workflow explicitly forbids them.",
+      "source": "Task 2.3 implementation audit on 2026-09-17",
+      "resolution": "The persistence boundary now validates the complete frozen input/output contract and rejects an explicit confidence output field while still allowing the required prohibition text. Backend regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-033",
+      "status": "resolved",
+      "summary": "Async ASR capability cards hardcode available/input-passed states, their test button calls an undefined function, and New Evaluation does not filter providers by verified capability status.",
+      "impact": "The UI can claim an unverified provider is ready and allow it into a new batch, while the advertised capability test action fails instead of producing a persisted state.",
+      "source": "Task 2.5 implementation audit on 2026-09-17",
+      "resolution": "Added persisted capability profiles and validation states for Soniox, Speechmatics, and ElevenLabs; existing verified encrypted connections restore their prior diagnostic state, failed checks persist unavailable, and successful checks persist verified. Bootstrap, settings cards, and New Evaluation now consume the same state, while the batch API rejects unverified providers. Backend, build, dual-viewport browser, deployed API, and local page checks passed without new external calls.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-034",
+      "status": "resolved",
+      "summary": "The acceptance page can serve a stale frontend bundle in which the report action is missing and the candidate table contradicts persisted Pass 1 and Pass 2 counts.",
+      "impact": "A real immutable report may exist in storage but remain undiscoverable, while the task detail falsely says Pass 1 has not run.",
+      "source": "User screenshot and deployed-page/runtime comparison on 2026-09-17",
+      "resolution": "Rebuilt the current frontend, force-recreated the local acceptance container, confirmed the current bundle hash is served, and verified EV-20260916-1400 opens its immutable preliminary report with the funnel, distributions, observations, and all 120 Case rows.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-035",
+      "status": "resolved",
+      "summary": "English report Case rows render stored second-pass rationale verbatim, including Chinese model-generated text.",
+      "impact": "The English interface still contains Chinese evaluation conclusions even though only source transcripts are allowed to retain their original language.",
+      "source": "Deployed EV-20260916-1400 report inspection on 2026-09-17",
+      "resolution": "English report rows now replace legacy Chinese-only model rationale with an English decision-specific explanation while preserving source transcripts and evidence in their original language. A deployed browser regression passes.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-036",
+      "status": "resolved",
+      "summary": "Cost settings save only the CNY-to-USD rate; edited ASR/LLM rates and the default batch budget remain page-local values even though the UI says Save settings.",
+      "impact": "A user can review and save pricing but future batches silently freeze the built-in catalog and a hardcoded budget instead of the reviewed values.",
+      "source": "Task 2.6 implementation audit on 2026-09-17",
+      "resolution": "Pricing versions now persist model-specific ASR/LLM rates, the frozen CNY-to-USD rate, source note, and default hard batch budget. New-batch controls load that default, each batch freezes the complete version, and execution reserves and settles LLM costs only from its frozen snapshot. Backend, build, and dual-viewport browser regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-037",
+      "status": "resolved",
+      "summary": "A targeted browser pricing regression was accidentally run against the reused acceptance database and appended two test pricing versions.",
+      "impact": "The active local acceptance price and budget briefly changed to test values, although immutable history was preserved.",
+      "source": "Post-test pricing-version audit on 2026-09-17",
+      "resolution": "Appended a restoration version through the production storage API with the prior 0.14 FX rate, $10 default budget, and full 3-ASR/10-LLM reviewed catalog. Future destructive browser acceptance remains restricted to the isolated test service.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-038",
+      "status": "resolved",
+      "summary": "Legacy reports can show zero retained source warnings and zero ASR/LLM usage even when the frozen batch snapshot records warnings and the batch has a non-zero total cost.",
+      "impact": "The report and cost breakdown look incomplete or falsely imply that no usage occurred.",
+      "source": "Deployed EV-20260916-1400 report inspection on 2026-09-17",
+      "resolution": "Report coverage now falls back to the batch's frozen source-warning snapshot when a legacy immutable report omitted that field. Empty ledgers on a non-zero-cost legacy batch now state that usage was not recorded and cannot be truthfully split, instead of displaying zero ASR and LLM usage. Dual-viewport report regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-039",
+      "status": "resolved",
+      "summary": "The frozen prototype's legacy New evaluation click handler can open the dialog before the runtime reset finishes, while the loading placeholder is installed only after asynchronous pricing setup.",
+      "impact": "A fast upload can race with draft reset and revert to the active dataset; initial prototype rows can also appear briefly as if they were real API data.",
+      "source": "Isolated 70-case dual-viewport browser regression on 2026-09-17",
+      "resolution": "The runtime now replaces frozen rows before asynchronous setup begins, and upload acceptance waits for the reset draft dialog to become ready. The complete 70-case desktop and narrow browser suite passes in an isolated local service.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-040",
+      "status": "resolved",
+      "summary": "Execution checkpoints expose progress but do not yet emit the structured stage latency, provider job, retry, schema failure, cost, and queue-depth telemetry required by task 10.4.",
+      "impact": "Operators cannot reliably explain slow or failed evaluations without inspecting database rows and unstructured logs.",
+      "source": "Task 10.4 and src/evaluation/executor.py audit on 2026-09-17",
+      "resolution": "Added content-free durable telemetry for LLM requests, ASR provider jobs, retries, schema failures, latency and queue depth, plus a batch telemetry endpoint that joins the separate ASR/LLM cost ledgers. Focused backend tests and Ruff pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-041",
+      "status": "resolved",
+      "summary": "The local historical workbook contains 13 calls, 14 issues and 30 P1 target events with three-provider ASR evidence, but it contains no second-pass output decisions and is not a tracked Change fixture.",
+      "impact": "It can support input-schema provenance, but a regression test claiming to reproduce historical second-pass decisions would still have to invent missing outputs.",
+      "source": "outputs/.../riyadbank_p1_asr_comparison.xlsx workbook and Change fixture audit on 2026-09-17",
+      "resolution": "Marked the persisted batch snapshot audit_only, blocked its formal report APIs with HTTP 409, added a dedicated read-only audit-evidence endpoint and page, and excluded the batch from formal summary, review and Benchmark queries. Browser verification confirmed the audit disclaimer and retained candidate rows while the formal Manual review and Benchmark totals are zero.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-042",
+      "status": "resolved",
+      "summary": "Generated evaluation workbooks under outputs/ are untracked but were not excluded from version control.",
+      "impact": "A future broad add could accidentally commit generated evaluation evidence or customer-derived content.",
+      "source": "Task 11.8 workspace artifact audit on 2026-09-17",
+      "resolution": "Added outputs/ to .gitignore and documented the preserved, ignored, and tracked evidence boundary without deleting user data.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-043",
+      "status": "resolved",
+      "summary": "The frozen Pass 2 fixture and prototype still define a single-Case top-level response while the confirmed executor dynamically packs multiple Cases and requires grouped results.",
+      "impact": "The visible Prompt, frozen snapshot, model response and parser can disagree, causing otherwise valid grouped runs to fail or truncated partial output to be accepted inconsistently.",
+      "source": "Q-009 contract audit and PD-025 confirmation on 2026-09-17",
+      "resolution": "Added the approved V2 grouped Prompt fixture and V1.16 prototype, exposed every grouped runtime variable in both previews, required request_group_id/results/positioning_quality on save, and rejected mismatched group IDs before any Case is persisted. Backend, build, and focused desktop/narrow browser regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-044",
+      "status": "resolved",
+      "summary": "The first Q-009 migration condition treated the output-only positioning_quality field as a runtime input slot and unnecessarily incremented a fresh database Prompt version.",
+      "impact": "A clean deployment would start Pass 2 at version 2 despite already seeding the complete V2 contract, making Prompt history misleading.",
+      "source": "Focused backend regression on 2026-09-17",
+      "resolution": "Restricted seed migration detection to the new request_group_id input slot; output fields remain contract-validation terms rather than runtime slots. All 56 focused backend tests then passed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-045",
+      "status": "resolved",
+      "summary": "The Docker image copied only the historical Pass 2 V1 Prompt fixture even though runtime now loads the PD-025 V2 fixture.",
+      "impact": "The rebuilt acceptance container can fail at application import because the approved V2 Prompt file is absent from the image.",
+      "source": "Authorized local Docker rebuild output on 2026-09-17",
+      "resolution": "The image now copies the V2 fixture. The authorized rebuild is healthy on 127.0.0.1:8000, and the deployed bootstrap exposes Pass 2 Prompt version 4 with the grouped request_group_id/results contract.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-046",
+      "status": "resolved",
+      "summary": "The active acceptance context and reference dictionary contain repeated desktop-chromium and narrow-chromium strings left by earlier browser mutation tests.",
+      "impact": "Future batches could freeze test-only configuration text even though saved resource connections and source data remain intact.",
+      "source": "Read-only deployed bootstrap inspection after the authorized Docker rebuild on 2026-09-17",
+      "resolution": "Appended clean immutable dictionary v8 and context v10 through the production APIs, linked the clean versions, and preserved all historical versions, saved connections, source data and batches.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-047",
+      "status": "resolved",
+      "summary": "EV-20260916-1400 is still exposed as a normal evaluation report and its generated Benchmark samples are counted in the formal library despite PD-010 requiring audit-only isolation.",
+      "impact": "The invalid first real probe can be mistaken for an accepted report, metric source, Benchmark result or Gate 3 evidence.",
+      "source": "Read-only deployed report and batch-list inspection on 2026-09-17",
+      "resolution": "Marked the persisted batch snapshot audit_only, blocked its formal report APIs with HTTP 409, added a dedicated read-only audit-evidence endpoint and page, and excluded the batch from formal summary, review and Benchmark queries. Browser verification confirmed the audit disclaimer and retained candidate rows while the formal Manual review and Benchmark totals are zero.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-048",
+      "status": "open",
+      "summary": "Repository-wide Ruff validation is not green because 69 pre-existing findings remain in unrelated utility and vendor scripts outside this Change.",
+      "impact": "A repository-wide lint claim cannot be made, although the changed evaluation scope can still be validated independently.",
+      "source": "Repository-wide .venv/bin/ruff check . on 2026-09-17",
+      "resolution": null,
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-049",
+      "status": "resolved",
+      "summary": "PRD.html, proposal.md and completed task 0.1 still identify prototype V1.15 as current even though PD-025 froze V1.16 with SHA-256 1357e3dd....",
+      "impact": "The declared current requirement baseline is internally inconsistent and cannot support a trustworthy acceptance claim.",
+      "source": "Independent change verification on 2026-09-17",
+      "resolution": "Updated PRD.html, proposal.md and task 0.1 to identify the PD-025-authorized V1.16 prototype and its exact SHA-256 as the single current baseline; historical V1.15 remains audit-only.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-050",
+      "status": "resolved",
+      "summary": "A previously omitted local historical weekly report records a different 13-conversation P1 and 12-conversation review workflow using Deepgram, and still does not contain the claimed 30 event-level Pass 2 output or 20/6/4 classifications.",
+      "impact": "The proposal/design wording could be misread as local-real evidence for the Gate 2 20/6/4 fixture even though no matching result artifact is available.",
+      "source": "Read-only inspection of outputs/01a09dd7-2f06-7392-ae69-ad6fd88d20db/riyadbank_weekly_evaluation_report.html on 2026-09-17",
+      "resolution": "Added the weekly report to the historical evidence audit and corrected design.md to label 20/6/4 as a Gate 2 static fixture rather than recovered local-real output. The different 13/12 Deepgram flow remains separately traceable and is not mapped into the current schema.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-051",
+      "status": "resolved",
+      "summary": "The audit-only EV-20260916-1400 batch retains its historical awaiting_review stage and review_total=33 even though formal Manual review correctly excludes all of those rows.",
+      "impact": "A user inspecting the old batch can see a 33-item pending-review count but no actionable review queue, making valid audit evidence look like missing or dirty data.",
+      "source": "Read-only deployed UI and SQLite audit on 2026-09-17: 33 pending rows across 22 conversations, each linked to a source event, three-provider evidence and existing MP3/WAV files; PD-010 marks the batch audit_only.",
+      "resolution": "Deleted EV-20260916-1400 through the guarded batch-deletion API after deployment; its batch-owned outputs are gone, shared source/configuration remains, and a content-free deletion tombstone is retained.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-052",
+      "status": "resolved",
+      "summary": "The product has no batch deletion command or UI, and the existing staged-upload discard capability is not exposed as an explicit user action.",
+      "impact": "An audit-only, failed, stopped or mistakenly prepared evaluation remains visible with no safe product workflow for removal.",
+      "source": "User report and implementation audit on 2026-09-17; PD-026 explicitly requests deletion of EV-20260916-1400 and a delete path for mistaken content.",
+      "resolution": "Added explicit staged-upload discard and confirmed deletion for audit-only, failed, and stopped batches; active batches must be stopped first. API and deployed browser regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-053",
+      "status": "resolved",
+      "summary": "New Evaluation generates a fresh idempotency key inside every submit attempt instead of keeping one stable key for the dialog draft.",
+      "impact": "A retry after an uncertain response can create and start another paid batch instead of returning the original batch.",
+      "source": "Frontend implementation audit on 2026-09-17; runtime also contains EV-20260918-4966 and EV-20260918-2655 created 34 seconds apart from the same source and configuration.",
+      "resolution": "New Evaluation now keeps one idempotency key for the lifetime of a dialog draft, so uncertain retries return the original command instead of creating another paid batch.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-054",
+      "status": "resolved",
+      "summary": "The valid EV-20260918-2655 preliminary report exists, but evaluation_batches.report_type remains NULL and the batch list therefore hides the report entry.",
+      "impact": "Users see completed automated results and pending review counts but cannot discover the complete immutable report from the batch list.",
+      "source": "Read-only deployed bootstrap and report API audit on 2026-09-19 after the user-initiated real run completed.",
+      "resolution": "Report freezing now links the owning batch immediately, startup recovery repairs existing unlinked reports, and the deployed EV-20260918-2655 row exposes its preliminary report entry.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-055",
+      "status": "resolved",
+      "summary": "The real report groups one frozen scenario tag separately when Pass 2 returns its key, English name, or Chinese name.",
+      "impact": "The report shows duplicate rows such as Branch names and cities with different counts, obscuring the true distribution and filters.",
+      "source": "Deployed EV-20260918-2655 report UI and immutable payload audit on 2026-09-19.",
+      "resolution": "New reports canonicalize frozen tag aliases before aggregation, while the renderer canonically merges the immutable real payload. The deployed report now shows five unique groups totaling 122 Cases.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-056",
+      "status": "resolved",
+      "summary": "The batch list still displays 120 first-pass candidates as suspected errors, while the report Benchmark metric shows zero despite 49 Good and 49 Bad automatic samples.",
+      "impact": "The same completed real run exposes contradictory candidate, suspected, and Benchmark totals across its list and report views.",
+      "source": "Deployed EV-20260918-2655 batch list/report UI and API audit on 2026-09-19.",
+      "resolution": "The real batch list now shows 73/381 final suspected events, while the report separately shows 120 first-pass candidates, 122 decisions, and 98 automatic Benchmark samples (49 Good and 49 Bad).",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-057",
+      "status": "resolved",
+      "summary": "The evaluation dashboard continues to show no suspected-error rate and says evaluation has not run after a valid formal report exists.",
+      "impact": "The page-level KPI contradicts the real batch row and report even after their totals are reconciled.",
+      "source": "Deployed dashboard inspection after EV-20260918-2655 completed on 2026-09-19.",
+      "resolution": "The dashboard now derives its suspected-error KPI from the latest valid formal report and displays 19.2% (73/381) for the real batch.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-058",
+      "status": "resolved",
+      "summary": "A failed batch with no evaluation result renders `null / 381 · 0.0%` in the suspected-errors column.",
+      "impact": "The UI presents the absence of a result as a malformed numeric result.",
+      "source": "Deployed batch-list inspection of EV-20260918-4966 on 2026-09-19.",
+      "resolution": "Failed batches without a result now render an em dash in the suspected-errors column; the deployed EV-20260918-4966 row no longer exposes a null value.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-059",
+      "status": "resolved",
+      "summary": "The English run and report views still expose the Chinese evaluation-context name because the persisted context currently has only one display-name field.",
+      "impact": "The English interface is not yet fully localized even though generated review content has been cleaned up.",
+      "source": "Deployed EV-20260918-2655 run/report inspection on 2026-09-19.",
+      "resolution": "The English renderer now maps the versioned Riyad Bank seed context to its English display name without changing the immutable stored snapshot. Read-only deployed batch and report inspection shows Riyad Bank branch routing v10 and no Chinese context-name residue.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-060",
+      "status": "resolved",
+      "summary": "Failed batch EV-20260918-4966 persisted only the generic class name EvaluationExecutionError and no actionable safe failure reason.",
+      "impact": "The batch can be identified as failing before any provider request or cost, but neither the user nor support can determine the original trigger from retained evidence.",
+      "source": "Local-real bootstrap and telemetry audit on 2026-09-19: stage=failed, progress=0, cost=0, provider_execution=queued, no counters/traces, created 34 seconds before the successful batch.",
+      "resolution": "Future failures now persist and render a safe category, actionable message, failing stage and retryability without storing raw upstream bodies. Backend and desktop/narrow UI regressions pass. The already deleted historical batch's original trigger is intentionally not invented or reconstructed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-061",
+      "status": "resolved",
+      "summary": "Mypy passes for src/evaluation but reports 13 typing findings when the evaluation test modules are included.",
+      "impact": "The production evaluation package is type-clean, but a broader claim that evaluation implementation and tests are both Mypy-clean is not yet supported.",
+      "source": "Local .venv/bin/mypy src/evaluation tests/test_evaluation.py tests/test_evaluation_pass2_packing.py on 2026-09-19.",
+      "resolution": "Added precise test annotations and casts without changing behavior. Mypy now reports no issues in all 14 evaluation implementation/test modules; Ruff and 73 backend/quality tests also pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-062",
+      "status": "resolved",
+      "summary": "The first focused browser regression for failure diagnostics timed out on an incorrect Back-to-batches test selector after the new product assertions had passed.",
+      "impact": "The focused browser run is not green until the test navigates back using the production control's actual accessible contract.",
+      "source": "Desktop and narrow Playwright failure in evaluation-gate3.spec.js on 2026-09-19; screenshots and traces were generated under test-results/playwright.",
+      "resolution": "The regression now uses the stable Evaluation batches navigation contract. The focused 2-case run and complete isolated 72-case desktop/narrow Evaluation suite pass; generated failure artifacts and the isolated database were removed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-063",
+      "status": "open",
+      "summary": "The full 180-test repository suite passes but emits two dependency deprecation warnings from Starlette TestClient/httpx compatibility and Pipecat AudioContextTTSService.",
+      "impact": "There is no current Evaluation failure, but future dependency upgrades may require unrelated test-client and TTS-service migration work.",
+      "source": "Full local .venv/bin/pytest -q run on 2026-09-19: 169 passed, 2 warnings.",
+      "resolution": null,
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-064",
+      "status": "resolved",
+      "summary": "At the declared 390x844 minimum viewport, opening the two-pass Prompt preview makes the document wider than the viewport even though the dialog itself does not overflow.",
+      "impact": "The page can scroll horizontally behind the modal, violating the project's no-horizontal-scroll rule for overlays.",
+      "source": "New desktop/narrow Playwright minimum-viewport regression on 2026-09-19; both projects fail at the request-preview document overflow assertion.",
+      "resolution": "Settings tabs now wrap below 760px and their labels may break safely. The dedicated 390x844 overlay regression passes in both browser projects, and the complete isolated Evaluation suite passes 74/74.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-065",
+      "status": "resolved",
+      "summary": "The immutable V1.17 prototype still contains one hidden Prompt-preview sentence using the historical Gate 2 terminology introduced before PD-027.",
+      "impact": "Changing the frozen prototype would invalidate its confirmed SHA-256; leaving the sentence unexplained could suggest that the old three-Gate workflow remains current.",
+      "source": "Independent Checkpoint C terminology audit on 2026-09-19.",
+      "resolution": "The frozen prototype and checksum remain untouched for traceability. The production UI now says fixture preview, proposal.md uses the two-user-gate/A-B-C-checkpoint model, and PD-027 explicitly classifies old prototype/file wording as historical evidence only.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-066",
+      "status": "resolved",
+      "summary": "The VoiceAgent home product rail gives both the active VoiceAgent entry and inactive Evaluation entry the same green tile treatment.",
+      "impact": "Users cannot reliably distinguish the selected product from an unselected product in the shared navigation rail.",
+      "source": "User browser comment on the deployed http://localhost:8000/ page on 2026-09-19, confirmed by the shared product-rail markup and CSS cascade.",
+      "resolution": "The shared rail now marks only the current product with aria-current=page and applies the green border/background only to active, hovered or keyboard-focused entries. The VoiceAgent and Evaluation routes expose complementary states; the focused desktop/narrow browser regression passes and the rebuilt localhost:8000 container is healthy.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-067",
+      "status": "resolved",
+      "summary": "The first focused navigation browser run could not launch Chromium because the sandbox denied its macOS Mach-port registration.",
+      "impact": "The new dual-viewport product-rail regression has not yet executed, although the frontend production build is green.",
+      "source": "Focused desktop/narrow Playwright run against the isolated port-8001 service on 2026-09-19.",
+      "resolution": "The regression was rerun with approved local browser access against an isolated no-auth service on port 18973; both desktop and narrow projects passed. The temporary service and generated browser artifacts were removed after verification.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-068",
+      "status": "resolved",
+      "summary": "Chinese mode still exposes untranslated English interface copy, and real English/Arabic source transcripts do not have a generated Chinese comparison.",
+      "impact": "Chinese readers encounter avoidable reading barriers; static UI copy violates the existing bilingual contract, while arbitrary source translation cannot be truthfully fabricated from frontend mappings.",
+      "source": "User review of the deployed Chinese Evaluation UI on 2026-09-19, confirmed by the live accessibility tree and the source conversation API returning only original text.",
+      "resolution": "Fixed interface labels now use local frontend copy only. Chinese report mode translates Good/Bad, Case and label-status copy locally, while real English/Arabic conversation events are sent on demand to the frozen Pass 1 model and rendered beside the immutable original. The response is browser-session cached and never stored as source, report, Benchmark or evidence. Backend contract tests and 34 desktop/narrow runtime browser tests pass with a mocked provider response.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-069",
+      "status": "resolved",
+      "summary": "Conversation IDs in the real runtime report are rendered as plain text instead of opening the API-backed conversation-history and full-call-audio drawer.",
+      "impact": "Users cannot trace a real report Case back to the uploaded workbook timeline and recording from the report, despite the frozen prototype and backend source/audio endpoints already defining that path.",
+      "source": "User report-page review on 2026-09-19, confirmed by renderReport/refreshRunReport producing plain span IDs while the drawer wiring exists only in the fixture script.",
+      "resolution": "Every runtime report conversation ID now opens the existing drawer using GET /api/evaluation/conversations/{id}, renders the uploaded workbook timeline, highlights the target event, and connects the full-call audio URL. Desktop and narrow tests verify the real API shape, source text, keyboard-ready timeline, Chinese comparison, session cache and no horizontal overflow.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-070",
+      "status": "resolved",
+      "summary": "The first focused report-drawer browser regression could not launch Chromium because the sandbox denied macOS Mach-port registration.",
+      "impact": "The new desktop and narrow viewport assertions have not yet executed; backend tests and the production frontend build are green.",
+      "source": "Focused Playwright run for the persisted report and conversation drawer on 2026-09-19.",
+      "resolution": "Chromium was relaunched with approved local browser access. The browser reached the page and exposed a separate stale-deployment mismatch rather than the sandbox launch failure.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-071",
+      "status": "resolved",
+      "summary": "The first unsandboxed drawer regression targeted the existing localhost:8000 container, whose frontend bundle predates the new runtime conversation-link implementation.",
+      "impact": "Both viewports timed out waiting for the new runtime link; this run cannot validate the current source tree.",
+      "source": "Focused Playwright run on 2026-09-19; all pre-existing report assertions passed before the locator for .runtime-conversation-link timed out.",
+      "resolution": "A fresh isolated current-source service was started on port 18973. The complete 34-case desktop/narrow Evaluation runtime suite passed there; the user-facing port-8000 service was not modified in this work.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-072",
+      "status": "resolved",
+      "summary": "The first isolated-source browser run could not connect because the sandbox denied binding the temporary local service to port 18973.",
+      "impact": "The isolated current-source browser assertions did not start and must be rerun with approved local port binding.",
+      "source": "Temporary uvicorn startup and focused Playwright run on 2026-09-19.",
+      "resolution": "The temporary service was restarted with approved local port access, completed the focused and full browser suites, and was then stopped and its temporary database directory removed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-073",
+      "status": "resolved",
+      "summary": "The first current-source browser assertion found that the new report link removed the readable whitespace before the event separator.",
+      "impact": "The conversation ID remained visible and clickable, but its combined text rendered as conversation-id followed immediately by the separator instead of the established 'conversation-id · event-id' format.",
+      "source": "Desktop and narrow focused Playwright assertions on the isolated 18973 service on 2026-09-19.",
+      "resolution": "Restored the established 'conversation-id · event-id' spacing while keeping only the conversation ID interactive; both viewport regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-074",
+      "status": "resolved",
+      "summary": "The focused browser test addressed the Chinese language selector as a button even though its accessible role is tab.",
+      "impact": "The drawer's English-mode source-history assertions passed, but the Chinese translation and session-cache assertions did not execute in this run.",
+      "source": "Desktop and narrow focused Playwright runs on the isolated 18973 service on 2026-09-19.",
+      "resolution": "The regression now addresses the selector by its semantic tab role. Both viewport runs execute and pass the Chinese translation assertions.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-075",
+      "status": "resolved",
+      "summary": "After switching the focused report test to Chinese, its final pre-existing filter-count assertion still expected the English label.",
+      "impact": "All new source drawer, Arabic original, Chinese comparison, model disclosure and one-call session-cache assertions passed before the stale English-only expectation failed.",
+      "source": "Desktop and narrow focused Playwright runs on the isolated 18973 service on 2026-09-19.",
+      "resolution": "The final filter-count assertion now expects the Chinese localized label after the test deliberately switches locale. All 34 runtime browser cases pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-076",
+      "status": "resolved",
+      "summary": "The initial display-translation budget reservation reused execution-stage behavior that can move a completed report batch into budget_paused when no translation budget remains.",
+      "impact": "A read-only display enhancement could incorrectly change the lifecycle status of an already completed or awaiting-review evaluation batch.",
+      "source": "Post-implementation storage review of reserve_budget during the 2026-09-19 translation work.",
+      "resolution": "Display translation uses the same atomic hard-budget check but disables the execution-stage lifecycle transition on rejection. A backend regression proves an over-budget display request is denied while the batch status remains unchanged; execution-stage reservations retain the original pause behavior.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-077",
+      "status": "resolved",
+      "summary": "Pass 2 can create an Unclassified proposed tag that describes normal user behavior, such as not explicitly answering the language-selection prompt, instead of an ASR error dimension.",
+      "impact": "The proposed-tag table mixes true transcription failure categories with normal or unresolved user behavior, so reviewers may create misleading global quality tags and move Good or manual-review Cases into them.",
+      "source": "Product review of EV-20260918-2655 on 2026-09-19. The report groups six Cases under the proposed tag '语言选择' with description '语言选择阶段未能明确选择阿拉伯语或英语的用户回复。'; one grouped Case is Good because the production transcript accurately preserves a non-answer. The frozen Pass 2 Prompt requires every Case to return a scenario_tag and to propose a tag when none matches, but does not require proposed tags to describe an ASR failure mode or prevent normal Good behavior from creating a taxonomy proposal.",
+      "resolution": "PD-031 now constrains both passes to detecting whether production ASR preserved actual speech and necessary business meaning. User compliance, flow completion, intent reasonableness and bot behavior cannot independently become ASR defects. Proposed tags must be neutral reusable ASR-quality dimensions across Good, Bad and manual outcomes. The approved Prompt fixtures, active-template migration, save validation, Delta Spec, design and regression assertions were updated; historical frozen reports remain immutable. The rebuilt localhost deployment is healthy with active Prompt versions Pass 1 v13 and Pass 2 v5, while EV-20260918-2655 remains awaiting_review and its frozen report still returns successfully.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-078",
+      "status": "resolved",
+      "summary": "The first frontend build command was launched from the repository root, which has no package.json.",
+      "impact": "That command did not execute the frontend build and therefore provided no build evidence.",
+      "source": "Local verification on 2026-09-19.",
+      "resolution": "The frontend build was rerun from the frontend workspace, which owns package.json.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-079",
+      "status": "resolved",
+      "summary": "The production ASR recognition analysis lists every linked conversation/event instead of the frozen prototype's aggregate X-of-Y error result by scenario.",
+      "impact": "The report duplicates Case-level detail in a summary section, makes the section excessively long, and diverges from the confirmed UI baseline.",
+      "source": "Product comparison of localhost:8000 with frozen prototype V1.17 on 2026-09-19.",
+      "resolution": "The runtime table now renders one aggregate production-ASR result per scenario as confirmed errors / evaluated Cases, plus an aggregate finding and attention state. It contains no conversation or event links.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-080",
+      "status": "resolved",
+      "summary": "The report tag overview replaced the frozen candidate-tag cards and their 'Review cases & create tag' actions with unrelated coverage summaries.",
+      "impact": "Reviewers cannot navigate from a candidate-tag summary to the proposed Case rows and creation workflow as shown in the confirmed prototype.",
+      "source": "Product comparison of localhost:8000 with frozen prototype V1.17 on 2026-09-19.",
+      "resolution": "The overview now renders acoustic/semantic candidate-tag cards from the frozen report proposals and restores the 'Review cases & create tag' navigation action.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-081",
+      "status": "resolved",
+      "summary": "The proposed-tag details table renders one row per proposed tag and combines several Cases in one cell instead of rendering one Case per row.",
+      "impact": "Production transcript, audio and Case identity cannot be compared row-by-row, and the table no longer follows the frozen prototype interaction model.",
+      "source": "Product comparison of localhost:8000 with frozen prototype V1.17 on 2026-09-19.",
+      "resolution": "Each proposed Case now occupies one row with one Case ID, its production transcript and its own audio control. Tag name/description remain visible per row, while the create-and-move action appears once per proposal group.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-082",
+      "status": "resolved",
+      "summary": "The first focused Playwright command used a test path that does not match the frontend Playwright configuration, so no tests ran.",
+      "impact": "The frontend build passed, but that command provided no browser evidence for the three restored report interactions.",
+      "source": "Local UI verification on 2026-09-19.",
+      "resolution": "The focused run was relaunched with the configured relative test filename.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-083",
+      "status": "resolved",
+      "summary": "The corrected focused Playwright run could not launch Chromium because the sandbox denied macOS Mach-port registration.",
+      "impact": "Both desktop and narrow tests stopped before page execution, so the UI behavior still required an unsandboxed rerun.",
+      "source": "Focused Playwright run on 2026-09-19; Chromium failed with MachPortRendezvousServer permission denied.",
+      "resolution": "The same desktop and narrow projects were rerun with approved Chromium process access.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-084",
+      "status": "resolved",
+      "summary": "The first unsandboxed report-baseline regression targeted the still-running localhost bundle from before the three UI fixes.",
+      "impact": "Both viewports correctly observed the old Case-link summary, so the run did not test the newly built source bundle.",
+      "source": "Focused Playwright run against localhost:8000 on 2026-09-19.",
+      "resolution": "localhost:8000 was rebuilt with image manifest c4d2e9f1aa585ab334dc028c6d93f39c23964e32cc7ba2cda7c442fbc256a551 before rerunning the browser checks.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-085",
+      "status": "resolved",
+      "summary": "After restoring the frozen candidate-tag cards, the report browser test still expected the superseded coverage/language/source-warning summaries in that same overview slot.",
+      "impact": "Both viewports reached the updated UI successfully but failed on assertions for content intentionally removed to match the prototype.",
+      "source": "Focused Playwright run against the rebuilt localhost:8000 on 2026-09-19.",
+      "resolution": "The stale assertions were removed and replaced with direct checks for aggregate-only production-ASR output, restored navigation actions and one proposed Case per row. Both browser projects pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-086",
+      "status": "resolved",
+      "summary": "The complete report/configuration browser suite ran against the shared acceptance database and four empty-state assertions failed because EV-20260918-2655 legitimately exists.",
+      "impact": "The 30 non-empty-state tests passed, including both updated report tests; the four failures were limited to fixtures that require an empty database.",
+      "source": "34-case dual-viewport Playwright run against shared localhost:8000 on 2026-09-19.",
+      "resolution": "The same 34-case dual-viewport suite was rerun against an isolated temporary data directory on 127.0.0.1:18974 and passed 34/34. The temporary server was stopped and /tmp/voiceagent-report-ui.lE0mmy was removed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-087",
+      "status": "resolved",
+      "summary": "The first PD-032 focused Playwright run could not launch Chromium because the macOS sandbox denied MachPortRendezvous registration.",
+      "impact": "The frontend build passed, but the browser assertions did not execute in that attempt.",
+      "source": "Focused desktop/narrow Playwright run on 2026-09-20.",
+      "resolution": "The same focused test was rerun with the approved browser-launch permission and executed normally on both viewports.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-088",
+      "status": "resolved",
+      "summary": "The first unsandboxed PD-032 browser run reached localhost:8000 before its Docker image had been rebuilt, so the page still served the previous evaluation bundle.",
+      "impact": "Both viewports correctly showed the old Arabic-only behavior; this run cannot validate the new translation UI.",
+      "source": "Focused desktop/narrow Playwright run against the pre-rebuild localhost deployment on 2026-09-20.",
+      "resolution": "localhost:8000 was rebuilt and restarted with image manifest afafa413b2b9a79305add03fa6d09a76fb289bef0371d6293bc0bb4f3419d2ec; the post-rebuild desktop/narrow regression passed 2/2.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-089",
+      "status": "resolved",
+      "summary": "A final docker compose ps check was denied by the local Docker socket sandbox.",
+      "impact": "The successful rebuild/start and browser checks remain valid, but the final container-status read must be repeated with approved Docker access.",
+      "source": "Final delivery status check on 2026-09-20.",
+      "resolution": "The status check was repeated with approved Docker access; voiceagent-platform-voice-agent-1 is healthy and bound to 127.0.0.1:8000.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-090",
+      "status": "resolved",
+      "summary": "A real PD-032 display-translation request for EV-20260918-2655 received HTTP 200 from DeepSeek but returned output that could not be decoded as the required JSON schema.",
+      "impact": "All Arabic source text remains visible, but the affected manual-review translation group displays Chinese comparison unavailable; the current display-only path does not retry malformed model output.",
+      "source": "Local container log at 2026-09-20 06:47:21: provider=deepseek, error=JSONDecodeError.",
+      "resolution": "PD-033 adds one full-group retry followed by stable chunks of at most four texts with two attempts each, while budget rejection short-circuits immediately. Focused tests cover split recovery and budget stop; real translation quality remains UV-014.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-091",
+      "status": "resolved",
+      "summary": "The focused Mypy run found an obsolete type-ignore on the test-only EvaluationRunner(None, None) construction.",
+      "impact": "Translation tests and Ruff pass, but the focused type-check remains red until the unnecessary suppression is removed.",
+      "source": "Focused executor/test Mypy run on 2026-09-20.",
+      "resolution": "Removed the obsolete test-only suppression; focused Mypy now passes for both executor and test module.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-092",
+      "status": "resolved",
+      "summary": "PD-033 tests do not exercise a chunk failing once then succeeding on its second attempt, or the terminal failure after every full-group and chunk attempt is exhausted.",
+      "impact": "The implementation currently has the required two-attempt loop and safe terminal error, but the explicit verification contract for per-chunk retry bounds and final failure is not protected against regression.",
+      "source": "Independent PD-033 review of tests/test_evaluation.py on 2026-09-20.",
+      "resolution": "The split-recovery test now forces a four-item chunk to fail on attempt 1 and succeed on attempt 2, and a dedicated exhaustion test proves the safe terminal error after full-group and chunk retries are consumed. Five focused translation tests, Ruff and Mypy pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-093",
+      "status": "resolved",
+      "summary": "The frozen deepseek-flash model consumes most or all display-translation completion budget as reasoning tokens even though the caller requests thinking=False, frequently leaving zero visible output to parse.",
+      "impact": "Whole-group and chunk retries still return JSONDecodeError; successful earlier chunks are discarded when a later chunk fails because the endpoint remains all-or-nothing.",
+      "source": "Real EV-20260918-2655 display-translation ledger on 2026-09-20: repeated 3,152 or 1,080 reasoning tokens with 0 output tokens; one chunk produced 75 output tokens while later chunks failed.",
+      "resolution": "PD-034 adds the official DeepSeek thinking.type=disabled parameter behind a display-translation-only opt-in flag. Pass 1, Pass 2 and all other callers retain the default behavior. Chunk results now preserve successful translations and return null only for failed source indexes.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-094",
+      "status": "resolved",
+      "summary": "Mypy rejected assigning the all-success list[str] branch to the new partial-result list[str | None] variable because Python lists are invariant.",
+      "impact": "Runtime tests and Ruff pass, but the focused type-check is red until the successful branch is explicitly widened to the response element type.",
+      "source": "Focused PD-034 Mypy run on 2026-09-20.",
+      "resolution": "The all-success branch is explicitly widened to list[str | None]; focused Mypy now passes.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-095",
+      "status": "resolved",
+      "summary": "The first PD-034 frontend build command was launched from the repository root, where no package.json exists.",
+      "impact": "Backend checks completed successfully, but that command did not start the frontend build.",
+      "source": "PD-034 local verification on 2026-09-20.",
+      "resolution": "The frontend build was rerun from frontend/ and passed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-096",
+      "status": "resolved",
+      "summary": "The first PD-034 browser run targeted localhost:8000 before rebuilding its Docker image, so the old client treated null partial translations as an empty Chinese line.",
+      "impact": "The source build is green, but the deployed page cannot validate per-text fallback until localhost is rebuilt.",
+      "source": "Focused desktop/narrow Playwright run on 2026-09-20.",
+      "resolution": "localhost:8000 was rebuilt with image manifest 322d01291149c91f6180480b730ab8dd7ad504f2bddd9179bf7455bb6e999d46; post-rebuild partial-result and English non-regression tests pass 4/4 across desktop and narrow viewports.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-097",
+      "status": "resolved",
+      "summary": "A read-only source-workbook timestamp probe could not run inside the runtime container because openpyxl is not installed there.",
+      "impact": "The persisted review window and ASR segment evidence are already available; only this auxiliary direct-XLSX cross-check needs an alternate reader.",
+      "source": "Read-only diagnosis of conversation 1030000000082501 on 2026-09-20.",
+      "resolution": "The repository's dependency-free read_dialogue_workbook parser was used against the retained source workbook and confirmed the R14/R15/R16 timestamps without adding a runtime dependency.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-098",
+      "status": "resolved",
+      "summary": "Manual-review provider candidates are reconstructed from every ASR segment intersecting the padded unified playback window, so full-call robot speech can be presented as if it were the target user-event ASR candidate.",
+      "impact": "For 1030000000082501 R15, the 48.28-52.77s review window overlaps robot R14 before the target user event at 51.222s; Soniox, ElevenLabs and Speechmatics candidate cards therefore include bot prompts and can mislead the reviewer.",
+      "source": "Read-only comparison of the frozen review payload, provider segment ranges and source workbook R14-R16 timestamps on 2026-09-20.",
+      "resolution": "PD-035 replaces full-call segment reconstruction with one stable pure-user event WAV per Case and provider. Pass 2, review and playback now use only the event-level result and exact source interval; deterministic tests cover adjacent-event boundaries and restart idempotency.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-099",
+      "status": "resolved",
+      "summary": "The frozen EV-20260918-2655 preliminary report and its already-materialized 24 pending review payloads predate PD-035 and still contain legacy full-call-derived ASR candidates.",
+      "impact": "The new workflow fixes future event-level ASR execution, but silently rewriting the historical immutable report or making 72 unapproved provider calls would break evidence and cost controls. The currently open R15 review therefore remains historical evidence until an explicit batch reprocessing path is implemented and authorized.",
+      "source": "PD-035 implementation audit on 2026-09-20.",
+      "resolution": "PD-036 initially selected preservation, then PD-037 explicitly superseded it and deleted all local Evaluation test history while preserving shared source/configuration data.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-100",
+      "status": "resolved",
+      "summary": "Speechmatics completed the authorized 2.033-second event job but returned an empty transcript, while ElevenLabs returned usable text without word-level segments.",
+      "impact": "Without explicit handling, an empty provider response could be counted as successful, and a valid short-clip transcript without segment IDs could be rejected despite having a deterministic source boundary.",
+      "source": "External-real PD-035 verification on 2026-09-20.",
+      "resolution": "The ASR dispatcher now rejects blank normalized text as an invalid provider result. Pass 2 still accepts usable event-level text without segment IDs because the exact playback boundary is frozen before dispatch. Regression tests cover both cases.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-101",
+      "status": "resolved",
+      "summary": "The PD-035 independent Evaluation-scope Mypy run reports three test typing errors in tests/test_evaluation.py.",
+      "impact": "Runtime regressions pass, but the declared Evaluation test/type-check scope is not green: one test constructs EvaluationRunner with a None store and two assertions index an Optional batch result without narrowing.",
+      "source": "Independent PD-035 verification on 2026-09-20: .venv/bin/mypy src/evaluation tests/test_evaluation.py tests/test_evaluation_pass2_packing.py.",
+      "resolution": "The test-only runner now uses an explicit EvaluationStore cast and both batch lookups are narrowed with non-None assertions. The expanded 14-module Mypy scope passes.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-102",
+      "status": "resolved",
+      "summary": "PD-035 has no deterministic regression that drives an invalid or misaligned event timeline through the ASR orchestrator and proves a failed event/provider checkpoint with no mixed-call fallback.",
+      "impact": "The production code fails closed and the boundary/idempotency tests pass, but task 5.9 explicitly requires invalid-timeline and failure-no-fallback coverage and remains unchecked; this behavior is not protected against regression.",
+      "source": "Independent PD-035 review of tests/test_evaluation.py and task 5.9 on 2026-09-20.",
+      "resolution": "Added an orchestrator-level regression that injects audio_timeline_mismatch, asserts no provider dispatch, and verifies a durable failed event/provider checkpoint with attempts=0 and no result payload.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-103",
+      "status": "resolved",
+      "summary": "PD-036 is recorded only in the decision and delivery records; its production data-isolation contract is absent from the Delta Specs, design and tasks.",
+      "impact": "The current named-volume deployment path has no specified or automated preflight proving the target production volume is empty or production-owned, and no post-start assertion that local batch, report, review, Benchmark, ledger or media history is absent.",
+      "source": "Independent final PD-036 review of Change artifacts, compose.yaml and scripts/deploy/platform_voiceagent.sh on 2026-09-20.",
+      "resolution": "Added the environment-isolated data requirement, production storage design boundary and explicit future pre-deployment verification tasks 13.1-13.3. These tasks remain outside the authorized local acceptance deployment scope.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-104",
+      "status": "resolved",
+      "summary": "The confirmed batch-deletion flow rejected an awaiting-review batch even after the product owner explicitly requested deletion of all local Evaluation test history.",
+      "impact": "EV-20260918-2655 and its 24 reviews, 98 Benchmark rows, report, checkpoints and ledger remained visible with no supported cleanup path.",
+      "source": "Product-owner instruction on 2026-09-20 and guarded deletion-path inspection.",
+      "resolution": "The confirmed deletion path now accepts awaiting-review and completed non-running batches while continuing to reject running, paused and budget-paused work. EV-20260918-2655 was deleted through that API; all batch-owned tables are empty, while five connections, six pricing versions, nine scenario tags, 56 source conversations and 853 source events remain.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-105",
+      "status": "resolved",
+      "summary": "EV-20260920-7878 remains running at evaluation_asr 75% with zero jobs after all 56 Pass 1 Qwen requests failed three times before provider dispatch.",
+      "impact": "The UI looks indefinitely busy even though no work remains. The batch froze qwen-plus for both LLM passes, but pricing version 6 contains only Gemini and GPT rates; the executor rejects every request with Frozen model price is unavailable, creates no candidates or ASR jobs, then advances into an empty ASR stage instead of reaching a truthful terminal failure.",
+      "source": "Read-only local-real database and telemetry inspection on 2026-09-20: 56/56 Pass 1 rows failed with three attempts, zero cost-ledger rows, zero ASR jobs, no lease, and millisecond failures; frozen pricing version 6 has no Qwen rate.",
+      "resolution": "PD-038 adds a pre-insert frozen-price check for both selected LLMs, terminates an all-failed Pass 1 as retryable partially_failed/failed, and completes a valid zero-candidate run with an immutable preliminary report instead of entering empty ASR work. Five focused regressions, Ruff and the expanded Evaluation Mypy scope pass. The local service was rebuilt, EV-20260920-7878 was stopped and deleted through supported APIs, and no automatic rerun was performed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-106",
+      "status": "resolved",
+      "summary": "New Evaluation creation errors are shown only in a transient three-second page toast, with no persistent error inside the still-open dialog.",
+      "impact": "A user can miss the Qwen missing-price rejection and perceive that clicking Confirm did nothing, even though the backend correctly refused to create a batch.",
+      "source": "Product-owner report and frontend createBatch/notify inspection on 2026-09-20.",
+      "resolution": "New Evaluation now keeps the dialog open and renders the backend rejection in a persistent, focusable role=alert beside the confirmation actions; the toast remains only as a secondary notification. The message is cleared for each clean draft and submit attempt. Desktop and narrow browser regressions pass on the rebuilt localhost service.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-107",
+      "status": "resolved",
+      "summary": "The first focused browser regression targeted the currently deployed localhost bundle from before the persistent New Evaluation error UI was built into Docker.",
+      "impact": "Both viewports correctly found no new-run-error element, so that run does not validate the current source implementation.",
+      "source": "Focused desktop/narrow Playwright run on 2026-09-20.",
+      "resolution": "localhost:8000 was rebuilt with image manifest e05288b58f64ed884cc6317c870fc7849a795706dd0a2bfc5998ef5c73fca98f; the same focused desktop and narrow browser tests then passed 2/2.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-108",
+      "status": "open",
+      "summary": "Real Qwen Pass 1 runs still lose some conversations after all three structured-output validation attempts; the current EV-20260920-9D33 run completed Pass 1 with 46 successful and 10 failed conversations.",
+      "impact": "The failed conversations are excluded from the successful Pass 1 denominator and cannot contribute candidates unless failed resources are retried successfully.",
+      "source": "Final local-real checkpoints: deleted EV-20260920-566C had 47 completed/9 failed; current EV-20260920-9D33 had 46 completed/10 failed of 56 before entering evaluation_asr. Failed rows retain the generic ValueError tracked by KI-112.",
+      "resolution": null,
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-109",
+      "status": "resolved",
+      "summary": "A completed or completed-partial batch row renders two identical Evaluation report buttons.",
+      "impact": "The duplicate controls imply two report versions or two different destinations even though both invoke the same latest-report action for the same batch.",
+      "source": "Local-real browser and source inspection on 2026-09-20: renderBatches appends reportAction when report_type exists and then appends batchAction, which independently resolves completed_partial to the same report action.",
+      "resolution": "The batch renderer now suppresses the generic primary action when the persisted report action already targets the same report. The rebuilt localhost bundle was reloaded and EV-20260920-566C visibly exposes exactly one Evaluation report action plus the distinct Retry failed resources action.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-110",
+      "status": "resolved",
+      "summary": "EV-20260920-566C froze and exposed a sparse preliminary report after all eight grouped Pass 2 requests were rejected by Qwen with HTTP 400.",
+      "impact": "The batch list labels the result Final - partial and offers a normal report, while the report has 0 evaluated Cases and hides 166 successful event-level ASR results behind dashes because report evidence is populated only from completed Pass 2 decisions. Users can reasonably mistake this for missing ASR execution instead of a total Pass 2 failure.",
+      "source": "Read-only local-real database, browser, service-log, and source inspection on 2026-09-20: Pass 2 0 completed/73 failed across 8/8 failed request groups; Qwen returned HTTP 400; ASR recorded 166 completed/53 failed jobs; only preliminary report R1 exists.",
+      "resolution": "Qwen HTTP 400 was traced to the incompatible combination enable_thinking=true plus response_format=json_object, not to token limits. Qwen Thinking calls now omit JSON Mode while retaining frozen-prompt parsing and full schema validation; future incomplete Pass 2 runs remain retryable instead of freezing a normal report. Existing successful event-level ASR rows and target-event audio are materialized independently of Pass 2, producing immutable report R2 while preserving R1. Browser verification shows ASR text and Audio controls in the current 73-case report.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-111",
+      "status": "resolved",
+      "summary": "The full evaluation backend suite has one stale configuration-snapshot fixture that selects two fictitious model IDs without frozen prices.",
+      "impact": "The product correctly rejects the test batch under the active no-price-no-run contract, so the full suite is red until the fixture uses priced model IDs or supplies matching frozen rates.",
+      "source": "Local pytest run on 2026-09-20: test_context_versions_and_prompt_contract_are_persisted_in_batch_snapshot failed at create_batch while 63 other evaluation tests passed.",
+      "resolution": "The stale test fixture now selects the priced qwen-plus model for both frozen passes. Ruff passes and the complete evaluation backend suite passes 64/64.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-112",
+      "status": "open",
+      "summary": "Pass 1 checkpoint failures collapse every frozen-response contract violation to the generic string ValueError.",
+      "impact": "Operators can distinguish schema failure telemetry from transport failure, but cannot determine whether a response omitted event_results, duplicated coverage, used an invalid decision or violated another safe contract rule without retaining unsafe provider bodies.",
+      "source": "Read-only inspection of the nine final failed EV-20260920-566C Pass 1 checkpoints and EvaluationRunner._validate_pass_one on 2026-09-20.",
+      "resolution": null,
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-113",
+      "status": "resolved",
+      "summary": "The confirmed batch-deletion workflow omits completed_partial even though the lifecycle defines it as terminal and the deletion contract allows completed batches.",
+      "impact": "EV-20260920-566C cannot be deleted through the supported product/API path before the user's clean rerun; direct database deletion would bypass the required transactional cleanup and audit tombstone.",
+      "source": "Product-owner deletion request and read-only inspection of EvaluationStore.delete_batch plus the batch-list delete action on 2026-09-20.",
+      "resolution": "The terminal deletion allow-list and batch-list Delete action now include completed_partial. Backend deletion regressions pass, the rebuilt localhost bundle exposes the action in both viewports, and EV-20260920-566C was deleted through EvaluationStore.delete_batch with all batch-owned rows removed and a content-free tombstone retained.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-114",
+      "status": "resolved",
+      "summary": "The first completed_partial deletion browser regression targeted the still-running pre-fix localhost bundle.",
+      "impact": "Both viewport checks correctly found no Delete action until the rebuilt frontend is deployed; that run cannot validate the new source implementation.",
+      "source": "Focused Playwright run on 2026-09-20 after the source build but before rebuilding localhost:8000.",
+      "resolution": "localhost:8000 was rebuilt with image manifest 7b75b3f86e3b7afd8379e43122a3059f7e4290371e7d33d2e60d08b349161474; the same desktop and narrow regression then passed 2/2.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-115",
+      "status": "resolved",
+      "summary": "UV-018 still stated that deleted batch EV-20260920-566C remained available for a paid retry.",
+      "impact": "The stale wording contradicted the authorized transactional deletion and could direct a verifier toward a batch that no longer exists.",
+      "source": "Independent read-only delivery-record and local SQLite review on 2026-09-20 after the completed_partial deletion.",
+      "resolution": "UV-018 now describes the remaining evidence boundary without claiming that the deleted batch is retryable. The old batch remains deleted and no external request was made.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-116",
+      "status": "open",
+      "summary": "Evaluation LLM calls layer three application attempts over the OpenAI SDK default internal retries, so one Qwen Pass 2 group can occupy several minutes before the outer runner records an attempt result.",
+      "impact": "EV-20260920-9D33 Pass 2 groups average about 200 seconds and reached 353 seconds; schema-invalid groups can compound this latency across three outer attempts, making progress appear stuck even while the worker lease remains healthy.",
+      "source": "Local-real EV-20260920-9D33 telemetry and executor inspection on 2026-09-20: AsyncOpenAI(timeout=120) does not override the SDK retry default, while decide_group independently retries up to three times.",
+      "resolution": null,
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-117",
+      "status": "resolved",
+      "summary": "The current generic GPT evaluation connector cannot safely consume an Azure OpenAI deployment URL.",
+      "impact": "It enforces the public OpenAI base URL and uses OpenAI-compatible Bearer authentication, while the supplied Azure endpoint requires deployment-aware routing, an explicit api-version, and Azure api-key authentication. Attempting to save it through the current GPT card would fail rather than establish a valid connection.",
+      "source": "Read-only inspection of src/api.py, src/llm/diagnostics.py, src/evaluation/executor.py, and frontend/evaluation.html on 2026-09-20.",
+      "resolution": "Azure GPT and OpenRouter now have separate connection identities, endpoint/authentication handling, encrypted persistence, provider-qualified catalog rows, pricing lookup and executor routing. Deterministic API coverage proves duplicate model IDs remain provider-isolated and neither secret is returned.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-118",
+      "status": "open",
+      "summary": "The Qwen connection is pinned to a legacy shared OpenAI-compatible endpoint, does not expose qwen3.8-max, and cannot represent the user's prem.dashscope.aliyuncs.com/api/v1 native DashScope endpoint.",
+      "impact": "The user's prem URL is not an OpenAI-compatible base URL and cannot simply replace the current base URL. qwen3.8-max must use either the official OpenAI-compatible chat endpoint or the native multimodal-generation endpoint; treating it like qwen-plus on the native text-generation route produces a URL/API mismatch.",
+      "source": "Read-only local connection metadata and API validation, plus Alibaba Cloud Model Studio Base URL and qwen3.8-max API documentation checked on 2026-09-20. The user confirmed that the console only exposes https://prem.dashscope.aliyuncs.com/api/v1.",
+      "resolution": null,
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-119",
+      "status": "resolved",
+      "summary": "Switching an open report to Chinese aborts dynamic re-rendering after frontend exceptions in tag-card and manual-review rendering.",
+      "impact": "Static navigation changes to Chinese while the report header, generated tag content, analysis rows, decisions, and action buttons remain English; Arabic report cells also lack Chinese comparisons.",
+      "source": "Local-real browser console and DOM inspection on 2026-09-20 showed updateTagActionLabels dereferencing missing legacy action buttons and manual-review rendering assuming exactly three provider results.",
+      "resolution": "Source now tolerates cards without legacy actions and reviews with fewer provider results, localizes stored report reasons through controlled bilingual fallbacks, and requests display-only Chinese comparisons for Arabic report cells. The frontend build passed and localhost:8000 was rebuilt. Under PD-042, one real Chinese report render translated 179 unique Arabic-containing strings through the frozen Qwen Pass 1 model in one attempt with zero failed translations; the browser visibly rendered Chinese system copy, generated tags, statuses, reasons, and Arabic comparisons.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-120",
+      "status": "resolved",
+      "summary": "The final targeted Evaluation Playwright run has three failing scenarios in both desktop and narrow projects.",
+      "impact": "The 20-test release subset reports 14 passed and 6 failed: the empty-state test sees the persisted EV-20260920-9D33 batch, the report test observes two display-translation requests instead of the asserted one, and the Gemini catalog test is bypassed by the saved verified Gemini state. The release suite is therefore neither isolated nor green.",
+      "source": "Independent sandbox-external Playwright run on 2026-09-20: evaluation-gate3.spec.js lines 382 and 548, and evaluation.spec.js line 514, in desktop-chromium and narrow-chromium.",
+      "resolution": "The empty-history test now uses an isolated bootstrap fixture, report translation asserts the intentional report-plus-drawer request scopes without duplicate system copy, and Gemini diagnostics start from a deterministic empty Evaluation connection state. All three scenarios pass in desktop and narrow Chromium.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-121",
+      "status": "resolved",
+      "summary": "EV-20260920-9D33 froze a normal preliminary report while one persisted Pass 2 request group remains failed and its ten Cases were later repacked into different completed groups.",
+      "impact": "This contradicts the frozen grouped-retry contract: a failed group must keep the same membership and idempotency key, and any remaining failed group must prevent a normal report. The current real report therefore cannot serve as clean release evidence for Pass 2 recovery or report freezing.",
+      "source": "Independent read-only SQLite inspection on 2026-09-20: evaluation_pass2_groups retains failed G0003-baf4f92f7432 (attempts=3, ValueError); its ten case keys overlap completed G0001-31cb27df305f and G0003-0d4b4cbc9f25, while EV-20260920-9D33 is awaiting_review with preliminary report R1.",
+      "resolution": "Pass 2 retries now repack from the original candidate set so the deterministic frozen group ID and membership are reused even when some Case checkpoints already completed. Finalization also checks persisted group status, so any failed group blocks a normal preliminary report. Focused regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-127",
+      "status": "resolved",
+      "summary": "The production Dockerfile copies the new deployment verifier and Pass 2 v2 prompt, but .dockerignore excludes both paths from the build context.",
+      "impact": "Backend and frontend CI pass, but the production image cannot be built, so deployment and production data cleanup have not started.",
+      "next_action": "Allowlist only the required deployment script and frozen Pass 2 v2 prompt in .dockerignore, verify the build context, then rerun CI.",
+      "resolution": ".dockerignore now allowlists exactly the deployment verifier and frozen Pass 2 v2 prompt required by the Dockerfile. Local image verification reached only the external Docker Hub metadata fetch and could not complete because Docker Hub timed out; GitHub CI remains the authoritative clean-network build check.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-126",
+      "status": "resolved",
+      "summary": "The Evaluation integration tests implicitly depend on the gitignored 56-call customer dataset, so a clean checkout fails while the developer workspace passes.",
+      "impact": "Committing the customer audio is prohibited; without an explicit test boundary, CI cannot distinguish data-backed integration tests from repository-contained tests and deployment remains blocked.",
+      "next_action": "Skip only dataset-backed integration tests when the private fixture is absent, keep all repository-contained tests active, and retain the full local run as the private-fixture verification evidence.",
+      "resolution": "Clean checkouts now run 137 repository-contained tests and explicitly skip 52 private-dataset integration tests; the developer workspace with the private fixture still runs all 192 tests successfully. No customer workbook or audio was added to Git.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-125",
+      "status": "resolved",
+      "summary": "GitHub backend checks reject 14 committed Python files that do not match the locked Ruff formatter version.",
+      "impact": "CI stops before backend tests and image build, so production deployment remains blocked and no production data has changed.",
+      "next_action": "Apply the repository formatter to src and tests, rerun the complete backend check sequence, amend the release commit, and push again.",
+      "resolution": "The 14 files were formatted with the locked Ruff version. The exact CI backend sequence now passes: format, Ruff, Mypy and 192 tests; two previously disclosed dependency deprecation warnings remain.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-124",
+      "status": "resolved",
+      "summary": "GitHub CI rejected a webhook test fixture because its inert secret value did not use the repository's recognized test-only prefix.",
+      "impact": "The repository safety step fails before tests run, so production deployment is not triggered; no production state has changed.",
+      "next_action": "Rename the inert fixture value to the approved test- prefix, rerun the exact safety check, amend the release commit, and push the corrected commit.",
+      "resolution": "The fixture now uses the recognized test- prefix and the exact repository safety script passes all syntax, JSON, secret and Markdown checks locally.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-123",
+      "status": "resolved",
+      "summary": "The production post-start empty-history check would reject later routine releases after legitimate production Evaluation data exists.",
+      "impact": "Without an initial-verification marker guard, the first release is safe but every later deployment would fail once users create real production batches.",
+      "next_action": "Make the zero-history assertion one-time: enforce and mark it on the first production deployment, then preserve valid production history on subsequent deployments while retaining provenance and known-local-ID prechecks.",
+      "resolution": "The verifier now enforces zero visible Evaluation rows only until deployment.empty_history_verified is recorded. A regression test proves an initially non-empty database is rejected, an empty first deployment is marked, and legitimate later production history is preserved.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-122",
+      "status": "resolved",
+      "summary": "The full Evaluation browser suite still has two shared-state scenarios failing in both viewports.",
+      "impact": "78 of 82 checks pass; the initial empty-state scenario sees the active local batch and the generic Gemini diagnostic scenario sees the saved local Gemini connection. Both failures are test isolation defects rather than product runtime failures.",
+      "source": "Full desktop+narrow Playwright run on 2026-09-20.",
+      "resolution": "Both scenarios now explicitly isolate the bootstrap summary, ASR capability state and Evaluation connection state. The four previously failing desktop/narrow checks pass.",
+      "disclosed_to_user": true
+    }
+  ],
+  "unverified_items": [
+    {
+      "id": "UV-001",
+      "status": "resolved",
+      "summary": "Real Soniox, Speechmatics, ElevenLabs, and two-pass LLM execution, retry, and recovery have not been revalidated after the current implementation changes.",
+      "reason": "Agent-initiated paid external calls are prohibited by PD-018; the user will test through the platform.",
+      "resolution": "PD-029 designates the user-initiated EV-20260918-2655 run as current external-real evidence. It records 48 completed jobs for each ASR, 56 Pass 1 requests, grouped Pass 2 requests and real retry/schema-failure telemetry. Deterministic tests cover callbacks, polling, restart recovery, cleanup and duplicate suppression without a new paid call; see real-batch-evidence-2026-09-19.md.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-002",
+      "status": "open",
+      "summary": "Dynamic token packing uses provider defaults, including a DeepSeek limit, that have not been verified against every saved custom model ID.",
+      "reason": "Model-specific limits require authoritative catalog metadata or a user-initiated provider test.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-003",
+      "status": "open",
+      "summary": "The real batch captured supplier token/audio usage and stayed below budget, but its frozen-rate ledger has not been reconciled to actual supplier invoices and no paid over-budget run was authorized to trigger a real stop.",
+      "reason": "EV-20260918-2655 proves captured usage and USD 2.2698320617847223 frozen-rate accounting; invoice lines are unavailable and PD-018 prohibits a new paid run solely to manufacture a budget stop. Deterministic tests cover the stop-before-new-call boundary.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-004",
+      "status": "resolved",
+      "summary": "Short-lived authorized audio URLs and asynchronous expiring benchmark-export artifacts are not verified and appear absent from the current implementation.",
+      "reason": "Current local paths use direct audio and synchronous export endpoints.",
+      "resolution": "Reclassified as confirmed implementation defects KI-012 and KI-013 instead of leaving them as merely unverified.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-005",
+      "status": "resolved",
+      "summary": "Engineering Checkpoint C and User Gate 2 remain incomplete: the required independent review has not yet returned PASS and product acceptance remains user-owned.",
+      "reason": "Checkpoint A/B implementation and evidence reconciliation are complete; independent review is the next required step.",
+      "resolution": "Independent Change verification returned PASS on 2026-09-19. Engineering Checkpoints A/B/C are complete; User Gate 2 remains pending and can only be accepted by the product owner.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-006",
+      "status": "resolved",
+      "summary": "Actual pure-user WAV clipping, failed-clip recovery, and downloadable-file integrity have not yet been demonstrated for generated Benchmark samples.",
+      "reason": "The current tests verify metadata and audio serving but do not prove the full clip lifecycle.",
+      "resolution": "An isolated API regression now clips a real source WAV into the grouped ZIP, verifies the downloadable archive and CSV, records a missing-source item in manifest.csv, and persists the download audit.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-007",
+      "status": "resolved",
+      "summary": "The production frontend bundle exceeds Vite's 500 kB chunk warning threshold.",
+      "reason": "The voice application and Pipecat dependencies were bundled into one initial chunk.",
+      "resolution": "Vite now emits separate application, Pipecat client, and Pipecat transport chunks; the largest chunk is 359.47 kB and the build has no size warning. The main page and evaluation entry passed 38 desktop/narrow browser regressions after splitting.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-008",
+      "status": "resolved",
+      "summary": "A browser run against the reused port-8000 acceptance database reported state-dependent failures from an existing login, batch, and mutated tag catalog.",
+      "reason": "Destructive browser acceptance tests require a fresh isolated SQLite data directory.",
+      "resolution": "The Evaluation suites were rerun serially against a fresh isolated service; all 62 desktop and narrow tests passed on 2026-09-17.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-009",
+      "status": "resolved",
+      "summary": "The latest isolated 70-case browser rerun could not start because the sandbox denied both the temporary loopback server bind and Chromium Mach-port registration.",
+      "reason": "This was an execution-environment restriction rather than a product failure.",
+      "resolution": "The isolated service was restarted with approved local process access and all 70 desktop/narrow browser cases passed. The temporary service and database were then removed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-010",
+      "status": "resolved",
+      "summary": "The latest source and frontend build have not replaced the currently running port-8000 Docker acceptance service.",
+      "reason": "The container rebuild requires an explicit current authorization; the previous escalation was rejected. The isolated source build passed, but it is not the user-facing deployment.",
+      "resolution": "PD-025 explicitly authorized the rebuild and restart. The current image is healthy on 127.0.0.1:8000 and its bootstrap exposes the V2 grouped Pass 2 Prompt.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-011",
+      "status": "resolved",
+      "summary": "The complete baseline/actual/diff state-matrix evidence set has not been recaptured against the PD-025-authorized V1.16 prototype.",
+      "reason": "Functional and accessibility regressions are green, but the retained screenshots predate V1.16 and product visual acceptance cannot be self-approved.",
+      "resolution": "The current V1.17 production fixture was recaptured at 1440x1000 and 1024x1000; both actual PNGs are byte-identical to their frozen baselines. Every state-matrix row is mapped to named production-route functional/accessibility evidence, and the isolated 72-case dual-viewport suite passes. Final product visual acceptance remains User Gate 2.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-012",
+      "status": "resolved",
+      "summary": "No valid current external-real batch proves that the immutable preliminary/final report renders the complete frozen report structure.",
+      "reason": "The only deployed provider-result batch is correctly audit-only under PD-010; formal report APIs return 409 until the user initiates a new valid platform run.",
+      "resolution": "The user-initiated EV-20260918-2655 run now supplies valid persisted provider evidence and an immutable preliminary report. The deployed report opens from the batch list and exposes the frozen funnel, 120 first-pass candidates, 122 second-pass decisions, 98 automatic Benchmark samples, 24 pending reviews, canonical tag distribution, observations and complete Case details.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-013",
+      "status": "resolved",
+      "summary": "The UI checklist declares a 390x844 minimum overflow viewport, but the current automated Evaluation projects use only 1440x1000 and 1024x1000.",
+      "reason": "No overflow defect has been observed; an explicit 390x844 production-route assertion is still needed before claiming the minimum viewport is verified.",
+      "resolution": "Added an explicit 390x844 production-route test for the New Evaluation and two-pass Prompt preview overlays. It first exposed KI-064; after the responsive tab fix both browser projects pass and the full isolated suite is 74/74 green.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-014",
+      "status": "resolved",
+      "summary": "The user-triggered Chinese comparison reached the real frozen DeepSeek Pass 1 provider for EV-20260918-2655, but translation quality remains unverified because the response failed JSON decoding.",
+      "reason": "The earlier DeepSeek batch returned HTTP 200 but malformed JSON; mock-backed tests retained the failure boundary while PD-033 added recovery.",
+      "resolution": "PD-042 authorized one current real report verification. Qwen returned all 179 requested Chinese comparisons in one attempt with no split or failed rows, and the live page rendered them alongside the Arabic source text.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-015",
+      "status": "resolved",
+      "summary": "The user-facing localhost:8000 Docker service has not been rebuilt with the PD-030 translation and report-drawer increment.",
+      "reason": "The shared worktree contained extensive concurrent changes, so the initial implementation was verified on an isolated service before deployment.",
+      "resolution": "The product owner explicitly authorized the local rebuild on 2026-09-19. docker compose up --build -d produced image manifest 82292fe6388873cd9a2a46a26f092530a04036f32ac96e73fe59e663b76e978a; localhost:8000 is healthy, OpenAPI exposes the display-translation route, EV-20260918-2655 remains awaiting_review, and the in-app browser was reloaded onto the rebuilt service.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-016",
+      "status": "resolved",
+      "summary": "The PD-035 pure-user event retranscription path has deterministic local coverage but has not yet been called once against Soniox, Speechmatics and ElevenLabs with the same real event clip.",
+      "reason": "The exact scope and USD 0.05 ceiling were recorded, then the user explicitly authorized the named R15 audio and all three recipients.",
+      "resolution": "The same 2.033-second pure-user WAV was dispatched once to each provider with no retry. Soniox and ElevenLabs returned text; Speechmatics returned empty and exposed KI-100. Evidence: verification/pure-user-event-asr-2026-09-20.md.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-017",
+      "status": "open",
+      "summary": "Production data-volume isolation and empty-list verification have not been executed.",
+      "reason": "Tasks 13.1-13.2 are implemented and independently verified: production uses the dedicated voiceagent-evaluation-production-data volume; precheck rejects non-production provenance and known local batch IDs; post-start verification requires production provenance plus zero batch/report/review/Benchmark rows before deployment success; and the authorized legacy cleanup removes only Evaluation result history and derived artifacts while retaining shared configuration. Deployment has not run, so task 13.3 remains unchecked and must succeed during deployment. This is a mandatory deployment-time gate, not a blocker to initiating the fail-closed release workflow.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-018",
+      "status": "open",
+      "summary": "The corrected Qwen Thinking request has not yet been proven in a later external-real Pass 2 run against the paid endpoint.",
+      "reason": "The implementation is covered by deterministic request-shape tests and local report recovery. EV-20260920-566C and its failed groups were deleted through the user-authorized transactional path, so they are no longer retryable; no replacement paid external request was made during this independent verification.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-019",
+      "status": "open",
+      "summary": "Azure GPT and OpenRouter have deterministic local integration coverage but have not completed a real provider diagnostic or paid evaluation request.",
+      "reason": "No OpenRouter key was provided, the Azure key pasted in chat is intentionally not reused or persisted, and external calls require a fresh scoped authorization. The current localhost service also remains on the prior image while EV-20260920-9D33 is still running, to avoid interrupting paid work.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-020",
+      "status": "resolved",
+      "summary": "The independently verified release commit has not been pushed or deployed because the external Git push approval was rejected.",
+      "reason": "Pushing main to git@github.com:jasonchao75/VoiceAgent.git would transmit the 96-file Evaluation implementation and evidence bundle and trigger the production workflow. The execution safety reviewer requires explicit confirmation of this exact remote and payload before allowing the push.",
+      "resolution": "PD-043 records the product owner's explicit confirmation to push the verified Change to the named remote main branch, trigger production deployment, and enforce empty production Evaluation history.",
+      "disclosed_to_user": true
+    }
+  ]
+}

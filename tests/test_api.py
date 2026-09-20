@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.api import create_app
+from src.api import _azure_deployment_from_url, create_app
 
 
 def test_health_and_catalogs_do_not_call_providers() -> None:
@@ -120,27 +120,37 @@ def test_product_login_protects_routes_without_native_auth_challenge(
     password = "test-password-long-enough"
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_USERNAME", username)
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", password)
+    monkeypatch.delenv("ELEVENLABS_STT_WEBHOOK_SECRET", raising=False)
 
     with TestClient(create_app(), base_url="https://testserver") as client:
         health = client.get("/health")
         first_visit = client.get("/", follow_redirects=False)
         unauthorized = client.get("/api/catalogs")
+        protected_audio = client.get("/api/evaluation/conversations/1030000000091506/audio")
+        public_webhook = client.post("/api/evaluation/webhooks/elevenlabs", content=b"{}")
         login = client.post(
             "/api/auth/login",
             json={"username": username, "password": password, "next": "/?page=sessions"},
         )
         authorized = client.get("/api/catalogs")
+        authorized_audio = client.get("/api/evaluation/conversations/1030000000091506/audio")
         session = client.get("/api/auth/session")
 
     assert health.status_code == 200
     assert first_visit.headers["location"] == "/login?next=%2F"
     assert unauthorized.status_code == 401
+    assert protected_audio.status_code == 401
+    assert public_webhook.status_code == 503
+    assert public_webhook.json()["detail"] == "ElevenLabs webhook is not configured"
     assert "www-authenticate" not in unauthorized.headers
     assert login.status_code == 200
     assert login.json()["next"] == "/?page=sessions"
     assert "HttpOnly" in login.headers["set-cookie"]
     assert "Secure" in login.headers["set-cookie"]
     assert authorized.status_code == 200
+    assert authorized_audio.status_code in {200, 404}
+    if authorized_audio.status_code == 200:
+        assert authorized_audio.headers["content-type"].startswith("audio/")
     assert session.json()["auth_enabled"] is True
 
 
@@ -201,3 +211,22 @@ def test_basic_auth_rejects_incomplete_or_placeholder_configuration(
     monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", "only7ch")
     with pytest.raises(RuntimeError, match="at least 8 characters"):
         create_app()
+
+
+def test_azure_deployment_url_requires_exact_host_path_and_api_version() -> None:
+    """Azure evaluation routing must never accept an ambiguous or non-Azure URL."""
+    assert (
+        _azure_deployment_from_url(
+            "https://example.openai.azure.com/openai/deployments/gpt-4o/"
+            "chat/completions?api-version=2025-01-01-preview"
+        )
+        == "gpt-4o"
+    )
+    for invalid in (
+        "https://api.openai.com/v1/chat/completions?api-version=2025-01-01-preview",
+        "https://example.openai.azure.com/openai/deployments/gpt-4o/chat/completions",
+        "http://example.openai.azure.com/openai/deployments/gpt-4o/"
+        "chat/completions?api-version=2025-01-01-preview",
+    ):
+        with pytest.raises(ValueError):
+            _azure_deployment_from_url(invalid)

@@ -6,7 +6,19 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: resolve(import.meta.dirname, "index.html"),
+        evaluation: resolve(import.meta.dirname, "evaluation.html"),
         login: resolve(import.meta.dirname, "login.html"),
+      },
+      output: {
+        manualChunks(id) {
+          if (id.includes("@pipecat-ai/websocket-transport")) {
+            return "pipecat-transport";
+          }
+          if (id.includes("@pipecat-ai/client-js")) {
+            return "pipecat-client";
+          }
+          return undefined;
+        },
       },
     },
   },

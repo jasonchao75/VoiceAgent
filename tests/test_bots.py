@@ -5,6 +5,7 @@ from __future__ import annotations
 import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 from cryptography.fernet import Fernet
@@ -14,6 +15,7 @@ from pydantic import SecretStr
 from src.api import create_app
 from src.bots.crypto import BotKeyCipher, StorageKeyError
 from src.bots.storage import BotStore
+from src.llm.diagnostics import DiagnosticConfig, LLMDiagnosticResult
 
 VALID_CONFIG = {
     "name": "Support bot",
@@ -93,6 +95,64 @@ def test_cipher_roundtrip_and_wrong_key() -> None:
 def test_cipher_rejects_malformed_master_key() -> None:
     with pytest.raises(StorageKeyError, match="not a valid Fernet key"):
         BotKeyCipher("not-a-fernet-key")
+
+
+def test_evaluation_connection_survives_restart_without_exposing_key(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A verified evaluation connection must persist in the shared encrypted volume."""
+    storage_key = Fernet.generate_key().decode()
+    plain_key = "soniox-test-key-never-returned"
+    monkeypatch.setenv("VOICE_AGENT_STORAGE_KEY", storage_key)
+    monkeypatch.setenv("VOICE_AGENT_DATA_DIR", str(tmp_path))
+
+    async def fake_probe(provider: str, api_key: str, *, timeout: float) -> dict[str, object]:
+        assert provider == "soniox"
+        assert api_key == plain_key
+        assert timeout == 10.0
+        return {
+            "success": True,
+            "category": "ok",
+            "diagnostic_id": "diag-soniox-persisted",
+            "summary": "Authenticated provider probe passed.",
+            "suggestion": "Ready.",
+        }
+
+    monkeypatch.setattr("src.api.test_asr_connection", fake_probe)
+    with TestClient(create_app()) as first_client:
+        saved = first_client.post(
+            "/api/evaluation/connections/soniox/test-and-save",
+            json={"api_key": plain_key},
+            headers=ORIGIN,
+        )
+        assert saved.status_code == 200, saved.text
+        assert saved.json()["connection"]["has_saved_key"] is True
+        assert plain_key not in saved.text
+
+    with sqlite3.connect(tmp_path / "evaluation.db") as database:
+        encrypted = database.execute(
+            "SELECT encrypted_api_key FROM evaluation_connections WHERE provider='soniox'"
+        ).fetchone()
+    assert encrypted is not None and encrypted[0] != plain_key
+
+    with TestClient(create_app()) as restarted_client:
+        listed = restarted_client.get("/api/evaluation/connections")
+        assert listed.status_code == 200
+        assert listed.json() == [
+            {
+                "provider": "soniox",
+                "kind": "asr",
+                "base_url": "https://api.soniox.com",
+                "status": "verified",
+                "diagnostic_id": "diag-soniox-persisted",
+                "last_model_id": None,
+                "verified_at": listed.json()[0]["verified_at"],
+                "updated_at": listed.json()[0]["updated_at"],
+                "has_saved_key": True,
+            }
+        ]
+        assert plain_key not in listed.text
 
 
 @pytest.mark.asyncio
@@ -311,6 +371,227 @@ def test_update_key_tristate(client_with_keys: TestClient) -> None:
         headers=ORIGIN,
     )
     assert response.status_code == 400
+
+
+def test_diagnostic_reuses_saved_bot_key_for_another_catalog_model(
+    client_with_keys: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A saved provider key may test another catalog model without changing the Bot."""
+    bot = _create_bot(
+        client_with_keys,
+        llm_provider="google_gemini",
+        llm_base_url="https://generativelanguage.googleapis.com",
+        llm_model="gemini-2.5-flash-lite",
+        save_keys=True,
+        deepgram_api_key=DEEPGRAM_KEY,
+        llm_api_key=LLM_KEY,
+    )
+    captured: dict[str, DiagnosticConfig] = {}
+
+    async def fake_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
+        captured["config"] = config
+        return LLMDiagnosticResult(
+            diagnostic_id="diag-test",
+            success=True,
+            category="ok",
+            summary="Connected.",
+            suggestion="",
+            provider=config.provider,
+            base_url_host="generativelanguage.googleapis.com",
+            model=config.model,
+            first_token_ms=12.0,
+            total_ms=24.0,
+            reasoning_status="minimized",
+        )
+
+    monkeypatch.setattr("src.api.run_llm_diagnostic", fake_diagnostic)
+    response = client_with_keys.post(
+        "/api/llm/diagnostics",
+        json={
+            "bot_id": bot["id"],
+            "llm_model": "gemini-3.8-flash",
+            "reasoning_mode": "provider_default",
+        },
+        headers=ORIGIN,
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["model"] == "gemini-3.8-flash"
+    assert captured["config"].api_key == LLM_KEY
+    assert captured["config"].base_url == "https://generativelanguage.googleapis.com"
+    assert bot["llm_model"] == "gemini-2.5-flash-lite"
+
+
+def test_diagnostic_rejects_uncatalogued_model_with_saved_bot_key(
+    client_with_keys: TestClient,
+) -> None:
+    """Saved credentials cannot bypass the controlled provider model catalog."""
+    bot = _create_bot(
+        client_with_keys,
+        llm_provider="google_gemini",
+        llm_base_url="https://generativelanguage.googleapis.com",
+        llm_model="gemini-2.5-flash-lite",
+        save_keys=True,
+        deepgram_api_key=DEEPGRAM_KEY,
+        llm_api_key=LLM_KEY,
+    )
+    response = client_with_keys.post(
+        "/api/llm/diagnostics",
+        json={"bot_id": bot["id"], "llm_model": "gemini-does-not-exist"},
+        headers=ORIGIN,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Select an LLM model from the server catalog"
+
+
+def test_successful_custom_diagnostic_registers_evaluation_model(
+    client_with_keys: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A real successful custom-model test should persist an idempotent catalog row."""
+    bot = _create_bot(
+        client_with_keys,
+        llm_provider="custom",
+        llm_base_url="https://api.deepseek.com",
+        llm_model="deepseek-chat",
+        save_keys=True,
+        deepgram_api_key=DEEPGRAM_KEY,
+        llm_api_key=LLM_KEY,
+    )
+
+    async def fake_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
+        return LLMDiagnosticResult(
+            diagnostic_id="diag-custom-catalog",
+            success=True,
+            category="ok",
+            summary="Connected.",
+            suggestion="",
+            provider=config.provider,
+            base_url_host="api.deepseek.com",
+            model=config.model,
+            first_token_ms=10.0,
+            total_ms=20.0,
+            reasoning_status="unverified",
+        )
+
+    monkeypatch.setattr("src.api.run_llm_diagnostic", fake_diagnostic)
+    payload = {
+        "bot_id": bot["id"],
+        "llm_model": "deepseek-custom-2026",
+        "register_for_evaluation_catalog": True,
+    }
+    first = client_with_keys.post("/api/llm/diagnostics", json=payload, headers=ORIGIN)
+    second = client_with_keys.post("/api/llm/diagnostics", json=payload, headers=ORIGIN)
+
+    assert first.status_code == 200, first.text
+    assert first.json()["evaluation_catalog_registered"] is True
+    assert first.json()["evaluation_provider"] == "DeepSeek"
+    assert second.status_code == 200, second.text
+    catalog = client_with_keys.get("/api/evaluation/llm-models")
+    assert catalog.status_code == 200
+    assert len(catalog.json()) == 1
+    assert catalog.json()[0]["provider"] == "DeepSeek"
+    assert catalog.json()[0]["model_id"] == "deepseek-custom-2026"
+    assert catalog.json()[0]["base_url_host"] == "api.deepseek.com"
+
+
+def test_azure_and_openrouter_connections_are_isolated_and_provider_qualified(
+    client_with_keys: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Azure and OpenRouter may register the same model ID without sharing secrets."""
+    seen: list[DiagnosticConfig] = []
+
+    async def fake_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
+        seen.append(config)
+        return LLMDiagnosticResult(
+            diagnostic_id=f"diag-{config.provider}",
+            success=True,
+            category="ok",
+            summary="Connected.",
+            suggestion="",
+            provider=config.provider,
+            base_url_host=urlparse(config.base_url).hostname or "",
+            model=config.model,
+            first_token_ms=10.0,
+            total_ms=20.0,
+            reasoning_status="unverified",
+        )
+
+    monkeypatch.setattr("src.api.run_llm_diagnostic", fake_diagnostic)
+    azure_key = "azure-secret-never-returned"
+    openrouter_key = "openrouter-secret-never-returned"
+    azure_url = (
+        "https://example-resource.openai.azure.com/openai/deployments/gpt-4o/"
+        "chat/completions?api-version=2025-01-01-preview"
+    )
+    azure = client_with_keys.post(
+        "/api/evaluation/connections/azure_gpt/test-and-save",
+        json={
+            "api_key": azure_key,
+            "base_url": azure_url,
+            "model_id": "gpt-4o",
+            "register_for_evaluation_catalog": True,
+        },
+        headers=ORIGIN,
+    )
+    openrouter = client_with_keys.post(
+        "/api/evaluation/connections/openrouter/test-and-save",
+        json={
+            "api_key": openrouter_key,
+            "model_id": "gpt-4o",
+            "register_for_evaluation_catalog": True,
+        },
+        headers=ORIGIN,
+    )
+
+    assert azure.status_code == openrouter.status_code == 200
+    assert seen[0].provider == "azure_openai"
+    assert seen[0].base_url == azure_url
+    assert seen[1].provider == "custom"
+    assert seen[1].base_url == "https://openrouter.ai/api/v1"
+    connections = client_with_keys.get("/api/evaluation/connections")
+    assert connections.status_code == 200
+    assert {item["provider"] for item in connections.json()} >= {
+        "azure_gpt",
+        "openrouter",
+    }
+    assert azure_key not in connections.text
+    assert openrouter_key not in connections.text
+    catalog = client_with_keys.get("/api/evaluation/llm-models").json()
+    duplicates = [item for item in catalog if item["model_id"] == "gpt-4o"]
+    assert {item["provider"] for item in duplicates} == {"Azure GPT", "OpenRouter"}
+
+
+def test_unknown_custom_endpoint_cannot_register_evaluation_model(
+    client_with_keys: TestClient,
+) -> None:
+    """An arbitrary OpenAI-compatible endpoint must not enter the product catalog."""
+    bot = _create_bot(
+        client_with_keys,
+        llm_provider="custom",
+        llm_base_url="https://models.example.com/v1",
+        llm_model="private-model",
+        save_keys=True,
+        deepgram_api_key=DEEPGRAM_KEY,
+        llm_api_key=LLM_KEY,
+    )
+    response = client_with_keys.post(
+        "/api/llm/diagnostics",
+        json={
+            "bot_id": bot["id"],
+            "llm_model": "private-model-v2",
+            "register_for_evaluation_catalog": True,
+        },
+        headers=ORIGIN,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == (
+        "This endpoint is not a supported evaluation model provider"
+    )
+    assert client_with_keys.get("/api/evaluation/llm-models").json() == []
 
 
 # --- sessions from bots ------------------------------------------------------

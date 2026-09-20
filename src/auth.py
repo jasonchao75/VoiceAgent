@@ -139,6 +139,7 @@ class ProductAuthMiddleware(BaseHTTPMiddleware):
             "/login",
             "/login.html",
             "/api/auth/login",
+            "/api/evaluation/webhooks/elevenlabs",
         }
 
     @staticmethod

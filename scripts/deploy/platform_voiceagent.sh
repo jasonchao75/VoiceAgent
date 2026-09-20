@@ -7,6 +7,9 @@ readonly COMPOSE_PROJECT="voiceagent-platform"
 readonly IMAGE_NAME="voiceagent-platform:latest"
 readonly ROLLBACK_IMAGE="voiceagent-platform:rollback"
 readonly HEALTH_URL="http://127.0.0.1:8020/health"
+readonly EVALUATION_VOLUME="voiceagent-evaluation-production-data"
+readonly LEGACY_DATA_VOLUME="${COMPOSE_PROJECT}_voiceagent-data"
+export VOICE_AGENT_DEPLOYMENT_ENVIRONMENT=production
 
 if [[ $# -ne 0 ]]; then
   echo "This command accepts the commit SHA on standard input only" >&2
@@ -71,6 +74,12 @@ git_as_deploy checkout --quiet --detach "${DEPLOY_SHA}"
 cd "${REPO_DIR}"
 docker compose --project-name "${COMPOSE_PROJECT}" config --quiet
 
+if docker volume inspect "${EVALUATION_VOLUME}" >/dev/null 2>&1; then
+  readonly EVALUATION_DATA_MOUNT="$(docker volume inspect "${EVALUATION_VOLUME}" --format '{{ .Mountpoint }}')"
+  python3 scripts/deploy/verify_evaluation_production.py \
+    precheck "${EVALUATION_DATA_MOUNT}/evaluation.db"
+fi
+
 if docker image inspect "${IMAGE_NAME}" >/dev/null 2>&1; then
   docker image tag "${IMAGE_NAME}" "${ROLLBACK_IMAGE}"
   had_previous_image=true
@@ -81,6 +90,14 @@ docker compose \
   --project-name "${COMPOSE_PROJECT}" \
   up -d --remove-orphans --wait --wait-timeout 120
 curl --fail --show-error --silent --retry 5 --retry-delay 2 "${HEALTH_URL}" >/dev/null
+docker compose --project-name "${COMPOSE_PROJECT}" exec -T voice-agent \
+  python /app/scripts/deploy/verify_evaluation_production.py \
+  verify /evaluation-data/evaluation.db --mark-verified
+
+if docker volume inspect "${LEGACY_DATA_VOLUME}" >/dev/null 2>&1; then
+  readonly LEGACY_DATA_MOUNT="$(docker volume inspect "${LEGACY_DATA_VOLUME}" --format '{{ .Mountpoint }}')"
+  python3 scripts/deploy/verify_evaluation_production.py cleanup-legacy "${LEGACY_DATA_MOUNT}"
+fi
 
 trap - ERR
 docker image rm "${ROLLBACK_IMAGE}" >/dev/null 2>&1 || true

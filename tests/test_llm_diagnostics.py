@@ -25,15 +25,19 @@ def test_safe_failure_categories(error: Exception, category: str) -> None:
 
 
 def test_gemini_low_latency_profiles_are_explicit() -> None:
-    """Gemini 2.5 disables thinking while 3.x uses its documented minimum."""
+    """Gemini models use each generation's documented minimum thinking control."""
     two_five = get_model_capability("google_gemini", "gemini-2.5-flash-lite")
     three = get_model_capability("google_gemini", "gemini-3.6-flash")
+    three_eight = get_model_capability("google_gemini", "gemini-3.8-flash")
     assert two_five is not None
     assert (two_five.control_name, two_five.control_value) == ("thinking_budget", 0)
     assert two_five.expected_status == "confirmed_off"
     assert three is not None
     assert (three.control_name, three.control_value) == ("thinking_level", "minimal")
     assert three.expected_status == "minimized"
+    assert three_eight is not None
+    assert (three_eight.control_name, three_eight.control_value) == ("thinking_level", "low")
+    assert three_eight.expected_status == "minimized"
     assert get_model_capability("custom", "unknown") is None
 
 

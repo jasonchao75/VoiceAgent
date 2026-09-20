@@ -14,6 +14,8 @@ services:
       VOICE_AGENT_BASIC_AUTH_USERNAME: "${VOICE_AGENT_BASIC_AUTH_USERNAME:-}"
       VOICE_AGENT_BASIC_AUTH_PASSWORD: "${VOICE_AGENT_BASIC_AUTH_PASSWORD:-}"
       VOICE_AGENT_DATA_DIR: /data
+      VOICE_AGENT_EVALUATION_DATA_DIR: /evaluation-data
+      VOICE_AGENT_DEPLOYMENT_ENVIRONMENT: "${VOICE_AGENT_DEPLOYMENT_ENVIRONMENT:-local}"
       VOICE_AGENT_STORAGE_KEY: "${VOICE_AGENT_STORAGE_KEY:-}"
     init: true
     restart: unless-stopped
@@ -22,8 +24,12 @@ services:
       - /tmp:size=64m
     volumes:
       - voiceagent-data:/data
+      - voiceagent-evaluation-production-data:/evaluation-data
+      - ./benchmarks/RiyadBankConversation:/app/benchmarks/RiyadBankConversation:ro
     security_opt:
       - no-new-privileges:true
 
 volumes:
   voiceagent-data:
+  voiceagent-evaluation-production-data:
+    name: voiceagent-evaluation-production-data

@@ -6,12 +6,13 @@ FRONTEND = Path("frontend/src/main.js").read_text(encoding="utf-8")
 STYLES = Path("frontend/src/styles.css").read_text(encoding="utf-8")
 
 
-def test_only_approved_product_pages_are_present() -> None:
-    """Navigation must expose only the pages approved by the change."""
+def test_approved_product_pages_are_present() -> None:
+    """Navigation must expose the approved VoiceAgent and Evaluation products."""
     assert 'data-page="settings"' in FRONTEND
     assert 'data-page="sessions"' in FRONTEND
     assert 'data-page="advanced"' in FRONTEND
-    assert "Evaluation" not in FRONTEND
+    assert 'href="/evaluation.html"' in FRONTEND
+    assert "ASR Evaluation" in FRONTEND
     assert "Simulate caller turn" not in FRONTEND
 
 

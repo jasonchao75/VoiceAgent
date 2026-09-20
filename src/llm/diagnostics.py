@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 from urllib.parse import urlparse
 
+import httpx
 from google import genai
 from google.genai import types
 from openai import AsyncOpenAI
@@ -29,6 +30,7 @@ class LLMDiagnosticRequest(BaseModel):
     llm_temperature: float | None = Field(default=None, ge=0.0, le=2.0)
     reasoning_mode: Literal["provider_default", "off", "minimal"] | None = None
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    register_for_evaluation_catalog: bool = False
 
 
 class LLMDiagnosticResult(BaseModel):
@@ -51,6 +53,8 @@ class LLMDiagnosticResult(BaseModel):
     http_status: int | None = None
     error_type: str | None = None
     provider_error_code: str | None = None
+    evaluation_catalog_registered: bool = False
+    evaluation_provider: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,6 +199,32 @@ async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float, float, int 
     return (first_token - started) * 1000, (finished - started) * 1000, reasoning_tokens
 
 
+async def _diagnose_azure_openai(config: DiagnosticConfig) -> tuple[float, float, int | None]:
+    """Run a minimal Azure deployment check against its exact frozen URL."""
+    started = time.monotonic()
+    async with httpx.AsyncClient(timeout=config.timeout) as client:
+        response = await client.post(
+            config.base_url,
+            headers={"api-key": config.api_key, "Content-Type": "application/json"},
+            json={
+                "messages": [{"role": "user", "content": "Reply with OK."}],
+                "max_tokens": 8,
+                "temperature": 0,
+            },
+        )
+        response.raise_for_status()
+        payload = response.json()
+    finished = time.monotonic()
+    content = ((payload.get("choices") or [{}])[0].get("message") or {}).get("content")
+    if not content:
+        raise RuntimeError("Provider returned no text token")
+    reasoning_tokens = ((payload.get("usage") or {}).get("completion_tokens_details") or {}).get(
+        "reasoning_tokens"
+    )
+    elapsed = (finished - started) * 1000
+    return elapsed, elapsed, int(reasoning_tokens) if reasoning_tokens is not None else None
+
+
 async def _diagnose_gemini(config: DiagnosticConfig) -> tuple[float, float, int | None]:
     capability = get_model_capability(config.provider, config.model)
     thinking = None
@@ -255,6 +285,8 @@ async def run_llm_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
     try:
         if config.provider == "google_gemini":
             first_ms, total_ms, reasoning_tokens = await _diagnose_gemini(config)
+        elif config.provider == "azure_openai":
+            first_ms, total_ms, reasoning_tokens = await _diagnose_azure_openai(config)
         else:
             first_ms, total_ms, reasoning_tokens = await _diagnose_openai(config)
         control, reasoning_status = _reasoning_result(

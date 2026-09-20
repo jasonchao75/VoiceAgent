@@ -24,7 +24,7 @@ const app = document.querySelector("#app");
 
 app.innerHTML = `
   <main class="shell">
-    <aside class="product-rail expanded"><button id="toggle-product-rail" type="button" aria-label="Collapse product rail">☰</button><a href="/" aria-label="VoiceAgent Demo home"><span>V</span><b>VoiceAgent Demo</b></a><div class="account-control"><button id="account-avatar" type="button" aria-haspopup="true" aria-expanded="false" aria-label="User menu">V</button><div class="account-menu"><span>Shared demo user</span><button id="logout-button" type="button">Log out</button></div></div></aside>
+    <aside class="product-rail expanded"><button id="toggle-product-rail" type="button" aria-label="Collapse product rail">☰</button><a class="product-switch active" href="/" aria-label="VoiceAgent Demo home" aria-current="page"><span>V</span><b>VoiceAgent Demo</b></a><a class="product-switch" href="/evaluation.html" aria-label="ASR Evaluation"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg></span><b>ASR Evaluation</b></a><div class="account-control"><button id="account-avatar" type="button" aria-haspopup="true" aria-expanded="false" aria-label="User menu">V</button><div class="account-menu"><span>Shared demo user</span><button id="logout-button" type="button">Log out</button></div></div></aside>
     <header class="topbar">
       <a class="brand" href="/" aria-label="VoiceAgent Demo home">
         <span class="brand-mark"><i></i><i></i><i></i></span>

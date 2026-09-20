@@ -8,6 +8,7 @@ build/
 node_modules/
 test-results/
 playwright-report/
+outputs/
 
 # Environment
 .env
@@ -28,6 +29,9 @@ Thumbs.db
 *.wav
 *.mp3
 *.pcm
+
+# Downloaded production conversation data (contains customer data)
+benchmarks/RiyadBankConversation/
 
 # Logs
 *.log

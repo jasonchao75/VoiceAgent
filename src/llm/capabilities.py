@@ -52,6 +52,9 @@ MODEL_CAPABILITIES: dict[tuple[str, str], ModelCapability] = {
     ("google_gemini", "gemini-3.6-flash"): ModelCapability(
         "google_gemini", "gemini-3.6-flash", "thinking_level", "minimal", "minimized", "2026-09-02"
     ),
+    ("google_gemini", "gemini-3.8-flash"): ModelCapability(
+        "google_gemini", "gemini-3.8-flash", "thinking_level", "low", "minimized", "2026-09-15"
+    ),
 }
 
 

@@ -11,7 +11,7 @@ import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlparse
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
@@ -39,6 +39,10 @@ from src.bots.models import (
 from src.bots.storage import BotStore
 from src.bots.validation import validate_bot_config
 from src.config import load_llm_provider_catalog, load_runtime_config, load_voice_catalog
+from src.evaluation import EvaluationStore, create_evaluation_router
+from src.evaluation.connections import ASRConnectionError, test_asr_connection
+from src.evaluation.executor import EvaluationRunner
+from src.evaluation.models import EvaluationConnectionTestRequest
 from src.history import AudioRecorder, CallCapture, HistoryStore
 from src.history.models import CallDetail, CallListResponse
 from src.llm.diagnostics import (
@@ -58,6 +62,29 @@ from src.session import (
     SessionTokenError,
 )
 from src.tts import create_default_tts_registry
+
+
+def _azure_deployment_from_url(value: str) -> str:
+    """Validate one exact Azure OpenAI chat-completions URL and return deployment."""
+    parsed = urlparse(value)
+    path_parts = [part for part in parsed.path.split("/") if part]
+    valid_path = (
+        len(path_parts) == 5
+        and path_parts[:2] == ["openai", "deployments"]
+        and path_parts[3:] == ["chat", "completions"]
+    )
+    api_versions = [value for key, value in parse_qsl(parsed.query) if key == "api-version"]
+    if (
+        parsed.scheme != "https"
+        or not (parsed.hostname or "").endswith(".openai.azure.com")
+        or not valid_path
+        or len(api_versions) != 1
+    ):
+        raise ValueError(
+            "Use one complete Azure OpenAI deployment chat-completions URL with api-version"
+        )
+    return path_parts[2]
+
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -146,6 +173,11 @@ def _bot_data_dir() -> Path:
     return Path(os.getenv("VOICE_AGENT_DATA_DIR", str(PROJECT_ROOT / "data")))
 
 
+def _evaluation_data_dir() -> Path:
+    """Keep Evaluation state independently mountable in production."""
+    return Path(os.getenv("VOICE_AGENT_EVALUATION_DATA_DIR", str(_bot_data_dir())))
+
+
 def create_app() -> FastAPI:
     """Create an application with validated configuration and isolated state."""
     runtime = load_runtime_config()
@@ -161,6 +193,11 @@ def create_app() -> FastAPI:
     event_buffers: dict[str, SessionEventBuffer] = {}
     call_captures: dict[str, CallCapture] = {}
     history_store = HistoryStore(_bot_data_dir())
+    evaluation_store = EvaluationStore(
+        _evaluation_data_dir() / "evaluation.db",
+        PROJECT_ROOT / "benchmarks" / "RiyadBankConversation",
+    )
+    evaluation_runner = EvaluationRunner(evaluation_store, bot_cipher)
     website_auth = _basic_auth_credentials()
     auth_sessions = AuthSessionStore()
     login_limiter = LoginAttemptLimiter()
@@ -169,6 +206,8 @@ def create_app() -> FastAPI:
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         await bot_store.initialize()
         await history_store.initialize()
+        await evaluation_store.initialize()
+        await evaluation_runner.resume_pending()
         await history_store.cleanup()
         stop = asyncio.Event()
 
@@ -187,6 +226,7 @@ def create_app() -> FastAPI:
             stop.set()
             await task
             await store.close_all()
+            await evaluation_runner.close()
             event_buffers.clear()
             call_captures.clear()
 
@@ -200,6 +240,8 @@ def create_app() -> FastAPI:
     app.state.bot_store = bot_store
     app.state.bot_cipher = bot_cipher
     app.state.history_store = history_store
+    app.state.evaluation_store = evaluation_store
+    app.state.evaluation_runner = evaluation_runner
     app.state.auth_sessions = auth_sessions
 
     app.add_middleware(
@@ -214,6 +256,15 @@ def create_app() -> FastAPI:
             ProductAuthMiddleware,
             sessions=auth_sessions,
         )
+
+    app.include_router(
+        create_evaluation_router(
+            evaluation_store,
+            start_batch=evaluation_runner.start,
+            handle_batch_action=evaluation_runner.handle_action,
+            translate_for_display=evaluation_runner.translate_for_display,
+        )
+    )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(
@@ -662,10 +713,22 @@ def create_app() -> FastAPI:
                     raise HTTPException(status_code=400, detail=str(exc)) from None
             if key is None:
                 raise HTTPException(status_code=422, detail="Provide an LLM key for this test")
+            model = (request.llm_model or record.llm_model).strip()
+            provider = next(
+                (item for item in llm_providers.providers if item.id == record.llm_provider),
+                None,
+            )
+            if provider is None:
+                raise HTTPException(status_code=422, detail="Unknown LLM provider")
+            if not provider.supports_custom_model and model not in provider.recommended_models:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Select an LLM model from the server catalog",
+                )
             return DiagnosticConfig(
                 provider=record.llm_provider,
                 base_url=record.llm_base_url,
-                model=record.llm_model,
+                model=model,
                 api_key=key.get_secret_value(),
                 temperature=(
                     request.llm_temperature
@@ -718,13 +781,44 @@ def create_app() -> FastAPI:
             timeout=validated.llm.timeout_seconds,
         )
 
+    def _evaluation_provider(config: DiagnosticConfig) -> str | None:
+        """Map a validated connection onto the product's evaluation providers."""
+        if config.provider == "google_gemini":
+            return "Gemini"
+        if config.provider == "openai":
+            return "GPT"
+        if config.provider != "custom":
+            return None
+        host = (urlparse(config.base_url).hostname or "").lower()
+        if host == "dashscope.aliyuncs.com" or host.endswith(".dashscope.aliyuncs.com"):
+            return "Qwen"
+        if host == "api.deepseek.com" or host.endswith(".deepseek.com"):
+            return "DeepSeek"
+        return None
+
     @app.post("/api/llm/diagnostics", response_model=LLMDiagnosticResult)
     async def diagnose_llm(
         request: LLMDiagnosticRequest, http_request: Request
     ) -> LLMDiagnosticResult:
         _validate_session_origin(http_request, _allowed_origins())
         config = await _resolve_diagnostic(request)
+        evaluation_provider = _evaluation_provider(config)
+        if request.register_for_evaluation_catalog and evaluation_provider is None:
+            raise HTTPException(
+                status_code=422,
+                detail="This endpoint is not a supported evaluation model provider",
+            )
         result = await run_llm_diagnostic(config)
+        if request.register_for_evaluation_catalog and result.success:
+            assert evaluation_provider is not None
+            await evaluation_store.register_llm_model(
+                provider=evaluation_provider,
+                model_id=result.model,
+                base_url_host=result.base_url_host,
+                diagnostic_id=result.diagnostic_id,
+            )
+            result.evaluation_catalog_registered = True
+            result.evaluation_provider = evaluation_provider
         logger.info(
             "llm_diagnostic diagnostic_id=%s provider=%s host=%s model=%s "
             "category=%s error_type=%s provider_code=%s",
@@ -737,6 +831,152 @@ def create_app() -> FastAPI:
             result.provider_error_code or "none",
         )
         return result
+
+    @app.post("/api/evaluation/connections/{provider}/test-and-save")
+    async def test_and_save_evaluation_connection(
+        provider: str,
+        payload: EvaluationConnectionTestRequest,
+        http_request: Request,
+    ) -> dict[str, object]:
+        """Test one provider for real and atomically persist its encrypted key."""
+        _validate_session_origin(http_request, _allowed_origins())
+        definitions = {
+            "soniox": ("asr", "https://api.soniox.com", None),
+            "speechmatics": ("asr", "https://asr.api.speechmatics.com", None),
+            "elevenlabs": ("asr", "https://api.elevenlabs.io", None),
+            "gemini": ("llm", "https://generativelanguage.googleapis.com", "google_gemini"),
+            "gpt": ("llm", "https://api.openai.com/v1", "openai"),
+            "azure_gpt": ("llm", "", "azure_openai"),
+            "openrouter": ("llm", "https://openrouter.ai/api/v1", "custom"),
+            "qwen": (
+                "llm",
+                "https://dashscope.aliyuncs.com/compatible-mode/v1",
+                "custom",
+            ),
+            "deepseek": ("llm", "https://api.deepseek.com", "custom"),
+        }
+        normalized_provider = provider.strip().lower()
+        definition = definitions.get(normalized_provider)
+        if definition is None:
+            raise HTTPException(status_code=404, detail="Unsupported evaluation provider")
+        if bot_cipher is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Saving connections is disabled: VOICE_AGENT_STORAGE_KEY is not configured",
+            )
+        kind, default_base_url, llm_provider = definition
+        stored = await evaluation_store.get_connection(normalized_provider)
+        key = payload.api_key
+        if key is None and stored is not None:
+            try:
+                key = bot_cipher.decrypt(str(stored["encrypted_api_key"]))
+            except StorageKeyError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from None
+        if key is None:
+            raise HTTPException(status_code=422, detail="Enter an API key before testing")
+        base_url = (payload.base_url or (stored or {}).get("base_url") or default_base_url).rstrip(
+            "/"
+        )
+        if normalized_provider == "azure_gpt":
+            try:
+                azure_deployment = _azure_deployment_from_url(base_url)
+            except ValueError as exc:
+                raise HTTPException(
+                    status_code=422,
+                    detail=str(exc),
+                ) from None
+        elif base_url.lower() != default_base_url.lower():
+            raise HTTPException(
+                status_code=422,
+                detail="Use the configured official endpoint for this provider",
+            )
+        secret = key.get_secret_value()
+        if kind == "asr":
+            try:
+                result = await test_asr_connection(normalized_provider, secret, timeout=10.0)
+            except ASRConnectionError as exc:
+                failed = {
+                    "success": False,
+                    "category": exc.category,
+                    "diagnostic_id": str(uuid.uuid4()),
+                    "summary": str(exc),
+                    "suggestion": "Check the key, account access, and provider status.",
+                    "provider": normalized_provider,
+                    "base_url": base_url,
+                }
+                await evaluation_store.set_asr_capability_validation(
+                    normalized_provider,
+                    status="unavailable",
+                    diagnostic_id=str(failed["diagnostic_id"]),
+                    summary=str(exc),
+                )
+                return failed
+        else:
+            if not payload.model_id:
+                raise HTTPException(status_code=422, detail="Choose a model before testing")
+            if normalized_provider == "azure_gpt":
+                config = DiagnosticConfig(
+                    provider="azure_openai",
+                    base_url=base_url,
+                    model=azure_deployment,
+                    api_key=key.get_secret_value(),
+                    temperature=0,
+                )
+            else:
+                request = LLMDiagnosticRequest(
+                    llm_provider=llm_provider,
+                    llm_base_url=base_url,
+                    llm_model=payload.model_id,
+                    llm_api_key=key,
+                    reasoning_mode="provider_default",
+                    register_for_evaluation_catalog=payload.register_for_evaluation_catalog,
+                )
+                config = await _resolve_diagnostic(request)
+            diagnostic = await run_llm_diagnostic(config)
+            result = diagnostic.model_dump()
+            if not diagnostic.success:
+                return result
+            if payload.register_for_evaluation_catalog:
+                evaluation_provider = {
+                    "azure_gpt": "Azure GPT",
+                    "openrouter": "OpenRouter",
+                }.get(normalized_provider) or _evaluation_provider(config)
+                if evaluation_provider is None:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="This endpoint is not a supported evaluation model provider",
+                    )
+                await evaluation_store.register_llm_model(
+                    provider=evaluation_provider,
+                    model_id=diagnostic.model,
+                    base_url_host=diagnostic.base_url_host,
+                    diagnostic_id=diagnostic.diagnostic_id,
+                )
+                result["evaluation_catalog_registered"] = True
+                result["evaluation_provider"] = evaluation_provider
+        saved = await evaluation_store.save_connection(
+            provider=normalized_provider,
+            kind=kind,
+            base_url=base_url,
+            encrypted_api_key=bot_cipher.encrypt(key),
+            diagnostic_id=str(result["diagnostic_id"]),
+            model_id=payload.model_id,
+        )
+        capability = None
+        if kind == "asr":
+            capability = await evaluation_store.set_asr_capability_validation(
+                normalized_provider,
+                status="verified",
+                diagnostic_id=str(result["diagnostic_id"]),
+                summary=str(result.get("summary") or "Endpoint and capability contract verified"),
+            )
+        logger.info(
+            "evaluation_connection_saved provider=%s kind=%s diagnostic_id=%s",
+            normalized_provider,
+            kind,
+            result["diagnostic_id"],
+        )
+        return {**result, "connection": saved, "capability": capability}
 
     @app.post("/api/sessions", response_model=SessionResponse, status_code=201)
     async def create_session(

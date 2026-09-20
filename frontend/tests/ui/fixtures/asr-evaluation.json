@@ -1,0 +1,95 @@
+{
+  "summary": {
+    "conversations": 56,
+    "validUserEvents": 441,
+    "bad": 20,
+    "good": 6,
+    "needsReview": 4,
+    "suspectedNumerator": 24,
+    "suspectedRate": "5.4%",
+    "targetGood": 20
+  },
+  "batches": [
+    {
+      "id": "EV-20260915-001",
+      "name": "RiyadBank regression fixture",
+      "status": "Awaiting review",
+      "progress": 92,
+      "createdAt": "2026-09-15 09:40",
+      "reviewed": "0/4",
+      "reportVersion": "Preliminary v1"
+    },
+    {
+      "id": "EV-20260912-004",
+      "name": "RiyadBank · August regression",
+      "status": "Completed",
+      "progress": 100,
+      "createdAt": "2026-09-12 15:18",
+      "reviewed": "3/3",
+      "reportVersion": "Final v2"
+    },
+    {
+      "id": "EV-20260910-002",
+      "name": "Mixed-language smoke test",
+      "status": "Paused",
+      "progress": 44,
+      "createdAt": "2026-09-10 11:07",
+      "reviewed": "—",
+      "reportVersion": "—"
+    }
+  ],
+  "reviewCases": [
+    {
+      "id": "1030000000082501-R20",
+      "conversationId": "1030000000082501",
+      "event": "R20",
+      "issue": "Branch code unclear",
+      "priority": "P1",
+      "range": "00:09.2 – 00:16.6",
+      "history": "Two. to. One.",
+      "suggested": "two two one",
+      "question": "Did the user say 221, 207, or another three-digit code?",
+      "context": [
+        "Robot R5: Please provide the first three digits of your bank card.",
+        "Customer R6: Two. to. One.",
+        "Robot R7: Sorry, please repeat all three digits."
+      ],
+      "language": "English",
+      "tag": "Numbers and codes",
+      "providers": [
+        { "name": "Soniox", "text": "two two one" },
+        { "name": "Speechmatics Melia", "text": "two zero seven" },
+        { "name": "ElevenLabs Scribe", "text": "two twenty-one" }
+      ]
+    },
+    {
+      "id": "1030000000089005-R3",
+      "conversationId": "1030000000089005",
+      "event": "R3",
+      "issue": "Language selection intent unclear",
+      "priority": "P2",
+      "range": "00:22.0 – 00:29.4",
+      "history": "English please",
+      "suggested": "English, please",
+      "question": "Confirm the requested service language.",
+      "context": [
+        "Robot R1: Which language would you like to use?",
+        "Customer R2: English please.",
+        "Robot R3: I will continue in English."
+      ],
+      "language": "English",
+      "tag": "Language selection",
+      "providers": [
+        { "name": "Soniox", "text": "English please" },
+        { "name": "Speechmatics Melia", "text": "English, please" },
+        { "name": "ElevenLabs Scribe", "text": "English please" }
+      ]
+    }
+  ],
+  "benchmark": [
+    { "id": "BM-1021", "type": "Bad", "origin": "AI reviewed suspect", "language": "English", "tag": "Numbers and codes", "text": "two two one" },
+    { "id": "BM-1022", "type": "Good", "origin": "Reclassified suspect", "language": "Arabic", "tag": "Account inquiry", "text": "أريد معرفة رصيدي" },
+    { "id": "BM-1023", "type": "Good", "origin": "Same-conversation sample", "language": "English", "tag": "Confirmation", "text": "yes that is correct" },
+    { "id": "BM-1024", "type": "Bad", "origin": "Manual review", "language": "Arabic", "tag": "Numbers and codes", "text": "اثنان اثنان واحد" }
+  ]
+}

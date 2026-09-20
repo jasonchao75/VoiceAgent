@@ -5,6 +5,16 @@
 !requirements.lock
 !src/
 !src/**
+!openspec/
+!openspec/changes/
+!openspec/changes/add-asr-automated-evaluation/
+!openspec/changes/add-asr-automated-evaluation/fixtures/
+!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md
+!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md
+!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md
+!scripts/
+!scripts/deploy/
+!scripts/deploy/verify_evaluation_production.py
 !configs/
 !configs/runtime/
 !configs/runtime/**

@@ -39,6 +39,14 @@ jobs:
           chmod +x scripts/ci/run_checks.py
           ./scripts/ci/run_checks.py
 
+      - name: Run active OpenSpec Change delivery gates
+        run: |
+          for change_dir in openspec/changes/*; do
+            if [ -d "$change_dir" ] && [ -f "$change_dir/verification/delivery-status.json" ]; then
+              python scripts/quality/verify_change.py "$(basename "$change_dir")" --enforce-final-only
+            fi
+          done
+
       - name: Run backend checks
         run: |
           python -m ruff format --check src tests
