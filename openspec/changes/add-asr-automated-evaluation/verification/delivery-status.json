@@ -1431,10 +1431,11 @@
     },
     {
       "id": "KI-129",
-      "status": "open",
+      "status": "resolved",
       "summary": "Production deployment run 35605007189 built the new image but the container failed its health check because the new Pass 1 V2 Prompt fixture was not copied into the runtime image.",
       "impact": "The deployment workflow automatically restored the previous healthy revision; the grouped Evaluation release is not yet live and production data was not cleared.",
       "next_action": "Add the V2 Prompt fixture to the Docker runtime image, build and start the image locally, rerun the release checks, then push and verify a new production deployment.",
+      "resolution": "Dockerfile now packages the active Pass 1 V2 fixture and a regression guards both active Prompt files. CI run 35605353773 passed all checks and image build; production deployment run 35605575418 completed successfully for commit a6acd6e and its public health check passed. Existing production Evaluation data was preserved.",
       "disclosed_to_user": true
     }
   ],
