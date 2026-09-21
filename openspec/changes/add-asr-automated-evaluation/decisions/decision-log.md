@@ -11,6 +11,20 @@
 
 ## Decisions
 
+### PD-044 — 先发布 Cost Settings 修复并保留生产数据
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: KI-128 修复完成后的生产发布顺序
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，用户在确认保存行为后明确要求先推送线上
+- Confirmation quote: “可以先推送到线上。另外，现在线上有失败的evaluation之后就一直不生成cases，我现在还不知道怎么回事。你先把本次修复推到线上吧”
+- Decision: 先将 KI-128 的 Cost Settings 模型价格增量保存、选择恢复、别名匹配及执行期冻结计价修复发布到生产；本次常规发布保留现有生产 Evaluation 数据，不执行首次上线时的一次性空历史清理。失败批次不生成 Cases 作为独立工程缺陷在发布后继续定位。
+- Reason: 先恢复新批次的价格门禁可用性，避免与另一个运行时缺陷混在同一次未发布修复中。
+- Consequences: 发布范围只能包含 KI-128 相关代码、测试和交付记录；不得夹带工作区其他改动。生产发布后仍需为从未成功落库的 `gemini-3.8-flash` 保存一次价格。
+- Updated artifacts: `tasks.md`、`verification/delivery-status.json`、KI-128 修复提交与生产部署记录。
+- Verification: GitHub CI/CD 全绿、线上健康检查成功、部署提交一致；生产 Evaluation 历史保持不变。
+
 ### PD-041 — 独立 Azure/OpenRouter 资源与失败批次部分结果
 
 - Status: Confirmed

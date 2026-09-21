@@ -28,6 +28,7 @@ from src.evaluation.models import (
     EvaluationBatchCreate,
     EvaluationReviewSubmit,
 )
+from src.evaluation.pricing import normalize_pricing_model_id
 from src.evaluation.prompts import (
     EVALUATION_CONTEXT,
     PASS_ONE_SYSTEM_PROMPT,
@@ -3337,9 +3338,34 @@ class EvaluationStore:
         """Append reviewed rates, FX, and default hard budget for future batches."""
         now = _utcnow()
         current = await self.active_pricing_version()
+        normalized_llm_rates = None
+        llm_selections = current["rates"].get("llm_selections", [])
+        if llm_rates is not None:
+            merged_rates: dict[tuple[str, str], dict[str, Any]] = {}
+            for rate in [*current["rates"]["llm"], *llm_rates]:
+                normalized_rate = dict(rate)
+                provider = str(normalized_rate.get("provider", "")).strip()
+                model = str(normalized_rate.get("model", "")).strip()
+                canonical_model = normalize_pricing_model_id(provider, model)
+                normalized_rate["provider"] = provider
+                normalized_rate["model"] = canonical_model
+                merged_rates[(provider.casefold(), canonical_model)] = normalized_rate
+            normalized_llm_rates = list(merged_rates.values())
+            llm_selections = [
+                {
+                    "provider": str(rate.get("provider", "")).strip(),
+                    "model": str(rate.get("model", "")).strip(),
+                }
+                for rate in llm_rates
+            ]
         rates = {
             "asr": asr_rates if asr_rates is not None else current["rates"]["asr"],
-            "llm": llm_rates if llm_rates is not None else current["rates"]["llm"],
+            "llm": (
+                normalized_llm_rates
+                if normalized_llm_rates is not None
+                else current["rates"]["llm"]
+            ),
+            "llm_selections": llm_selections,
         }
         budget = float(default_batch_budget or current["default_batch_budget"])
         async with aiosqlite.connect(self.database_path) as database:
@@ -4044,11 +4070,6 @@ class EvaluationStore:
         }
         catalog = await self.list_llm_models()
         rates = pricing_version.get("rates", {}).get("llm", [])
-        aliases = {
-            ("DeepSeek", "deepseek-chat"): "deepseek-flash",
-            ("DeepSeek", "deepseek-reasoner"): "deepseek-v4-pro",
-            ("DeepSeek", "deepseek-v4-flash"): "deepseek-flash",
-        }
         missing: list[str] = []
         for raw_model_id in dict.fromkeys(model_ids):
             model_id = raw_model_id.strip()
@@ -4073,17 +4094,14 @@ class EvaluationStore:
                     "",
                 )
                 provider = provider_names.get(provider_key, "")
-            normalized_model = model_id
-            prefix = f"{provider}/"
-            if provider and normalized_model.casefold().startswith(prefix.casefold()):
-                normalized_model = normalized_model[len(prefix) :].strip()
-            normalized_model = aliases.get(
-                (provider, normalized_model.casefold()),
-                normalized_model.casefold(),
-            )
+            normalized_model = normalize_pricing_model_id(provider, model_id)
             matched = any(
                 str(rate.get("provider", "")).casefold() == provider.casefold()
-                and str(rate.get("model", "")).casefold() == normalized_model
+                and normalize_pricing_model_id(
+                    provider,
+                    str(rate.get("model", "")),
+                )
+                == normalized_model
                 for rate in rates
             )
             if not matched:

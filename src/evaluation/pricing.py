@@ -243,7 +243,7 @@ _MODEL_ALIASES = {
 }
 
 
-def _normalize_model(provider: str, model: str) -> str:
+def normalize_pricing_model_id(provider: str, model: str) -> str:
     """Remove a UI provider prefix and resolve documented compatibility aliases."""
     value = model.strip()
     prefix = f"{provider}/"
@@ -270,7 +270,9 @@ def estimate_llm_cost(
         "deepseek": "DeepSeek",
     }
     canonical_provider = provider_names.get(provider.casefold(), provider)
-    rate = _LLM_RATES.get((canonical_provider, _normalize_model(canonical_provider, model)))
+    rate = _LLM_RATES.get(
+        (canonical_provider, normalize_pricing_model_id(canonical_provider, model))
+    )
     if rate is None:
         return None, "USD"
     uncached_tokens = max(0, input_tokens - cached_input_tokens)
@@ -344,7 +346,7 @@ class OfficialPricingService:
             return _ASR_RATES
         resolved: list[OfficialRate] = []
         for selection in request.selections:
-            model = _normalize_model(selection.provider, selection.model)
+            model = normalize_pricing_model_id(selection.provider, selection.model)
             rate = _LLM_RATES.get((selection.provider, model))
             if rate is None:
                 raise PricingSyncError(

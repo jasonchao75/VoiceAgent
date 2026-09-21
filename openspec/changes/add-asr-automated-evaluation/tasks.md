@@ -173,9 +173,12 @@
 - [x] 12.33 Add isolated Azure GPT and OpenRouter evaluation connections, provider-qualified model selection, encrypted persistence, diagnostics and executor routing without changing existing LLM resources (PD-041, KI-117)
 - [x] 12.34 Expose persisted successful checkpoints for failed/partially-failed batches as clearly labeled non-final partial results, including stage coverage, ASR evidence, completed Pass 2 results, cost and failure detail (PD-041)
 - [x] 12.35 Add backend and dual-viewport UI regressions for Azure/OpenRouter isolation, duplicate model IDs, secret redaction, price gating and partial-result recovery (PD-041)
+- [x] 12.36 Canonicalize saved, selected and execution-time frozen LLM pricing aliases so a saved DeepSeek `deepseek-v4-flash` rate is accepted through New Evaluation and paid execution, including compatibility for existing price versions (KI-128)
+- [ ] 12.37 Diagnose production failed evaluations that never materialize Cases, preserving partial successful checkpoints and separating zero-candidate success from execution failure (KI-129)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 
 - [x] 13.1 Provision an independently named production data volume without copying local SQLite, uploads, recordings, clips, reports or cost rows
 - [x] 13.2 Add a pre-deployment check that rejects local acceptance volumes or known local test batch IDs
 - [x] 13.3 Verify the fresh production batch, report, review and Benchmark lists contain no local test history before opening access
+- [ ] 13.4 Publish the independently verified KI-128 hotfix without clearing existing production Evaluation data, then verify CI/CD, health and deployed commit (PD-044)

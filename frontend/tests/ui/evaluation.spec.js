@@ -591,6 +591,63 @@ test("recognizes Gemini 3.8 Flash and reuses a saved provider connection", async
   );
 });
 
+test("restores saved pricing selections and submits the same models", async ({ page }) => {
+  const settings = {
+    version: 29,
+    created_at: "2026-09-21T12:00:00Z",
+    cny_to_usd: 0.14,
+    source_note: "Reviewed model rates",
+    default_batch_budget: 10,
+    rates: {
+      asr: [],
+      llm: [
+        { provider: "DeepSeek", model: "deepseek-flash", currency: "USD", input_per_1m: 0.3, cached_input_per_1m: 0.006, output_per_1m: 1.2 },
+        { provider: "Gemini", model: "gemini-3.8-flash", currency: "USD", input_per_1m: 0.75, cached_input_per_1m: 0.075, output_per_1m: 3.75 },
+      ],
+      llm_selections: [
+        { provider: "DeepSeek", model: "deepseek-flash" },
+        { provider: "Gemini", model: "gemini-3.8-flash" },
+      ],
+    },
+  };
+  let savedRequest;
+  await page.route("**/api/evaluation/pricing/settings", async (route) => {
+    if (route.request().method() === "POST") savedRequest = route.request().postDataJSON();
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(settings) });
+  });
+  await page.route("**/api/catalogs", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ llm_providers: { providers: [] } }) });
+  });
+  await page.route("**/api/evaluation/connections", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: "[]" });
+  });
+  await page.route("**/api/evaluation/llm-models", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify([{ provider: "DeepSeek", model_id: "deepseek-v4-flash" }]),
+    });
+  });
+  await page.route("**/api/bots", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: "[]" });
+  });
+
+  await page.route("**/api/evaluation/bootstrap", (route) => route.abort());
+  await page.goto("/evaluation.html?page=costs");
+  await expect(page.locator("#page-costs")).toHaveClass(/active/);
+  const rows = page.locator("#page-costs .pricing-table tbody tr");
+  await expect(rows.nth(0).locator(".model-provider")).toHaveValue("DeepSeek");
+  await expect(rows.nth(0).locator(".model-name-select")).toHaveValue("deepseek-flash");
+  await expect(rows.nth(1).locator(".model-provider")).toHaveValue("Gemini");
+  await expect(rows.nth(1).locator(".model-name-select")).toHaveValue("gemini-3.8-flash");
+
+  await page.locator("#save-costs").click();
+  expect(savedRequest.llm_rates.map(({ provider, model }) => ({ provider, model }))).toEqual([
+    { provider: "DeepSeek", model: "deepseek-flash" },
+    { provider: "Gemini", model: "gemini-3.8-flash" },
+  ]);
+});
+
 test("adds a successfully verified custom model to both new-batch selectors", async ({ page }) => {
   let diagnosticRequest;
   await page.route("**/api/evaluation/llm-models", async (route) => {

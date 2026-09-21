@@ -68,6 +68,25 @@
   ],
   "known_issues": [
     {
+      "id": "KI-129",
+      "status": "open",
+      "summary": "A production evaluation can fail and then remain without any generated Cases.",
+      "impact": "The product owner cannot tell whether the batch had no valid candidates, lost successful checkpoints, or stopped before Case materialization, so the failed run is not actionable from the current UI.",
+      "source": "Product-owner production report on 2026-09-21.",
+      "next_action": "After the authorized KI-128 deployment, inspect the affected production batch state, checkpoints and safe logs read-only; classify the failure before proposing or implementing a separate fix.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-128",
+      "status": "resolved",
+      "summary": "Production Cost settings can save the DeepSeek compatibility model ID deepseek-v4-flash, but New Evaluation rejects that same selection as unpriced.",
+      "impact": "A reviewed DeepSeek price version appears saved successfully yet paid evaluation creation is blocked, because batch validation canonicalizes the selected model to deepseek-flash while comparing it against the uncanonicalized saved rate row.",
+      "source": "Product-owner production report on 2026-09-21 plus code-path inspection of currentPricingDraft, save_pricing_version and _models_without_frozen_prices.",
+      "next_action": "Canonicalize pricing model aliases at persistence and comparison boundaries, retain compatibility with already-saved price versions, and add a regression covering save then create with deepseek-v4-flash.",
+      "resolution": "Pricing saves now canonicalize and incrementally merge model rates instead of replacing the catalog, preserve the two actual UI selections for reload, reapply them after either asynchronous load order, and canonicalize both selected and legacy frozen-rate model IDs during batch admission and execution-time costing. The full 195-test backend suite, scoped Ruff/Mypy, frontend build, delayed catalog desktop/narrow regressions and an independent reverse-order probe pass.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-001",
       "status": "resolved",
       "summary": "The frozen Gate 2 scenario-tag shell does not render the five baseline tag cards, although the runtime page loads persisted tags.",

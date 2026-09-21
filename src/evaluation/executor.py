@@ -24,6 +24,7 @@ from src.evaluation.pass2_packing import (
     model_token_policy,
     pack_units,
 )
+from src.evaluation.pricing import normalize_pricing_model_id
 from src.evaluation.prompts import (
     EVALUATION_CONTEXT,
     PASS_ONE_SYSTEM_PROMPT,
@@ -978,26 +979,18 @@ class EvaluationRunner:
             "openrouter": "OpenRouter",
         }
         canonical_provider = provider_names.get(provider.casefold(), provider)
-        normalized_model = model_id.strip()
-        prefix = f"{canonical_provider}/"
-        if normalized_model.casefold().startswith(prefix.casefold()):
-            normalized_model = normalized_model[len(prefix) :].strip()
-        aliases = {
-            ("DeepSeek", "deepseek-chat"): "deepseek-flash",
-            ("DeepSeek", "deepseek-reasoner"): "deepseek-v4-pro",
-            ("DeepSeek", "deepseek-v4-flash"): "deepseek-flash",
-        }
-        normalized_model = aliases.get(
-            (canonical_provider, normalized_model.casefold()),
-            normalized_model.casefold(),
-        )
+        normalized_model = normalize_pricing_model_id(canonical_provider, model_id)
         rates = batch["snapshot"].get("pricing_version", {}).get("rates", {}).get("llm", [])
         rate = next(
             (
                 item
                 for item in rates
                 if str(item.get("provider", "")).casefold() == canonical_provider.casefold()
-                and str(item.get("model", "")).casefold() == normalized_model
+                and normalize_pricing_model_id(
+                    canonical_provider,
+                    str(item.get("model", "")),
+                )
+                == normalized_model
             ),
             None,
         )

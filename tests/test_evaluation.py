@@ -2257,27 +2257,151 @@ async def test_batch_creation_rejects_selected_model_without_frozen_price(
     evaluation_store: EvaluationStore,
 ) -> None:
     """A verified model cannot start paid work without an immutable rate."""
-    current = await evaluation_store.active_pricing_version()
-    await evaluation_store.save_pricing_version(
-        cny_to_usd=float(current["cny_to_usd"]),
-        source_note="GPT-only pricing",
-        llm_rates=[rate for rate in current["rates"]["llm"] if rate["provider"] == "GPT"],
-    )
     before = len(await evaluation_store.list_batches())
 
-    with pytest.raises(ValueError, match="qwen-plus.*Cost settings"):
+    with pytest.raises(ValueError, match="qwen3.8-max.*Cost settings"):
         await evaluation_store.create_batch(
             EvaluationBatchCreate(
                 name="Missing Qwen price",
                 asr_providers=["soniox"],
-                pass_1_model="qwen-plus",
-                pass_2_model="qwen-plus",
+                pass_1_model="qwen3.8-max",
+                pass_2_model="qwen3.8-max",
                 budget_limit=10,
                 idempotency_key="missing-qwen-price",
             )
         )
 
     assert len(await evaluation_store.list_batches()) == before
+
+
+@pytest.mark.asyncio
+async def test_saved_deepseek_alias_price_allows_batch_creation(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """A UI compatibility alias must match the same canonical frozen price."""
+    current = await evaluation_store.active_pricing_version()
+    deepseek_rate = next(
+        dict(rate)
+        for rate in current["rates"]["llm"]
+        if rate["provider"] == "DeepSeek" and rate["model"] == "deepseek-flash"
+    )
+    deepseek_rate["model"] = "deepseek-v4-flash"
+
+    saved = await evaluation_store.save_pricing_version(
+        cny_to_usd=float(current["cny_to_usd"]),
+        source_note="DeepSeek alias pricing",
+        llm_rates=[deepseek_rate],
+    )
+    assert any(
+        rate["provider"] == "DeepSeek" and rate["model"] == "deepseek-flash"
+        for rate in saved["rates"]["llm"]
+    )
+    assert saved["rates"]["llm_selections"] == [
+        {"provider": "DeepSeek", "model": "deepseek-v4-flash"}
+    ]
+
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="DeepSeek alias priced",
+            asr_providers=["soniox"],
+            pass_1_model="deepseek-v4-flash",
+            pass_2_model="deepseek-v4-flash",
+            budget_limit=10,
+            idempotency_key="deepseek-alias-price",
+        )
+    )
+    assert batch["snapshot"]["pass_1_model"] == "deepseek-v4-flash"
+
+
+@pytest.mark.asyncio
+async def test_pricing_save_preserves_previously_configured_models(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Editing two pricing rows must not remove other model rates from the catalog."""
+    current = await evaluation_store.active_pricing_version()
+    deepseek_rate = next(
+        dict(rate)
+        for rate in current["rates"]["llm"]
+        if rate["provider"] == "DeepSeek" and rate["model"] == "deepseek-flash"
+    )
+    await evaluation_store.save_pricing_version(
+        cny_to_usd=float(current["cny_to_usd"]),
+        source_note="Add DeepSeek pricing",
+        llm_rates=[deepseek_rate],
+    )
+    saved = await evaluation_store.save_pricing_version(
+        cny_to_usd=float(current["cny_to_usd"]),
+        source_note="Edit Gemini pricing",
+        llm_rates=[
+            {
+                "provider": "Gemini",
+                "model": "gemini-3.8-flash",
+                "currency": "USD",
+                "input_per_1m": 0.75,
+                "cached_input_per_1m": 0.075,
+                "output_per_1m": 3.75,
+            }
+        ],
+    )
+
+    configured = {(rate["provider"], rate["model"]) for rate in saved["rates"]["llm"]}
+    assert ("DeepSeek", "deepseek-flash") in configured
+    assert ("Gemini", "gemini-3.8-flash") in configured
+    assert saved["rates"]["llm_selections"] == [{"provider": "Gemini", "model": "gemini-3.8-flash"}]
+
+
+@pytest.mark.asyncio
+async def test_existing_deepseek_alias_price_version_remains_compatible(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Existing versions saved before canonicalization must remain usable."""
+    missing = await evaluation_store._models_without_frozen_prices(
+        {
+            "rates": {
+                "llm": [
+                    {
+                        "provider": "DeepSeek",
+                        "model": "deepseek-v4-flash",
+                        "currency": "USD",
+                        "input_per_1m": 0.30,
+                        "cached_input_per_1m": 0.006,
+                        "output_per_1m": 1.20,
+                    }
+                ]
+            }
+        },
+        ["deepseek-v4-flash"],
+    )
+    assert missing == []
+
+    amount, currency = EvaluationRunner._frozen_llm_cost(
+        {
+            "snapshot": {
+                "pricing_version": {
+                    "rates": {
+                        "llm": [
+                            {
+                                "provider": "DeepSeek",
+                                "model": "deepseek-v4-flash",
+                                "currency": "USD",
+                                "input_per_1m": 0.30,
+                                "cached_input_per_1m": 0.006,
+                                "output_per_1m": 1.20,
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "deepseek",
+        "deepseek-v4-flash",
+        input_tokens=1_000_000,
+        cached_input_tokens=0,
+        reasoning_tokens=0,
+        output_tokens=1_000_000,
+    )
+    assert amount == pytest.approx(1.5)
+    assert currency == "USD"
 
 
 @pytest.mark.asyncio

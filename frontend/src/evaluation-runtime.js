@@ -284,7 +284,22 @@ function applySavedPricingSettings(current) {
     row.querySelector(".price-input").value = formatPrice(item.unit_price, item.currency);
     if (item.source_url && item.source_label) row.cells[3].innerHTML = pricingSourceMarkup(item);
   });
-  document.querySelectorAll("#page-costs .pricing-table tbody tr").forEach((row) => {
+  const pricingRows = [...document.querySelectorAll("#page-costs .pricing-table tbody tr")];
+  const selections = current.rates.llm_selections?.length
+    ? current.rates.llm_selections
+    : current.rates.llm.slice(0, pricingRows.length);
+  pricingRows.forEach((row, index) => {
+    const savedSelection = selections[index];
+    if (savedSelection) {
+      const providerSelect = row.querySelector(".model-provider");
+      const modelSelect = row.querySelector(".model-name-select");
+      providerSelect.value = savedSelection.provider;
+      providerSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      if (![...modelSelect.options].some((option) => option.value === savedSelection.model)) {
+        modelSelect.add(new Option(`${savedSelection.provider}/${savedSelection.model}`, savedSelection.model));
+      }
+      modelSelect.value = savedSelection.model;
+    }
     const selection = selectedPricingModel(row);
     const item = current.rates.llm.find((rate) =>
       rate.provider === selection.provider && rate.model === selection.model
@@ -417,6 +432,10 @@ async function installPricingVersionControls() {
   }
 }
 
+document.addEventListener("evaluation:model-catalog-loaded", () => {
+  if (runtime.savedPricing) applySavedPricingSettings(runtime.savedPricing);
+});
+
 async function savePricingVersion() {
   const rate = Number(document.querySelector("#cny-to-usd-rate")?.value);
   const sourceNote = document.querySelector("#cny-to-usd-source")?.value.trim();
@@ -444,7 +463,13 @@ async function savePricingVersion() {
     });
     applySavedPricingSettings(saved);
     document.querySelector(".pricing-fx-version").textContent = `${copy("Current version", "当前版本")} v${saved.version} · ${saved.created_at}`;
-    notify(copy("Pricing and FX version saved for future batches.", "价格与汇率版本已保存，将用于后续新批次。"));
+    const savedModels = saved.rates.llm_selections
+      .map((item) => `${item.provider}/${item.model}`)
+      .join(" · ");
+    notify(copy(
+      `Pricing saved for ${savedModels}. Previously configured model prices were retained.`,
+      `已保存 ${savedModels} 的价格；此前配置的其他模型价格已保留。`,
+    ));
   } catch (error) {
     notify(error.message);
   }
