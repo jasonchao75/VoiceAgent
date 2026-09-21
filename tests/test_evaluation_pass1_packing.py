@@ -163,10 +163,7 @@ def test_pass_one_packing_uses_lower_bound_for_large_three_group_plan() -> None:
 def test_qwen38_verified_limit_keeps_a_120k_input_batch_in_one_group() -> None:
     """Qwen 3.8 must not inherit the conservative 96k unknown-model fallback."""
     policy = model_token_policy("qwen", "qwen3.8-max")
-    units = [
-        PassOneUnit(f"C{index:02d}", {}, 1, 6_000)
-        for index in range(20)
-    ]
+    units = [PassOneUnit(f"C{index:02d}", {}, 1, 6_000) for index in range(20)]
 
     groups = pack_pass_one_units(
         batch_id="EV-QWEN38",

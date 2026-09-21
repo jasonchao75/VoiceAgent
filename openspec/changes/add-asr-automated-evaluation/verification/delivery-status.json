@@ -1419,6 +1419,15 @@
       "source": "Full desktop+narrow Playwright run on 2026-09-20.",
       "resolution": "Both scenarios now explicitly isolate the bootstrap summary, ASR capability state and Evaluation connection state. The four previously failing desktop/narrow checks pass.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-128",
+      "status": "resolved",
+      "summary": "The 09ef665 release CI stopped at Ruff format verification for seven changed Python files.",
+      "impact": "Production deployment has not started; production code and data remain unchanged.",
+      "next_action": "Apply the repository formatter to the seven reported files, rerun the exact backend checks, commit the correction, and push again.",
+      "resolution": "The seven files were formatted with the repository virtual environment. The exact backend sequence now passes: Ruff format, Ruff checks, Mypy and all 220 tests; only the two previously disclosed dependency deprecation warnings remain.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [

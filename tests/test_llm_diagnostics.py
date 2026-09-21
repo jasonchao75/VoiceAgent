@@ -153,9 +153,7 @@ async def test_native_qwen_diagnostic_uses_total_cap_without_fake_first_token(
                 200,
                 request=request,
                 json={
-                    "output": {
-                        "choices": [{"message": {"content": [{"text": "OK"}]}}]
-                    },
+                    "output": {"choices": [{"message": {"content": [{"text": "OK"}]}}]},
                     "usage": {"input_tokens": 8, "output_tokens": 1},
                 },
             )

@@ -71,9 +71,7 @@ _VALID_CONVERSATION_ID = "1030000000086002"
 def test_qwen_thinking_uses_prompt_json_contract_without_json_mode() -> None:
     """Qwen thinking must not send the provider-incompatible JSON-mode parameter."""
     assert _structured_response_format("qwen", True) is None
-    assert _structured_response_format("qwen", True, "qwen3.8-max") == {
-        "type": "json_object"
-    }
+    assert _structured_response_format("qwen", True, "qwen3.8-max") == {"type": "json_object"}
     assert _structured_response_format("qwen", False) == {"type": "json_object"}
     assert _structured_response_format("deepseek", True) == {"type": "json_object"}
 

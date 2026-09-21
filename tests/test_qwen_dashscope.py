@@ -20,15 +20,13 @@ def test_prem_native_endpoint_is_supported_for_qwen38() -> None:
     assert base_url == "https://prem.dashscope.aliyuncs.com/api/v1"
     assert is_native_dashscope_url(base_url) is True
     assert native_dashscope_generation_url(base_url, "qwen3.8-max") == (
-        "https://prem.dashscope.aliyuncs.com/api/v1/services/aigc/"
-        "multimodal-generation/generation"
+        "https://prem.dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
     )
 
     shared_base_url = validate_qwen_base_url("https://dashscope.aliyuncs.com/api/v1")
     assert is_native_dashscope_url(shared_base_url) is True
     assert native_dashscope_generation_url(shared_base_url, "qwen3.8-max") == (
-        "https://dashscope.aliyuncs.com/api/v1/services/aigc/"
-        "multimodal-generation/generation"
+        "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
     )
 
 
@@ -59,9 +57,7 @@ def test_native_qwen_request_supports_thinking_and_parses_usage() -> None:
     }
     text, usage = parse_native_dashscope_response(
         {
-            "output": {
-                "choices": [{"message": {"content": [{"text": '{"ok":true}'}]}}]
-            },
+            "output": {"choices": [{"message": {"content": [{"text": '{"ok":true}'}]}}]},
             "usage": {
                 "input_tokens": 12,
                 "output_tokens": 34,

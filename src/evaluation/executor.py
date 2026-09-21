@@ -139,9 +139,7 @@ def _structured_response_format(
     """Use JSON mode only where the provider accepts it with the chosen reasoning mode."""
     # Older Qwen models reject JSON mode with Thinking. Qwen 3.8 explicitly
     # supports their combination, while schema checks remain authoritative.
-    if provider == "qwen" and thinking and not (model_id or "").casefold().startswith(
-        "qwen3.8-"
-    ):
+    if provider == "qwen" and thinking and not (model_id or "").casefold().startswith("qwen3.8-"):
         return None
     return {"type": "json_object"}
 

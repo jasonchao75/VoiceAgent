@@ -86,9 +86,7 @@ def parse_native_dashscope_response(payload: dict[str, Any]) -> tuple[str, dict[
     message = (choices[0].get("message") if choices else None) or {}
     content = message.get("content") or ""
     if isinstance(content, list):
-        text = "".join(
-            str(item.get("text") or "") for item in content if isinstance(item, dict)
-        )
+        text = "".join(str(item.get("text") or "") for item in content if isinstance(item, dict))
     else:
         text = str(content)
     usage = payload.get("usage") or {}

@@ -151,6 +151,7 @@ def pack_pass_one_units(
 ) -> list[PassOneGroup]:
     """Pack complete conversations into deterministic first-pass request groups."""
     prompt_tokens = estimate_tokens(system_prompt) + estimate_tokens(shared_payload)
+
     def fits(candidate: list[PassOneUnit]) -> bool:
         input_tokens = prompt_tokens + sum(unit.estimated_input_tokens for unit in candidate)
         output_tokens = pass_one_output_reserve(
@@ -207,9 +208,7 @@ def pack_pass_one_units(
         best = [list(members) for members in greedy]
         available_context = policy.context_limit - prompt_tokens - policy.safety_margin
         total_input = sum(unit.estimated_input_tokens for unit in ordered)
-        total_visible_output = sum(
-            512 + unit.user_event_count * 192 for unit in ordered
-        )
+        total_visible_output = sum(512 + unit.user_event_count * 192 for unit in ordered)
         lower_bound = max(
             1,
             math.ceil((total_input + total_visible_output) / available_context),
@@ -224,9 +223,7 @@ def pack_pass_one_units(
                 nonlocal best
                 if len(candidate_groups) >= len(best):
                     return
-                remaining_input = sum(
-                    item.estimated_input_tokens for item in ordered[index:]
-                )
+                remaining_input = sum(item.estimated_input_tokens for item in ordered[index:])
                 free_context = sum(
                     max(
                         0,
