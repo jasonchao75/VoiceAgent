@@ -19,7 +19,9 @@ from typing import cast
 
 import aiosqlite
 import httpx
+import numpy as np
 import pytest
+import soundfile as sf  # type: ignore[import-untyped]
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
@@ -364,6 +366,7 @@ def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
                 "conversation_history": [{"event_id": "R1", "text": "hello"}],
             }
         ],
+        "full_audio_context_asr": [],
         "evaluation_context": {"name": "Acceptance"},
         "reference_dictionaries": [],
         "screening_strategy": "focused",
@@ -378,6 +381,7 @@ def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
     assert '"results"' in PASS_ONE_SYSTEM_PROMPT
     assert "{{request_group_id}}" in PASS_TWO_SYSTEM_PROMPT
     assert "{{candidate_case}}" in PASS_TWO_SYSTEM_PROMPT
+    assert "{{full_audio_context_asr}}" in PASS_TWO_SYSTEM_PROMPT
     assert '"results"' in PASS_TWO_SYSTEM_PROMPT
     assert '"positioning_quality"' in PASS_TWO_SYSTEM_PROMPT
     assert "唯一质检目标是检测线上 ASR" in PASS_ONE_SYSTEM_PROMPT
@@ -434,12 +438,14 @@ def test_playback_range_uses_exact_user_event_boundaries() -> None:
     }
     evidence = [
         {
+            "event_id": "R2",
             "result": {
+                "source_clip": {"start_s": 9.82, "end_s": 11.25},
                 "segments": [
                     {"segment_id": "C1:soniox:1", "start": 10.0, "end": 11.0},
                     {"segment_id": "C1:speechmatics:2", "start": 9.5, "end": 12.0},
-                ]
-            }
+                ],
+            },
         }
     ]
 
@@ -463,15 +469,75 @@ def test_playback_range_uses_exact_user_event_boundaries() -> None:
         evidence,
     )
 
-    assert resolved == (10.0, 12.0, "exact", True)
+    assert resolved == (9.82, 11.25, "exact", True)
     assert fallback == (0.0, 0.0, "unavailable", False)
+
+
+def test_excel_anchor_finds_r6_and_r10_style_user_speech(tmp_path: Path) -> None:
+    """Late workbook anchors must resolve the nearby speech, not start after it."""
+    sample_rate = 8_000
+    samples = np.zeros(sample_rate * 70, dtype=np.float32)
+    # A much louder earlier utterance must not raise the local threshold enough to
+    # hide the quiet target near R6's approximate workbook anchor.
+    loud_start = round(5.98 * sample_rate)
+    loud_end = round(7.38 * sample_rate)
+    loud_timeline = np.arange(loud_end - loud_start, dtype=np.float32) / sample_rate
+    samples[loud_start:loud_end] = 0.32 * np.sin(2 * np.pi * 180 * loud_timeline)
+    for start_s, end_s in ((10.22, 10.60), (57.77, 59.38)):
+        start = round(start_s * sample_rate)
+        end = round(end_s * sample_rate)
+        timeline = np.arange(end - start, dtype=np.float32) / sample_rate
+        samples[start:end] = 0.12 * np.sin(2 * np.pi * 220 * timeline)
+    source = tmp_path / "1030000000086502.wav"
+    sf.write(source, samples, sample_rate, subtype="PCM_16")
+
+    r6 = EvaluationStore._locate_user_speech(
+        source,
+        anchor_s=11.984,
+        lower_bound_s=0.0,
+        upper_bound_s=14.984,
+    )
+    r10 = EvaluationStore._locate_user_speech(
+        source,
+        anchor_s=60.254,
+        lower_bound_s=52.9,
+        upper_bound_s=63.254,
+    )
+
+    assert float(r6["speech_start_s"]) == pytest.approx(10.22, abs=0.03)
+    assert float(r6["speech_end_s"]) == pytest.approx(10.60, abs=0.03)
+    assert float(r10["speech_start_s"]) == pytest.approx(57.77, abs=0.03)
+    assert float(r10["speech_end_s"]) == pytest.approx(59.38, abs=0.03)
+    assert float(r6["start_s"]) < 10.22
+    assert float(r10["end_s"]) < 60.254
+
+
+def test_excel_anchor_rejects_equally_close_speech_islands(tmp_path: Path) -> None:
+    """Fail closed when an approximate anchor cannot identify one speech island."""
+    sample_rate = 8_000
+    samples = np.zeros(sample_rate * 8, dtype=np.float32)
+    for start_s, end_s in ((3.0, 3.5), (4.5, 5.0)):
+        start = round(start_s * sample_rate)
+        end = round(end_s * sample_rate)
+        timeline = np.arange(end - start, dtype=np.float32) / sample_rate
+        samples[start:end] = 0.12 * np.sin(2 * np.pi * 220 * timeline)
+    source = tmp_path / "ambiguous.wav"
+    sf.write(source, samples, sample_rate, subtype="PCM_16")
+
+    with pytest.raises(ValueError, match="Multiple user speech intervals"):
+        EvaluationStore._locate_user_speech(
+            source,
+            anchor_s=4.25,
+            lower_bound_s=0.0,
+            upper_bound_s=8.0,
+        )
 
 
 @pytest.mark.asyncio
 async def test_case_asr_clip_uses_pure_user_event_interval(
     evaluation_store: EvaluationStore,
 ) -> None:
-    """The provider input must be the pure-user WAV bounded by adjacent events."""
+    """The provider input must be the detected speech nearest the workbook anchor."""
     batch = await evaluation_store.create_batch(
         EvaluationBatchCreate(
             name="Pure user clip",
@@ -495,13 +561,14 @@ async def test_case_asr_clip_uses_pure_user_event_interval(
 
     assert path.is_file()
     assert trace["source"].startswith("user_record/")
-    assert trace["start_s"] == pytest.approx(float(event["time_s"]), abs=0.001)
-    assert trace["end_s"] == pytest.approx(float(events[index + 1]["time_s"]), abs=0.001)
+    assert trace["boundary_rule"] == "excel_anchor_to_detected_user_speech_v2"
+    assert trace["start_s"] < float(event["time_s"])
+    assert trace["speech_start_s"] <= trace["speech_end_s"]
+    assert trace["anchor_distance_s"] <= 4.0
     with wave.open(str(path), "rb") as audio:
         duration = audio.getnframes() / audio.getframerate()
-    assert duration == pytest.approx(
-        float(events[index + 1]["time_s"]) - float(event["time_s"]), abs=0.002
-    )
+    assert duration == pytest.approx(float(trace["end_s"]) - float(trace["start_s"]), abs=0.002)
+    assert duration < 12.0
 
 
 @pytest.mark.asyncio
@@ -547,18 +614,20 @@ async def test_run_asr_checkpoints_invalid_timeline_without_provider_dispatch(
     assert conversation is not None
     event = next(item for item in conversation["events"] if item["speaker"] == "customer")
     conversation["issues"] = [{"issue_type": "audio_timeline_mismatch"}]
-    dispatched = False
+    dispatched_event_ids: list[str | None] = []
 
     async def mismatched(_conversation_id: str) -> dict[str, object]:
         return conversation
 
-    async def forbidden_dispatch(*_args: object, **_kwargs: object) -> None:
-        nonlocal dispatched
-        dispatched = True
+    async def context_only_dispatch(
+        *_args: object, **kwargs: object
+    ) -> tuple[dict[str, object], str]:
+        dispatched_event_ids.append(cast(str | None, kwargs.get("event_id")))
+        return {"text": "context", "segments": []}, "context-job"
 
     monkeypatch.setattr(evaluation_store, "get_conversation", mismatched)
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
-    monkeypatch.setattr(runner, "_transcribe", forbidden_dispatch)
+    monkeypatch.setattr(runner, "_transcribe", context_only_dispatch)
     await runner._run_asr(
         str(batch["id"]),
         batch,
@@ -566,7 +635,7 @@ async def test_run_asr_checkpoints_invalid_timeline_without_provider_dispatch(
     )
 
     rows = await evaluation_store.checkpoint_rows("evaluation_case_asr_runs", str(batch["id"]))
-    assert dispatched is False
+    assert dispatched_event_ids == [None]
     assert len(rows) == 1
     assert rows[0]["status"] == "failed"
     assert rows[0]["attempts"] == 0
@@ -1237,6 +1306,10 @@ async def _prepare_pending_review(
         attempts=1,
         result={
             "text": "example",
+            "source_clip": {
+                "start_s": float(event["time_s"]) - 0.5,
+                "end_s": float(event["time_s"]) + 1.0,
+            },
             "segments": [
                 {
                     "segment_id": "elevenlabs-1",
@@ -2140,7 +2213,14 @@ async def test_execution_checkpoints_materialize_real_manual_review(
         ),
         status="completed",
         attempts=1,
-        result={"text": "raw ASR evidence", "segments": []},
+        result={
+            "text": "raw ASR evidence",
+            "source_clip": {
+                "start_s": float(incomplete_event["time_s"]) - 0.5,
+                "end_s": float(incomplete_event["time_s"]) + 1.0,
+            },
+            "segments": [],
+        },
         remote_job_id="job-2",
     )
     await evaluation_store.checkpoint_result(
@@ -3045,7 +3125,10 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
     await runner._run_asr(batch["id"], batch, candidates)
     await runner._run_asr(batch["id"], batch, candidates)
 
-    assert calls == 2
+    assert calls == 3
+    context_rows = await evaluation_store.checkpoint_rows("evaluation_asr_runs", batch["id"])
+    assert len(context_rows) == 1
+    assert context_rows[0]["result"]["scope"] == "full_call_context"
     rows = await evaluation_store.checkpoint_rows("evaluation_case_asr_runs", batch["id"])
     assert len(rows) == 2
     assert all(row["remote_job_id"] == "remote-job-1" for row in rows)
@@ -3123,14 +3206,27 @@ async def test_pass2_retry_reuses_failed_frozen_group(
             ],
         },
     )
+    await evaluation_store.checkpoint_result(
+        "evaluation_asr_runs",
+        (batch["id"], "elevenlabs", _VALID_CONVERSATION_ID),
+        status="completed",
+        attempts=1,
+        result={
+            "scope": "full_call_context",
+            "text": "complete call context",
+            "segments": [],
+        },
+    )
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     attempts: list[int] = []
+    observed_contexts: list[object] = []
 
     async def provider(_model_id: str) -> str:
         return "deepseek"
 
-    async def fail_request(*_args: object, **kwargs: object) -> dict[str, object]:
+    async def fail_request(*args: object, **kwargs: object) -> dict[str, object]:
         attempts.append(cast(int, kwargs["attempt"]))
+        observed_contexts.append(cast(dict[str, object], args[2])["full_audio_context_asr"])
         raise EvaluationExecutionError("temporary provider failure")
 
     async def no_wait(_seconds: float) -> None:
@@ -3157,6 +3253,15 @@ async def test_pass2_retry_reuses_failed_frozen_group(
     assert second[0]["case_keys"] == first[0]["case_keys"]
     assert second[0]["status"] == "failed"
     assert attempts == [1, 2, 3, 4, 5, 6]
+    first_context = cast(list[dict[str, object]], observed_contexts[0])[0]
+    assert first_context["providers"] == [
+        {
+            "provider": "elevenlabs",
+            "scope": "full_call_context",
+            "text": "complete call context",
+            "segments": [],
+        }
+    ]
 
 
 @pytest.mark.asyncio
@@ -3557,6 +3662,8 @@ async def test_benchmark_clip_state_and_corrections_are_persisted(
         await evaluation_store._append_benchmark_revision(connection, benchmark_id)
         await connection.commit()
     await evaluation_store.finalize_benchmark_clip(benchmark_id)
+    managed_clip = await evaluation_store.benchmark_audio_path(benchmark_id)
+    assert managed_clip is not None and managed_clip.is_file()
 
     app = FastAPI()
     app.include_router(create_evaluation_router(evaluation_store))
@@ -3596,6 +3703,21 @@ async def test_benchmark_clip_state_and_corrections_are_persisted(
             "first label",
             "corrected label",
         ]
+        deleted = await client.delete(f"/api/evaluation/benchmarks/{benchmark_id}")
+        assert deleted.status_code == 200
+        assert deleted.json() == {"id": benchmark_id, "deleted": True}
+        deleted_audio = await client.get(f"/api/evaluation/benchmarks/{benchmark_id}/audio")
+        assert deleted_audio.status_code == 404
+        assert (
+            await client.get(f"/api/evaluation/benchmarks/{benchmark_id}/revisions")
+        ).status_code == 404
+        assert (await client.get(f"/api/evaluation/benchmarks?search={benchmark_id}")).json()[
+            "total"
+        ] == 0
+        repeated = await client.delete(f"/api/evaluation/benchmarks/{benchmark_id}")
+        assert repeated.status_code == 404
+    assert not managed_clip.exists()
+    assert await evaluation_store.get_conversation(_VALID_CONVERSATION_ID) is not None
     async with aiosqlite.connect(evaluation_store.database_path) as connection:
         actions = {
             row[0]
@@ -3607,7 +3729,12 @@ async def test_benchmark_clip_state_and_corrections_are_persisted(
                 )
             ).fetchall()
         }
-    assert {"benchmark_audio.played", "benchmark.viewed", "benchmark.updated"} <= actions
+    assert {
+        "benchmark_audio.played",
+        "benchmark.viewed",
+        "benchmark.updated",
+        "benchmark.deleted",
+    } <= actions
 
 
 @pytest.mark.asyncio

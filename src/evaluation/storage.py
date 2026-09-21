@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 import io
 import json
 import os
@@ -2617,6 +2618,102 @@ class EvaluationStore:
             "frame_count": end - start,
         }
 
+    @staticmethod
+    def _locate_user_speech(
+        source: Path,
+        *,
+        anchor_s: float,
+        lower_bound_s: float,
+        upper_bound_s: float,
+    ) -> dict[str, float | str]:
+        """Locate the nearest bounded speech island around an approximate event anchor."""
+        np = importlib.import_module("numpy")
+        data, sample_rate = sf.read(source, always_2d=True, dtype="float32")
+        if len(data) == 0 or sample_rate <= 0:
+            raise ValueError("Source WAV contains no audio frames")
+        duration = len(data) / sample_rate
+        lower = max(0.0, min(duration, lower_bound_s))
+        upper = max(lower, min(duration, upper_bound_s))
+        if upper - lower < 0.1:
+            raise ValueError("Speech search interval is empty")
+
+        mono = np.max(np.abs(data), axis=1)
+        frame_size = max(1, round(sample_rate * 0.02))
+        frame_count = len(mono) // frame_size
+        if frame_count == 0:
+            raise ValueError("Source WAV is too short for speech detection")
+        framed = mono[: frame_count * frame_size].reshape(frame_count, frame_size)
+        rms = np.sqrt(np.mean(np.square(framed), axis=1))
+        search_start = max(0, int(lower / 0.02))
+        search_end = min(frame_count, max(search_start + 1, int(np.ceil(upper / 0.02))))
+        search_rms = rms[search_start:search_end]
+        calibration_start = max(search_start, int(max(lower, anchor_s - 4.5) / 0.02))
+        calibration_end = min(
+            search_end,
+            max(calibration_start + 1, int(min(upper, anchor_s + 1.0) / 0.02)),
+        )
+        calibration_rms = rms[calibration_start:calibration_end]
+        peak = float(np.percentile(calibration_rms, 99))
+        noise = float(np.percentile(calibration_rms, 35))
+        threshold = max(0.0015, noise * 3.0, peak * 0.08)
+        active = search_rms >= threshold
+
+        max_gap_frames = max(1, round(0.35 / 0.02))
+        active_indices = np.flatnonzero(active)
+        if active_indices.size == 0:
+            raise ValueError("No user speech found near the event anchor")
+        for left, right in zip(active_indices[:-1], active_indices[1:], strict=False):
+            if 1 < right - left <= max_gap_frames + 1:
+                active[left : right + 1] = True
+
+        minimum_frames = max(1, round(0.16 / 0.02))
+        islands: list[tuple[float, float]] = []
+        island_start: int | None = None
+        for offset, is_active in enumerate(np.append(active, False)):
+            if is_active and island_start is None:
+                island_start = offset
+            elif not is_active and island_start is not None:
+                if offset - island_start >= minimum_frames:
+                    start_s = (search_start + island_start) * 0.02
+                    end_s = min(duration, (search_start + offset) * 0.02)
+                    islands.append((start_s, end_s))
+                island_start = None
+        if not islands:
+            raise ValueError("No stable user speech found near the event anchor")
+
+        def distance(island: tuple[float, float]) -> tuple[float, float]:
+            start_s, end_s = island
+            if start_s <= anchor_s <= end_s:
+                return (0.0, -end_s)
+            if end_s <= anchor_s:
+                return (anchor_s - end_s, -end_s)
+            return ((start_s - anchor_s) + 0.5, start_s)
+
+        ranked_islands = sorted(islands, key=distance)
+        speech_start, speech_end = ranked_islands[0]
+        anchor_distance = distance((speech_start, speech_end))[0]
+        if anchor_distance > 4.0:
+            raise ValueError("No unambiguous user speech found near the event anchor")
+        if len(ranked_islands) > 1:
+            runner_up_distance = distance(ranked_islands[1])[0]
+            if runner_up_distance - anchor_distance < 0.5:
+                raise ValueError(
+                    "Multiple user speech intervals are equally close to the event anchor"
+                )
+        start_s = max(lower, speech_start - 0.18)
+        end_s = min(upper, speech_end + 0.25)
+        if end_s - start_s > 12.0:
+            raise ValueError("Detected user speech interval is implausibly long")
+        return {
+            "start_s": start_s,
+            "end_s": end_s,
+            "speech_start_s": speech_start,
+            "speech_end_s": speech_end,
+            "anchor_s": anchor_s,
+            "anchor_distance_s": anchor_distance,
+            "detection_rule": "nearest_energy_island_to_excel_anchor_v2",
+        }
+
     async def prepare_case_asr_clip(
         self,
         batch_id: str,
@@ -2641,16 +2738,34 @@ class EvaluationStore:
         if source is None:
             raise FileNotFoundError("Pure-user WAV is unavailable")
         duration = float((conversation.get("user_audio") or {}).get("duration_s") or 0)
-        start_s = float(events[index]["time_s"])
-        end_s = duration
-        if index + 1 < len(events):
-            end_s = float(events[index + 1]["time_s"])
-        if duration <= 0 or start_s < 0 or end_s <= start_s or start_s >= duration:
-            raise ValueError("Target event has no reliable audio interval")
-        end_s = min(end_s, duration)
+        anchor_s = float(events[index]["time_s"])
+        if duration <= 0 or anchor_s < 0:
+            raise ValueError("Target event has no reliable audio anchor")
+        customer_anchors = [
+            float(item["time_s"])
+            for item in events
+            if item.get("speaker") == "customer" and float(item["time_s"]) >= 0
+        ]
+        prior = [value for value in customer_anchors if value < anchor_s]
+        following = [value for value in customer_anchors if value > anchor_s]
+        lower_bound = max(0.0, anchor_s - 15.0)
+        upper_bound = min(duration, anchor_s + 3.0)
+        if prior:
+            lower_bound = max(lower_bound, (max(prior) + anchor_s) / 2)
+        if following:
+            upper_bound = min(upper_bound, (anchor_s + min(following)) / 2)
+        speech_trace = await asyncio.to_thread(
+            self._locate_user_speech,
+            source,
+            anchor_s=anchor_s,
+            lower_bound_s=lower_bound,
+            upper_bound_s=upper_bound,
+        )
+        start_s = float(speech_trace["start_s"])
+        end_s = float(speech_trace["end_s"])
         clip_key = uuid.uuid5(
             uuid.NAMESPACE_URL,
-            f"{batch_id}:{conversation_id}:{event_id}:pure-user-v1",
+            f"{batch_id}:{conversation_id}:{event_id}:pure-user-v2",
         ).hex
         destination = self.asr_clip_root / f"{clip_key}.wav"
         trace = await asyncio.to_thread(
@@ -2662,10 +2777,13 @@ class EvaluationStore:
         )
         trace.update(
             {
+                **speech_trace,
                 "batch_id": batch_id,
                 "conversation_id": conversation_id,
                 "event_id": event_id,
-                "boundary_rule": "event_start_to_next_event_start",
+                "boundary_rule": "excel_anchor_to_detected_user_speech_v2",
+                "start_s": trace["start_s"],
+                "end_s": trace["end_s"],
             }
         )
         return destination, trace
@@ -2835,25 +2953,32 @@ class EvaluationStore:
         evidence_rows: list[dict[str, Any]],
     ) -> tuple[float, float, str, bool]:
         """Resolve the exact source interval used for pure-user Case retranscription."""
-        del evidence_rows
         duration = float((conversation.get("user_audio") or {}).get("duration_s") or 0)
         event_id = str(decision.get("event_id") or "")
-        events = list(conversation.get("events", []))
-        index = next(
-            (position for position, item in enumerate(events) if item["event_id"] == event_id),
-            None,
-        )
-        if index is None or events[index].get("speaker") != "customer" or duration <= 0:
+        if duration <= 0:
             return 0.0, 0.0, "unavailable", False
-        start_s = float(events[index]["time_s"])
-        end_s = duration if index + 1 == len(events) else float(events[index + 1]["time_s"])
-        if start_s < 0 or start_s >= duration or end_s <= start_s:
+        intervals = {
+            (
+                round(float(source_clip["start_s"]), 6),
+                round(float(source_clip["end_s"]), 6),
+            )
+            for row in evidence_rows
+            if str(row.get("event_id")) == event_id
+            for source_clip in [(row.get("result") or {}).get("source_clip")]
+            if isinstance(source_clip, dict)
+            and source_clip.get("start_s") is not None
+            and source_clip.get("end_s") is not None
+        }
+        if len(intervals) != 1:
+            return 0.0, 0.0, "unavailable", False
+        start_s, end_s = next(iter(intervals))
+        if start_s < 0 or start_s >= duration or end_s <= start_s or end_s > duration:
             return 0.0, 0.0, "unavailable", False
         if "audio_timeline_mismatch" in {
             str(issue.get("issue_type")) for issue in conversation.get("issues", [])
         }:
             return 0.0, 0.0, "unavailable", False
-        return start_s, min(end_s, duration), "exact", True
+        return start_s, end_s, "exact", True
 
     async def freeze_preliminary_report(
         self, batch_id: str, *, persist: bool = True
@@ -4330,11 +4455,12 @@ class EvaluationStore:
                 / (
                     uuid.uuid5(
                         uuid.NAMESPACE_URL,
-                        f"{batch_id}:{item['conversation_id']}:{item['event_id']}:pure-user-v1",
+                        f"{batch_id}:{item['conversation_id']}:{item['event_id']}:{version}",
                     ).hex
                     + ".wav"
                 )
                 for item in case_rows
+                for version in ("pure-user-v1", "pure-user-v2")
             ]
             report_rows = await (
                 await database.execute(
@@ -4707,6 +4833,48 @@ class EvaluationStore:
             await database.commit()
         result = await self.list_benchmarks(ids=[benchmark_id], limit=1)
         return result["items"][0]
+
+    async def delete_benchmark(self, benchmark_id: str) -> dict[str, Any]:
+        """Delete one Benchmark sample and only its managed derived clip."""
+        clip_path: str | None = None
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            await database.execute("BEGIN IMMEDIATE")
+            row = await (
+                await database.execute(
+                    "SELECT clip_path FROM evaluation_benchmarks WHERE id=?",
+                    (benchmark_id,),
+                )
+            ).fetchone()
+            if row is None:
+                await database.rollback()
+                raise LookupError("Benchmark sample not found")
+            clip_path = str(row["clip_path"]) if row["clip_path"] else None
+            await database.execute(
+                "DELETE FROM evaluation_benchmark_revisions WHERE benchmark_id=?",
+                (benchmark_id,),
+            )
+            await database.execute(
+                "DELETE FROM evaluation_benchmarks WHERE id=?",
+                (benchmark_id,),
+            )
+            await self._audit(
+                database,
+                "benchmark.deleted",
+                benchmark_id,
+                {"derived_clip_deleted": bool(clip_path)},
+            )
+            await database.commit()
+
+        if clip_path:
+            candidate = Path(clip_path)
+            if not candidate.is_absolute():
+                candidate = self.benchmark_clip_root / candidate
+            clip_root = self.benchmark_clip_root.resolve()
+            resolved = candidate.resolve()
+            if resolved != clip_root and clip_root in resolved.parents:
+                resolved.unlink(missing_ok=True)
+        return {"id": benchmark_id, "deleted": True}
 
     async def create_benchmark_export(self, request: dict[str, Any]) -> dict[str, Any]:
         """Freeze one Benchmark export request as a durable expiring job."""

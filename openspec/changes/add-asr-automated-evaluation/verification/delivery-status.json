@@ -1437,6 +1437,26 @@
       "next_action": "Add the V2 Prompt fixture to the Docker runtime image, build and start the image locally, rerun the release checks, then push and verify a new production deployment.",
       "resolution": "Dockerfile now packages the active Pass 1 V2 fixture and a regression guards both active Prompt files. CI run 35605353773 passed all checks and image build; production deployment run 35605575418 completed successfully for commit a6acd6e and its public health check passed. Existing production Evaluation data was preserved.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-150",
+      "status": "resolved",
+      "summary": "The first Benchmark deletion browser-validation attempts could not launch or reach the local service under the filesystem sandbox.",
+      "impact": "The initial Playwright commands produced environment failures before any page assertion ran; they did not demonstrate a product defect.",
+      "source": "Local desktop/narrow Playwright execution on 2026-09-21 first hit Chromium Mach-port permission denial and then a sandbox-denied port bind.",
+      "next_action": "Run the bounded local server and Playwright command with the approved desktop-test permissions, then retain the actual assertion result.",
+      "resolution": "The local service was started with the approved scoped command and the same Benchmark deletion test passed in both desktop and narrow Chromium (2/2). The temporary server was stopped after verification.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-149",
+      "status": "resolved",
+      "summary": "Pure-user ASR clip boundaries can be materially wrong when the workbook time column is treated as speech onset and the next event is outside the audio timeline.",
+      "impact": "For 1030000000086502 R10, the source timestamp is 60.254s while detectable user speech is approximately 57.77-59.38s. The current event-start-to-next-event-start rule begins after the utterance and, because R11 is 119.255s while the audio ends at 117.38s, produces an approximately 57.13-second clip instead of the short user sentence. Provider transcripts from that clip are not valid evidence for R10.",
+      "source": "Read-only inspection of the committed source workbook and WAV plus the production clipping implementation on 2026-09-21. The source audit already records decreasing/out-of-audio timing as warnings, but prepare_case_asr_clip blocks only MP3/WAV duration mismatch and clamps the invalid next-event boundary to audio duration.",
+      "next_action": "Define and implement an onset-aware pure-user boundary derivation using the user WAV signal and neighboring speaker events, reject ambiguous clips before provider dispatch, and add this conversation as a regression fixture.",
+      "resolution": "PD-048/PD-049 replace the invalid row-to-next-row interval with anchor-guided speech-island detection on the pure-user WAV, reuse the resulting exact source interval for provider input/playback/Benchmark, and add a separate once-per-conversation/provider full-call context checkpoint. Independent review exposed that a louder earlier utterance distorted the search-wide energy threshold and made real R6 fail; threshold calibration is now local to the anchor and equally close islands fail closed. Local-real inspection resolves R6 to 9.940-10.870s and R10 to 57.580-59.610s; 223 repository tests pass, including loud-earlier-speech and ambiguous-island regressions.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
@@ -1607,6 +1627,13 @@
       "status": "open",
       "summary": "The new native prem.dashscope.aliyuncs.com Qwen path has deterministic local coverage but has not completed a real qwen3.8-max diagnostic or evaluation request.",
       "reason": "This implementation turn intentionally made no external paid call and did not reuse credentials. A real diagnostic requires an explicit scoped authorization and the saved Qwen Key.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-024",
+      "status": "open",
+      "summary": "The new full-call ASR context plus speech-aligned event-candidate flow has not yet been executed against Soniox, Speechmatics and ElevenLabs in a paid external-real batch.",
+      "reason": "Local-real R6/R10 audio boundaries and deterministic provider mocks are green, but no new customer audio was sent externally in this turn. A paid batch requires separate scoped authorization or a user-initiated run after deployment.",
       "disclosed_to_user": true
     },
     {

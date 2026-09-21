@@ -1673,10 +1673,15 @@ class EvaluationRunner:
     async def _run_asr(
         self, batch_id: str, batch: dict[str, Any], candidates: list[dict[str, Any]]
     ) -> None:
-        """Transcribe one pure-user audio clip for every target event and provider."""
+        """Transcribe full-call context once and pure-user audio for every target event."""
         case_keys = sorted(
             {(str(item["conversation_id"]), str(item["event_id"])) for item in candidates}
         )
+        conversation_ids = sorted({conversation_id for conversation_id, _ in case_keys})
+        existing_context = {
+            (row["provider"], row["conversation_id"]): row
+            for row in await self.store.checkpoint_rows("evaluation_asr_runs", batch_id)
+        }
         existing = {
             (row["provider"], row["conversation_id"], row["event_id"]): row
             for row in await self.store.checkpoint_rows("evaluation_case_asr_runs", batch_id)
@@ -1686,13 +1691,119 @@ class EvaluationRunner:
             provider: asyncio.Semaphore(_ASR_PROVIDER_CONCURRENCY[provider])
             for provider in batch["providers"]
         }
+        context_jobs = len(batch["providers"]) * len(conversation_ids)
         total_jobs = len(batch["providers"]) * len(case_keys)
+        await self.store.refresh_execution_progress(
+            batch_id,
+            table="evaluation_asr_runs",
+            stage="evaluation_asr",
+            total=context_jobs,
+            progress_start=45,
+            progress_end=55,
+        )
+
+        async def transcribe_context(provider: str, conversation_id: str) -> None:
+            if existing_context.get((provider, conversation_id), {}).get("status") == "completed":
+                return
+            conversation = await self.store.get_conversation(conversation_id)
+            path = self.store.conversation_audio_path(conversation_id)
+            if conversation is None or path is None:
+                await self.store.checkpoint_result(
+                    "evaluation_asr_runs",
+                    (batch_id, provider, conversation_id),
+                    status="failed",
+                    attempts=0,
+                    error=_asr_error(provider, FileNotFoundError("Full-call audio is unavailable")),
+                )
+                return
+            duration = float((conversation.get("record_audio") or {}).get("duration_s") or 0)
+            if duration <= 0:
+                await self.store.checkpoint_result(
+                    "evaluation_asr_runs",
+                    (batch_id, provider, conversation_id),
+                    status="failed",
+                    attempts=0,
+                    error=_asr_error(provider, ValueError("Full-call duration is unavailable")),
+                )
+                return
+            rate = self._frozen_asr_rate(batch, provider)
+            async with semaphore, provider_semaphores[provider]:
+                for attempt in range(1, 4):
+                    reserve_key = (
+                        f"reserve:{batch_id}:asr-context:{provider}:{conversation_id}:{attempt}"
+                    )
+                    try:
+                        if not await self.store.reserve_budget(
+                            idempotency_key=reserve_key,
+                            batch_id=batch_id,
+                            estimated_usd=(duration / 3600) * rate,
+                        ):
+                            raise EvaluationBudgetReached(
+                                "Batch budget reached before the next ASR context call"
+                            )
+                        result, remote_id = await self._transcribe(
+                            batch_id,
+                            provider,
+                            path,
+                            conversation_id,
+                            attempt,
+                        )
+                        result["scope"] = "full_call_context"
+                        await self.store.record_cost_entry(
+                            idempotency_key=f"{batch_id}:asr-context:{provider}:{conversation_id}",
+                            batch_id=batch_id,
+                            category="asr",
+                            provider=provider,
+                            stage="evaluation_asr_context",
+                            audio_seconds=duration,
+                            estimated_cost=(duration / 3600) * rate,
+                            reservation_key=reserve_key,
+                        )
+                        await self.store.checkpoint_result(
+                            "evaluation_asr_runs",
+                            (batch_id, provider, conversation_id),
+                            status="completed",
+                            attempts=attempt,
+                            result=result,
+                            remote_job_id=remote_id,
+                        )
+                        await self.store.refresh_execution_progress(
+                            batch_id,
+                            table="evaluation_asr_runs",
+                            stage="evaluation_asr",
+                            total=context_jobs,
+                            progress_start=45,
+                            progress_end=55,
+                        )
+                        return
+                    except EvaluationBudgetReached:
+                        return
+                    except Exception as exc:
+                        await self.store.release_budget(reserve_key)
+                        if attempt == 3:
+                            await self.store.checkpoint_result(
+                                "evaluation_asr_runs",
+                                (batch_id, provider, conversation_id),
+                                status="failed",
+                                attempts=attempt,
+                                error=_asr_error(provider, exc),
+                            )
+                        else:
+                            await asyncio.sleep(float(attempt * 2))
+
+        await asyncio.gather(
+            *(
+                transcribe_context(provider, conversation_id)
+                for provider in batch["providers"]
+                for conversation_id in conversation_ids
+            )
+        )
         await self.store.refresh_execution_progress(
             batch_id,
             table="evaluation_case_asr_runs",
             stage="evaluation_asr",
             total=total_jobs,
-            progress_start=45,
+            progress_start=55,
             progress_end=75,
         )
 
@@ -1716,7 +1827,7 @@ class EvaluationRunner:
                     table="evaluation_case_asr_runs",
                     stage="evaluation_asr",
                     total=total_jobs,
-                    progress_start=45,
+                    progress_start=55,
                     progress_end=75,
                 )
                 return
@@ -1772,7 +1883,7 @@ class EvaluationRunner:
                             table="evaluation_case_asr_runs",
                             stage="evaluation_asr",
                             total=total_jobs,
-                            progress_start=45,
+                            progress_start=55,
                             progress_end=75,
                         )
                         await self.store.record_telemetry(
@@ -1811,7 +1922,7 @@ class EvaluationRunner:
                                 table="evaluation_case_asr_runs",
                                 stage="evaluation_asr",
                                 total=total_jobs,
-                                progress_start=45,
+                                progress_start=55,
                                 progress_end=75,
                             )
                         else:
@@ -1822,7 +1933,7 @@ class EvaluationRunner:
             stage="evaluation_asr",
             event="queue_depth",
             outcome="observed",
-            queue_depth=total_jobs,
+            queue_depth=context_jobs + total_jobs,
         )
         await asyncio.gather(
             *(
@@ -2140,6 +2251,13 @@ class EvaluationRunner:
             for candidate in candidates
         }
         by_conversation = {str(item["conversation_id"]): item for item in conversations}
+        context_rows = await self.store.checkpoint_rows("evaluation_asr_runs", batch_id)
+        context_by_conversation: dict[str, list[dict[str, Any]]] = {}
+        for row in context_rows:
+            if row["status"] == "completed":
+                context_by_conversation.setdefault(str(row["conversation_id"]), []).append(
+                    {"provider": row["provider"], **(row["result"] or {})}
+                )
         asr_rows = await self.store.checkpoint_rows("evaluation_case_asr_runs", batch_id)
         asr_by_case: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for row in asr_rows:
@@ -2176,6 +2294,7 @@ class EvaluationRunner:
                 "conversation_id": conversation_id,
                 "conversation_history": conversation["events"],
                 "candidate_cases": conversation_candidates,
+                "full_audio_context_asr": context_by_conversation.get(conversation_id, []),
                 "production_transcripts": {
                     str(candidate["event_id"]): production_by_event.get(
                         str(candidate["event_id"]), ""
@@ -2285,6 +2404,13 @@ class EvaluationRunner:
                     {
                         "conversation_id": conversation["conversation_id"],
                         "events": conversation["production_transcripts"],
+                    }
+                    for conversation in grouped_conversations
+                ],
+                "full_audio_context_asr": [
+                    {
+                        "conversation_id": conversation["conversation_id"],
+                        "providers": conversation["full_audio_context_asr"],
                     }
                     for conversation in grouped_conversations
                 ],

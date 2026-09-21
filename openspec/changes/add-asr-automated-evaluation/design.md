@@ -20,7 +20,7 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 |---|---|---|
 | Import | 安全解包、校验、生成不可变输入清单 | 不调用外部模型，不猜测缺失关联 |
 | Batch orchestrator | 状态机、检查点、预算、重试、任务依赖 | 不在请求线程执行长任务 |
-| Evaluation ASR | 每目标 user event/provider 一次纯用户切片转写 | 不接管生产流式 ASR 配置，不从完整通话结果拼接候选 |
+| Evaluation ASR | 每命中 conversation/provider 一次完整通话上下文转写；每目标 user event/provider 一次纯用户单句转写 | 不接管生产流式 ASR 配置，完整上下文不得充当事件候选 |
 | Pass 1 | 从历史对话筛疑点并建立额外 Good 候选池 | 不产生 Ground Truth |
 | Pass 2 | 基于多源证据判定 Good/Bad/人工复核 | 不用多数票或 confidence 阈值替代证据规则 |
 | Review | 人工明确 Good/Bad/听不清 | 不把未提交草稿当作结论 |
@@ -163,7 +163,8 @@ Because provider transcription is conversation-scoped and these events come only
 
 ## Audio alignment and clipping
 
-- Derive the target interval deterministically from the user event start to the next historical event start, clipped to the validated pure-user WAV duration.
+- Treat the workbook event time only as a search anchor. Detect the nearest bounded speech island in the pure-user WAV, include a small non-overlapping guard margin, and reject ambiguous/missing islands instead of stretching to the next event or audio end.
+- Transcribe the full-call recording once per selected provider and candidate-bearing conversation as contextual evidence; persist and account for it separately from event-level candidates.
 - Write one stable user-event WAV and reuse it across the selected providers, review player and Benchmark materialization.
 - Treat provider segment timestamps as clip-relative technical evidence; never expand the source interval from provider boundaries or LLM references.
 - Fail the event-level ASR resource explicitly when the shared timeline or interval is invalid; never fall back to mixed full-call text.
@@ -267,6 +268,7 @@ Batch deletion is a non-running cleanup command, not a lifecycle shortcut. It is
 - Provider-side deletion capability and retention vary; adapters should delete remote source/result artifacts after successful local capture where supported and record the outcome. Failure is surfaced for operational follow-up without deleting local evidence.
 - A blocked upload is an unstarted dialog draft, not durable batch history. Opening New Evaluation discards the prior pending-candidate metadata and its exact managed candidate directory, then renders the active dataset and default controls. Active datasets and started/frozen batches are never removed by this reset.
 - Historical timestamp regressions, events beyond recorded duration and MP3/WAV duration drift remain visible audit warnings. They do not block batch creation, but affected ranges cannot be admitted as reliable precise-cut Benchmark clips without a later repair or explicit fallback.
+- Benchmark deletion is a single-sample hard delete. One transaction removes the current row and revision rows and writes a content-free tombstone; after commit, the service removes only the resolved clip path when it is inside the managed Benchmark clip root. Upstream conversation, batch, report and review rows are never deletion targets.
 
 ## UI delivery workflow
 

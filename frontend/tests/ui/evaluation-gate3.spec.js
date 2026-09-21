@@ -71,6 +71,66 @@ test("keeps historical timeline defects as reference-only warnings", async ({ pa
   expect(audit.warning_count).toBe(55);
 });
 
+test("deletes one Benchmark from list or detail only after confirmation", async ({ page }) => {
+  const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
+  const sample = {
+    id: "BM-DELETE-UI",
+    batch_id: "EV-DELETE-UI",
+    conversation_id: "1030000000086501",
+    event_id: "R3",
+    case_type: "bad",
+    source: "manual",
+    language: "ar",
+    scenario_tag: "branch_names",
+    label: "فرع الرياض",
+    revision: 1,
+    audio_start_s: 1,
+    audio_end_s: 2,
+    audio_url: null,
+    clip_status: "unavailable",
+    clip_error: "Fixture has no audio",
+  };
+  let deleted = false;
+  await page.route("**/api/evaluation/bootstrap", async (route) => {
+    const items = deleted ? [] : [sample];
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...bootstrap,
+        benchmarks: { items, total: items.length, limit: 20, offset: 0 },
+        summary: { ...bootstrap.summary, benchmark_count: items.length },
+      }),
+    });
+  });
+  await page.route("**/api/evaluation/benchmarks/BM-DELETE-UI", async (route) => {
+    if (route.request().method() !== "DELETE") {
+      await route.continue();
+      return;
+    }
+    deleted = true;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ id: sample.id, deleted: true }),
+    });
+  });
+  await openRuntime(page, "library");
+
+  await page.locator(".runtime-benchmark-delete").click();
+  await expect(page.locator("#delete-benchmark-dialog")).toBeVisible();
+  await expect(page.locator("#delete-benchmark-dialog")).toContainText(
+    "source conversation, evaluation batch, report, and manual review remain unchanged",
+  );
+  await page.locator("#delete-benchmark-dialog [data-close]").last().click();
+  expect(deleted).toBeFalsy();
+
+  await page.locator(".runtime-sample-detail").click();
+  await expect(page.locator("#sample-dialog")).toBeVisible();
+  await page.locator("#sample-dialog .benchmark-delete").click();
+  await page.locator("#confirm-delete-benchmark").click();
+  await expect(page.locator("#page-library tbody .runtime-empty")).toBeVisible();
+  expect(deleted).toBeTruthy();
+});
+
 test("keeps a rejected batch creation error visible inside the dialog", async ({ page }) => {
   await page.route("**/api/evaluation/batches", async (route) => {
     if (route.request().method() !== "POST") {

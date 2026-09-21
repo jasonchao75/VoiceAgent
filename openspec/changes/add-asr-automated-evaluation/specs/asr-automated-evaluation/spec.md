@@ -138,7 +138,7 @@
 
 ### Requirement: User-event ASR retranscription
 
-第一轮识别出需要评估的目标用户事件后，系统 MUST 按该事件开始时间至下一历史事件开始时间，从已校验同时间轴的 `user_record/{conversation_id}.wav` 裁出只含用户声音的事件音频，并将该音频分别提交给每家启用的评测 ASR。第二轮和人工复核 MUST 使用这些事件级重转录结果，不得从完整通话 ASR 结果或带上下文余量的播放区间拼接候选文本。
+第一轮识别出需要评估的目标用户事件后，系统 MUST 将 Excel 时间仅作为 `user_record/{conversation_id}.wav` 上的近似定位锚点，在其附近检测与该事件对应的真实用户发声区间，并将该单句纯用户音频分别提交给每家启用的评测 ASR。系统 MUST 同时为每个命中 conversation/provider 至多提交一次完整通话录音并保存为上下文证据。第二轮可读取该完整上下文，但正式候选、Good/Bad 对比和人工复核候选 MUST 只使用事件级纯用户重转录结果，不得从完整通话结果、相邻事件或长静音区间拼接候选文本。
 
 #### Scenario: Transcribe one target user event
 
@@ -150,9 +150,14 @@
 - **WHEN** 同一 conversation ID 包含多个需要第二轮判断的目标用户事件
 - **THEN** 系统分别裁切每个事件并独立重转录，不得使用相邻机器人事件或其他用户事件的 ASR 文本填充当前 Case
 
+#### Scenario: Reuse one full-call ASR context
+
+- **WHEN** 同一 conversation 包含一个或多个目标用户事件
+- **THEN** 系统为每家启用的评测 ASR 至多提交一次完整通话录音并跨该 conversation 的所有 Case 复用上下文结果，同时继续为每个 Case 独立提交纯用户单句切片
+
 #### Scenario: Reject an unreliable user-event clip
 
-- **WHEN** 纯用户 WAV 与事件时间轴不一致、事件边界无效或无法生成非空切片
+- **WHEN** 纯用户 WAV 无法在 Excel 时间锚点附近唯一定位目标发声、事件边界无效或无法生成非空单句切片
 - **THEN** 对应事件级 ASR 任务明确失败且不产生候选文本，不得回退到完整通话转写片段冒充纯用户结果
 
 #### Scenario: Receive an asynchronous callback twice

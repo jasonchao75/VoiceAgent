@@ -4,12 +4,40 @@
 
 ## Status
 
-- Recorded decisions: 36 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 38 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
-- Last reviewed: 2026-09-20
+- Last reviewed: 2026-09-21
 
 ## Decisions
+
+### PD-051 — 发布音频定位与 Benchmark 删除增量
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: PD-048/PD-049 音频定位、完整录音上下文与 PD-050 Benchmark 删除完成后的生产发布
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，独立验收通过后用户明确授权
+- Confirmation quote: “完成之后，就推送到线上环境吧”
+- Decision: 将已独立验收通过的纯用户语音定位、每通完整录音 ASR 上下文和 Benchmark 单条硬删除增量提交到 `main` 并推送现有生产发布流程。保留生产现有批次、报告、复核、Benchmark 与配置；本次发布不主动执行 Benchmark 删除、不清理生产数据，也不发起付费外部 ASR/LLM 调用。
+- Reason: 让后续真实评测使用修正后的纯用户片段与独立完整录音上下文，并让用户可以在产品内受控删除单个 Benchmark。
+- Consequences: 新评测按新音频规则执行；已有报告与历史证据保持不变。Benchmark 仅在用户从页面二次确认时删除。本次提交不得夹带暂停中的 Voice Bot 设计改动、本地录音、测试数据库或凭证。
+- Updated artifacts: 本 Change 实现、测试、交付状态、独立验收和生产部署记录。
+- Verification: 推送前复跑全量测试、Ruff、Mypy、前端构建、双视口删除回归和 Change gate；推送后核对 GitHub CI/CD、生产健康与部署提交一致性。
+
+### PD-050 — Benchmark Library 单条硬删除
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: Benchmark Library 删除范围与恢复策略（Q-016）
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，用户在 Option A 边界说明后明确确认
+- Confirmation quote: “确认。”
+- Decision: Benchmark Library 在列表和详情提供单条删除入口；用户二次确认后，硬删除该 Benchmark 当前记录、不可变修订和托管派生 WAV，不提供批量删除或恢复入口。保留源对话、源批次、报告、人工复核和不含客户内容的删除审计墓碑。
+- Reason: 满足删除正式样本的明确诉求，同时将不可恢复范围限制在单个 Benchmark 及其派生文件，不破坏上游评测证据链。
+- Consequences: 删除后样本立即从列表、筛选、汇总和后续导出中消失，详情和音频返回不存在；已生成的历史下载包不回写修改。删除操作不可恢复，确认文案必须明确影响范围。
+- Updated artifacts: Benchmark Library Delta Spec、design、tasks、正式页面、API、存储与回归测试。
+- Verification: 定向验证列表和详情入口、二次确认、数据库级联范围、派生 WAV 删除、上游数据保留、审计墓碑及固定桌面/窄屏无横向溢出。
 
 ### PD-047 — 发布本轮 LLM 可靠性与 Qwen 原生协议修复
 
@@ -671,3 +699,31 @@
 - Consequences: 部署采用独立生产 Evaluation 数据卷；空历史门禁只在首次生产初始化时执行并留标记，后续常规发布必须保留线上产生的真实 Evaluation 数据。
 - Updated artifacts: `verification/delivery-status.json`、`tasks.md`、部署验证记录。
 - Verification: 以 Git 远端提交、GitHub Actions 部署结果、线上健康检查及首次空历史门禁输出为准。
+
+### PD-048 — Excel 时间只作定位锚点，正式 ASR 候选来自纯用户真实声音区间
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: KI-149 中 `1030000000086502 R6/R10` 的事件切片明显偏离真实用户声音
+- Decision owner: Product owner
+- Source thread/message: 当前任务 user message，纠正原有事件起点到下一事件起点的切分假设
+- Confirmation quote: “Excel时间不是正确的时间啊，我之前说过。你需要根据excel的时间，找纯用户录音的部分，找到对应的声音，然后单独发送给ASR。”
+- Decision: Excel `time (s)` 只能作为目标用户事件在 `user_record` 上的近似定位锚点，不得直接作为裁剪起点或终点。系统必须在锚点附近定位与该事件对应的真实用户发声区间，只把该单句纯用户音频作为三家评测 ASR 的正式重转录输入；边界无法唯一确认时必须明确失败，不得用长静音、相邻事件或完整通话转写冒充候选。
+- Reason: 实际源数据证明时间值可能位于发声结束之后、乱序或超出音频总长；机械使用“本事件时间到下一事件时间”会漏掉目标句并截入几十秒静音或其他声音。
+- Consequences: PD-035 中“按事件时间边界”的实现解释被本决定修正；既有错误事件级结果保持可追溯但不能作为有效质检证据，后续批次必须使用声音区间定位。完整历史上下文的外部接收方和费用范围仍由 Q-015 待确认。
+- Updated artifacts: `decisions/open-questions.md`、`tasks.md`、`verification/delivery-status.json`；待 Q-015 关闭后同步 Delta Spec、design、实现与测试。
+- Verification: 固定回归必须至少覆盖 `1030000000086502 R6` 和 `R10`，证明裁片包含目标用户发声、排除相邻机器人轮次和长静音，并在无法可靠定位时 fail closed。
+
+### PD-049 — 完整录音发送三家 ASR 作为上下文，正式候选仅取纯用户单句
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: Q-015 “历史上下文发送全部录音”的接收方和用途
+- Decision owner: Product owner
+- Source thread/message: 当前任务 user message，对 A/B/C 方案作出选择
+- Confirmation quote: “选择A”
+- Decision: 对每个进入评测 ASR 阶段的 conversation，系统向每家启用的评测 ASR 提交一次完整通话录音并将结果保存为只读上下文证据；对每个目标用户事件，仍另外提交从 `user_record` 声音定位得到的单句纯用户切片。第二轮可读取完整录音上下文转写辅助理解，但正式 ASR 候选、Good/Bad 判定对比和人工标注候选只能使用事件级纯用户切片结果，完整录音结果不得覆盖或冒充事件候选。
+- Reason: ASR 需要完整通话理解上下文，同时最终对比必须排除机器人轮次和相邻用户发言。
+- Consequences: 每个命中 conversation/provider 增加一次完整录音 ASR 调用、成本和可恢复检查点；完整上下文与事件候选必须独立计费、独立失败、独立展示来源。完整上下文失败不允许用其文本填充事件候选；事件切片失败仍按 PD-048 fail closed。
+- Updated artifacts: Q-015、Delta Spec、`design.md`、`tasks.md`、执行器、存储、成本与回归测试。
+- Verification: Mock 回归证明每通/provider 完整录音至多调用一次、同通多个 Case 复用上下文、每个 Case/provider 单独调用相同纯用户切片、第二轮同时接收完整上下文与事件证据且候选来源不混淆；真实付费调用仍需逐次授权。

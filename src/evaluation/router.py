@@ -922,6 +922,13 @@ def create_evaluation_router(
         except RuntimeError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
 
+    @router.delete("/benchmarks/{benchmark_id}")
+    async def delete_benchmark(benchmark_id: str) -> dict[str, object]:
+        try:
+            return await store.delete_benchmark(benchmark_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
     @router.get("/benchmarks/exports/{export_id}")
     async def benchmark_export_status(export_id: str) -> dict[str, object]:
         export = await store.get_benchmark_export(export_id)

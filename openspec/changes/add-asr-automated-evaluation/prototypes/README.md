@@ -43,6 +43,7 @@
 28. 未启动的暂存上传可单独删除；audit-only、失败和已停止批次可二次确认后删除，运行中/暂停中任务必须先停止；有效完成批次继续固定留存 10 年。
 29. 中文模式中的固定系统文案只使用前端词典；打开真实英文/阿文对话时按需复用批次冻结的第一轮 LLM，显示不可变原文与临时中文对照。译文不落库、不进入报告或 Benchmark，失败时仍保留原文（PD-030；本项不改变已冻结视觉结构或基线文件）。
 30. Azure GPT 与 OpenRouter 复用现有连接卡片视觉与交互，但作为两个独立资源展示；失败/部分失败批次复用正式报告详情组件展示“部分结果 · 非完整报告”，不得用空白报告或正常报告状态代替（PD-041）。
+31. Benchmark Library 的列表行和样本详情复用既有危险操作按钮与确认弹窗模式，支持单条硬删除；确认文案明确只删除样本、修订与派生 WAV，并保留源对话、批次、报告和人工复核（PD-050；不改变冻结页面结构）。
 
 ## 需求到页面区域映射
 
@@ -53,7 +54,7 @@
 | First-pass / conversation ASR / second-pass | `#page-run` 五阶段、资源和候选结果 | 已确认 |
 | Explicit manual Good or Bad review | `#page-review` 对照、候选与 Good/Bad/听不清 | 已确认 |
 | Evaluation metrics / reports | 批次入口 → `#page-report` | 已确认 |
-| Benchmark ingestion and download | `#page-library` | 已确认 |
+| Benchmark ingestion, single deletion and download | `#page-library`、`#sample-dialog`、删除确认弹窗 | 已确认；删除复用冻结按钮与弹窗模式 |
 | Tags / context / Prompt / connections / cost | Configuration 四个入口；Azure GPT/OpenRouter 独立连接卡片 | 已确认；新增资源复用冻结卡片模式 |
 | Failed-batch partial results | 批次操作 → 复用 `#page-report` 详情组件并显示“部分结果 · 非完整报告”状态条 | 已确认；不改变正常报告基线 |
 | Bilingual and overflow-safe UI | 全页面、dialog、drawer | 已确认；截图和自动断言在 Engineering Checkpoint A/C 留证 |

@@ -29,6 +29,20 @@
 
 每个正式样本 MUST 包含 Benchmark ID、Good/Bad、语种、场景标签、纯用户 WAV 片段、历史转写、最终标注文本、标注来源、统一时间范围、定位精度和追溯信息。不得使用完整通话 MP3 代替用户 Benchmark 音频。
 
+### Requirement: Delete one Benchmark sample
+
+Benchmark Library MUST 在列表和样本详情提供单条删除入口。用户二次确认后，系统 MUST 原子删除该 Benchmark 当前记录与修订，并删除其位于托管 Benchmark 目录内的派生 WAV；不得提供批量删除或恢复入口。源对话、源批次、报告、人工复核与其他 Benchmark MUST 保留，系统 MUST 写入不含客户文本或音频路径的删除审计墓碑。
+
+#### Scenario: Confirm deletion from the list or detail
+
+- **WHEN** 用户从列表或详情对一个 Benchmark 样本确认删除
+- **THEN** 该样本立即从列表、筛选、汇总和后续导出中消失，其详情、修订和音频不可再访问；源对话、批次、报告和人工复核保持可访问
+
+#### Scenario: Cancel Benchmark deletion
+
+- **WHEN** 用户打开删除确认后取消
+- **THEN** 系统不得删除数据库记录、修订或派生 WAV，也不得写入删除审计
+
 #### Scenario: Create a clipped sample
 
 - **WHEN** Case 具有可靠统一时间范围且两类录音时间轴已校验

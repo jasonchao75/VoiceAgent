@@ -5,8 +5,8 @@
 ## Status
 
 - Open questions affecting current delivery: 0
-- Last reviewed: 2026-09-20
+- Last reviewed: 2026-09-21
 
 ## Questions
 
-当前无开放产品问题。Q-013 已由 PD-041 关闭；Q-014 由已确认的“模型无冻结价格不得启动批次”规格唯一决定，无需新增产品选择。
+无。

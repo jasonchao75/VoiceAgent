@@ -179,6 +179,8 @@
 - [x] 12.39 Implement Pass 1 conversation-atomic dynamic token packing, grouped Prompt/output validation, frozen group checkpoints, failed-group-only retry and deterministic regressions (PD-045)
 - [x] 12.40 Make Gemini/Qwen structured-output retries corrective rather than identical, remove hidden SDK retry multiplication, and retain per-conversation/per-Case checkpoints (KI-131)
 - [x] 12.41 Support the saved Qwen China native DashScope `/api/v1` endpoint, route `qwen3.8-max` through its native generation contract, retain compatible-mode support, and expose the model in Cost Settings/New Evaluation (PD-046, KI-118)
+- [x] 12.42 Correct pure-user clip alignment when workbook `time (s)` values represent utterance completion/recording events rather than speech onset, fail closed on ambiguous boundaries, and add one reusable full-call context ASR job per conversation/provider without allowing it to become an event candidate (PD-048, PD-049, KI-149)
+- [x] 12.43 Add confirmed single-sample Benchmark deletion from list/detail, removing only its record, revisions and managed derived WAV while preserving upstream evidence and a content-free audit tombstone (PD-050)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 
@@ -187,3 +189,4 @@
 - [x] 13.3 Verify the fresh production batch, report, review and Benchmark lists contain no local test history before opening access
 - [x] 13.4 Publish the independently verified KI-128 hotfix without clearing existing production Evaluation data, then verify CI/CD, health and deployed commit (PD-044)
 - [x] 13.5 Publish the independently verified grouped LLM and Qwen native/compatible reliability release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-047)
+- [ ] 13.6 Publish the independently verified audio-alignment/full-context and single-Benchmark deletion release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-051)

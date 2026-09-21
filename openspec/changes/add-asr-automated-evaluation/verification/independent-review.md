@@ -1,4 +1,59 @@
-# Independent Review — Qwen native DashScope and grouped LLM reliability
+# Independent Review — Single-sample Benchmark deletion
+
+- Status: **PASS**
+- Date: 2026-09-21
+- Scope: PD-050 and Task 12.43 only
+- Reviewer boundary: independent verification only; no product implementation, production mutation, deployment, push, or external paid call was performed.
+
+## Decision
+
+The reviewed increment passes independent verification. Benchmark Library exposes a single-sample Delete action in both the list row and sample detail. Both paths open the same explicit confirmation dialog; cancel performs no request, while confirm issues one item-scoped DELETE and refreshes the library state. There is no batch-delete or restore action.
+
+The backend deletion transaction targets only `evaluation_benchmark_revisions` for the selected ID and the corresponding `evaluation_benchmarks` row, then writes a content-free `benchmark.deleted` tombstone containing only the object ID and a derived-clip boolean. After commit, file removal is restricted to a resolved path below the managed Benchmark clip root. Conversations, batches, reports, manual reviews and unrelated Benchmark rows are not deletion targets or cascading children of this operation.
+
+## Reproducible evidence
+
+- Backend lifecycle/API regression: **PASS**. It proves the current row and all revisions disappear, detail/audio/revision endpoints return 404, list/search count becomes zero, repeated deletion returns 404, and the managed WAV is removed while the source conversation and audit tombstone remain.
+- Static schema/code trace: only revisions reference `evaluation_benchmarks`; the delete transaction names only the selected revisions/current row and the audit insert. Upstream batch/report/review tables are neither updated nor deleted.
+- Runtime list/detail confirmation flow: **2/2 PASS** across `desktop-chromium` (1440×1000) and `narrow-chromium` (1024×1000), including cancel-without-delete and confirmed detail deletion.
+- Runtime horizontal-overflow check: **2/2 PASS** across the same desktop and narrow projects; document and dialogs remain within `scrollWidth <= clientWidth` tolerance.
+- Full repository suite: **223 passed**, with two previously disclosed dependency deprecation warnings.
+- Scoped Ruff and Mypy, frontend production build, `git diff --check`, and Change gate: **PASS**. The gate reports 0 errors and only existing disclosed warnings/one unrelated remaining task.
+
+## Remaining boundary
+
+- The browser flow used deterministic API interception so it did not delete a real user Benchmark. Backend deletion semantics were exercised against an isolated temporary database and managed clip.
+
+---
+
+# Prior Independent Review — Speech-aligned event clips and full-call ASR context
+
+- Status: **PASS**
+- Date: 2026-09-21
+- Scope: PD-048, PD-049 and KI-149 only
+- Reviewer boundary: independent verification only; no implementation, paid provider call, deployment, push, or production-data mutation was performed. Q-016 Benchmark deletion is a separate open product question and is explicitly outside this scoped verdict.
+
+## Decision
+
+The reviewed increment passes deterministic independent verification. Excel event time is now used only as an approximate anchor: the implementation calibrates energy near the anchor, selects a bounded speech island from the pure-user WAV, adds small guard margins, and fails closed when no island is close enough or the two nearest candidates are materially ambiguous. The exact resulting `source_clip` is reused across providers, report playback and downstream evidence; the prior event-to-next-event interval is no longer reconstructed.
+
+The full-call MP3 is independently submitted at most once per candidate-bearing conversation/provider and persisted in the conversation-scoped checkpoint table. Event candidates remain separate provider/event checkpoints generated only from the pure-user WAV clip. Pass 2 receives full-call ASR under `full_audio_context_asr`, while candidate comparison continues to consume only event-level `asr_results`; failed context jobs cannot populate or overwrite event candidates.
+
+## Reproducible evidence
+
+- Real source `benchmarks/RiyadBankConversation/user_record/1030000000086502.wav`: R6 anchor `11.984s` resolves to guarded clip `9.94–10.87s` with detected speech `10.12–10.62s`; R10 anchor `60.254s` resolves to guarded clip `57.58–59.61s` with detected speech `57.76–59.36s`.
+- Focused alignment/context/retry suite: **8 passed**. It covers late anchors, a louder earlier utterance, equal-distance ambiguity rejection, stable pure-user clipping, invalid-timeline fail-closed behavior, one reusable full-call checkpoint, and frozen Pass 2 retry context.
+- Full repository suite: **223 passed**, with the two previously disclosed dependency deprecation warnings.
+- Scoped Ruff, Mypy and `git diff --check`: **PASS**.
+- Change gate: the only error is Q-016, which is explicitly outside this review scope. Existing disclosed warnings remain unchanged, including the lack of a paid external-real run for the new three-provider flow.
+
+## Remaining boundary
+
+- No real customer audio was sent to Soniox, Speechmatics or ElevenLabs in this review. The provider-paid execution, supplier billing and production behavior remain unverified; this PASS covers source-backed local-real alignment plus deterministic/mock orchestration evidence.
+
+---
+
+# Prior Independent Review — Qwen native DashScope and grouped LLM reliability
 
 - Status: **PASS**
 - Date: 2026-09-21

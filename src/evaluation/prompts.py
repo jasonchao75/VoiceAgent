@@ -169,6 +169,7 @@ PASS_TWO_SYSTEM_PROMPT = _approved_prompt(
         "request_group_id",
         "candidate_case",
         "conversation_history",
+        "full_audio_context_asr",
         "production_transcript",
         "asr_results",
         "evaluation_context",

@@ -11,6 +11,7 @@ const runtime = {
   benchmarkOffset: 0,
   benchmarkTotal: 0,
   activeBenchmarkId: null,
+  pendingDeleteBenchmarkId: null,
   audio: null,
   reportAudio: null,
   reportAudioButton: null,
@@ -2927,7 +2928,7 @@ function renderBenchmarks(result) {
   body.innerHTML = result.items.length
     ? result.items
         .map(
-          (item) => `<tr data-benchmark-id="${safe(item.id)}" data-case-type="${safe(item.case_type)}" data-language="${safe(item.language)}" data-scenario="${safe(item.scenario_tag)}" data-source="${safe(item.source)}"><td><input class="benchmark-check runtime-benchmark-check" type="checkbox" value="${safe(item.id)}" aria-label="${copy("Select", "选择")} ${safe(item.id)}" ${runtime.selectedBenchmarkIds.has(item.id) ? "checked" : ""}></td><td><span class="id">${safe(item.id)}</span></td><td><span class="id">${safe(item.conversation_id)} · ${safe(item.event_id)}</span></td><td><span class="pill ${item.case_type === "good" ? "good" : "bad"}">${item.case_type === "good" ? copy("Good Case", "正确") : copy("Bad Case", "错误")}</span></td><td>${safe(benchmarkLanguage(item.language))}</td><td>${safe(benchmarkScenario(item.scenario_tag))}</td><td><span class="pill ${item.source === "manual" ? "blue" : ""}">${item.source === "manual" ? copy("Manual", "人工标注") : copy("AI", "AI 标注")}</span></td><td>${arabicComparisonHtml(item.batch_id, item.label)}</td><td><button class="btn small runtime-sample-detail" data-benchmark-id="${safe(item.id)}">${copy("View", "查看")}</button></td></tr>`,
+          (item) => `<tr data-benchmark-id="${safe(item.id)}" data-case-type="${safe(item.case_type)}" data-language="${safe(item.language)}" data-scenario="${safe(item.scenario_tag)}" data-source="${safe(item.source)}"><td><input class="benchmark-check runtime-benchmark-check" type="checkbox" value="${safe(item.id)}" aria-label="${copy("Select", "选择")} ${safe(item.id)}" ${runtime.selectedBenchmarkIds.has(item.id) ? "checked" : ""}></td><td><span class="id">${safe(item.id)}</span></td><td><span class="id">${safe(item.conversation_id)} · ${safe(item.event_id)}</span></td><td><span class="pill ${item.case_type === "good" ? "good" : "bad"}">${item.case_type === "good" ? copy("Good Case", "正确") : copy("Bad Case", "错误")}</span></td><td>${safe(benchmarkLanguage(item.language))}</td><td>${safe(benchmarkScenario(item.scenario_tag))}</td><td><span class="pill ${item.source === "manual" ? "blue" : ""}">${item.source === "manual" ? copy("Manual", "人工标注") : copy("AI", "AI 标注")}</span></td><td>${arabicComparisonHtml(item.batch_id, item.label)}</td><td><div class="actions"><button class="btn small runtime-sample-detail" data-benchmark-id="${safe(item.id)}">${copy("View", "查看")}</button><button class="btn small danger runtime-benchmark-delete" data-benchmark-id="${safe(item.id)}">${copy("Delete", "删除")}</button></div></td></tr>`,
         )
         .join("")
     : `<tr><td colspan="9"><div class="runtime-empty">${copy(
@@ -3058,6 +3059,41 @@ async function saveBenchmarkRevision() {
     notify(copy("Saved as a new immutable Benchmark revision.", "已保存为新的不可变 Benchmark 修订。"));
   } catch (error) {
     notify(error.message);
+  }
+}
+
+function requestBenchmarkDeletion(benchmarkId) {
+  const item = runtime.benchmarkItems.get(benchmarkId);
+  if (!item) return;
+  runtime.pendingDeleteBenchmarkId = benchmarkId;
+  const detailDialog = document.querySelector("#sample-dialog");
+  if (detailDialog.open) detailDialog.close();
+  document.querySelector("#delete-benchmark-message").textContent = copy(
+    `Benchmark ${benchmarkId} will be permanently deleted.`,
+    `Benchmark ${benchmarkId} 将被永久删除。`,
+  );
+  document.querySelector("#delete-benchmark-dialog").showModal();
+}
+
+async function confirmBenchmarkDeletion() {
+  const benchmarkId = runtime.pendingDeleteBenchmarkId;
+  if (!benchmarkId) return;
+  const button = document.querySelector("#confirm-delete-benchmark");
+  button.disabled = true;
+  try {
+    await json(`/api/evaluation/benchmarks/${encodeURIComponent(benchmarkId)}`, {
+      method: "DELETE",
+    });
+    runtime.selectedBenchmarkIds.delete(benchmarkId);
+    runtime.activeBenchmarkId = null;
+    runtime.pendingDeleteBenchmarkId = null;
+    document.querySelector("#delete-benchmark-dialog").close();
+    await refreshBootstrap({ quiet: true });
+    notify(copy("Benchmark sample deleted.", "Benchmark 样本已删除。"));
+  } catch (error) {
+    notify(error.message);
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -3553,6 +3589,25 @@ function installEvents() {
         event.preventDefault();
         event.stopImmediatePropagation();
         await openBenchmarkDetail(benchmarkDetail);
+        return;
+      }
+      const benchmarkDelete = event.target.closest(".runtime-benchmark-delete");
+      if (benchmarkDelete) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        requestBenchmarkDeletion(benchmarkDelete.dataset.benchmarkId);
+        return;
+      }
+      if (event.target.closest("#sample-dialog .benchmark-delete")) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        requestBenchmarkDeletion(runtime.activeBenchmarkId);
+        return;
+      }
+      if (event.target.closest("#confirm-delete-benchmark")) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        await confirmBenchmarkDeletion();
         return;
       }
       if (event.target.closest("#sample-dialog .benchmark-edit")) {

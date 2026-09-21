@@ -26,6 +26,8 @@
   `{{conversation_history}}`
 - 按 conversation_id 分组的历史转写（`production_transcript`）：
   `{{production_transcript}}`
+- 按 conversation_id 分组的完整通话 ASR 上下文（`full_audio_context_asr`）。这些结果只用于理解对话上下文，绝不能作为当前 event 的正式候选文本、reference_text 或 segment 证据：
+  `{{full_audio_context_asr}}`
 - 按 conversation_id 与目标 event_id 分组的纯用户事件切片重转录结果及分段（`asr_results`）。每家结果只对应当前目标用户事件，不得引用或补入相邻机器人轮次：
   `{{asr_results}}`
 - 冻结的质检上下文（`evaluation_context`）：
@@ -58,6 +60,7 @@
 10. 推荐回听 segment_id 应尽量少，但要覆盖关键用户发言及理解它所需的最小相邻上下文。
 11. `positioning_quality` 只能是：`exact`（目标和上下文边界精确）、`expanded`（为保证语义扩大了边界）、`full_recording`（只能回听整通录音）或 `unavailable`（没有可播放证据）。只有 `exact` 或 `expanded` 可以自动判定 Good/Bad；其余必须进入人工复核。
 12. `{{reference_dictionaries}}` 只用于解释输入中已有的业务实体和映射；不得把词典命中本身当作用户实际原话或 Ground Truth。
+13. 完整通话 ASR 只提供语境；`vendor_evidence`、`candidate_texts`、`recommended_listening_segment_ids` 和 `reference_text` 只能引用当前 event 的 `asr_results`，不得引用 `full_audio_context_asr`。
 
 ## 输出格式
 
