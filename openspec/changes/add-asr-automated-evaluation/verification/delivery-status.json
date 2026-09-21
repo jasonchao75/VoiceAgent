@@ -27,7 +27,7 @@
     "status": "PASS",
     "reviewed_at": "2026-09-20",
     "evidence": "verification/independent-review.md",
-    "deployment_execution": "pending; task 13.3 and UV-017 remain mandatory deployment-time checks"
+    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access"
   },
   "external_calls": [
     {
@@ -1340,9 +1340,10 @@
     },
     {
       "id": "UV-017",
-      "status": "open",
+      "status": "resolved",
       "summary": "Production data-volume isolation and empty-list verification have not been executed.",
       "reason": "Tasks 13.1-13.2 are implemented and independently verified: production uses the dedicated voiceagent-evaluation-production-data volume; precheck rejects non-production provenance and known local batch IDs; post-start verification requires production provenance plus zero batch/report/review/Benchmark rows before deployment success; and the authorized legacy cleanup removes only Evaluation result history and derived artifacts while retaining shared configuration. Deployment has not run, so task 13.3 remains unchecked and must succeed during deployment. This is a mandatory deployment-time gate, not a blocker to initiating the fail-closed release workflow.",
+      "resolution": "Production deployment run 35554596051 completed successfully on 2026-09-20. Its fail-closed post-start verifier marked the new production Evaluation volume only after batch, report, review and Benchmark counts were all zero; the public health endpoint then returned HTTP 200.",
       "disclosed_to_user": true
     },
     {

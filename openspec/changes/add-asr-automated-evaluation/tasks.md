@@ -178,4 +178,4 @@
 
 - [x] 13.1 Provision an independently named production data volume without copying local SQLite, uploads, recordings, clips, reports or cost rows
 - [x] 13.2 Add a pre-deployment check that rejects local acceptance volumes or known local test batch IDs
-- [ ] 13.3 Verify the fresh production batch, report, review and Benchmark lists contain no local test history before opening access
+- [x] 13.3 Verify the fresh production batch, report, review and Benchmark lists contain no local test history before opening access
