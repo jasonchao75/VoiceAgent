@@ -189,4 +189,4 @@
 - [x] 13.3 Verify the fresh production batch, report, review and Benchmark lists contain no local test history before opening access
 - [x] 13.4 Publish the independently verified KI-128 hotfix without clearing existing production Evaluation data, then verify CI/CD, health and deployed commit (PD-044)
 - [x] 13.5 Publish the independently verified grouped LLM and Qwen native/compatible reliability release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-047)
-- [ ] 13.6 Publish the independently verified audio-alignment/full-context and single-Benchmark deletion release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-051)
+- [x] 13.6 Publish the independently verified audio-alignment/full-context and single-Benchmark deletion release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-051)

@@ -23,7 +23,7 @@
 - Reason: 让后续真实评测使用修正后的纯用户片段与独立完整录音上下文，并让用户可以在产品内受控删除单个 Benchmark。
 - Consequences: 新评测按新音频规则执行；已有报告与历史证据保持不变。Benchmark 仅在用户从页面二次确认时删除。本次提交不得夹带暂停中的 Voice Bot 设计改动、本地录音、测试数据库或凭证。
 - Updated artifacts: 本 Change 实现、测试、交付状态、独立验收和生产部署记录。
-- Verification: 推送前复跑全量测试、Ruff、Mypy、前端构建、双视口删除回归和 Change gate；推送后核对 GitHub CI/CD、生产健康与部署提交一致性。
+- Verification: 提交 `f61dd1f` 推送前全量 223 项测试、Ruff、Mypy、前端构建、双视口删除回归、Change gate 与独立验收通过；GitHub CI `35613404650`、生产部署及公网健康检查 `35613635940` 均成功，生产数据保持不变。
 
 ### PD-050 — Benchmark Library 单条硬删除
 

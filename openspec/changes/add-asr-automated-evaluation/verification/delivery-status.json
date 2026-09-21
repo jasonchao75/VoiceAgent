@@ -1439,6 +1439,15 @@
       "disclosed_to_user": true
     },
     {
+      "id": "KI-151",
+      "status": "open",
+      "summary": "GitHub Actions reports that Node.js 20 action runtimes are deprecated and are currently being forced onto Node.js 24.",
+      "impact": "The current CI and deployment both succeeded, so this does not affect the released Evaluation functionality. Future GitHub runner changes may turn the compatibility warning into a workflow maintenance failure if the referenced Actions are not upgraded.",
+      "source": "GitHub CI run 35613404650 annotation on 2026-09-21 for actions/checkout@v4, actions/setup-node@v4 and actions/setup-python@v5.",
+      "next_action": "Upgrade the affected GitHub Actions to versions that declare the supported Node.js runtime before GitHub removes the compatibility bridge.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-150",
       "status": "resolved",
       "summary": "The first Benchmark deletion browser-validation attempts could not launch or reach the local service under the filesystem sandbox.",
