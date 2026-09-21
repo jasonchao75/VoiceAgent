@@ -621,7 +621,23 @@ function executionProgressCopy(batch, stage = batch.stage) {
     const failureCopy = failed ? ` · ${failed} ${copy("failed", "失败")}` : "";
     return `${state.finished}/${state.total} ${copy("Cases", "个样本")}${requestCopy}${failureCopy}`;
   }
-  const unit = stage === "evaluation_asr" ? copy("jobs", "个任务") : copy("items", "项");
+  if (stage === "pass_1") {
+    const requests = batch.snapshot?.pass_1_request_status;
+    const plan = batch.snapshot?.pass_1_plan;
+    const requestFinished = Number(requests?.completed || 0) + Number(requests?.failed || 0);
+    const requestTotal = Number(requests?.total ?? plan?.request_group_count ?? 0);
+    const requestCopy = requestTotal
+      ? ` · ${requestFinished}/${requestTotal} ${copy("request groups", "个请求组")}`
+      : "";
+    const failureCopy = Number(state.failed || 0)
+      ? ` · ${state.failed} ${copy("failed", "失败")}`
+      : "";
+    return `${state.finished}/${state.total} ${copy("conversation checks", "通对话检查")}${requestCopy}${failureCopy}`;
+  }
+  const unit =
+    stage === "evaluation_asr"
+      ? copy("jobs", "个任务")
+      : copy("items", "项");
   const failed = Number(state.failed || 0);
   const failureCopy = failed ? ` · ${failed} ${copy("failed", "失败")}` : "";
   return `${state.finished}/${state.total} ${unit}${failureCopy}`;

@@ -174,7 +174,11 @@
 - [x] 12.34 Expose persisted successful checkpoints for failed/partially-failed batches as clearly labeled non-final partial results, including stage coverage, ASR evidence, completed Pass 2 results, cost and failure detail (PD-041)
 - [x] 12.35 Add backend and dual-viewport UI regressions for Azure/OpenRouter isolation, duplicate model IDs, secret redaction, price gating and partial-result recovery (PD-041)
 - [x] 12.36 Canonicalize saved, selected and execution-time frozen LLM pricing aliases so a saved DeepSeek `deepseek-v4-flash` rate is accepted through New Evaluation and paid execution, including compatibility for existing price versions (KI-128)
-- [ ] 12.37 Diagnose production failed evaluations that never materialize Cases, preserving partial successful checkpoints and separating zero-candidate success from execution failure (KI-129)
+- [x] 12.37 Diagnose production failed evaluations that never materialize Cases, preserving partial successful checkpoints and separating zero-candidate success from execution failure (KI-129)
+- [x] 12.38 Diagnose and reconcile Cost Settings live diagnostics versus batch execution for `Gemini/gemini-3.8-flash` (KI-130)
+- [x] 12.39 Implement Pass 1 conversation-atomic dynamic token packing, grouped Prompt/output validation, frozen group checkpoints, failed-group-only retry and deterministic regressions (PD-045)
+- [x] 12.40 Make Gemini/Qwen structured-output retries corrective rather than identical, remove hidden SDK retry multiplication, and retain per-conversation/per-Case checkpoints (KI-131)
+- [x] 12.41 Support the saved Qwen China native DashScope `/api/v1` endpoint, route `qwen3.8-max` through its native generation contract, retain compatible-mode support, and expose the model in Cost Settings/New Evaluation (PD-046, KI-118)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 
@@ -182,3 +186,4 @@
 - [x] 13.2 Add a pre-deployment check that rejects local acceptance volumes or known local test batch IDs
 - [x] 13.3 Verify the fresh production batch, report, review and Benchmark lists contain no local test history before opening access
 - [x] 13.4 Publish the independently verified KI-128 hotfix without clearing existing production Evaluation data, then verify CI/CD, health and deployed commit (PD-044)
+- [ ] 13.5 Publish the independently verified grouped LLM and Qwen native/compatible reliability release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-047)

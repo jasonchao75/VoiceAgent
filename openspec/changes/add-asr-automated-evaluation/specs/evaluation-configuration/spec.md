@@ -126,6 +126,8 @@
 
 Azure GPT 与 OpenRouter MUST 作为独立 LLM 资源保存，不得覆盖或复用 OpenAI/GPT 的资源身份。Azure GPT MUST 解析并冻结资源主机、deployment 和 `api-version`，使用 Azure `api-key` 鉴权；OpenRouter MUST 使用固定官方 OpenAI-compatible Base URL 和 Bearer 鉴权。
 
+Qwen 中国站 MUST 同时支持阿里云官方 OpenAI-compatible URL 与原生 DashScope `/api/v1` URL。系统 MUST 允许 `https://dashscope.aliyuncs.com/api/v1`、已确认的 `https://prem.dashscope.aliyuncs.com/api/v1` 以及 workspace 专属 Model Studio 域名，并按原生消息协议调用仅在该协议可用的 `qwen3.8-max`；不得把原生 URL 强制改写为 compatible-mode URL。
+
 凭证 MUST 只允许写入或替换，不得回显明文；服务端 MUST 使用 Fernet 加密落 SQLite，主密钥只来自 `VOICE_AGENT_STORAGE_KEY`。API 响应、普通日志和验证错误 MUST NOT 包含明文凭证。
 
 #### Scenario: Configure and test a connection
@@ -149,6 +151,12 @@ Azure GPT 与 OpenRouter MUST 作为独立 LLM 资源保存，不得覆盖或复
 
 - **WHEN** 管理员提交 Azure GPT 完整 chat completions URL
 - **THEN** 系统只接受 HTTPS `*.openai.azure.com` 地址，并解析唯一 deployment 与 `api-version` 后执行最小真实诊断；缺失、重复或不受支持的路径参数必须在调用前明确拒绝
+
+#### Scenario: Validate a native Qwen China endpoint
+
+- **WHEN** 管理员为 Qwen 提交 `https://prem.dashscope.aliyuncs.com/api/v1` 并选择 `qwen3.8-max`
+- **THEN** 系统 MUST 使用 Bearer Key 向原生 `multimodal-generation/generation` 路由发送消息格式诊断；成功后保存该原生 Base URL 和型号，并供两轮评测选择
+- **AND** 非 HTTPS、非 DashScope/Model Studio 域名、携带凭证/端口/查询参数或不是 `/api/v1`、`/compatible-mode/v1` 的 URL MUST 在外部调用前拒绝
 
 #### Scenario: Keep connections across deployment restarts
 

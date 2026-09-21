@@ -153,9 +153,10 @@ def _approved_prompt(filename: str, required_slots: tuple[str, ...]) -> str:
 
 
 PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
-    "riyadbank-pass-1-system-prompt-v1.md",
+    "riyadbank-pass-1-system-prompt-v2.md",
     (
-        "conversation_history",
+        "request_group_id",
+        "conversations",
         "evaluation_context",
         "reference_dictionaries",
         "screening_strategy",

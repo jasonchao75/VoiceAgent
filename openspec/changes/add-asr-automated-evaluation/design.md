@@ -114,7 +114,9 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 
 ### Pass 1
 
-Pass 1 receives one conversation history plus a frozen runtime envelope containing the evaluation context, linked generic reference dictionaries, screening strategy and enabled scenario tags. It emits one structured record per user event: candidate, pass or data issue, with a short reason, business impact and scenario suggestions. The application validates event ownership and IDs independently of the LLM.
+Pass 1 uses dynamic token packing. One conversation's complete history and all of its user events form an indivisible unit. Before dispatch, the orchestrator reserves tokens for the System Prompt, grouped structured output and a safety margin, then packs units against the frozen model's verified context and output limits. If the complete batch fits safely, Pass 1 sends one request; otherwise it creates the minimum safe number of groups. A conversation is never split or truncated.
+
+Each group receives the frozen runtime envelope containing the evaluation context, linked generic reference dictionaries, screening strategy and enabled scenario tags. It has a stable `request_group_id` and frozen conversation membership. The model must echo the group ID and return exactly one result per conversation, with one structured record per user event: candidate, pass or data issue, plus a short reason, business impact and scenario suggestions. The application validates group identity, conversation ownership and event IDs independently of the LLM. A malformed or incomplete response rejects the entire group; retry reuses the same membership and idempotency key, while completed groups are never resent.
 
 After Pass 1 checkpoints settle, the orchestrator distinguishes an empty valid result from total execution failure. If every conversation failed, the batch becomes retryable `partially_failed/failed` and never advances to ASR. If at least one conversation completed but the resulting Case set is empty, the service freezes a zero-candidate preliminary report and completes without creating ASR or Pass 2 jobs.
 
@@ -142,7 +144,7 @@ Prompt 不输出 confidence，系统也不保存或使用 confidence 阈值。A 
 
 上线默认数据来自 Change 内的四份可审计 fixture：`fixtures/riyadbank-evaluation-context-v1.md`、`fixtures/riyadbank-reference-dictionary-v1.csv`、`fixtures/riyadbank-pass-1-system-prompt-v1.md` 和 `fixtures/riyadbank-pass-2-system-prompt-v2.md`。V1 第二轮 Prompt 仅作历史审计，V2 是 PD-025 确认的分组输出契约。配置迁移使用稳定 seed key 幂等追加缺失契约版本；历史版本保留，生效模板缺少 `request_group_id`、`results[]` 或 `positioning_quality` 时升级到 V2，后续管理员编辑始终另存新版本。
 
-运行时渲染器固定组装一个与客户无关的变量包：`conversation_history` 来自逐通 Excel，`evaluation_context` 来自上下文版本，`reference_dictionaries` 来自上下文关联的词典版本，`screening_strategy` 来自批次候选范围，`scenario_tags` 来自启用标签快照。第二轮在同一基础包上增加 `request_group_id`、候选数组 `candidate_case`、按 conversation ID 分组的 `production_transcript` 和 `asr_results`。完整 System Prompt 以稳定模板保存，并用 `{{variable}}` 显式标记动态数据的注入位置；运行时将各变量序列化后替换为成品 Prompt。RiyadBank 的分行词典只是 `reference_dictionaries` 中一个 `dictionary_key=riyadbank_branches` 的实例，平台数据模型和 Prompt 契约不得出现分行专属字段。
+运行时渲染器固定组装一个与客户无关的变量包：`evaluation_context` 来自上下文版本，`reference_dictionaries` 来自上下文关联的词典版本，`screening_strategy` 来自批次候选范围，`scenario_tags` 来自启用标签快照。第一轮增加 `request_group_id` 和按 conversation ID 分组的 `conversations`；第二轮增加 `request_group_id`、候选数组 `candidate_case`、按 conversation ID 分组的 `conversation_history`、`production_transcript` 和 `asr_results`。完整 System Prompt 以稳定模板保存，并用 `{{variable}}` 显式标记动态数据的注入位置；运行时将各变量序列化后替换为成品 Prompt。RiyadBank 的分行词典只是 `reference_dictionaries` 中一个 `dictionary_key=riyadbank_branches` 的实例，平台数据模型和 Prompt 契约不得出现分行专属字段。
 
 If no frozen tag matches, Pass 2 emits a structured `proposed_tag` with `type`, `name_en`, `name_zh`, `description_en` and `description_zh`. The proposal is an ASR-quality taxonomy dimension, not a user-behavior, business-completion or bot-quality category. Its wording stays neutral across Good, Bad and manual-review outcomes: for example, language selection means whether language-related speech was preserved accurately, not whether the user complied with the bot's question. The report stores this proposal in its immutable payload for review. Confirming creation copies all five fields into a new global tag version and moves the grouped Cases in one transaction; incomplete proposals cannot be created directly.
 
@@ -187,11 +189,14 @@ If any Pass 2 request group remains failed, the automated stage stays retryable 
 does not freeze a normal preliminary report. A later successful retry appends a new
 immutable preliminary version rather than overwriting an earlier retained version.
 
-Qwen's OpenAI-compatible endpoint rejects JSON Mode when `enable_thinking=true`.
-For Qwen Thinking requests the runner therefore omits `response_format` while
-retaining the frozen JSON-only Prompt, parser, whole-group membership checks and
-full response-schema validation. Non-thinking Qwen and other compatible providers
-continue to use JSON Mode.
+Older Qwen models may reject JSON Mode when `enable_thinking=true`; for those
+models the runner omits `response_format` while retaining the frozen JSON-only
+Prompt, parser, whole-group membership checks and full response-schema validation.
+The verified `qwen3.8-*` family supports JSON Object with Thinking and therefore
+enables it in both native and compatible protocols. Non-thinking Qwen and other
+compatible providers continue to use JSON Mode.
+
+Qwen connections preserve the administrator-selected Alibaba protocol. Compatible-mode URLs continue through the OpenAI client. Native URLs ending in `/api/v1`, including `prem.dashscope.aliyuncs.com`, use direct authenticated DashScope HTTP: `qwen3.8-*` routes to `services/aigc/multimodal-generation/generation`, uses `max_completion_tokens` so the frozen cap includes both reasoning and visible answer tokens, and enables its documented JSON Object response format for both evaluation passes. Compatible-mode `qwen3.8-*` also uses `max_completion_tokens`; older text models retain `max_tokens` compatibility. The exact verified qwen3.8-max packing policy uses its official 1,000,000-token context ceiling and 131,072-token maximum output, while unknown Qwen IDs retain the conservative provider fallback. Both passes preserve the same Thinking, JSON parsing, full schema validation, budget reservation and cost-ledger contracts. URL validation allows only HTTPS DashScope/Model Studio hosts and the two documented protocol paths.
 
 Metrics are computed from immutable event/result rows, never from UI counters:
 

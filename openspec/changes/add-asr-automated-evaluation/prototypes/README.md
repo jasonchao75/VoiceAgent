@@ -14,7 +14,7 @@
 ## 已确认产品口径
 
 1. 输入只支持逐通文件：`conversation_history/{conversation_id}.xlsx`、`record/{conversation_id}.mp3`、`user_record/{conversation_id}.wav`。
-2. 第一轮从历史对话筛疑点，并从同一疑点对话建立额外 Good 候选池。
+2. 第一轮从历史对话筛疑点，并从同一疑点对话建立额外 Good 候选池；完整对话不可拆分，整批能安全容纳时一次请求，超限时动态 Token 拆组（PD-045，不改变冻结视觉结构或基线文件）。
 3. 疑点复判为 Good 和额外抽样都是 Good 来源；最终 Good:Bad 目标为 1:1。
 4. 同一通完整录音每家评测 ASR 只转写一次，多个 Case 复用结果，不增加 ASR 转写次数。
 5. 第二轮页面使用“疑似 ASR 错误 / 大概率正确 / 需人工复核”，不暴露离线内部枚举。

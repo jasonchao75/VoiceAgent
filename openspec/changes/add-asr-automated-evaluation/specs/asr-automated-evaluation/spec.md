@@ -99,7 +99,24 @@
 
 系统 MUST 同时在包含疑点的对话内维护额外 Good Case 候选池；候选池只包含第一轮未发现实质疑点且具备有效文本、时间和音频关联的用户事件。
 
-#### Scenario: Screen a conversation
+第一轮请求 MUST 使用动态 Token 装箱。每通完整对话及其全部历史事件 MUST 作为不可拆分单元；当整个批次在冻结模型的上下文限制、结构化输出预留和安全余量内可安全容纳时 MUST 只发送一个外部请求，超限时 MUST 自动形成最少安全分组，不得按固定对话数拆分、截断对话或遗漏事件。每组 MUST 使用稳定 `request_group_id` 和冻结成员关系，模型输出 MUST 对组内每通对话恰好返回一个完整结果；组 ID 不匹配、对话遗漏、重复或越界时 MUST 拒绝整组。重试 MUST 复用原组成员和幂等键，并且只重试失败组。
+
+#### Scenario: Pack the complete first pass into one request
+
+- **WHEN** 批次中所有完整对话及预留输出能够安全容纳在第一轮模型限制内
+- **THEN** 系统只创建一个第一轮外部请求组，并在同一响应中校验和保存全部对话的事件结果
+
+#### Scenario: Split an oversized first-pass batch safely
+
+- **WHEN** 整个批次不能安全容纳，但每通完整对话均可独立容纳
+- **THEN** 系统按 Token 和输出预留形成最少安全分组，保持每通对话完整且只出现一次
+
+#### Scenario: Retry only one failed first-pass group
+
+- **WHEN** 某个第一轮请求组失败而其他组已经完成
+- **THEN** 系统使用相同组 ID、成员关系和幂等键只重试失败组，不重复调用已完成组
+
+#### Scenario: Screen a conversation inside a request group
 
 - **WHEN** 第一轮分析一通有效历史对话
 - **THEN** 系统保存每个用户事件的 pass、candidate 或 data issue 结果、原因、业务影响和上下文引用，但不把第一轮结果直接作为 Ground Truth
@@ -183,7 +200,8 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 #### Scenario: Qwen Thinking returns structured JSON
 
 - **WHEN** 第二轮选择 Qwen 且必须启用 Thinking
-- **THEN** 系统不得同时发送 Qwen 不兼容的 JSON Mode 参数，而应依赖冻结 Prompt、JSON 解析与完整 Schema 校验；格式或契约失败仍按同一冻结请求组重试
+- **THEN** 对已验证支持 Thinking + JSON Object 的 `qwen3.8-*`，系统 MUST 同时启用 JSON Object、冻结 Prompt、JSON 解析与完整 Schema 校验
+- **AND** 对尚未验证该组合能力的旧 Qwen 型号，系统 MUST 保守省略 JSON Mode，并继续依赖冻结 Prompt、JSON 解析与完整 Schema 校验；任一格式或契约失败仍按同一冻结请求组重试
 
 #### Scenario: Second-pass groups remain failed
 

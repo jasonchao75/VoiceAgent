@@ -564,6 +564,52 @@ def test_azure_and_openrouter_connections_are_isolated_and_provider_qualified(
     assert {item["provider"] for item in duplicates} == {"Azure GPT", "OpenRouter"}
 
 
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "https://dashscope.aliyuncs.com/api/v1",
+        "https://prem.dashscope.aliyuncs.com/api/v1",
+        "https://ws-demo.cn-beijing.maas.aliyuncs.com/api/v1",
+    ],
+)
+def test_qwen_native_endpoints_register_as_qwen(
+    client_with_keys: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    base_url: str,
+) -> None:
+    """Both premium and workspace-native URLs must retain the Qwen provider identity."""
+
+    async def fake_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
+        return LLMDiagnosticResult(
+            diagnostic_id="diag-qwen-native",
+            success=True,
+            category="ok",
+            summary="Connected.",
+            suggestion="",
+            provider=config.provider,
+            base_url_host=urlparse(config.base_url).hostname or "",
+            model=config.model,
+            first_token_ms=10.0,
+            total_ms=20.0,
+            reasoning_status="unverified",
+        )
+
+    monkeypatch.setattr("src.api.run_llm_diagnostic", fake_diagnostic)
+    response = client_with_keys.post(
+        "/api/evaluation/connections/qwen/test-and-save",
+        json={
+            "api_key": "qwen-secret-never-returned",
+            "base_url": base_url,
+            "model_id": "qwen3.8-max",
+            "register_for_evaluation_catalog": True,
+        },
+        headers=ORIGIN,
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["evaluation_provider"] == "Qwen"
+
+
 def test_unknown_custom_endpoint_cannot_register_evaluation_model(
     client_with_keys: TestClient,
 ) -> None:

@@ -84,6 +84,18 @@ def test_pack_units_rejects_one_oversized_conversation() -> None:
         pack_units(batch_id="EV-4", units=[unit], system_prompt="json", policy=policy)
 
 
+def test_reasoning_reserve_splits_qwen_before_json_output_can_be_starved() -> None:
+    """Thinking headroom must reduce group size instead of consuming visible JSON space."""
+    policy = ModelTokenPolicy(96_000, 32_000, 16_000, reasoning_reserve=20_000)
+    units = [_unit(f"C{index}", 2, 300, policy) for index in range(12)]
+
+    groups = pack_units(batch_id="EV-QWEN", units=units, system_prompt="json", policy=policy)
+
+    assert len(groups) > 1
+    assert all(group.reserved_output_tokens <= policy.max_output_tokens for group in groups)
+    assert all(len(group.case_keys) <= 15 for group in groups)
+
+
 def test_group_validation_requires_each_case_exactly_once() -> None:
     """A truncated or duplicated group response cannot create partial decisions."""
     rows = {

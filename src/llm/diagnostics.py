@@ -16,6 +16,14 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 from src.llm.capabilities import ReasoningStatus, get_model_capability
+from src.llm.qwen_dashscope import (
+    is_native_dashscope_url,
+    native_dashscope_generation_url,
+    native_dashscope_request,
+    parse_native_dashscope_response,
+)
+
+_DIAGNOSTIC_OUTPUT_TOKENS = 256
 
 
 class LLMDiagnosticRequest(BaseModel):
@@ -73,6 +81,9 @@ class DiagnosticConfig:
 def classify_llm_failure(exc: Exception) -> tuple[str, str, str]:
     """Map arbitrary SDK failures onto a bounded, actionable taxonomy."""
     status = getattr(exc, "status_code", None)
+    if status is None:
+        response = getattr(exc, "response", None)
+        status = getattr(response, "status_code", None) if response is not None else None
     name = type(exc).__name__.lower()
     if status in {401, 403} or "authentication" in name or "permission" in name:
         return (
@@ -160,7 +171,7 @@ def _reasoning_result(
     return control, capability.expected_status
 
 
-async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float, float, int | None]:
+async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float | None, float, int | None]:
     capability = get_model_capability(config.provider, config.model)
     extra: dict[str, object] = {}
     if config.reasoning_mode == "off":
@@ -171,22 +182,28 @@ async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float, float, int 
         and capability.control_name == "reasoning_effort"
     ):
         extra["reasoning_effort"] = capability.control_value
-    client = AsyncOpenAI(api_key=config.api_key, base_url=config.base_url.rstrip("/") + "/")
+    client = AsyncOpenAI(
+        api_key=config.api_key,
+        base_url=config.base_url.rstrip("/") + "/",
+        max_retries=0,
+    )
     started = time.monotonic()
     first_token: float | None = None
     reasoning_tokens: int | None = None
+    provider_responded = False
     try:
         async with asyncio.timeout(config.timeout):
             stream = await client.chat.completions.create(
                 model=config.model,
                 messages=[{"role": "user", "content": "Reply with OK."}],
-                max_completion_tokens=8,
+                max_completion_tokens=_DIAGNOSTIC_OUTPUT_TOKENS,
                 temperature=config.temperature,
                 stream=True,
                 stream_options={"include_usage": True},
                 **extra,
             )
             async for chunk in stream:
+                provider_responded = True
                 if chunk.choices and chunk.choices[0].delta.content and first_token is None:
                     first_token = time.monotonic()
                 if chunk.usage and chunk.usage.completion_tokens_details:
@@ -194,9 +211,10 @@ async def _diagnose_openai(config: DiagnosticConfig) -> tuple[float, float, int 
     finally:
         await client.close()
     finished = time.monotonic()
-    if first_token is None:
-        raise RuntimeError("Provider returned no text token")
-    return (first_token - started) * 1000, (finished - started) * 1000, reasoning_tokens
+    if not provider_responded:
+        raise RuntimeError("Provider returned no response event")
+    first_token_ms = (first_token - started) * 1000 if first_token is not None else None
+    return first_token_ms, (finished - started) * 1000, reasoning_tokens
 
 
 async def _diagnose_azure_openai(config: DiagnosticConfig) -> tuple[float, float, int | None]:
@@ -225,7 +243,36 @@ async def _diagnose_azure_openai(config: DiagnosticConfig) -> tuple[float, float
     return elapsed, elapsed, int(reasoning_tokens) if reasoning_tokens is not None else None
 
 
-async def _diagnose_gemini(config: DiagnosticConfig) -> tuple[float, float, int | None]:
+async def _diagnose_qwen_dashscope(
+    config: DiagnosticConfig,
+) -> tuple[float | None, float, int | None]:
+    """Run a minimal native DashScope request for models unavailable in compatible mode."""
+    started = time.monotonic()
+    async with httpx.AsyncClient(timeout=config.timeout) as client:
+        response = await client.post(
+            native_dashscope_generation_url(config.base_url, config.model),
+            headers={
+                "Authorization": f"Bearer {config.api_key}",
+                "Content-Type": "application/json",
+            },
+            json=native_dashscope_request(
+                model=config.model,
+                system_prompt="Diagnostic only.",
+                user_message="Reply with OK.",
+                max_output_tokens=_DIAGNOSTIC_OUTPUT_TOKENS,
+                enable_thinking=None,
+            ),
+        )
+        response.raise_for_status()
+        text, usage = parse_native_dashscope_response(response.json())
+    finished = time.monotonic()
+    if not text and usage["output_tokens"] <= 0:
+        raise RuntimeError("Provider returned no response content")
+    elapsed = (finished - started) * 1000
+    return None, elapsed, usage["reasoning_tokens"] or None
+
+
+async def _diagnose_gemini(config: DiagnosticConfig) -> tuple[float | None, float, int | None]:
     capability = get_model_capability(config.provider, config.model)
     thinking = None
     if config.reasoning_mode == "off":
@@ -251,18 +298,20 @@ async def _diagnose_gemini(config: DiagnosticConfig) -> tuple[float, float, int 
     started = time.monotonic()
     first_token: float | None = None
     reasoning_tokens: int | None = None
+    provider_responded = False
     try:
         async with asyncio.timeout(config.timeout):
             stream = await client.aio.models.generate_content_stream(
                 model=config.model,
                 contents="Reply with OK.",
                 config=types.GenerateContentConfig(
-                    max_output_tokens=8,
+                    max_output_tokens=_DIAGNOSTIC_OUTPUT_TOKENS,
                     temperature=config.temperature,
                     thinking_config=thinking,
                 ),
             )
             async for chunk in stream:
+                provider_responded = True
                 if getattr(chunk, "text", None) and first_token is None:
                     first_token = time.monotonic()
                 usage: Any = getattr(chunk, "usage_metadata", None)
@@ -272,9 +321,10 @@ async def _diagnose_gemini(config: DiagnosticConfig) -> tuple[float, float, int 
     finally:
         await client.aio.aclose()
     finished = time.monotonic()
-    if first_token is None:
-        raise RuntimeError("Provider returned no text token")
-    return (first_token - started) * 1000, (finished - started) * 1000, reasoning_tokens
+    if not provider_responded:
+        raise RuntimeError("Provider returned no response event")
+    first_token_ms = (first_token - started) * 1000 if first_token is not None else None
+    return first_token_ms, (finished - started) * 1000, reasoning_tokens
 
 
 async def run_llm_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
@@ -287,6 +337,8 @@ async def run_llm_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
             first_ms, total_ms, reasoning_tokens = await _diagnose_gemini(config)
         elif config.provider == "azure_openai":
             first_ms, total_ms, reasoning_tokens = await _diagnose_azure_openai(config)
+        elif is_native_dashscope_url(config.base_url):
+            first_ms, total_ms, reasoning_tokens = await _diagnose_qwen_dashscope(config)
         else:
             first_ms, total_ms, reasoning_tokens = await _diagnose_openai(config)
         control, reasoning_status = _reasoning_result(
@@ -296,12 +348,12 @@ async def run_llm_diagnostic(config: DiagnosticConfig) -> LLMDiagnosticResult:
             diagnostic_id=diagnostic_id,
             success=True,
             category="ok",
-            summary="The model returned a streamed text response.",
+            summary="The model returned a valid response.",
             suggestion="This configuration is ready for a voice session.",
             provider=config.provider,
             base_url_host=host,
             model=config.model,
-            first_token_ms=round(first_ms, 1),
+            first_token_ms=round(first_ms, 1) if first_ms is not None else None,
             total_ms=round(total_ms, 1),
             reasoning_control=control,
             reasoning_tokens=reasoning_tokens,

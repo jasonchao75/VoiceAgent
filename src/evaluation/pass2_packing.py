@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from dataclasses import dataclass
 from typing import Any
 
@@ -15,6 +16,7 @@ class ModelTokenPolicy:
     context_limit: int
     max_output_tokens: int
     safety_margin: int
+    reasoning_reserve: int = 16_384
 
 
 @dataclass(frozen=True)
@@ -44,20 +46,48 @@ class PassTwoGroup:
         return tuple(case for unit in self.units for case in unit.case_keys)
 
 
+@dataclass(frozen=True)
+class PassOneUnit:
+    """One indivisible conversation prepared for first-pass screening."""
+
+    conversation_id: str
+    payload: dict[str, Any]
+    user_event_count: int
+    estimated_input_tokens: int
+
+
+@dataclass(frozen=True)
+class PassOneGroup:
+    """One stable first-pass request group."""
+
+    group_id: str
+    idempotency_key: str
+    units: tuple[PassOneUnit, ...]
+    estimated_input_tokens: int
+    reserved_output_tokens: int
+
+    @property
+    def conversation_ids(self) -> tuple[str, ...]:
+        """Return frozen conversation membership in request order."""
+        return tuple(unit.conversation_id for unit in self.units)
+
+
 _PROVIDER_POLICIES = {
     # Safe operating ceilings, not advertised maxima. DeepSeek's current official
     # context is larger; keeping headroom protects structured output and reasoning.
-    "deepseek": ModelTokenPolicy(840_000, 128_000, 32_000),
-    "gemini": ModelTokenPolicy(800_000, 64_000, 32_000),
+    "deepseek": ModelTokenPolicy(840_000, 128_000, 32_000, 24_000),
+    "gemini": ModelTokenPolicy(800_000, 64_000, 32_000, 36_000),
     "gpt": ModelTokenPolicy(96_000, 32_000, 16_000),
-    "qwen": ModelTokenPolicy(96_000, 32_000, 16_000),
+    "qwen": ModelTokenPolicy(96_000, 32_000, 16_000, 20_000),
     "azure_gpt": ModelTokenPolicy(96_000, 32_000, 16_000),
     "openrouter": ModelTokenPolicy(96_000, 32_000, 16_000),
 }
 
 
-def model_token_policy(provider: str) -> ModelTokenPolicy:
-    """Return the frozen conservative policy for one verified provider."""
+def model_token_policy(provider: str, model_id: str | None = None) -> ModelTokenPolicy:
+    """Return the conservative policy for one verified provider/model pair."""
+    if provider == "qwen" and (model_id or "").casefold().startswith("qwen3.8-"):
+        return ModelTokenPolicy(1_000_000, 131_072, 32_768, 32_768)
     try:
         return _PROVIDER_POLICIES[provider]
     except KeyError as exc:
@@ -79,8 +109,215 @@ def output_reserve(case_count: int, policy: ModelTokenPolicy) -> int:
     if case_count <= 0:
         return 0
     visible_json = case_count * 768
-    reasoning = max(16_384, case_count * 256)
+    reasoning = max(policy.reasoning_reserve, case_count * 256)
     return visible_json + reasoning
+
+
+def pass_one_output_reserve(
+    conversation_count: int,
+    user_event_count: int,
+    policy: ModelTokenPolicy,
+) -> int:
+    """Reserve grouped JSON output for first-pass conversation and event results."""
+    if conversation_count <= 0 or user_event_count < 0:
+        return 0
+    visible_json = conversation_count * 512 + user_event_count * 192
+    return min(policy.max_output_tokens + 1, max(4_096, visible_json))
+
+
+def build_pass_one_unit(
+    conversation_id: str,
+    payload: dict[str, Any],
+    user_event_count: int,
+) -> PassOneUnit:
+    """Create one measured first-pass unit without splitting its conversation."""
+    if not conversation_id or user_event_count < 0:
+        raise ValueError("Pass 1 unit requires a valid conversation")
+    return PassOneUnit(
+        conversation_id=conversation_id,
+        payload=payload,
+        user_event_count=user_event_count,
+        estimated_input_tokens=estimate_tokens(payload),
+    )
+
+
+def pack_pass_one_units(
+    *,
+    batch_id: str,
+    units: list[PassOneUnit],
+    system_prompt: str,
+    shared_payload: dict[str, Any],
+    policy: ModelTokenPolicy,
+) -> list[PassOneGroup]:
+    """Pack complete conversations into deterministic first-pass request groups."""
+    prompt_tokens = estimate_tokens(system_prompt) + estimate_tokens(shared_payload)
+    def fits(candidate: list[PassOneUnit]) -> bool:
+        input_tokens = prompt_tokens + sum(unit.estimated_input_tokens for unit in candidate)
+        output_tokens = pass_one_output_reserve(
+            len(candidate),
+            sum(unit.user_event_count for unit in candidate),
+            policy,
+        )
+        return (
+            output_tokens <= policy.max_output_tokens
+            and input_tokens + output_tokens + policy.safety_margin <= policy.context_limit
+        )
+
+    ordered = sorted(
+        units,
+        key=lambda unit: (unit.estimated_input_tokens, unit.conversation_id),
+        reverse=True,
+    )
+    for unit in ordered:
+        if not fits([unit]):
+            raise ValueError(f"Conversation exceeds Pass 1 token limit: {unit.conversation_id}")
+
+    if fits(ordered):
+        groups = [ordered]
+    else:
+        # Start with a deterministic best-fit upper bound, then use branch-and-bound
+        # to prove the smallest safe group count. Conversation counts are small and
+        # symmetric aggregate states are memoized, so the exact search stays bounded.
+        greedy: list[list[PassOneUnit]] = []
+        for unit in ordered:
+            placements = [
+                (index, [*members, unit])
+                for index, members in enumerate(greedy)
+                if fits([*members, unit])
+            ]
+            if placements:
+                best_index, _candidate = min(
+                    placements,
+                    key=lambda placement: (
+                        policy.context_limit
+                        - prompt_tokens
+                        - sum(item.estimated_input_tokens for item in placement[1])
+                        - pass_one_output_reserve(
+                            len(placement[1]),
+                            sum(item.user_event_count for item in placement[1]),
+                            policy,
+                        ),
+                        placement[0],
+                    ),
+                )
+                greedy[best_index].append(unit)
+            else:
+                greedy.append([unit])
+
+        best = [list(members) for members in greedy]
+        available_context = policy.context_limit - prompt_tokens - policy.safety_margin
+        total_input = sum(unit.estimated_input_tokens for unit in ordered)
+        total_visible_output = sum(
+            512 + unit.user_event_count * 192 for unit in ordered
+        )
+        lower_bound = max(
+            1,
+            math.ceil((total_input + total_visible_output) / available_context),
+            math.ceil(total_visible_output / policy.max_output_tokens),
+        )
+        if lower_bound >= len(best):
+            groups = best
+        else:
+            seen_states: set[tuple[int, tuple[tuple[int, int, int], ...]]] = set()
+
+            def search(index: int, candidate_groups: list[list[PassOneUnit]]) -> None:
+                nonlocal best
+                if len(candidate_groups) >= len(best):
+                    return
+                remaining_input = sum(
+                    item.estimated_input_tokens for item in ordered[index:]
+                )
+                free_context = sum(
+                    max(
+                        0,
+                        available_context
+                        - sum(item.estimated_input_tokens for item in members)
+                        - sum(512 + item.user_event_count * 192 for item in members),
+                    )
+                    for members in candidate_groups
+                )
+                remaining_output = sum(
+                    512 + item.user_event_count * 192 for item in ordered[index:]
+                )
+                extra_groups = max(
+                    0,
+                    math.ceil(
+                        max(0, remaining_input + remaining_output - free_context)
+                        / available_context
+                    ),
+                )
+                if len(candidate_groups) + extra_groups >= len(best):
+                    return
+                if index == len(ordered):
+                    best = [list(members) for members in candidate_groups]
+                    return
+                signature = tuple(
+                    sorted(
+                        (
+                            sum(item.estimated_input_tokens for item in members),
+                            sum(item.user_event_count for item in members),
+                            len(members),
+                        )
+                        for members in candidate_groups
+                    )
+                )
+                state = (index, signature)
+                if state in seen_states:
+                    return
+                seen_states.add(state)
+
+                unit = ordered[index]
+                tried: set[tuple[int, int, int]] = set()
+                for members in candidate_groups:
+                    aggregate = (
+                        sum(item.estimated_input_tokens for item in members),
+                        sum(item.user_event_count for item in members),
+                        len(members),
+                    )
+                    if aggregate in tried or not fits([*members, unit]):
+                        continue
+                    tried.add(aggregate)
+                    members.append(unit)
+                    search(index + 1, candidate_groups)
+                    members.pop()
+                if len(candidate_groups) + 1 < len(best):
+                    candidate_groups.append([unit])
+                    search(index + 1, candidate_groups)
+                    candidate_groups.pop()
+
+            search(0, [])
+            groups = best
+
+    for members in groups:
+        members.sort(key=lambda unit: unit.conversation_id)
+    groups.sort(key=lambda members: members[0].conversation_id)
+
+    result: list[PassOneGroup] = []
+    seen: set[str] = set()
+    for index, members in enumerate(groups, start=1):
+        conversation_ids = tuple(unit.conversation_id for unit in members)
+        if seen.intersection(conversation_ids):
+            raise ValueError("Pass 1 packing produced duplicate conversations")
+        seen.update(conversation_ids)
+        membership = json.dumps(conversation_ids, ensure_ascii=False, separators=(",", ":"))
+        digest = hashlib.sha256(f"{batch_id}:pass1:{membership}".encode()).hexdigest()
+        result.append(
+            PassOneGroup(
+                group_id=f"P1G{index:04d}-{digest[:12]}",
+                idempotency_key=digest,
+                units=tuple(members),
+                estimated_input_tokens=prompt_tokens
+                + sum(unit.estimated_input_tokens for unit in members),
+                reserved_output_tokens=pass_one_output_reserve(
+                    len(members),
+                    sum(unit.user_event_count for unit in members),
+                    policy,
+                ),
+            )
+        )
+    if seen != {unit.conversation_id for unit in units}:
+        raise ValueError("Pass 1 packing omitted conversations")
+    return result
 
 
 def build_unit(

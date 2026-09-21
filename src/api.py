@@ -52,6 +52,7 @@ from src.llm.diagnostics import (
     classify_llm_failure,
     run_llm_diagnostic,
 )
+from src.llm.qwen_dashscope import is_qwen_dashscope_host, validate_qwen_base_url
 from src.observability import SessionEventBuffer
 from src.pipeline import run_voice_agent_session
 from src.session import (
@@ -790,7 +791,7 @@ def create_app() -> FastAPI:
         if config.provider != "custom":
             return None
         host = (urlparse(config.base_url).hostname or "").lower()
-        if host == "dashscope.aliyuncs.com" or host.endswith(".dashscope.aliyuncs.com"):
+        if is_qwen_dashscope_host(config.base_url):
             return "Qwen"
         if host == "api.deepseek.com" or host.endswith(".deepseek.com"):
             return "DeepSeek"
@@ -885,6 +886,11 @@ def create_app() -> FastAPI:
                     status_code=422,
                     detail=str(exc),
                 ) from None
+        elif normalized_provider == "qwen":
+            try:
+                base_url = validate_qwen_base_url(base_url)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from None
         elif base_url.lower() != default_base_url.lower():
             raise HTTPException(
                 status_code=422,

@@ -32,9 +32,13 @@ from src.evaluation.executor import (
     EvaluationBudgetReached,
     EvaluationExecutionError,
     EvaluationRunner,
+    _completion_limit_field,
+    _gemini_thinking_config,
     _render_prompt,
     _safe_execution_failure,
+    _safe_structured_error,
     _structured_response_format,
+    _structured_retry_correction,
 )
 from src.evaluation.imports import PackageUploadError, extract_package_archive
 from src.evaluation.models import (
@@ -44,6 +48,12 @@ from src.evaluation.models import (
     EvaluationReviewSubmit,
     PromptTemplateRestore,
     PromptTemplateWrite,
+)
+from src.evaluation.pass2_packing import (
+    ModelTokenPolicy,
+    build_pass_one_unit,
+    estimate_tokens,
+    pass_one_output_reserve,
 )
 from src.evaluation.pricing import (
     OfficialPricingService,
@@ -61,8 +71,202 @@ _VALID_CONVERSATION_ID = "1030000000086002"
 def test_qwen_thinking_uses_prompt_json_contract_without_json_mode() -> None:
     """Qwen thinking must not send the provider-incompatible JSON-mode parameter."""
     assert _structured_response_format("qwen", True) is None
+    assert _structured_response_format("qwen", True, "qwen3.8-max") == {
+        "type": "json_object"
+    }
     assert _structured_response_format("qwen", False) == {"type": "json_object"}
     assert _structured_response_format("deepseek", True) == {"type": "json_object"}
+
+
+def test_structured_retry_correction_is_content_free_and_actionable() -> None:
+    """A schema retry should tell the model what to repair without echoing its response."""
+    correction = _structured_retry_correction(ValueError("Pass 2 group returned no results array"))
+
+    assert "no results array" in correction
+    assert "every required item exactly once" in correction
+    assert "output only the required JSON object" in correction
+    assert _safe_structured_error(json.JSONDecodeError("bad", "{", 1)) == ("schema_invalid_json")
+    assert _safe_structured_error(ValueError("Pass 1 group omitted results")) == (
+        "schema_contract: Pass 1 group omitted results"
+    )
+
+
+@pytest.mark.asyncio
+async def test_pass1_schema_retry_includes_correction_feedback(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A later attempt must not resend the same malformed-output request unchanged."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Corrective retry",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-flash",
+            pass_2_model="deepseek-flash",
+            budget_limit=10,
+            idempotency_key="corrective-pass1-retry-001",
+        )
+    )
+    conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert conversation is not None
+    observed_payloads: list[dict[str, object]] = []
+
+    async def llm_json(
+        _model_id: str,
+        _prompt: str,
+        payload: dict[str, object],
+        **_kwargs: object,
+    ) -> dict[str, object]:
+        observed_payloads.append(payload)
+        if len(observed_payloads) == 1:
+            raise ValueError("Pass 1 group omitted results")
+        return {
+            "request_group_id": payload["request_group_id"],
+            "results": [
+                {
+                    "conversation_id": conversation["conversation_id"],
+                    "event_results": [
+                        {
+                            "event_id": event["event_id"],
+                            "decision": "pass",
+                            "reason": "No ASR issue detected",
+                        }
+                        for event in conversation["events"]
+                        if event["speaker"] == "customer"
+                    ],
+                    "issues": [],
+                }
+            ],
+        }
+
+    async def no_wait(_seconds: float) -> None:
+        return None
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(runner, "_llm_json", llm_json)
+    monkeypatch.setattr(asyncio, "sleep", no_wait)
+
+    await runner._run_pass_one(batch["id"], [conversation])
+
+    assert "retry_correction" not in observed_payloads[0]
+    assert "omitted results" in str(observed_payloads[1]["retry_correction"])
+    rows = await evaluation_store.checkpoint_rows("evaluation_pass1_runs", batch["id"])
+    assert rows[0]["status"] == "completed", rows
+    assert rows[0]["attempts"] == 2
+
+
+@pytest.mark.asyncio
+async def test_pass1_retry_reuses_groups_and_skips_completed_membership(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A retry should call only the failed frozen first-pass request group."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Grouped retry",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-flash",
+            pass_2_model="deepseek-flash",
+            budget_limit=10,
+            idempotency_key="grouped-pass1-retry-001",
+        )
+    )
+    conversations = [
+        {
+            "conversation_id": conversation_id,
+            "events": [
+                {
+                    "event_id": "R1",
+                    "speaker": "customer",
+                    "text": marker * 12_000,
+                }
+            ],
+        }
+        for conversation_id, marker in (("C1", "a"), ("C2", "b"))
+    ]
+    snapshot = batch["snapshot"]
+    prompt = str(snapshot["pass_1_prompt"]["content"])
+    shared_payload = {
+        "evaluation_context": snapshot["evaluation_context"],
+        "reference_dictionaries": snapshot["reference_dictionaries"],
+        "screening_strategy": snapshot["screening_strategy"],
+        "scenario_tags": snapshot["scenario_tags"],
+    }
+    units = [
+        build_pass_one_unit(
+            str(conversation["conversation_id"]),
+            {
+                "conversation_id": conversation["conversation_id"],
+                "conversation_history": conversation["events"],
+            },
+            1,
+        )
+        for conversation in conversations
+    ]
+    safety_margin = 1_000
+    one_unit_limit = (
+        estimate_tokens(prompt)
+        + estimate_tokens(shared_payload)
+        + max(unit.estimated_input_tokens for unit in units)
+        + pass_one_output_reserve(1, 1, ModelTokenPolicy(1_000_000, 100_000, safety_margin))
+        + safety_margin
+    )
+    policy = ModelTokenPolicy(one_unit_limit, 100_000, safety_margin)
+    monkeypatch.setattr(
+        "src.evaluation.executor.model_token_policy", lambda _provider, _model=None: policy
+    )
+    calls: list[str] = []
+    attempts: list[tuple[str, int]] = []
+    fail_c2 = True
+
+    async def llm_json(
+        _model_id: str,
+        _prompt: str,
+        payload: dict[str, object],
+        **kwargs: object,
+    ) -> dict[str, object]:
+        group_conversations = cast(list[dict[str, object]], payload["conversations"])
+        conversation_id = str(group_conversations[0]["conversation_id"])
+        calls.append(conversation_id)
+        attempts.append((conversation_id, cast(int, kwargs["attempt"])))
+        if conversation_id == "C2" and fail_c2:
+            raise ValueError("Pass 1 group omitted results")
+        return {
+            "request_group_id": payload["request_group_id"],
+            "results": [
+                {
+                    "conversation_id": conversation_id,
+                    "issues": [],
+                    "event_results": [
+                        {"event_id": "R1", "decision": "pass", "reason": "No issue."}
+                    ],
+                }
+            ],
+        }
+
+    async def no_wait(_seconds: float) -> None:
+        return None
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(runner, "_llm_json", llm_json)
+    monkeypatch.setattr(asyncio, "sleep", no_wait)
+
+    await runner._run_pass_one(batch["id"], conversations)
+    assert calls.count("C1") == 1
+    assert calls.count("C2") == 3
+
+    fail_c2 = False
+    await runner._run_pass_one(batch["id"], conversations)
+    assert calls.count("C1") == 1
+    assert calls.count("C2") == 4
+    assert [attempt for conversation_id, attempt in attempts if conversation_id == "C2"] == [
+        1,
+        2,
+        3,
+        4,
+    ]
+    groups = await evaluation_store.pass1_group_rows(batch["id"])
+    assert {row["status"] for row in groups} == {"completed"}
 
 
 def test_focused_screening_accepts_only_unique_p1_candidates() -> None:
@@ -155,7 +359,13 @@ def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
     from src.evaluation.prompts import PASS_ONE_SYSTEM_PROMPT, PASS_TWO_SYSTEM_PROMPT
 
     pass_one_payload = {
-        "conversation_history": [{"event_id": "R1", "text": "hello"}],
+        "request_group_id": "P1G0001-test",
+        "conversations": [
+            {
+                "conversation_id": "C1",
+                "conversation_history": [{"event_id": "R1", "text": "hello"}],
+            }
+        ],
         "evaluation_context": {"name": "Acceptance"},
         "reference_dictionaries": [],
         "screening_strategy": "focused",
@@ -165,6 +375,9 @@ def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
     assert "{{" not in rendered
     assert '"event_id":"R1"' in rendered
     assert len(PASS_ONE_SYSTEM_PROMPT) > 2_000
+    assert "{{request_group_id}}" in PASS_ONE_SYSTEM_PROMPT
+    assert "{{conversations}}" in PASS_ONE_SYSTEM_PROMPT
+    assert '"results"' in PASS_ONE_SYSTEM_PROMPT
     assert "{{request_group_id}}" in PASS_TWO_SYSTEM_PROMPT
     assert "{{candidate_case}}" in PASS_TWO_SYSTEM_PROMPT
     assert '"results"' in PASS_TWO_SYSTEM_PROMPT
@@ -712,6 +925,35 @@ async def test_display_translation_sends_only_source_text_and_does_not_persist_i
     status_after = batch_after["status"]
     assert admitted is False
     assert status_after == status_before
+
+
+def test_gemini_38_uses_verified_thinking_level_when_minimized() -> None:
+    """Gemini 3.8 rejects the legacy zero-budget control used by 2.5 models."""
+    config = _gemini_thinking_config(
+        "gemini-3.8-flash",
+        thinking=False,
+        disable_thinking=True,
+    )
+
+    assert config is not None
+    assert str(config.thinking_level).casefold().endswith("low")
+    assert config.thinking_budget is None
+
+
+def test_qwen38_compatible_mode_caps_reasoning_plus_answer_tokens() -> None:
+    """Compatible Qwen 3.8 must use the same total-output ceiling as native mode."""
+    assert _completion_limit_field("qwen", "qwen3.8-max") == "max_completion_tokens"
+    assert _completion_limit_field("qwen", "qwen-plus") == "max_tokens"
+
+
+@pytest.mark.asyncio
+async def test_qwen38_provider_resolution_does_not_require_prior_custom_registration(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """The predefined Qwen 3.8 model must reach its saved Qwen connection."""
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+
+    assert await runner._model_provider("qwen3.8-max") == "qwen"
 
 
 @pytest.mark.asyncio
@@ -2877,11 +3119,13 @@ async def test_pass2_retry_reuses_failed_frozen_group(
         },
     )
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    attempts: list[int] = []
 
     async def provider(_model_id: str) -> str:
         return "deepseek"
 
-    async def fail_request(*_args: object, **_kwargs: object) -> dict[str, object]:
+    async def fail_request(*_args: object, **kwargs: object) -> dict[str, object]:
+        attempts.append(cast(int, kwargs["attempt"]))
         raise EvaluationExecutionError("temporary provider failure")
 
     async def no_wait(_seconds: float) -> None:
@@ -2907,6 +3151,7 @@ async def test_pass2_retry_reuses_failed_frozen_group(
     assert second[0]["group_id"] == first[0]["group_id"]
     assert second[0]["case_keys"] == first[0]["case_keys"]
     assert second[0]["status"] == "failed"
+    assert attempts == [1, 2, 3, 4, 5, 6]
 
 
 @pytest.mark.asyncio

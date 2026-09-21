@@ -4,12 +4,54 @@
 
 ## Status
 
-- Recorded decisions: 33 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 36 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-20
 
 ## Decisions
+
+### PD-047 — 发布本轮 LLM 可靠性与 Qwen 原生协议修复
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: 本轮 Gemini/Qwen 可靠性修复是否推送并部署生产
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，完成独立验收后用户明确授权
+- Confirmation quote: “可以推送到线上吧。”
+- Decision: 将已独立验收通过的 Cost Settings 诊断、第一轮动态装箱、Gemini/Qwen 结构化重试与 Qwen 原生/兼容双协议修复提交到 `main`，推送 `git@github.com:jasonchao75/VoiceAgent.git` 并触发既有生产发布流程；保留现有生产 Evaluation 数据，不执行额外历史清理或付费模型调用。
+- Reason: 恢复 `gemini-3.8-flash`、`qwen3.8-max` 从连接、定价、建批到两轮执行的完整产品链路，并降低重复失败与无结果批次。
+- Consequences: 部署只包含本 Change 的相关代码、测试和交付记录，不夹带暂停中的 Voice Bot 设计改动、本地测试数据或凭证。线上真实模型权限和供应商返回仍需用户后续正常操作验证。
+- Updated artifacts: 本 Change 实现、测试、交付状态、独立验收和生产部署记录。
+- Verification: 推送前全量 220 项测试、Ruff、Mypy、前端构建、Change gate 和独立验收均 PASS；推送后核对 CI/CD、生产健康和部署提交一致性。
+
+### PD-046 — Qwen 同时支持原生 DashScope 与兼容协议
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: 是否一起修复 Qwen 中国站连接和 qwen3.8-max 调用问题
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；延续用户已明确提供的 `https://prem.dashscope.aliyuncs.com/api/v1`
+- Confirmation quote: “Qwen的问题你能一起修吗”
+- Decision: Qwen 资源不再固定到共享 OpenAI-compatible Endpoint；保留 compatible-mode 支持，同时允许已确认的 `prem.dashscope.aliyuncs.com/api/v1` 原生 Endpoint，并通过阿里云原生消息协议诊断和执行 `qwen3.8-max`。连接、模型目录、成本配置和两轮评测必须使用同一冻结协议与 Base URL。
+- Reason: 用户账号只有 prem 原生 Endpoint；旧实现强制替换为共享 compatible-mode，导致实际可调用的 qwen3.8-max 无法通过连接与模型登记流程。
+- Consequences: 原生请求使用 Bearer 鉴权、官方 generation 路由和原生消息/usage 结构；URL 仅允许 HTTPS DashScope/Model Studio 域名及官方协议路径。真实连通仍需单独付费调用授权。
+- Updated artifacts: Evaluation configuration Delta Spec、design、tasks、Qwen 原生适配器、连接验证、诊断/执行器、前端模型目录和回归测试。
+- Verification: deterministic mock/static 测试验证 URL 白名单、qwen3.8-max 路由、Thinking 参数、响应与 usage 解析；本轮不发起真实外部调用。
+
+### PD-045 — 第一轮采用动态 Token 装箱
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: 第一轮疑点筛选的 LLM 请求粒度
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，用户核对现有逐通调用后明确要求修改
+- Confirmation quote: “把第一轮改成‘完整对话为不可拆分单元，容量允许则全批一次请求，超限动态拆组’”
+- Decision: 第一轮以每通完整对话及其全部历史事件为不可拆分单元，按冻结模型的上下文上限、结构化输出预留和安全余量动态装箱；整批能够安全容纳时只发一个外部请求，不能容纳时使用最少安全分组。每组使用稳定 `request_group_id` 和冻结成员关系，输出必须逐通完整返回且不得遗漏、重复或跨组混入对话；失败只重试失败组，成功组和成功对话检查点不得重复调用。
+- Reason: 用户原始目标是先汇总批次中的对话文本，让模型在同一请求中统一生成疑点事件；逐通调用增加请求次数，也失去跨对话批量处理的成本与一致性优势。
+- Consequences: 第一轮 Prompt 从单通顶层输出升级为分组输出契约；进度继续按唯一对话数统计，同时记录外部请求组数。任一完整对话自身超出安全限制时必须明确失败，不得拆开、截断或静默丢弃事件。现有冻结报告保持不可变，新契约只作用于后续或明确重试的运行。
+- Updated artifacts: Delta Spec、`design.md`、`proposal.md`、`tasks.md`、`prototypes/README.md`、第一轮 Prompt V2、装箱/检查点实现与回归测试。
+- Verification: deterministic mock 覆盖整批单组、超限多组、完整对话不可拆分、稳定组 ID、失败组重试、逐通输出完整性及对话不漏不重；本次不发送真实客户文本或发起付费调用。
 
 ### PD-044 — 先发布 Cost Settings 修复并保留生产数据
 

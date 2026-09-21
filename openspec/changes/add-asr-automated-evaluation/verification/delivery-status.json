@@ -25,9 +25,9 @@
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
   "independent_release_review": {
     "status": "PASS",
-    "reviewed_at": "2026-09-20",
+    "reviewed_at": "2026-09-21",
     "evidence": "verification/independent-review.md",
-    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run."
+    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run. Qwen native/compatible and grouped LLM source review PASS on 2026-09-21 with 220 repository tests, 134 focused tests, scoped Ruff/Mypy, frontend build, and independent native/compatible executor mocks covering request shape, usage, cost and idempotency; no paid call, deployment or push was performed."
   },
   "external_calls": [
     {
@@ -68,12 +68,203 @@
   ],
   "known_issues": [
     {
+      "id": "KI-148",
+      "status": "resolved",
+      "summary": "The current Delta Spec and design still state that every Thinking-enabled Qwen request must omit JSON Mode, contradicting the implemented and independently verified qwen3.8-specific JSON Object behavior.",
+      "impact": "The same Change simultaneously requires and forbids response_format=json_object for compatible/native qwen3.8-max Pass 2. The implementation tests can pass while formal conformance remains ambiguous, so the Change cannot receive a clean independent PASS until the contract distinguishes qwen3.8 from legacy Qwen models.",
+      "source": "Independent specification-to-source review on 2026-09-21: specs/asr-automated-evaluation/spec.md Scenario 'Qwen Thinking returns structured JSON' and the earlier design paragraph prohibit JSON Mode for all Qwen Thinking requests, while the later PD-046 design paragraph, current executor and official Qwen3.8 structured-output capability enable it.",
+      "next_action": "Update the existing scenario and design paragraph to exempt verified qwen3.8-* models (JSON Object supported with Thinking) while retaining the no-JSON-mode fallback for older Qwen models, then rerun the Change gate.",
+      "resolution": "The Delta Spec and design now distinguish verified qwen3.8-* models, which enable JSON Object with Thinking in native and compatible protocols, from older unverified Qwen models, which conservatively omit JSON Mode while retaining application schema validation.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-147",
+      "status": "resolved",
+      "summary": "Thinking-enabled compatible-mode qwen3.8-max requests still omit response_format=json_object while the corrected native path enables the model's documented structured-output mode.",
+      "impact": "The compatible protocol remains more likely to produce malformed Pass 2 JSON and consume all three paid schema retries for the same model, so PD-046's two supported protocols do not provide equivalent structured-output reliability.",
+      "source": "Independent request-shape review on 2026-09-21: _structured_response_format returns None for every provider=='qwen' request when thinking=True. Alibaba documents Qwen3.8-Max JSON Object support in Thinking mode and provides a compatible chat-completions example with enable_thinking=true plus response_format={type:json_object}.",
+      "next_action": "Enable JSON Object response format for compatible qwen3.8-* Thinking requests while preserving the existing conservative behavior for older Qwen models whose Thinking JSON support is not verified; add a Pass 2 request-shape regression.",
+      "resolution": "Compatible-mode qwen3.8-* now enables JSON Object response format with Thinking, matching the verified model capability and native path. Older Qwen Thinking requests retain the conservative no-JSON-mode behavior; regression coverage asserts both branches.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-146",
+      "status": "resolved",
+      "summary": "The OpenAI-compatible Qwen path still sends max_tokens for qwen3.8-max, so its hidden reasoning remains outside the frozen output/budget cap even though the native path was corrected.",
+      "impact": "Using an allowed /compatible-mode/v1 Qwen connection with qwen3.8-max can exceed the reserved token/cost ceiling and behave differently from the native protocol, violating the dual-protocol consistency promised by PD-046; legacy qwen-plus/turbo compatibility is unaffected.",
+      "source": "Independent compatible-mode trace on 2026-09-21: EvaluationRunner assigns max_tokens to every provider=='qwen' request. Alibaba's OpenAI-compatible Qwen3.8 contract supports max_completion_tokens and defines it as the total chain-of-thought plus answer limit.",
+      "next_action": "Select max_completion_tokens for qwen3.8-* in the compatible OpenAI request while retaining max_tokens for older Qwen models that need it, and add paired native/compatible request-shape regressions for Pass 1 and Thinking-enabled Pass 2.",
+      "resolution": "The compatible OpenAI request now selects max_completion_tokens for qwen3.8-* and retains max_tokens for legacy Qwen models and DeepSeek. Paired request-shape helpers cover native and compatible total-output caps.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-145",
+      "status": "resolved",
+      "summary": "Pass 1 and Pass 2 still pack qwen3.8-max with the generic Qwen 96k-context/32k-output policy instead of the selected model's verified 1M context and 131072 output limits.",
+      "impact": "Batches that safely fit in one qwen3.8-max request are unnecessarily split into multiple paid groups, violating PD-045's minimum-safe-group rule for the frozen selected model and increasing request count, latency and schema-failure exposure.",
+      "source": "Independent model-policy trace on 2026-09-21: both passes call model_token_policy(provider), and the qwen provider policy is 96,000 context / 32,000 output. Alibaba's qwen3.8-max model page documents a 1,000,000 context window, 991,808 normal input (983,616 Thinking input) and 131,072 max output.",
+      "next_action": "Resolve packing policy by exact verified model capability, add qwen3.8-max limits for non-Thinking Pass 1 and Thinking Pass 2, and retain conservative fallback only for unknown Qwen IDs; add a regression where a batch over 96k but below the qwen3.8 safe capacity remains one group.",
+      "resolution": "Both passes now resolve token policy by provider and exact model. qwen3.8-max uses the official 1,000,000 context and 131,072 output ceilings; unknown Qwen IDs retain the conservative fallback. A 120k-input regression remains one safe group and a boundary regression rejects a unit that would exceed the official ceiling after output and safety reserves.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-144",
+      "status": "resolved",
+      "summary": "The predefined qwen3.8-max UI path does not register the model in the evaluation catalog, while the executor's provider fallback recognizes only IDs starting with 'qwen-' and rejects 'qwen3.8-max'.",
+      "impact": "An administrator can successfully test/save the native Qwen connection, test and price the visible qwen3.8-max option, and create a batch, but execution then fails before the first LLM call with 'Model is not in the verified catalog: qwen3.8-max'.",
+      "source": "Independent end-to-end static and deterministic trace on 2026-09-21: the predefined model test calls setConnectionFromDiagnostic with registerForEvaluationCatalog=false; connection test-and-save also defaults that flag to false; EvaluationRunner._model_provider falls back only on model_id.startswith('qwen-'). With an empty registered-model catalog, _model_provider('qwen3.8-max') raises EvaluationExecutionError.",
+      "next_action": "Make a successful qwen3.8-max connection/model test register the exact model, or safely recognize the frozen predefined qwen3.8-* family in provider resolution; add an API/UI-to-executor regression proving the normal non-Custom-ID flow reaches native Qwen execution.",
+      "resolution": "Qwen connection save and predefined model tests now request exact catalog registration, and executor provider resolution safely recognizes the Qwen model family including qwen3.8-max. Static UI and provider-resolution regressions cover the normal non-Custom-ID path.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-143",
+      "status": "resolved",
+      "summary": "Native qwen3.8-max Pass 1 and Pass 2 requests omit DashScope response_format=json_object even though both stages require one parseable JSON object and this model supports JSON Object mode with and without Thinking.",
+      "impact": "The new native path relies only on prompt wording, parser rejection and paid retries, so it can repeat the same malformed-JSON failure pattern the grouped reliability work is intended to reduce; native Pass 1 also regresses from compatible-mode Qwen, which already enables JSON mode when Thinking is off.",
+      "source": "Independent request-shape and official-capability review on 2026-09-21: native_dashscope_request emits result_format, token limit and Thinking only. Alibaba's qwen3.8-max structured-output guide shows native parameters.response_format={type: json_object} and lists Qwen3.8-Max JSON Object support in Thinking and non-Thinking modes.",
+      "next_action": "Add response_format={type: json_object} to native qwen3.8 structured evaluation requests (diagnostic need not use it), preserve application schema validation/retry as the authority, and assert it in Pass 1 and Thinking-enabled Pass 2 request-shape regressions.",
+      "resolution": "Native qwen3.8-* evaluation requests now enable the documented JSON Object response format in both non-Thinking Pass 1 and Thinking-enabled Pass 2, while diagnostics remain a plain minimal response and application schema validation/retry remains authoritative. Request-shape regressions cover both stages.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-142",
+      "status": "resolved",
+      "summary": "The synchronous native DashScope diagnostic reports total request latency as first-token latency and labels the result as a streamed text response.",
+      "impact": "Cost Settings displays a fabricated first-token measurement for qwen3.8-max, so administrators may compare model latency using a value the implementation did not actually observe.",
+      "source": "Independent diagnostic trace on 2026-09-21: _diagnose_qwen_dashscope performs one non-streaming httpx POST, then returns elapsed for both first_ms and total_ms; run_llm_diagnostic always uses the streamed-response success summary.",
+      "next_action": "Return first_token_ms=null and a provider-neutral success summary for synchronous native diagnostics, or implement and test real DashScope SSE timing before reporting first-token latency.",
+      "resolution": "Synchronous native DashScope diagnostics now return first_token_ms=null and all diagnostics use a provider-neutral valid-response summary. A mock native diagnostic regression verifies the total latency without inventing stream timing.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-141",
+      "status": "resolved",
+      "summary": "Native DashScope HTTP failures are all presented as a generic upstream_error instead of the existing 400/401/404/429 diagnostic categories.",
+      "impact": "A Qwen HTTP 400 again gives the administrator no actionable invalid-configuration diagnosis, while authentication, model-access and throttling failures are also misclassified even though the safe response metadata contains the HTTP status.",
+      "source": "Independent deterministic trace on 2026-09-21: httpx.HTTPStatusError keeps status_code on exc.response, extract_error_meta reports 400/401/404/429 correctly, but classify_llm_failure reads only exc.status_code and returns upstream_error for all four.",
+      "next_action": "Classify from the same safe nested response status used by extract_error_meta and add native-Qwen diagnostic regressions for at least 400, 401/403, 404 and 429; optionally expose only a bounded provider error code without returning the upstream body.",
+      "resolution": "Diagnostic classification now reads the nested httpx response status safely. Deterministic regressions preserve invalid-configuration, authentication, model-unavailable and rate-limited categories for native HTTP 400, 401, 404 and 429 without exposing response bodies.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-140",
+      "status": "resolved",
+      "summary": "Native DashScope usage parsing drops cached-input token usage and the Qwen execution ledger always records cached_input_tokens=0.",
+      "impact": "When qwen3.8-max receives an implicit cache hit, the batch ledger prices all input at the uncached rate and reports incorrect token composition, so actual-cost reconciliation can be overstated even though the pre-call budget remains conservative.",
+      "source": "Independent usage/cost trace on 2026-09-21: parse_native_dashscope_response returns only input/output/reasoning tokens and EvaluationRunner hard-codes cached_input_tokens=0. Alibaba's native DashScope response contract exposes prompt_tokens_details.cached_tokens, while the frozen Cost Settings contract has a distinct cached-input rate.",
+      "next_action": "Parse the native cached-token field defensively, persist it in the Qwen cost ledger and price only uncached input at the normal rate; add a deterministic response/ledger regression while retaining zero as the fallback when the field is absent.",
+      "resolution": "Native DashScope parsing now reads prompt_tokens_details.cached_tokens with a zero fallback, and Qwen execution passes that value into frozen pricing and the durable cost ledger. Response parsing coverage includes cached, reasoning and visible output tokens.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-139",
+      "status": "resolved",
+      "summary": "The Cost Settings UI recognizes saved custom Qwen Bot connections only when the Base URL text contains 'dashscope', so approved *.maas.aliyuncs.com Bot connections are not offered for reuse.",
+      "impact": "A workspace-dedicated Model Studio connection can be accepted and registered by the server but the administrator must re-enter its API key in Resource connections instead of reusing the encrypted Bot connection, contrary to the saved-provider reuse contract and the server's expanded allowlist.",
+      "source": "Independent frontend trace on 2026-09-21: loadServerModelCatalog maps custom Bot hosts with host.includes('dashscope') ? 'Qwen' : ..., while approved workspace URLs such as ws-demo.cn-beijing.maas.aliyuncs.com contain no 'dashscope'.",
+      "next_action": "Classify saved Bot URLs with the same approved Qwen-host rule (or equivalent safe host-suffix logic) used by the backend and add a static/browser regression for workspace *.maas.aliyuncs.com reuse without exposing the saved key.",
+      "resolution": "Cost Settings now classifies saved Bot connections with an exact safe Qwen host predicate covering shared DashScope, prem DashScope and workspace *.maas.aliyuncs.com hosts. A static UI contract locks workspace-key reuse.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-138",
+      "status": "resolved",
+      "summary": "Native qwen3.8-max requests use the legacy max_tokens parameter, which limits only answer tokens and leaves hidden reasoning outside the reserved output ceiling.",
+      "impact": "The native diagnostic and Thinking-enabled Pass 2 can consume substantially more output/reasoning tokens, time and money than the 256-token diagnostic allowance or the frozen group budget reserved before dispatch, weakening the hard-budget guarantee and structured-output capacity plan.",
+      "source": "Independent source-to-official-contract review on 2026-09-21: native_dashscope_request emits parameters.max_tokens for all models. Alibaba's native DashScope reference marks max_tokens for other models as answer-only and recommends max_completion_tokens for thinking models; max_completion_tokens caps chain-of-thought plus answer and explicitly supports Qwen Max 3.7 and later, including qwen3.8-max.",
+      "next_action": "Send max_completion_tokens for qwen3.8-* native requests (or otherwise prove an equivalent total-output cap), keep max_tokens only where the selected native model requires it, and add diagnostic plus Pass 1/Pass 2 request-shape regressions showing the total-output ceiling and Thinking controls together.",
+      "resolution": "Native qwen3.8-* requests now send max_completion_tokens so the frozen output ceiling covers reasoning plus visible answer tokens. Deterministic regressions cover diagnostics, Pass 1 Thinking disabled, Pass 2 Thinking enabled, and retain max_tokens only for legacy native models such as qwen-plus.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-137",
+      "status": "resolved",
+      "summary": "Qwen URL validation accepts official workspace-dedicated *.maas.aliyuncs.com endpoints, but evaluation-provider classification rejects the same endpoints during model-catalog registration.",
+      "impact": "An administrator can pass the native or compatible Model Studio URL check and receive a successful diagnostic, then still get HTTP 422 instead of saving the model for Cost Settings and New Evaluation; this violates the frozen DashScope/Model Studio endpoint contract.",
+      "source": "Independent mock API trace on 2026-09-21: https://prem.dashscope.aliyuncs.com/api/v1 registered successfully, while https://ws_demo.cn-beijing.maas.aliyuncs.com/api/v1 passed validate_qwen_base_url and the mocked diagnostic but failed _evaluation_provider with 'This endpoint is not a supported evaluation model provider'. Official Alibaba Base URL documentation lists workspace-dedicated *.maas.aliyuncs.com native and compatible endpoints.",
+      "next_action": "Use the shared approved-Qwen-host predicate for evaluation-provider classification and add API-level registration regressions for both prem.dashscope.aliyuncs.com and a workspace-dedicated maas.aliyuncs.com endpoint.",
+      "resolution": "Evaluation-provider classification now reuses the same approved Qwen host predicate as URL validation. API-level regressions prove both prem.dashscope.aliyuncs.com and workspace-specific *.maas.aliyuncs.com native endpoints register qwen3.8-max as Qwen.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-136",
+      "status": "resolved",
+      "summary": "Grouped LLM attempts are persisted only when a group completes or exhausts all three attempts, so process recovery after a billable intermediate schema failure can still reuse an old attempt identity.",
+      "impact": "If the worker restarts after attempt 1 or 2 was charged and recorded but before the group reaches a terminal checkpoint, the resumed provider call can collide with the existing reservation/ledger key and be omitted from cost accounting.",
+      "source": "Independent recovery trace on 2026-09-21: _llm_json records usage before parsing structured JSON, but the Pass 1/Pass 2 group rows keep status=pending and attempts=0 until final success or third failure. Resume derives the next attempt only from that stale group row.",
+      "next_action": "Persist the latest external attempt after every settled call/schema failure or recover it from durable per-group usage telemetry, then add a process-restart-after-attempt-1 regression for both grouped passes.",
+      "resolution": "Pass 1 and Pass 2 now checkpoint pending status with the cumulative attempt number after every intermediate exception. Resume treats any persisted attempt as a retry, adds correction guidance, and starts at the next unique attempt; regressions assert attempts 1 through 6 across two executions.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-135",
+      "status": "resolved",
+      "summary": "The exact Pass 1 minimum-group branch-and-bound can take exponential time for a 56-conversation batch that does not fit in one or two groups.",
+      "impact": "A Qwen-sized batch can appear stuck before any external job is created, replacing avoidable request over-splitting with an unbounded planning delay.",
+      "source": "Independent deterministic stress check on 2026-09-21: 56 non-symmetric PassOneUnit inputs (seed 4, estimated input 1500-4500, 1-4 user events) under context=100000, max_output=50000 and margin=1000 exceeded a 2-second local planning deadline. The search has no aggregate lower-bound pruning before trying to disprove a two-bin solution.",
+      "next_action": "Add admissible group-count lower bounds and bounded exact-search pruning that preserves PD-045's minimum-group guarantee, plus a 56-conversation performance regression.",
+      "resolution": "The exact search now computes admissible total-context and output-cap lower bounds before branching and prunes with remaining aggregate capacity. The independent 56-conversation seed-4 case returns the proven three-group plan in under one millisecond locally and is retained as a regression.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-134",
+      "status": "resolved",
+      "summary": "Pass 1 Gemini execution disables Thinking with thinking_budget=0 for every Gemini model, including Gemini 3.x models whose verified control is thinking_level.",
+      "impact": "A newly grouped Gemini 3.8 Flash Pass 1 request can be rejected by the provider before producing any structured result, so the intended production-job reliability fix is not yet safe to release.",
+      "source": "Independent static review on 2026-09-21: src/llm/capabilities.py records Gemini 3.8 Flash as thinking_level=low, while EvaluationRunner._llm_json builds ThinkingConfig(thinking_budget=0) whenever disable_thinking is true. Current Pass 1 tests mock _llm_json and do not exercise the provider request config.",
+      "next_action": "Use the verified per-model Gemini capability when minimizing Pass 1 reasoning, retain thinking_budget=0 only for models that support it, and add request-shape regressions for Gemini 2.5 and Gemini 3.8 without making an external call.",
+      "resolution": "Evaluation now resolves the verified Gemini capability per model: Gemini 3.8 Flash uses thinking_level=low while budget-capable models retain thinking_budget=0. A native configuration regression covers Gemini 3.8 without an external call.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-133",
+      "status": "resolved",
+      "summary": "A user-triggered retry of a failed Pass 1 or Pass 2 group reuses attempt numbers 1-3 and therefore reuses cost-reservation and ledger idempotency keys from the previous execution.",
+      "impact": "The retried provider request can incur real cost while INSERT OR IGNORE retains the old ledger row, understating spend and weakening the hard-budget guarantee.",
+      "source": "Independent execution trace on 2026-09-21: both grouped retry loops restart range(1, 4), while _llm_json derives reserve and cost keys only from batch, stage, group and attempt. Focused retry tests mock _llm_json and therefore do not exercise budget/ledger persistence.",
+      "next_action": "Persist a cumulative or run-qualified attempt identity for every new external request, keep provider/group membership stable separately, and add a retry-after-failure cost-ledger regression for Pass 1 and Pass 2.",
+      "resolution": "Grouped Pass 1 and Pass 2 persist the cumulative attempt after every failed external try, including intermediate schema failures, and resume from that count after process or user retry. Every later paid request therefore receives a fresh reservation and cost-ledger identity while frozen group membership remains unchanged; regressions assert attempts 1 through 6 across two executions.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-132",
+      "status": "resolved",
+      "summary": "Pass 1 dynamic packing uses a best-fit-decreasing heuristic that can create more request groups than the confirmed minimum-safe-group contract allows.",
+      "impact": "Some batches make avoidable paid LLM requests and the implementation does not satisfy PD-045's exact request-count behavior.",
+      "source": "Independent deterministic counterexample on 2026-09-21: token sizes 1000,1000,1000,1500,3000,3500 under context=11000, max_output=10000 and margin=1000 are packed into 3 groups by the implementation although a safe 2-group arrangement exists.",
+      "next_action": "Use an exact bounded packing strategy for the supported batch size or define and confirm an explicit approximation contract; add the counterexample as a regression.",
+      "resolution": "Pass 1 packing now uses deterministic exact branch-and-bound after a best-fit upper bound, with symmetric aggregate-state pruning. The independent counterexample is locked as a regression and produces the required two groups.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-131",
+      "status": "resolved",
+      "summary": "Production Gemini and earlier Qwen structured-output jobs can repeat the same schema failure across all application retries.",
+      "impact": "A reachable model can consume several long paid attempts yet leave a Pass 1 conversation or whole Pass 2 request group failed, preventing Case materialization even though earlier checkpoints succeeded.",
+      "source": "Read-only production inspection on 2026-09-21: EV-20260921-A6B5 completed Gemini Pass 1 for all 56 conversations (54 on attempt 1, 2 on attempt 2), while its single Pass 2 group recorded two consecutive schema failures at about 91 seconds each. Code review showed retries resent the identical payload without bounded validation feedback, and OpenAI-compatible Qwen calls also layered SDK retries underneath three application attempts.",
+      "next_action": "Add content-free schema correction feedback to later attempts, disable hidden OpenAI SDK retries so the durable three-attempt policy is truthful, preserve successful checkpoints, and verify Gemini/Qwen-compatible behavior without making an unauthorized external call.",
+      "resolution": "Later attempts now include content-free contract correction, OpenAI-compatible calls use max_retries=0, Pass 1 disables hidden Thinking and dynamically packs complete conversations, and Pass 2 reserves provider-specific Thinking headroom while expanding a failed frozen group up to the safe model output ceiling. The focused and full local suites pass; external-real post-deploy retry remains UV-021.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-130",
+      "status": "resolved",
+      "summary": "Production Cost Settings rejects a live diagnostic for custom Gemini model ID gemini-3.8-flash even though the product owner reports that batch evaluation can call the model successfully.",
+      "impact": "The same model appears usable in batch execution but cannot be registered/priced through the intended administrator workflow, leaving model availability and validation semantics inconsistent.",
+      "source": "Product-owner production report on 2026-09-21; read-only production state shows the saved Gemini connection and model catalog remain on gemini-2.5-flash. Code comparison shows the diagnostic streams with max_output_tokens=8 and provider-default Thinking, while batch execution uses a materially larger structured-output budget and explicit Thinking.",
+      "next_action": "Give diagnostics a bounded reasoning-capable output allowance and treat a valid provider response event as successful connectivity even when all completion tokens were consumed by hidden reasoning; retain a failure for a stream with no provider response event.",
+      "resolution": "Gemini and OpenAI-compatible diagnostics now reserve 256 output tokens, accept a real provider response event even when no visible text token is emitted, and still reject an empty stream. Focused Gemini and Qwen-compatible regressions pass without a paid call.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-129",
-      "status": "open",
+      "status": "resolved",
       "summary": "A production evaluation can fail and then remain without any generated Cases.",
       "impact": "The product owner cannot tell whether the batch had no valid candidates, lost successful checkpoints, or stopped before Case materialization, so the failed run is not actionable from the current UI.",
       "source": "Product-owner production report on 2026-09-21.",
       "next_action": "After the authorized KI-128 deployment, inspect the affected production batch state, checkpoints and safe logs read-only; classify the failure before proposing or implementing a separate fix.",
+      "resolution": "Read-only production evidence from EV-20260921-A6B5 showed all 56 Gemini Pass 1 conversations completed, but its single 26-Case Pass 2 group hit the 36,352-token generation ceiling on all three attempts and ended with JSONDecodeError. The runner now preserves completed checkpoints, reserves provider-specific Thinking headroom, expands failed-group output within the safe ceiling, and provides corrective retry feedback so Cases can materialize after retry.",
       "disclosed_to_user": true
     },
     {
@@ -1051,11 +1242,11 @@
     },
     {
       "id": "KI-108",
-      "status": "open",
+      "status": "resolved",
       "summary": "Real Qwen Pass 1 runs still lose some conversations after all three structured-output validation attempts; the current EV-20260920-9D33 run completed Pass 1 with 46 successful and 10 failed conversations.",
       "impact": "The failed conversations are excluded from the successful Pass 1 denominator and cannot contribute candidates unless failed resources are retried successfully.",
       "source": "Final local-real checkpoints: deleted EV-20260920-566C had 47 completed/9 failed; current EV-20260920-9D33 had 46 completed/10 failed of 56 before entering evaluation_asr. Failed rows retain the generic ValueError tracked by KI-112.",
-      "resolution": null,
+      "resolution": "Pass 1 now dynamically packs complete conversations into stable groups, validates every grouped conversation result atomically, retries only failed groups with corrective feedback, and disables hidden Thinking so structured output is not starved. Completed groups and conversation checkpoints are reused.",
       "disclosed_to_user": true
     },
     {
@@ -1087,11 +1278,11 @@
     },
     {
       "id": "KI-112",
-      "status": "open",
+      "status": "resolved",
       "summary": "Pass 1 checkpoint failures collapse every frozen-response contract violation to the generic string ValueError.",
       "impact": "Operators can distinguish schema failure telemetry from transport failure, but cannot determine whether a response omitted event_results, duplicated coverage, used an invalid decision or violated another safe contract rule without retaining unsafe provider bodies.",
       "source": "Read-only inspection of the nine final failed EV-20260920-566C Pass 1 checkpoints and EvaluationRunner._validate_pass_one on 2026-09-20.",
-      "resolution": null,
+      "resolution": "Structured failures now persist content-free actionable categories: schema_invalid_json for malformed/truncated JSON and schema_contract plus the bounded application-owned validation reason for contract violations. Provider bodies and customer content remain excluded.",
       "disclosed_to_user": true
     },
     {
@@ -1123,11 +1314,11 @@
     },
     {
       "id": "KI-116",
-      "status": "open",
+      "status": "resolved",
       "summary": "Evaluation LLM calls layer three application attempts over the OpenAI SDK default internal retries, so one Qwen Pass 2 group can occupy several minutes before the outer runner records an attempt result.",
       "impact": "EV-20260920-9D33 Pass 2 groups average about 200 seconds and reached 353 seconds; schema-invalid groups can compound this latency across three outer attempts, making progress appear stuck even while the worker lease remains healthy.",
       "source": "Local-real EV-20260920-9D33 telemetry and executor inspection on 2026-09-20: AsyncOpenAI(timeout=120) does not override the SDK retry default, while decide_group independently retries up to three times.",
-      "resolution": null,
+      "resolution": "Evaluation and diagnostic OpenAI-compatible clients now set max_retries=0. The durable orchestrator remains the single retry owner with at most three visible attempts, checkpointing and telemetry.",
       "disclosed_to_user": true
     },
     {
@@ -1141,11 +1332,11 @@
     },
     {
       "id": "KI-118",
-      "status": "open",
+      "status": "resolved",
       "summary": "The Qwen connection is pinned to a legacy shared OpenAI-compatible endpoint, does not expose qwen3.8-max, and cannot represent the user's prem.dashscope.aliyuncs.com/api/v1 native DashScope endpoint.",
       "impact": "The user's prem URL is not an OpenAI-compatible base URL and cannot simply replace the current base URL. qwen3.8-max must use either the official OpenAI-compatible chat endpoint or the native multimodal-generation endpoint; treating it like qwen-plus on the native text-generation route produces a URL/API mismatch.",
       "source": "Read-only local connection metadata and API validation, plus Alibaba Cloud Model Studio Base URL and qwen3.8-max API documentation checked on 2026-09-20. The user confirmed that the console only exposes https://prem.dashscope.aliyuncs.com/api/v1.",
-      "resolution": null,
+      "resolution": "Qwen now accepts validated HTTPS DashScope/Model Studio native /api/v1 or compatible-mode/v1 URLs, preserves the selected protocol, routes qwen3.8-max through native multimodal generation, parses native content/usage, and exposes the model in Cost Settings and New Evaluation. Deterministic tests cover the prem endpoint and reject arbitrary proxy URLs.",
       "disclosed_to_user": true
     },
     {
@@ -1377,6 +1568,27 @@
       "status": "open",
       "summary": "Azure GPT and OpenRouter have deterministic local integration coverage but have not completed a real provider diagnostic or paid evaluation request.",
       "reason": "No OpenRouter key was provided, the Azure key pasted in chat is intentionally not reused or persisted, and external calls require a fresh scoped authorization. The current localhost service also remains on the prior image while EV-20260920-9D33 is still running, to avoid interrupting paid work.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-021",
+      "status": "open",
+      "summary": "The corrected grouped Pass 1 and Thinking-aware Pass 2 retry path has not yet been revalidated against Gemini 3.8 Flash or Qwen 3.8 Max in production.",
+      "reason": "This turn used read-only production evidence plus deterministic local tests and made no new paid provider call. EV-20260921-A6B5 remains a failed pre-fix production batch until the fix is deployed and the user explicitly retries it or starts a new run.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-022",
+      "status": "open",
+      "summary": "The dual-viewport Evaluation browser suite did not execute against the current source build in this turn.",
+      "reason": "The frontend production build succeeded and the static progress-label regression passed, but localhost:8000 was not running. The sandbox-external Playwright retry reached Chromium successfully and then all scenarios failed at setup with ECONNREFUSED before product assertions. Generated failure traces were removed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-023",
+      "status": "open",
+      "summary": "The new native prem.dashscope.aliyuncs.com Qwen path has deterministic local coverage but has not completed a real qwen3.8-max diagnostic or evaluation request.",
+      "reason": "This implementation turn intentionally made no external paid call and did not reuse credentials. A real diagnostic requires an explicit scoped authorization and the saved Qwen Key.",
       "disclosed_to_user": true
     },
     {

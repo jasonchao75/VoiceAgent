@@ -370,6 +370,21 @@ class EvaluationStore:
                     updated_at TEXT NOT NULL,
                     PRIMARY KEY (batch_id, conversation_id)
                 );
+                CREATE TABLE IF NOT EXISTS evaluation_pass1_groups (
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    group_id TEXT NOT NULL,
+                    idempotency_key TEXT NOT NULL,
+                    conversation_ids_json TEXT NOT NULL,
+                    estimated_input_tokens INTEGER NOT NULL,
+                    reserved_output_tokens INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    attempts INTEGER NOT NULL DEFAULT 0,
+                    result_json TEXT,
+                    error TEXT,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id, group_id),
+                    UNIQUE (batch_id, idempotency_key)
+                );
                 CREATE TABLE IF NOT EXISTS evaluation_asr_runs (
                     batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
                     provider TEXT NOT NULL,
@@ -725,7 +740,12 @@ class EvaluationStore:
     async def _migrate_seed_prompt_contracts(self, database: aiosqlite.Connection) -> None:
         """Append a reviewed contract revision when mandatory behavior is absent."""
         required_slots = {
-            "pass_1": ("conversation_history", "evaluation_context", "reference_dictionaries"),
+            "pass_1": (
+                "request_group_id",
+                "conversations",
+                "evaluation_context",
+                "reference_dictionaries",
+            ),
             "pass_2": (
                 "request_group_id",
                 "candidate_case",
@@ -1235,12 +1255,15 @@ class EvaluationStore:
         """Enforce the frozen input and output contract before persistence."""
         required = {
             "pass_1": {
-                "{{conversation_history}}",
+                "{{request_group_id}}",
+                "{{conversations}}",
                 "{{evaluation_context}}",
                 "{{reference_dictionaries}}",
                 "{{screening_strategy}}",
                 "{{scenario_tags}}",
                 '"issues"',
+                '"results"',
+                '"conversation_id"',
                 '"event_results"',
                 '"target_events"',
                 "candidate|pass|data_issue",
@@ -2164,6 +2187,93 @@ class EvaluationStore:
                 ),
             )
             await database.commit()
+
+    async def checkpoint_pass1_group(
+        self,
+        *,
+        batch_id: str,
+        group_id: str,
+        idempotency_key: str,
+        conversation_ids: list[str],
+        estimated_input_tokens: int,
+        reserved_output_tokens: int,
+        status: str,
+        attempts: int,
+        conversation_results: dict[str, dict[str, Any]] | None = None,
+        error: str | None = None,
+    ) -> None:
+        """Persist one frozen Pass 1 group and its conversation results atomically."""
+        if status == "completed" and set(conversation_results or {}) != set(conversation_ids):
+            raise ValueError("Completed Pass 1 group requires every conversation result")
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute("BEGIN IMMEDIATE")
+            await database.execute(
+                """INSERT INTO evaluation_pass1_groups (
+                       batch_id,group_id,idempotency_key,conversation_ids_json,
+                       estimated_input_tokens,reserved_output_tokens,status,attempts,
+                       result_json,error,updated_at
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                   ON CONFLICT(batch_id,group_id) DO UPDATE SET
+                       status=excluded.status,attempts=excluded.attempts,
+                       result_json=excluded.result_json,error=excluded.error,
+                       updated_at=excluded.updated_at""",
+                (
+                    batch_id,
+                    group_id,
+                    idempotency_key,
+                    _json(conversation_ids),
+                    estimated_input_tokens,
+                    reserved_output_tokens,
+                    status,
+                    attempts,
+                    _json({"result_count": len(conversation_results or {})})
+                    if conversation_results is not None
+                    else None,
+                    error,
+                    _utcnow(),
+                ),
+            )
+            if status in {"completed", "failed"}:
+                for conversation_id in conversation_ids:
+                    result = (conversation_results or {}).get(conversation_id)
+                    await database.execute(
+                        """INSERT INTO evaluation_pass1_runs
+                               (batch_id,conversation_id,status,attempts,result_json,error,updated_at)
+                           VALUES(?,?,?,?,?,?,?)
+                           ON CONFLICT(batch_id,conversation_id) DO UPDATE SET
+                               status=excluded.status,attempts=excluded.attempts,
+                               result_json=excluded.result_json,error=excluded.error,
+                               updated_at=excluded.updated_at""",
+                        (
+                            batch_id,
+                            conversation_id,
+                            status,
+                            attempts,
+                            _json(result) if result is not None else None,
+                            error,
+                            _utcnow(),
+                        ),
+                    )
+            await database.commit()
+
+    async def pass1_group_rows(self, batch_id: str) -> list[dict[str, Any]]:
+        """Return first-pass group checkpoints with decoded frozen membership."""
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            rows = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_pass1_groups
+                       WHERE batch_id=? ORDER BY group_id""",
+                    (batch_id,),
+                )
+            ).fetchall()
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            item = dict(row)
+            item["conversation_ids"] = json.loads(item.pop("conversation_ids_json"))
+            item["result"] = json.loads(item.pop("result_json") or "null")
+            result.append(item)
+        return result
 
     async def pass2_group_rows(self, batch_id: str) -> list[dict[str, Any]]:
         """Return group checkpoints with decoded immutable membership."""

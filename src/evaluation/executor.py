@@ -19,9 +19,11 @@ from openai import AsyncOpenAI
 from src.bots.crypto import BotKeyCipher
 from src.evaluation.asr_contract import ASRError, ASRResult
 from src.evaluation.pass2_packing import (
+    build_pass_one_unit,
     build_unit,
     estimate_tokens,
     model_token_policy,
+    pack_pass_one_units,
     pack_units,
 )
 from src.evaluation.pricing import normalize_pricing_model_id
@@ -33,6 +35,13 @@ from src.evaluation.prompts import (
     SCENARIO_TAGS,
 )
 from src.evaluation.storage import EvaluationStore
+from src.llm.capabilities import get_model_capability
+from src.llm.qwen_dashscope import (
+    is_native_dashscope_url,
+    native_dashscope_generation_url,
+    native_dashscope_request,
+    parse_native_dashscope_response,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +88,35 @@ def _render_prompt(template: str, payload: dict[str, Any]) -> str:
     return rendered
 
 
+def _gemini_thinking_config(
+    model_id: str,
+    *,
+    thinking: bool,
+    disable_thinking: bool,
+) -> types.ThinkingConfig | None:
+    """Build only controls verified for the selected Gemini model generation."""
+    if thinking:
+        return types.ThinkingConfig(thinking_budget=-1, include_thoughts=False)
+    if not disable_thinking:
+        return None
+    capability = get_model_capability("google_gemini", model_id)
+    if capability and capability.control_name == "thinking_level":
+        return types.ThinkingConfig(
+            thinking_level=str(capability.control_value),
+            include_thoughts=False,
+        )
+    return types.ThinkingConfig(thinking_budget=0, include_thoughts=False)
+
+
+def _completion_limit_field(provider: str, model_id: str) -> str:
+    """Select the provider field that caps total generated tokens when supported."""
+    if provider == "deepseek":
+        return "max_tokens"
+    if provider == "qwen" and not model_id.casefold().startswith("qwen3.8-"):
+        return "max_tokens"
+    return "max_completion_tokens"
+
+
 def _safe_error(exc: Exception) -> str:
     """Return a bounded error category without leaking request data or credentials."""
     status = getattr(exc, "status_code", None)
@@ -93,11 +131,17 @@ def _safe_error(exc: Exception) -> str:
     return type(exc).__name__[:80]
 
 
-def _structured_response_format(provider: str, thinking: bool) -> dict[str, str] | None:
+def _structured_response_format(
+    provider: str,
+    thinking: bool,
+    model_id: str | None = None,
+) -> dict[str, str] | None:
     """Use JSON mode only where the provider accepts it with the chosen reasoning mode."""
-    # Qwen rejects JSON mode together with thinking on its OpenAI-compatible API.
-    # The frozen prompt still requires JSON and the parser/schema checks remain active.
-    if provider == "qwen" and thinking:
+    # Older Qwen models reject JSON mode with Thinking. Qwen 3.8 explicitly
+    # supports their combination, while schema checks remain authoritative.
+    if provider == "qwen" and thinking and not (model_id or "").casefold().startswith(
+        "qwen3.8-"
+    ):
         return None
     return {"type": "json_object"}
 
@@ -180,6 +224,30 @@ def _contains_key(value: object, forbidden_key: str) -> bool:
     if isinstance(value, list):
         return any(_contains_key(item, forbidden_key) for item in value)
     return False
+
+
+def _structured_retry_correction(exc: Exception) -> str:
+    """Return content-free feedback that helps the next structured-output attempt."""
+    if isinstance(exc, json.JSONDecodeError):
+        failure = "The previous response was not one valid JSON object."
+    elif isinstance(exc, ValueError):
+        failure = str(exc).strip()[:240] or "The previous response violated the response schema."
+    else:
+        failure = "The previous response did not complete successfully."
+    return (
+        f"{failure} Retry the same complete input. Return every required item exactly once, "
+        "preserve all required IDs, and output only the required JSON object."
+    )
+
+
+def _safe_structured_error(exc: Exception) -> str:
+    """Persist an actionable schema category without provider content."""
+    if isinstance(exc, json.JSONDecodeError):
+        return "schema_invalid_json"
+    if isinstance(exc, ValueError):
+        detail = str(exc).strip()[:160]
+        return f"schema_contract: {detail}" if detail else "schema_contract"
+    return _safe_error(exc)
 
 
 class EvaluationRunner:
@@ -705,7 +773,7 @@ class EvaluationRunner:
                 return "gemini"
             if model_id.startswith("gpt-"):
                 return "gpt"
-            if model_id.startswith("qwen-"):
+            if model_id.casefold().startswith("qwen"):
                 return "qwen"
             if model_id.startswith("deepseek-"):
                 return "deepseek"
@@ -782,11 +850,14 @@ class EvaluationRunner:
                     "response_mime_type": "application/json",
                     "temperature": 0,
                 }
+                thinking_config = _gemini_thinking_config(
+                    actual_model,
+                    thinking=thinking,
+                    disable_thinking=disable_thinking,
+                )
+                if thinking_config is not None:
+                    config["thinking_config"] = thinking_config
                 if thinking:
-                    config["thinking_config"] = types.ThinkingConfig(
-                        thinking_budget=-1,
-                        include_thoughts=False,
-                    )
                     config.pop("temperature")
                 config["max_output_tokens"] = output_limit
                 async with asyncio.timeout(120):
@@ -839,7 +910,7 @@ class EvaluationRunner:
                     "max_tokens": output_limit,
                     "temperature": 0,
                 }
-                response_format = _structured_response_format(provider, thinking)
+                response_format = _structured_response_format(provider, thinking, actual_model)
                 if response_format is not None:
                     request_body["response_format"] = response_format
                 async with httpx.AsyncClient(timeout=120) as azure_client:
@@ -889,7 +960,63 @@ class EvaluationRunner:
             finally:
                 if not settled:
                     await self.store.release_budget(reserve_key)
-        client = AsyncOpenAI(api_key=key, base_url=base_url.rstrip("/") + "/", timeout=120)
+        if provider == "qwen" and is_native_dashscope_url(base_url):
+            try:
+                request_body = native_dashscope_request(
+                    model=actual_model,
+                    system_prompt=system_prompt,
+                    user_message=user_message,
+                    max_output_tokens=output_limit,
+                    enable_thinking=True if thinking else False if disable_thinking else None,
+                    structured_json=True,
+                )
+                async with httpx.AsyncClient(timeout=120) as dashscope_client:
+                    response = await dashscope_client.post(
+                        native_dashscope_generation_url(base_url, actual_model),
+                        headers={
+                            "Authorization": f"Bearer {key}",
+                            "Content-Type": "application/json",
+                        },
+                        json=request_body,
+                    )
+                    response.raise_for_status()
+                    content, usage = parse_native_dashscope_response(response.json())
+                reasoning_tokens = usage["reasoning_tokens"]
+                output_tokens = max(0, usage["output_tokens"] - reasoning_tokens)
+                estimated_cost, currency = self._frozen_llm_cost(
+                    batch,
+                    provider,
+                    actual_model,
+                    input_tokens=usage["input_tokens"],
+                    cached_input_tokens=usage["cached_input_tokens"],
+                    reasoning_tokens=reasoning_tokens,
+                    output_tokens=output_tokens,
+                )
+                await self.store.record_cost_entry(
+                    idempotency_key=f"{batch_id}:{stage}:{item_key}:{attempt}",
+                    batch_id=batch_id,
+                    category="llm",
+                    provider=provider,
+                    stage=stage,
+                    input_tokens=usage["input_tokens"],
+                    cached_input_tokens=usage["cached_input_tokens"],
+                    reasoning_tokens=reasoning_tokens,
+                    output_tokens=output_tokens,
+                    estimated_cost=estimated_cost,
+                    currency=currency,
+                    reservation_key=reserve_key,
+                )
+                settled = True
+                return _parse_json(content)
+            finally:
+                if not settled:
+                    await self.store.release_budget(reserve_key)
+        client = AsyncOpenAI(
+            api_key=key,
+            base_url=base_url.rstrip("/") + "/",
+            timeout=120,
+            max_retries=0,
+        )
         try:
             request: dict[str, Any] = {
                 "model": actual_model,
@@ -898,7 +1025,7 @@ class EvaluationRunner:
                     {"role": "user", "content": user_message},
                 ],
             }
-            response_format = _structured_response_format(provider, thinking)
+            response_format = _structured_response_format(provider, thinking, actual_model)
             if response_format is not None:
                 request["response_format"] = response_format
             if thinking:
@@ -913,10 +1040,9 @@ class EvaluationRunner:
                 request["temperature"] = 0
                 if provider == "deepseek" and disable_thinking:
                     request["extra_body"] = {"thinking": {"type": "disabled"}}
-            if provider in {"deepseek", "qwen"}:
-                request["max_tokens"] = output_limit
-            else:
-                request["max_completion_tokens"] = output_limit
+                elif provider == "qwen" and disable_thinking:
+                    request["extra_body"] = {"enable_thinking": False}
+            request[_completion_limit_field(provider, actual_model)] = output_limit
             response = await client.chat.completions.create(
                 **request,
             )
@@ -1006,12 +1132,270 @@ class EvaluationRunner:
         return amount, str(rate.get("currency") or "USD")
 
     async def _run_pass_one(self, batch_id: str, conversations: list[dict[str, Any]]) -> None:
-        """Analyze each conversation independently and checkpoint every response."""
+        """Screen dynamically packed groups while keeping conversations atomic."""
         batch = await self.store.get_batch(batch_id)
         assert batch is not None
         snapshot = batch["snapshot"]
+        prompt = str(snapshot.get("pass_1_prompt", {}).get("content", PASS_ONE_SYSTEM_PROMPT))
+        if "{{request_group_id}}" not in prompt or "{{conversations}}" not in prompt:
+            await self._run_pass_one_legacy(batch_id, conversations, batch)
+            return
+        model_id = str(snapshot["pass_1_model"])
+        provider = await self._model_provider(model_id)
+        policy = model_token_policy(provider, model_id.split("::", 1)[-1])
         existing = {
-            row["conversation_id"]: row
+            str(row["conversation_id"]): row
+            for row in await self.store.checkpoint_rows("evaluation_pass1_runs", batch_id)
+        }
+        prior_group_rows = await self.store.pass1_group_rows(batch_id)
+        prior_groups = {str(row["group_id"]): row for row in prior_group_rows}
+        pending_conversations = (
+            conversations
+            if prior_groups
+            else [
+                conversation
+                for conversation in conversations
+                if existing.get(str(conversation["conversation_id"]), {}).get("status")
+                != "completed"
+            ]
+        )
+        if not pending_conversations:
+            return
+        shared_payload = {
+            "evaluation_context": snapshot.get("evaluation_context", EVALUATION_CONTEXT),
+            "reference_dictionaries": snapshot.get(
+                "reference_dictionaries", REFERENCE_DICTIONARIES
+            ),
+            "screening_strategy": snapshot["screening_strategy"],
+            "scenario_tags": snapshot.get("scenario_tags", SCENARIO_TAGS),
+        }
+        units = [
+            build_pass_one_unit(
+                str(conversation["conversation_id"]),
+                {
+                    "conversation_id": str(conversation["conversation_id"]),
+                    "conversation_history": conversation["events"],
+                },
+                sum(event.get("speaker") == "customer" for event in conversation["events"]),
+            )
+            for conversation in pending_conversations
+        ]
+        groups = pack_pass_one_units(
+            batch_id=batch_id,
+            units=units,
+            system_prompt=prompt,
+            shared_payload=shared_payload,
+            policy=policy,
+        )
+        for group in groups:
+            prior = prior_groups.get(group.group_id)
+            if prior is not None:
+                if (
+                    str(prior["idempotency_key"]) != group.idempotency_key
+                    or tuple(str(item) for item in prior["conversation_ids"])
+                    != group.conversation_ids
+                ):
+                    raise EvaluationExecutionError("Frozen Pass 1 group membership changed")
+                continue
+            await self.store.checkpoint_pass1_group(
+                batch_id=batch_id,
+                group_id=group.group_id,
+                idempotency_key=group.idempotency_key,
+                conversation_ids=list(group.conversation_ids),
+                estimated_input_tokens=group.estimated_input_tokens,
+                reserved_output_tokens=group.reserved_output_tokens,
+                status="pending",
+                attempts=0,
+            )
+        planned_group_total = len(await self.store.pass1_group_rows(batch_id))
+        await self.store.set_batch_state(
+            batch_id,
+            status="running",
+            stage="pass_1",
+            progress=20,
+            snapshot_updates={
+                "pass_1_plan": {
+                    "unique_conversation_count": len(conversations),
+                    "request_group_count": planned_group_total,
+                    "thinking": "disabled",
+                    "packing": "dynamic_conversation_atomic",
+                }
+            },
+        )
+        await self.store.refresh_execution_progress(
+            batch_id,
+            table="evaluation_pass1_runs",
+            stage="pass_1",
+            total=len(conversations),
+            progress_start=20,
+            progress_end=45,
+        )
+
+        by_conversation = {
+            str(conversation["conversation_id"]): conversation for conversation in conversations
+        }
+        semaphore = asyncio.Semaphore(3)
+
+        async def analyze_group(group: Any) -> None:
+            prior = prior_groups.get(group.group_id)
+            if prior is not None and prior.get("status") == "completed":
+                return
+            payload = {
+                "request_group_id": group.group_id,
+                "conversations": [unit.payload for unit in group.units],
+                **shared_payload,
+            }
+            retry_correction: str | None = None
+            if prior is not None and int(prior.get("attempts") or 0) > 0:
+                retry_correction = (
+                    "The previous saved request group failed its structured-response contract. "
+                    "Retry the same complete group and output only one complete JSON object."
+                )
+            prior_attempts = int(prior.get("attempts") or 0) if prior is not None else 0
+            async with semaphore:
+                for local_attempt in range(1, 4):
+                    attempt = prior_attempts + local_attempt
+                    started_at = time.perf_counter()
+                    try:
+                        attempt_payload = dict(payload)
+                        if retry_correction is not None:
+                            attempt_payload["retry_correction"] = retry_correction
+                        result = await self._llm_json(
+                            model_id,
+                            prompt,
+                            attempt_payload,
+                            max_output_tokens=(
+                                policy.max_output_tokens
+                                if retry_correction is not None
+                                else group.reserved_output_tokens
+                            ),
+                            batch_id=batch_id,
+                            stage="pass_1",
+                            item_key=group.group_id,
+                            attempt=attempt,
+                            disable_thinking=True,
+                        )
+                        indexed = self._validate_pass_one_group(
+                            result,
+                            group.group_id,
+                            group.conversation_ids,
+                            by_conversation,
+                            str(snapshot["screening_strategy"]),
+                        )
+                        await self.store.checkpoint_pass1_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=list(group.conversation_ids),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="completed",
+                            attempts=attempt,
+                            conversation_results=indexed,
+                        )
+                        await self.store.refresh_execution_progress(
+                            batch_id,
+                            table="evaluation_pass1_runs",
+                            stage="pass_1",
+                            total=len(conversations),
+                            progress_start=20,
+                            progress_end=45,
+                        )
+                        await self.store.record_telemetry(
+                            batch_id=batch_id,
+                            stage="pass_1",
+                            event="llm_request",
+                            provider=provider,
+                            outcome="completed",
+                            attempt=attempt,
+                            latency_ms=(time.perf_counter() - started_at) * 1000,
+                        )
+                        return
+                    except EvaluationBudgetReached:
+                        return
+                    except Exception as exc:
+                        retry_correction = _structured_retry_correction(exc)
+                        await self.store.checkpoint_pass1_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=list(group.conversation_ids),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="pending",
+                            attempts=attempt,
+                            error=_safe_structured_error(exc),
+                        )
+                        await self.store.record_telemetry(
+                            batch_id=batch_id,
+                            stage="pass_1",
+                            event=(
+                                "schema_failure" if isinstance(exc, ValueError) else "llm_request"
+                            ),
+                            provider=provider,
+                            outcome="failed",
+                            attempt=attempt,
+                            latency_ms=(time.perf_counter() - started_at) * 1000,
+                        )
+                        if local_attempt == 3:
+                            await self.store.checkpoint_pass1_group(
+                                batch_id=batch_id,
+                                group_id=group.group_id,
+                                idempotency_key=group.idempotency_key,
+                                conversation_ids=list(group.conversation_ids),
+                                estimated_input_tokens=group.estimated_input_tokens,
+                                reserved_output_tokens=group.reserved_output_tokens,
+                                status="failed",
+                                attempts=attempt,
+                                error=_safe_structured_error(exc),
+                            )
+                            await self.store.refresh_execution_progress(
+                                batch_id,
+                                table="evaluation_pass1_runs",
+                                stage="pass_1",
+                                total=len(conversations),
+                                progress_start=20,
+                                progress_end=45,
+                            )
+                        else:
+                            await asyncio.sleep(float(local_attempt))
+
+        await self.store.record_telemetry(
+            batch_id=batch_id,
+            stage="pass_1",
+            event="queue_depth",
+            provider=provider,
+            outcome="observed",
+            queue_depth=len(groups),
+        )
+        await asyncio.gather(*(analyze_group(group) for group in groups))
+        final_groups = await self.store.pass1_group_rows(batch_id)
+        updated_batch = await self.store.get_batch(batch_id)
+        assert updated_batch is not None
+        await self.store.set_batch_state(
+            batch_id,
+            status="running",
+            stage="pass_1",
+            progress=int(updated_batch["progress"]),
+            snapshot_updates={
+                "pass_1_request_status": {
+                    "completed": sum(row["status"] == "completed" for row in final_groups),
+                    "failed": sum(row["status"] == "failed" for row in final_groups),
+                    "total": len(final_groups),
+                }
+            },
+        )
+
+    async def _run_pass_one_legacy(
+        self,
+        batch_id: str,
+        conversations: list[dict[str, Any]],
+        batch: dict[str, Any],
+    ) -> None:
+        """Resume an old immutable single-conversation Pass 1 snapshot safely."""
+        snapshot = batch["snapshot"]
+        existing = {
+            str(row["conversation_id"]): row
             for row in await self.store.checkpoint_rows("evaluation_pass1_runs", batch_id)
         }
         semaphore = asyncio.Semaphore(3)
@@ -1037,17 +1421,18 @@ class EvaluationRunner:
                 "screening_strategy": snapshot["screening_strategy"],
                 "scenario_tags": snapshot.get("scenario_tags", SCENARIO_TAGS),
             }
+            retry_correction: str | None = None
             async with semaphore:
                 for attempt in range(1, 4):
                     started_at = time.perf_counter()
                     try:
-                        prompt = snapshot.get("pass_1_prompt", {}).get(
-                            "content", PASS_ONE_SYSTEM_PROMPT
-                        )
+                        attempt_payload = dict(payload)
+                        if retry_correction is not None:
+                            attempt_payload["retry_correction"] = retry_correction
                         result = await self._llm_json(
                             str(snapshot["pass_1_model"]),
-                            str(prompt),
-                            payload,
+                            str(snapshot["pass_1_prompt"]["content"]),
+                            attempt_payload,
                             batch_id=batch_id,
                             stage="pass_1",
                             item_key=conversation_id,
@@ -1085,6 +1470,7 @@ class EvaluationRunner:
                     except EvaluationBudgetReached:
                         return
                     except Exception as exc:
+                        retry_correction = _structured_retry_correction(exc)
                         await self.store.record_telemetry(
                             batch_id=batch_id,
                             stage="pass_1",
@@ -1101,7 +1487,7 @@ class EvaluationRunner:
                                 (batch_id, conversation_id),
                                 status="failed",
                                 attempts=attempt,
-                                error=_safe_error(exc),
+                                error=_safe_structured_error(exc),
                             )
                             await self.store.refresh_execution_progress(
                                 batch_id,
@@ -1122,6 +1508,40 @@ class EvaluationRunner:
             queue_depth=len(conversations),
         )
         await asyncio.gather(*(analyze(conversation) for conversation in conversations))
+
+    @classmethod
+    def _validate_pass_one_group(
+        cls,
+        result: dict[str, Any],
+        expected_group_id: str,
+        conversation_ids: tuple[str, ...],
+        conversations: dict[str, dict[str, Any]],
+        screening_strategy: str,
+    ) -> dict[str, dict[str, Any]]:
+        """Require one complete, valid result for every conversation in a group."""
+        if result.get("request_group_id") != expected_group_id:
+            raise ValueError("Pass 1 returned the wrong request group")
+        rows = result.get("results")
+        if not isinstance(rows, list):
+            raise ValueError("Pass 1 group omitted results")
+        indexed: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            if not isinstance(row, dict):
+                raise ValueError("Pass 1 conversation result must be an object")
+            conversation_id = str(row.get("conversation_id") or "")
+            if conversation_id in indexed:
+                raise ValueError("Pass 1 group duplicated a conversation")
+            if conversation_id not in conversation_ids:
+                raise ValueError("Pass 1 group returned an unknown conversation")
+            cls._validate_pass_one(
+                row,
+                conversations[conversation_id],
+                screening_strategy,
+            )
+            indexed[conversation_id] = row
+        if set(indexed) != set(conversation_ids):
+            raise ValueError("Pass 1 group omitted a conversation")
+        return indexed
 
     @staticmethod
     def _validate_pass_one(
@@ -1734,7 +2154,7 @@ class EvaluationRunner:
         prompt = str(snapshot.get("pass_2_prompt", {}).get("content", PASS_TWO_SYSTEM_PROMPT))
         model_id = str(snapshot["pass_2_model"])
         provider = await self._model_provider(model_id)
-        policy = model_token_policy(provider)
+        policy = model_token_policy(provider, model_id.split("::", 1)[-1])
         candidates_by_conversation: dict[str, list[dict[str, Any]]] = {}
         for candidate in candidates:
             candidates_by_conversation.setdefault(str(candidate["conversation_id"]), []).append(
@@ -1878,16 +2298,31 @@ class EvaluationRunner:
                     for conversation in grouped_conversations
                 ],
             }
+            retry_correction: str | None = None
+            if prior is not None and int(prior.get("attempts") or 0) > 0:
+                retry_correction = (
+                    "The previous saved request group failed its structured-response contract. "
+                    "Retry the same complete group and output only one complete JSON object."
+                )
+            prior_attempts = int(prior.get("attempts") or 0) if prior is not None else 0
             async with semaphore:
-                for attempt in range(1, 4):
+                for local_attempt in range(1, 4):
+                    attempt = prior_attempts + local_attempt
                     started_at = time.perf_counter()
                     try:
+                        attempt_payload = dict(payload)
+                        if retry_correction is not None:
+                            attempt_payload["retry_correction"] = retry_correction
                         result = await self._llm_json(
                             model_id,
                             prompt,
-                            payload,
+                            attempt_payload,
                             thinking=True,
-                            max_output_tokens=group.reserved_output_tokens,
+                            max_output_tokens=(
+                                policy.max_output_tokens
+                                if retry_correction is not None
+                                else group.reserved_output_tokens
+                            ),
                             batch_id=batch_id,
                             stage="pass_2",
                             item_key=group.group_id,
@@ -1961,6 +2396,19 @@ class EvaluationRunner:
                     except EvaluationBudgetReached:
                         return
                     except Exception as exc:
+                        retry_correction = _structured_retry_correction(exc)
+                        await self.store.checkpoint_pass2_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=[unit.conversation_id for unit in group.units],
+                            case_keys=list(group.case_keys),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="pending",
+                            attempts=attempt,
+                            error=_safe_structured_error(exc),
+                        )
                         await self.store.record_telemetry(
                             batch_id=batch_id,
                             stage="pass_2",
@@ -1972,8 +2420,8 @@ class EvaluationRunner:
                             attempt=attempt,
                             latency_ms=(time.perf_counter() - started_at) * 1000,
                         )
-                        if attempt == 3:
-                            error = _safe_error(exc)
+                        if local_attempt == 3:
+                            error = _safe_structured_error(exc)
                             for key in group.case_keys:
                                 await self.store.checkpoint_result(
                                     "evaluation_pass2_runs",
@@ -2004,7 +2452,7 @@ class EvaluationRunner:
                                 progress_end=92,
                             )
                         else:
-                            await asyncio.sleep(float(attempt))
+                            await asyncio.sleep(float(local_attempt))
 
         await self.store.record_telemetry(
             batch_id=batch_id,
