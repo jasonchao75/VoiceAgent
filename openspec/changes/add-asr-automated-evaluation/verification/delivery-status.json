@@ -1428,6 +1428,14 @@
       "next_action": "Apply the repository formatter to the seven reported files, rerun the exact backend checks, commit the correction, and push again.",
       "resolution": "The seven files were formatted with the repository virtual environment. The exact backend sequence now passes: Ruff format, Ruff checks, Mypy and all 220 tests; only the two previously disclosed dependency deprecation warnings remain.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-129",
+      "status": "open",
+      "summary": "Production deployment run 35605007189 built the new image but the container failed its health check because the new Pass 1 V2 Prompt fixture was not copied into the runtime image.",
+      "impact": "The deployment workflow automatically restored the previous healthy revision; the grouped Evaluation release is not yet live and production data was not cleared.",
+      "next_action": "Add the V2 Prompt fixture to the Docker runtime image, build and start the image locally, rerun the release checks, then push and verify a new production deployment.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [

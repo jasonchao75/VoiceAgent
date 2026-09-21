@@ -24,6 +24,7 @@ COPY --chown=voiceagent:voiceagent src/ ./src/
 COPY --chown=voiceagent:voiceagent configs/runtime/ ./configs/runtime/
 COPY --chown=voiceagent:voiceagent scripts/deploy/verify_evaluation_production.py ./scripts/deploy/verify_evaluation_production.py
 COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md
+COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md
 COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md
 COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md
 COPY --chown=voiceagent:voiceagent --from=frontend-builder /build/frontend/dist ./frontend/dist/

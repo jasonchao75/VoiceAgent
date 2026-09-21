@@ -389,6 +389,13 @@ def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
         _render_prompt(PASS_TWO_SYSTEM_PROMPT, pass_one_payload)
 
 
+def test_runtime_image_packages_active_prompt_fixtures() -> None:
+    """The production image must contain every Prompt loaded during app startup."""
+    dockerfile = (Path(__file__).resolve().parents[1] / "Dockerfile").read_text(encoding="utf-8")
+    assert "riyadbank-pass-1-system-prompt-v2.md" in dockerfile
+    assert "riyadbank-pass-2-system-prompt-v2.md" in dockerfile
+
+
 def test_llm_cost_estimate_preserves_supplier_currency() -> None:
     """Qwen cost stays in CNY while USD providers remain in USD."""
     qwen_cost, qwen_currency = estimate_llm_cost(
