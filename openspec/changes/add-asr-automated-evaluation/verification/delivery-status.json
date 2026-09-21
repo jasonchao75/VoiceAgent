@@ -21,13 +21,13 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorizes production deployment of this Change after final verification, with an empty production Evaluation history and preserved non-Evaluation configuration.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data.",
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
   "independent_release_review": {
     "status": "PASS",
     "reviewed_at": "2026-09-20",
     "evidence": "verification/independent-review.md",
-    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access"
+    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run."
   },
   "external_calls": [
     {
