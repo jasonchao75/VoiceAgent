@@ -18,7 +18,7 @@ from typing import Any
 import aiosqlite
 import soundfile as sf  # type: ignore[import-untyped]
 
-from src.evaluation.alignment import align_customer_event
+from src.evaluation.alignment import align_customer_event_from_mapping
 from src.evaluation.dataset import ConversationAudit, DatasetAudit, audit_dataset
 from src.evaluation.imports import (
     PackageUploadError,
@@ -398,6 +398,31 @@ class EvaluationStore:
                     error TEXT,
                     updated_at TEXT NOT NULL,
                     PRIMARY KEY (batch_id, provider, conversation_id)
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_event_alignment_runs (
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    conversation_id TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    attempts INTEGER NOT NULL DEFAULT 0,
+                    result_json TEXT,
+                    error TEXT,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id, conversation_id)
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_event_alignment_groups (
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    group_id TEXT NOT NULL,
+                    idempotency_key TEXT NOT NULL,
+                    conversation_ids_json TEXT NOT NULL,
+                    estimated_input_tokens INTEGER NOT NULL,
+                    reserved_output_tokens INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    attempts INTEGER NOT NULL DEFAULT 0,
+                    result_json TEXT,
+                    error TEXT,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id, group_id),
+                    UNIQUE (batch_id, idempotency_key)
                 );
                 CREATE TABLE IF NOT EXISTS evaluation_case_asr_runs (
                     batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
@@ -2087,6 +2112,7 @@ class EvaluationStore:
         """Upsert one pass or provider result using a bounded table allow-list."""
         definitions = {
             "evaluation_pass1_runs": ("batch_id,conversation_id", 2),
+            "evaluation_event_alignment_runs": ("batch_id,conversation_id", 2),
             "evaluation_asr_runs": ("batch_id,provider,conversation_id", 3),
             "evaluation_case_asr_runs": (
                 "batch_id,provider,conversation_id,event_id",
@@ -2129,6 +2155,7 @@ class EvaluationStore:
         """Read persisted execution checkpoints for one batch."""
         if table not in {
             "evaluation_pass1_runs",
+            "evaluation_event_alignment_runs",
             "evaluation_asr_runs",
             "evaluation_case_asr_runs",
             "evaluation_pass2_runs",
@@ -2142,6 +2169,93 @@ class EvaluationStore:
         result: list[dict[str, Any]] = []
         for row in rows:
             item = dict(row)
+            item["result"] = json.loads(item.pop("result_json") or "null")
+            result.append(item)
+        return result
+
+    async def checkpoint_event_alignment_group(
+        self,
+        *,
+        batch_id: str,
+        group_id: str,
+        idempotency_key: str,
+        conversation_ids: list[str],
+        estimated_input_tokens: int,
+        reserved_output_tokens: int,
+        status: str,
+        attempts: int,
+        conversation_results: dict[str, dict[str, Any]] | None = None,
+        error: str | None = None,
+    ) -> None:
+        """Persist one Event Aligner group and all conversation mappings atomically."""
+        if status == "completed" and set(conversation_results or {}) != set(conversation_ids):
+            raise ValueError("Completed Event Aligner group requires every conversation result")
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute("BEGIN IMMEDIATE")
+            await database.execute(
+                """INSERT INTO evaluation_event_alignment_groups (
+                       batch_id,group_id,idempotency_key,conversation_ids_json,
+                       estimated_input_tokens,reserved_output_tokens,status,attempts,
+                       result_json,error,updated_at
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                   ON CONFLICT(batch_id,group_id) DO UPDATE SET
+                       status=excluded.status,attempts=excluded.attempts,
+                       result_json=excluded.result_json,error=excluded.error,
+                       updated_at=excluded.updated_at""",
+                (
+                    batch_id,
+                    group_id,
+                    idempotency_key,
+                    _json(conversation_ids),
+                    estimated_input_tokens,
+                    reserved_output_tokens,
+                    status,
+                    attempts,
+                    _json({"result_count": len(conversation_results or {})})
+                    if conversation_results is not None
+                    else None,
+                    error,
+                    _utcnow(),
+                ),
+            )
+            if status in {"completed", "failed"}:
+                for conversation_id in conversation_ids:
+                    result = (conversation_results or {}).get(conversation_id)
+                    await database.execute(
+                        """INSERT INTO evaluation_event_alignment_runs
+                               (batch_id,conversation_id,status,attempts,result_json,error,updated_at)
+                           VALUES(?,?,?,?,?,?,?)
+                           ON CONFLICT(batch_id,conversation_id) DO UPDATE SET
+                               status=excluded.status,attempts=excluded.attempts,
+                               result_json=excluded.result_json,error=excluded.error,
+                               updated_at=excluded.updated_at""",
+                        (
+                            batch_id,
+                            conversation_id,
+                            status,
+                            attempts,
+                            _json(result) if result is not None else None,
+                            error,
+                            _utcnow(),
+                        ),
+                    )
+            await database.commit()
+
+    async def event_alignment_group_rows(self, batch_id: str) -> list[dict[str, Any]]:
+        """Return Event Aligner checkpoints with decoded frozen membership."""
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            rows = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_event_alignment_groups
+                       WHERE batch_id=? ORDER BY group_id""",
+                    (batch_id,),
+                )
+            ).fetchall()
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            item = dict(row)
+            item["conversation_ids"] = json.loads(item.pop("conversation_ids_json"))
             item["result"] = json.loads(item.pop("result_json") or "null")
             result.append(item)
         return result
@@ -2775,17 +2889,25 @@ class EvaluationStore:
         ]
         if overlapping.size == 0:
             raise ValueError("User-track activity does not overlap the ASR consensus interval")
-        speech_start = (search_start + int(overlapping[0])) * 0.02
-        speech_end = min(duration, (search_start + int(overlapping[-1]) + 1) * 0.02)
-        refined_start = max(lower, min(start_s, speech_start) - 0.18)
-        refined_end = min(upper, max(end_s, speech_end) + 0.25)
+        component_start = int(overlapping[0])
+        component_end = int(overlapping[-1])
+        while component_start > 0 and bool(active[component_start - 1]):
+            component_start -= 1
+        while component_end + 1 < len(active) and bool(active[component_end + 1]):
+            component_end += 1
+        speech_start = (search_start + component_start) * 0.02
+        speech_end = min(duration, (search_start + component_end + 1) * 0.02)
+        refined_start = max(lower, min(start_s, speech_start - 0.18))
+        refined_end = min(upper, max(end_s, speech_end + 0.25))
+        if refined_start > start_s or refined_end < end_s:
+            raise ValueError("User-track refinement attempted to contract the provider union")
         return {
             "start_s": refined_start,
             "end_s": refined_end,
             "speech_start_s": speech_start,
             "speech_end_s": speech_end,
             "validation_threshold": threshold,
-            "detection_rule": "user_track_validation_near_asr_consensus_v1",
+            "detection_rule": "user_track_expand_provider_union_v1",
         }
 
     async def prepare_case_asr_clip(
@@ -2794,6 +2916,7 @@ class EvaluationStore:
         conversation_id: str,
         event_id: str,
         full_call_results: list[dict[str, Any]],
+        event_mapping: dict[str, Any],
     ) -> tuple[Path, dict[str, Any]]:
         """Create one stable event clip from full-call diarization consensus."""
         conversation = await self.get_conversation(conversation_id)
@@ -2809,7 +2932,9 @@ class EvaluationStore:
         duration = float((conversation.get("user_audio") or {}).get("duration_s") or 0)
         if duration <= 0:
             raise ValueError("Pure-user audio duration is unavailable")
-        alignment_trace = align_customer_event(events, event_id, full_call_results)
+        alignment_trace = align_customer_event_from_mapping(
+            events, event_id, full_call_results, event_mapping
+        )
         speech_trace = await asyncio.to_thread(
             self._validate_and_refine_user_interval,
             source,
@@ -2820,7 +2945,7 @@ class EvaluationStore:
         end_s = float(speech_trace["end_s"])
         clip_key = uuid.uuid5(
             uuid.NAMESPACE_URL,
-            f"{batch_id}:{conversation_id}:{event_id}:diarization-consensus-v1",
+            f"{batch_id}:{conversation_id}:{event_id}:event-aligner-union-v1",
         ).hex
         destination = self.asr_clip_root / f"{clip_key}.wav"
         trace = await asyncio.to_thread(
@@ -2837,7 +2962,7 @@ class EvaluationStore:
                 "batch_id": batch_id,
                 "conversation_id": conversation_id,
                 "event_id": event_id,
-                "boundary_rule": "full_call_diarization_consensus_v1",
+                "boundary_rule": "event_aligner_provider_union_v1",
                 "start_s": trace["start_s"],
                 "end_s": trace["end_s"],
             }

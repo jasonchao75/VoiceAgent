@@ -25,6 +25,121 @@ class _Turn:
     segment_ids: tuple[str, ...]
 
 
+def build_turn_catalog(
+    conversation_id: str, provider_results: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Expose stable selectable turn IDs while retaining server-side timestamps."""
+    providers: list[dict[str, Any]] = []
+    lookup: dict[str, dict[str, Any]] = {}
+    seen_providers: set[str] = set()
+    for provider_result in provider_results:
+        provider = str(provider_result.get("provider") or "")
+        if not provider or provider in seen_providers:
+            continue
+        seen_providers.add(provider)
+        turns: list[dict[str, Any]] = []
+        for index, turn in enumerate(_provider_turns(provider_result)):
+            turn_id = f"{conversation_id}:{provider}:turn:{index}"
+            item = {
+                "turn_id": turn_id,
+                "speaker": turn.speaker,
+                "start_s": turn.start_s,
+                "end_s": turn.end_s,
+                "text": turn.text,
+            }
+            turns.append(item)
+            lookup[turn_id] = {
+                **item,
+                "provider": provider,
+                "segment_ids": list(turn.segment_ids),
+                "turn_index": index,
+            }
+        providers.append({"provider": provider, "turns": turns})
+    return providers, lookup
+
+
+def align_customer_event_from_mapping(
+    events: list[dict[str, Any]],
+    event_id: str,
+    provider_results: list[dict[str, Any]],
+    event_mapping: dict[str, Any],
+) -> dict[str, Any]:
+    """Validate selected real turn IDs and return their non-contracting union."""
+    target_index = next(
+        (index for index, event in enumerate(events) if str(event.get("event_id")) == event_id),
+        None,
+    )
+    if target_index is None or events[target_index].get("speaker") != "customer":
+        raise ValueError("Target event is not a customer event")
+    if str(event_mapping.get("event_id") or "") != event_id:
+        raise ValueError("Event Aligner mapping does not match the target event")
+    _providers, lookup = build_turn_catalog(
+        str(event_mapping.get("conversation_id") or "conversation"), provider_results
+    )
+    provider_rows = event_mapping.get("providers")
+    if not isinstance(provider_rows, list):
+        raise ValueError("Event Aligner omitted provider mappings")
+    accepted: list[dict[str, Any]] = []
+    failures: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for row in provider_rows:
+        if not isinstance(row, dict):
+            raise ValueError("Event Aligner provider mapping must be an object")
+        provider = str(row.get("provider") or "")
+        status = str(row.get("status") or "")
+        if not provider or provider in seen:
+            raise ValueError("Event Aligner returned a missing or duplicate provider")
+        seen.add(provider)
+        if status != "mapped":
+            failures.append({"provider": provider, "reason": status or "missing"})
+            continue
+        turn_id = str(row.get("turn_id") or "")
+        turn = lookup.get(turn_id)
+        if turn is None or turn["provider"] != provider:
+            raise ValueError("Event Aligner selected an unknown provider turn_id")
+        accepted.append(dict(turn))
+
+    consensus_candidates: list[list[dict[str, Any]]] = []
+    for size in range(2, len(accepted) + 1):
+        for subset_tuple in combinations(accepted, size):
+            subset = list(subset_tuple)
+            if max(float(item["start_s"]) for item in subset) < min(
+                float(item["end_s"]) for item in subset
+            ):
+                consensus_candidates.append(subset)
+    if not consensus_candidates:
+        raise ValueError("Fewer than two Event Aligner provider turns overlap")
+    largest_size = max(len(candidate) for candidate in consensus_candidates)
+    largest = [candidate for candidate in consensus_candidates if len(candidate) == largest_size]
+    unique_memberships = {
+        tuple(sorted(str(item["turn_id"]) for item in candidate)) for candidate in largest
+    }
+    if len(unique_memberships) != 1:
+        raise ValueError("Event Aligner provider turns form competing intervals")
+    consensus = largest[0]
+    consensus_ids = {str(item["turn_id"]) for item in consensus}
+    for item in accepted:
+        if str(item["turn_id"]) not in consensus_ids:
+            failures.append(
+                {"provider": str(item["provider"]), "reason": "excluded_no_overlap"}
+            )
+    start_s = min(float(item["start_s"]) for item in consensus)
+    end_s = max(float(item["end_s"]) for item in consensus)
+    if start_s < 0 or end_s <= start_s:
+        raise ValueError("Event Aligner union interval is invalid")
+    return {
+        "start_s": start_s,
+        "end_s": end_s,
+        "consensus_start_s": max(float(item["start_s"]) for item in consensus),
+        "consensus_end_s": min(float(item["end_s"]) for item in consensus),
+        "boundary_rule": "event_aligner_provider_union_v1",
+        "consensus_providers": [str(item["provider"]) for item in consensus],
+        "provider_alignments": consensus,
+        "provider_failures": failures,
+        "excel_time_used": False,
+    }
+
+
 def _normalize_text(value: str) -> str:
     """Normalize multilingual transcript text for approximate alignment."""
     normalized = unicodedata.normalize("NFKC", value).casefold().replace("ـ", "")

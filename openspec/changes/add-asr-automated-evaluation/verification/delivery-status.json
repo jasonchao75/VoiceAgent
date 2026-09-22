@@ -21,7 +21,7 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation.",
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
   "independent_release_review": {
     "status": "PASS",
@@ -76,6 +76,56 @@
     }
   ],
   "known_issues": [
+    {
+      "id": "KI-166",
+      "status": "resolved",
+      "summary": "One insufficient Event Aligner event invalidates its complete request group and discards otherwise valid sibling mappings.",
+      "impact": "If any target event has fewer than two mapped providers, group validation raises before returning any indexed result. After bounded retries the checkpoint marks every conversation in the group failed, so unrelated events that already have valid two-provider mappings cannot reach event-level ASR or later review.",
+      "source": "Independent PD-056 review on 2026-09-22: an adversarial two-event response with a valid R2 mapping and a one-provider R4 mapping raises `Event Aligner mapped fewer than two providers`; `_run_event_alignment` persists only complete-group results and `_run_asr` then sees no validated mapping for either event.",
+      "next_action": "Separate response-schema validation from per-event sufficiency. Persist valid event mappings and explicit failure reasons independently, retry only the failed request group for transport/schema failures, and add a regression proving one bad event does not block valid sibling events or conversations.",
+      "resolution": "Structured-response violations still retry only their request group, but a well-formed event with fewer than two mapped providers now persists alignment_error=fewer_than_two_providers at event scope. Valid sibling events remain available for clipping and event-level ASR. Independent re-review verified a mixed R2-valid/R4-insufficient regression and traced independent downstream handling in `_run_asr`.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-165",
+      "status": "resolved",
+      "summary": "Event Aligner validation does not prove that selected anonymous speakers are customer speakers.",
+      "impact": "For a single target event, turns from an Agent speaker can satisfy real-ID, provider-count, overlap and order checks and be cut as customer audio. With multiple targets, the validator only requires a consistent speaker label, so consistently selecting the Agent speaker is also accepted.",
+      "source": "Independent PD-056 review on 2026-09-22: `_validate_event_alignment_group` accepted two real turn IDs whose speakers were both explicitly labelled AGENT. The implementation checks speaker consistency but has no independently derived provider speaker-role ownership to compare against the required customer role.",
+      "next_action": "Add an auditable speaker-role mapping or equivalent deterministic ownership evidence and reject selected turns unless their provider speaker is validated as customer; cover both single-target and consistently-wrong multi-target responses.",
+      "resolution": "The frozen Event Aligner contract now returns an auditable customer_speaker and non-empty disjoint robot_speakers mapping for every provider. The server verifies every role label exists in that provider's real turn catalog and marks any target turn outside the declared customer speaker as selected_non_customer_speaker at event scope. Independent adversarial re-review verified provider coverage, real-label membership, customer/robot disjointness and wrong-Agent-turn isolation.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-164",
+      "status": "resolved",
+      "summary": "Event-clip preparation failures persist only the exception class and discard the actionable alignment or validation reason.",
+      "impact": "EV-20260922-6AA1 shows the same provider_error/ValueError for R6 and R7 even though R6 lacks two-provider semantic alignment while R7 forms a 60 ms consensus that cannot satisfy the signal validator. The product cannot explain the failure or guide a targeted correction from persisted evidence.",
+      "source": "Read-only production inspection on 2026-09-22 UTC: all three event-provider rows for 1030000000086502 R6 and 1030000000089001 R7 contain only message=ValueError with attempts=0; replaying the persisted full-call results exposes distinct underlying reasons.",
+      "next_action": "Persist a safe event-level preparation error code and actionable message before copying it to provider rows, while retaining per-provider alignment failures in the trace; add regressions for no-consensus and too-short-consensus failures.",
+      "resolution": "Event-clip failures now persist bounded event_alignment_failed or user_signal_validation_failed categories with actionable messages, while successful traces retain selected provider turn IDs, excluded providers and union boundaries. Deterministic regressions cover missing mappings and the production-derived R6/R7/R13 cases.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-163",
+      "status": "resolved",
+      "summary": "Per-provider short-text scoring can reject the correct ordered customer turn even when the provider timeline contains the matching audio interval.",
+      "impact": "For 1030000000086502 R6, ElevenLabs aligns 'Two two one' at 26.70-27.22s, while Soniox returns the overlapping '2 2 1' at 26.91-27.39s but fails selection because the worksheet says 'Two to. One.' and a stray earlier customer token creates multiple low-similarity candidates. Speechmatics omits the English turn, leaving only one accepted provider and no clip.",
+      "source": "Read-only production replay of EV-20260922-6AA1 on 2026-09-22 UTC using the persisted three-provider full-call results and the deployed alignment implementation.",
+      "next_action": "Resolve Q-016, then replace the per-provider short-text gate with the confirmed whole-conversation event-to-segment mapping contract and add this R6 evidence as a deterministic regression.",
+      "resolution": "PD-056 replaces rule-based target selection with a dedicated Event Aligner over complete conversations. The model may select only existing provider turn IDs; deterministic validation enforces complete membership, provider coverage, order, unique turns and consistent customer speakers. The R6 regression proves 'Two two one' and '2 2 1' map without text normalization deciding the event.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-162",
+      "status": "resolved",
+      "summary": "Using the strict provider intersection as both consensus proof and final clip core can create an impossible or onset-truncated short-utterance boundary.",
+      "impact": "For 1030000000089001 R7, ElevenLabs returns 18.94-20.48s and Soniox returns a single 19.05-19.11s digit; their 60 ms intersection can never satisfy the validator's 120 ms active-signal minimum, so the clip fails despite two-provider agreement. For R13, the three-provider intersection is 45.57-45.78s although provider onsets range from 45.10 to 45.57s; refinement can extend only 180 ms before that core, producing 45.38-46.03s and trimming the start of the short utterance.",
+      "source": "Read-only production replay and persisted source_clip traces for EV-20260922-6AA1 on 2026-09-22 UTC. Full-call and pure-user waveforms correlate at zero offset (0.967 for 1030000000089001), ruling out a recording timeline shift.",
+      "next_action": "Separate interval agreement from final boundary selection: retain overlap as consensus evidence, but derive an onset-preserving provider-supported envelope and let pure-user activity within the bounded margin refine both edges; reject only after applying a duration-aware rule. Add R7 and R13 regressions.",
+      "resolution": "Overlap is retained only as cross-provider agreement evidence. The final boundary is now the union of the largest unique overlapping provider-turn set, and pure-user signal processing may expand but cannot contract that union. Production-derived regressions resolve R7 to 18.86-20.48s and R13 to 45.10-45.87s.",
+      "disclosed_to_user": true
+    },
     {
       "id": "KI-160",
       "status": "resolved",
@@ -1578,10 +1628,18 @@
   ],
   "unverified_items": [
     {
-      "id": "UV-025",
+      "id": "UV-026",
       "status": "open",
+      "summary": "The integrated Event Aligner is locally verified but has not yet run as a paid production request across a full evaluation batch.",
+      "reason": "The implementation now has deterministic coverage for batch-first/minimum-group packing, durable group checkpoints, real turn-ID and speaker-role validation, event-scoped failure isolation, actionable errors and production-derived R6/R7/R13 unions. The 241-test repository suite passes, but no customer data was sent to the frozen Pass 1 provider and real full-batch mapping accuracy, latency and billed token cost remain unverified.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-025",
+      "status": "resolved",
       "summary": "The new diarization-first event alignment has not yet been exercised against one current paid full-call result from Soniox, Speechmatics and ElevenLabs.",
       "reason": "This implementation turn is limited to repository-contained local-real audio plus deterministic/mock provider responses; no new paid external call has been authorized.",
+      "resolution": "The user-initiated production batch EV-20260922-6AA1 exercised the deployed path with current paid Soniox, Speechmatics and ElevenLabs full-call results. Read-only replay confirms real diarized timelines and exposes KI-162 through KI-164; no additional external call was made during diagnosis.",
       "disclosed_to_user": true
     },
     {
@@ -1755,9 +1813,10 @@
     },
     {
       "id": "UV-024",
-      "status": "open",
+      "status": "resolved",
       "summary": "The new full-call ASR context plus speech-aligned event-candidate flow has not yet been executed against Soniox, Speechmatics and ElevenLabs in a paid external-real batch.",
       "reason": "Local-real R6/R10 audio boundaries and deterministic provider mocks are green, but no new customer audio was sent externally in this turn. A paid batch requires separate scoped authorization or a user-initiated run after deployment.",
+      "resolution": "The user-initiated production batch EV-20260922-6AA1 executed current full-call and event-level ASR work across Soniox, Speechmatics and ElevenLabs. Read-only diagnosis of R6, R7 and R13 confirms the external-real path and records its newly exposed defects as KI-162 through KI-164.",
       "disclosed_to_user": true
     },
     {

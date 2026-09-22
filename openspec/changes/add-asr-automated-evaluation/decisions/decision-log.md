@@ -4,12 +4,40 @@
 
 ## Status
 
-- Recorded decisions: 42 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 44 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-21
 
 ## Decisions
+
+### PD-057 — 发布 Event Aligner 增量供线上验收
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: PD-056 实现、回归与独立复验通过后，是否推送现有生产发布流程
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；独立复验 PASS 后的用户明确指令
+- Confirmation quote: “推送线上。”
+- Decision: 仅提交并推送 PD-056 Event Aligner 增量到 `git@github.com:jasonchao75/VoiceAgent.git` 的 `main`，触发现有 CI 与生产部署流程。发布包含整批优先/超限最少完整对话分组、真实 turn ID 与 speaker role 校验、provider 区间并集、用户轨只扩不缩、事件级失败隔离、可恢复检查点、回归测试与验收记录；不得夹带工作区其他改动。常规发布保留生产现有 Evaluation 数据，不自动重试旧批次、不启动新批次，也不主动发起付费 ASR/LLM 调用。
+- Reason: 产品负责人要在线上通过新建或主动操作的批次验收 R6/R7/R13 修正，同时保持本次发布范围独立、可追溯和可回滚。
+- Consequences: 推送后必须核对 CI、生产部署、部署提交一致性与公网健康；真实整批 Event Aligner 的准确率、延迟和费用仍由用户后续主动批次验证。
+- Updated artifacts: PD-056 实现、Delta Spec、design、tasks、Prompt fixture、测试、交付状态、独立验收与部署证据。
+- Verification: 发布前 241 项测试、Scoped Ruff/Mypy、Change gate 与独立复验 PASS；发布后以 GitHub Actions 与公网健康检查为准。
+
+### PD-056 — 使用批量动态装箱的 Event Aligner 映射目标事件
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: Q-016 目标 R 事件如何映射到完整录音 ASR 时间线，以及 Event Aligner 的调用粒度
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人先确认四段职责方案，随后明确否决逐通调用并确认整批动态装箱
+- Confirmation quote: “确认采用这个四段职责清晰的Event Aligner方案”；“确认 Event Aligner 改成‘整批优先、超限才按完整对话拆成最少请求组’”
+- Decision: 保持 Pass 1 先从 Excel 历史中选择目标 R 事件，只对命中 conversation 执行三家完整录音 ASR。随后由独立 Event Aligner 读取有序 worksheet 事件与三家按相邻同 speaker 合并的真实 ASR turns，把全部目标 R 映射到各 provider 的既有 `turn_id`。Event Aligner 按批次动态 Token 装箱：整批安全可容纳时只发起一次请求，超限时才按完整 conversation 不可拆分原则生成最少请求组；失败只重试失败组。模型不得生成时间戳或不存在的 ID；程序验证 group/conversation/event/provider/turn ID、用户角色、单调顺序和至少两家映射后，从真实 turns 回查时间并取并集作为裁片基础。纯用户轨可向外补齐语音边缘但不得向内缩短该并集，不设置“10 秒”硬阈值；异常宽区间必须明确失败而不是静默截短。
+- Reason: 生产 R6 证明逐家短文本规则会拒绝正确数字轮次，R7/R13 证明厂商 VAD 边界天然不同且交集会丢音。独立 GPT 模拟可以从整通顺序、speaker、相邻话术和多家时间槽中选择正确真实 ID；动态装箱避免逐通 LLM 调用的费用与等待。
+- Consequences: 新增可恢复、可计费的 Event Aligner 分组检查点和专用 Prompt/Schema，复用批次冻结的 Pass 1 LLM 资源但不冒充原 Pass 1 请求。完整录音 ASR、Event Aligner、确定性裁片和事件级重转录职责分离；既有报告保持不可变，新流程只作用于新建或明确重试的相关工作。
+- Updated artifacts: Q-016、Delta Spec、`proposal.md`、`design.md`、`tasks.md`、Event Aligner 实现/测试与 `verification/event-aligner-gpt-simulation-2026-09-22.md`。
+- Verification: deterministic/mock 必须覆盖整批单组、超限最少分组、对话不可拆、错误/虚构 ID 拒绝、失败组重试、R6/R7/R13 映射、并集边界和纯用户轨不缩短；不主动发起真实付费调用。
 
 ### PD-055 — 顺序发布 KI-161 并补投 BA92 已成功结果
 

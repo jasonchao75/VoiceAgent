@@ -41,7 +41,7 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | `orchestrator` | 阶段依赖、并发限制、检查点、暂停/恢复/停止和预算门禁 |
 | `asr` | 三家异步文件 ASR 的统一接口与 provider adapter |
 | `llm` | 两轮 Prompt 渲染、结构化输出校验和重试 |
-| `alignment` | event/segment 对齐、统一区间和定位精度 |
+| `alignment` | Event Aligner 输入/输出、真实 turn ID 校验、并集边界和定位精度 |
 | `review` | 复核状态、显式 Good/Bad/听不清和审计 |
 | `benchmark` | Good 抽样、用户 WAV 剪辑、入库与 ZIP 导出 |
 | `reports` | 初步/最终不可变报告和聚合指标 |
@@ -124,7 +124,7 @@ All valid pass events in conversations containing at least one candidate form th
 
 ### Evaluation ASR fan-out
 
-After Pass 1 identifies target user events, the orchestrator aligns the ordered historical text and known worksheet roles against every provider's diarized full-call timeline. It requires at least two providers to agree on one interval, validates and narrowly refines that interval on `user_record`, writes one stable WAV clip, and creates the Cartesian set of target events × selected providers. Excel `time (s)` is retained only for audit and never enters alignment. A provider adapter exposes submit, poll/callback reconcile, fetch result and cancel-if-supported operations with explicit timeouts. Pass 2 consumes the event-level results; full-call ASR output is never used to construct the review candidate text.
+After Pass 1 identifies target user events, each selected provider produces one diarized full-call timeline for every candidate-bearing conversation. Consecutive segments from the same anonymous speaker are persisted as stable turns. A dedicated Event Aligner then maps all target R events to existing provider turn IDs. Conversation units are dynamically packed against the frozen Pass 1 model's verified context limit: the whole batch uses one request when safe, otherwise the minimum safe groups are formed without splitting a conversation. Deterministic validation rejects invented IDs, wrong ownership, non-monotonic mappings, non-user turns and fewer than two provider mappings. Accepted provider turn intervals are unioned, validated on `user_record`, and may be expanded to cover user signal but never contracted inside the union. Excel `time (s)` is retained only for audit and never enters alignment. Pass 2 consumes only event-level retranscriptions; full-call ASR output is never used as a review candidate.
 
 Provider responses are normalized but raw safe response payloads may be retained access-controlled for troubleshooting. Local segment IDs use full conversation ID and provider identity; UI only exposes them inside technical evidence.
 
@@ -165,8 +165,11 @@ Because provider transcription is conversation-scoped and these events come only
 
 - Retain the workbook event time only as source audit metadata; it never participates in alignment, ranking, tie-breaking or clipping.
 - Transcribe the full-call recording once per selected provider and candidate-bearing conversation with speaker diarization explicitly enabled. Persist word/segment text, start/end timestamps and anonymous speaker labels separately from event-level candidates.
-- Align historical events to each provider timeline by normalized transcript similarity and monotonic worksheet order, then infer anonymous speaker roles from aligned Agent/User turns. Require at least two successful providers to align the target customer event to overlapping time ranges; otherwise fail closed.
-- Use the verified shared `record`/`user_record` timeline to validate user-track signal and refine only a narrow edge band around the ASR consensus interval. Noise/energy detection must never choose a different event or replace missing diarization consensus.
+- Group consecutive same-speaker segments into immutable provider turns with stable IDs. The Event Aligner receives complete ordered worksheet events, all target R IDs and each provider's turns; it selects only existing turn IDs or returns missing/ambiguous and never emits timestamps.
+- Dynamically pack complete conversation units into the fewest safe Event Aligner groups. Persist group membership, attempts, usage, cost and results so only failed groups retry and completed mappings are reused after restart.
+- Validate group identity, conversation/event/provider ownership, existing turn IDs, monotonic event order, customer speaker role and at least two providers mapped to the same user utterance. Invalid or insufficient mapping fails only the affected event and records an actionable reason.
+- Derive the source interval from the union of accepted provider turns (`min(start)`, `max(end)`), not their intersection. Use the verified shared `record`/`user_record` timeline to validate signal and expand to nearby user activity when needed; never shrink inside the provider union. Noise/energy detection must never choose a different event or replace missing Event Aligner evidence.
+- Do not impose a fixed ten-second limit from the earlier example. If the selected turns create an implausibly broad or cross-event interval, fail explicitly rather than truncate and risk dropping speech.
 - Write one stable user-event WAV and reuse it across the selected providers, review player and Benchmark materialization.
 - Treat provider segment timestamps as clip-relative technical evidence; never expand the source interval from provider boundaries or LLM references.
 - Fail the event-level ASR resource explicitly when the shared timeline or interval is invalid; never fall back to mixed full-call text.

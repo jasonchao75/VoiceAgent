@@ -1,3 +1,69 @@
+# Final Independent Re-review — Batch-first Event Aligner
+
+- Status: **PASS**
+- Date: 2026-09-22
+- Scope: PD-056, Tasks 12.50–12.51 and KI-162 through KI-166
+- Reviewer boundary: independent verification only; no implementation fix, deployment, push, production mutation, or paid provider call was performed.
+
+## Decision
+
+The KI-165/KI-166 corrections pass independent deterministic verification. Every Event Aligner conversation must now return one `speaker_roles` row for every provider. The server checks that `customer_speaker` and every non-empty `robot_speakers` value occur in that provider's real turn catalog and that the customer label is disjoint from robot labels. A mapped real turn whose speaker differs from the declared customer speaker is retained only as an event-scoped `selected_non_customer_speaker` failure and cannot be clipped.
+
+Provider insufficiency is also event-scoped. A well-formed target with fewer than two mapped providers receives `fewer_than_two_providers`; valid sibling mappings remain in the completed conversation/group checkpoint. `_run_asr` converts only the affected mapping's `alignment_error` into a failed Case checkpoint while independently preparing and dispatching valid sibling clips. Structural response failures still invalidate and retry only their request group. Tasks 12.50 and 12.51, plus KI-162 through KI-166, are verified resolved within the deterministic scope.
+
+## Reproducible evidence
+
+- Focused Evaluation and Event Aligner packing/validation suites: **103 passed**.
+- Full repository suite: **241 passed**, with two already-disclosed dependency deprecation warnings.
+- Independent adversarial contract check: missing provider role, unknown customer label, unknown robot label, and overlapping customer/robot labels are all rejected; real Agent turns return `selected_non_customer_speaker` at event scope.
+- Mixed-event regression: a valid two-provider R2 remains `alignment_error=null` while one-provider R4 returns `fewer_than_two_providers`; source trace confirms `_run_asr` records/dispatches them independently.
+- Scoped Ruff, Mypy and `git diff --check`: **PASS**.
+- Change gate: **PASS with warnings** (0 errors; 13 previously disclosed warnings and two unrelated unchecked tasks).
+
+## Remaining boundary
+
+- `UV-026` remains open: no integrated paid full-batch Event Aligner request has yet verified real mapping accuracy, latency or billed cost. This PASS covers static, deterministic, mock and stored external-real evidence only.
+
+---
+
+# Prior Independent Review — Batch-first Event Aligner
+
+- Status: **BLOCKED**
+- Date: 2026-09-22
+- Scope: PD-056, Tasks 12.50–12.51 and KI-162 through KI-164
+- Reviewer boundary: independent verification only; no implementation fix, deployment, push, production mutation, or paid provider call was performed.
+
+## Decision
+
+The provider-union boundary increment passes deterministic review: accepted overlapping provider turns produce the full union for the production-derived R6/R7/R13 intervals, and pure-user signal refinement can expand but cannot contract that union. Dynamic packing prefers one whole-batch request, keeps conversations indivisible when splitting, and the reviewed example reaches the minimum safe group count. Group membership, attempts and per-conversation results have durable SQLite checkpoints; completed groups are skipped on resume and failed groups retain monotonic attempts.
+
+The overall PD-056 increment is nevertheless blocked by two contract defects. `KI-165`: the validator proves only that target turns use a consistent anonymous speaker label; it never establishes that this label belongs to the customer. An adversarial result selecting two real Agent turns is accepted. `KI-166`: fewer than two mappings for one target raises from whole-group validation before any valid result is returned. After retries, every conversation in that request group is marked failed, so a bad event prevents correctly mapped sibling events from reaching event-level ASR or Manual Review. This conflicts with the Delta Spec's customer-role check and corresponding-event failure semantics, and with the design requirement that invalid/insufficient mapping fail only the affected event.
+
+Task 12.50 remains verified. Task 12.51 is reopened until both defects and their regressions are addressed. Existing green tests do not exercise Event Aligner runtime validation, group checkpoint retry isolation, or mixed valid/invalid event outcomes.
+
+## Reproducible evidence
+
+- Focused Evaluation and packing suites: **101 passed**.
+- Full repository suite: **239 passed**, with two already-disclosed dependency deprecation warnings.
+- Scoped Ruff, Mypy and `git diff --check`: **PASS**.
+- Change gate: **PASS with warnings** before review findings (0 errors); after registering the blockers it correctly reports the open issues and unchecked Task 12.51.
+- Provider-union regression: R6 resolves to `26.70–27.39s`, R7 to `18.86–20.48s`, and R13 to `45.10–45.87s`; the implementation retains overlap only as agreement evidence and uses the accepted turns' union as the clip core.
+- No-contraction trace: `_validate_and_refine_user_interval` computes `start <= provider_union.start` and `end >= provider_union.end`, with a defensive rejection if contraction is attempted.
+- Customer-role adversarial trace: `_validate_event_alignment_group` accepted two existing turn IDs both labelled `AGENT`, because `provider_speakers` checks only cross-target consistency and has no customer-role ownership evidence.
+- Failure-isolation adversarial trace: a response containing valid two-provider R2 mappings plus one-provider R4 raises `ValueError: Event Aligner mapped fewer than two providers`; no partial indexed result survives. `checkpoint_event_alignment_group(... status="failed")` then writes the same failed status to every conversation member.
+
+## Required before re-review
+
+- Establish auditable provider speaker-role ownership and reject Agent turns for customer targets; add single-target and consistently-wrong multi-target regressions.
+- Preserve valid event mappings when a sibling event is missing, ambiguous or below two-provider sufficiency; persist its specific reason and prove it does not block unrelated event-level ASR/manual-review flow.
+- Add runtime tests for whole-batch execution, failed-group-only retry/resume, group checkpoints and actionable event errors, then rerun focused/full checks and the Change gate.
+
+## Remaining boundary
+
+- `UV-026` remains open: no integrated paid full-batch Event Aligner request has yet verified real mapping accuracy, latency or billed cost. The earlier GPT exercise used external-real stored inputs with a mock/deterministic invocation and is not production execution evidence.
+
+---
+
 # Independent Review — Partial Pass 2 result materialization
 
 - Status: **PASS**

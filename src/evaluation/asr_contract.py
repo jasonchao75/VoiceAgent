@@ -47,6 +47,8 @@ class ASRError(BaseModel):
         "timeout",
         "provider_error",
         "invalid_result",
+        "event_alignment_failed",
+        "user_signal_validation_failed",
     ]
     retryable: bool
     message: str = Field(max_length=160)

@@ -26,7 +26,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from src.bots.crypto import BotKeyCipher
-from src.evaluation.alignment import align_customer_event
+from src.evaluation.alignment import align_customer_event, align_customer_event_from_mapping
 from src.evaluation.asr_contract import ASRError, ASRResult
 from src.evaluation.connections import ASRConnectionError
 from src.evaluation.connections import test_asr_connection as run_asr_connection_test
@@ -499,6 +499,26 @@ def _full_call_alignment_results() -> list[dict[str, object]]:
     return results
 
 
+def _event_alignment_mapping(event_id: str = "R2") -> dict[str, object]:
+    """Return a validated-model-shaped mapping to real provider turn IDs."""
+    return {
+        "conversation_id": "C-1",
+        "event_id": event_id,
+        "providers": [
+            {
+                "provider": "soniox",
+                "status": "mapped",
+                "turn_id": "C-1:soniox:turn:1",
+            },
+            {
+                "provider": "speechmatics",
+                "status": "mapped",
+                "turn_id": "C-1:speechmatics:turn:1",
+            },
+        ],
+    }
+
+
 def test_full_call_diarization_consensus_ignores_excel_time() -> None:
     """Changing an unreliable workbook timestamp must not move the event interval."""
     events = [
@@ -521,6 +541,53 @@ def test_full_call_diarization_consensus_ignores_excel_time() -> None:
     assert first["end_s"] == pytest.approx(5.0)
     assert first["excel_time_used"] is False
     assert first["consensus_providers"] == ["soniox", "speechmatics"]
+
+
+@pytest.mark.parametrize(
+    ("provider_intervals", "expected_start", "expected_end"),
+    [
+        (((26.70, 27.22), (26.91, 27.39)), 26.70, 27.39),
+        (((18.94, 20.48), (19.05, 19.11), (18.86, 19.18)), 18.86, 20.48),
+        (((45.10, 45.78), (45.16, 45.87), (45.57, 45.82)), 45.10, 45.87),
+    ],
+)
+def test_event_aligner_uses_provider_union_for_r6_r7_r13_regressions(
+    provider_intervals: tuple[tuple[float, float], ...],
+    expected_start: float,
+    expected_end: float,
+) -> None:
+    """Provider boundary differences must widen, never intersect, the final interval."""
+    providers = ("elevenlabs", "soniox", "speechmatics")[: len(provider_intervals)]
+    results: list[dict[str, object]] = []
+    mappings: list[dict[str, object]] = []
+    for provider, (start_s, end_s) in zip(providers, provider_intervals, strict=True):
+        text = "Two two one" if provider == "elevenlabs" else "2 2 1"
+        results.append(
+            {
+                "provider": provider,
+                "segments": [
+                    {"start": 0.0, "end": 1.0, "speaker": "A", "text": "agent"},
+                    {"start": start_s, "end": end_s, "speaker": "B", "text": text},
+                ],
+            }
+        )
+        mappings.append(
+            {
+                "provider": provider,
+                "status": "mapped",
+                "turn_id": f"C-1:{provider}:turn:1",
+            }
+        )
+    trace = align_customer_event_from_mapping(
+        [{"event_id": "R6", "speaker": "customer", "text": "Two to. One."}],
+        "R6",
+        results,
+        {"conversation_id": "C-1", "event_id": "R6", "providers": mappings},
+    )
+
+    assert trace["start_s"] == pytest.approx(expected_start)
+    assert trace["end_s"] == pytest.approx(expected_end)
+    assert trace["boundary_rule"] == "event_aligner_provider_union_v1"
 
 
 def test_full_call_diarization_consensus_requires_two_providers() -> None:
@@ -670,12 +737,16 @@ async def test_case_asr_clip_uses_pure_user_event_interval(
     monkeypatch.setattr(evaluation_store, "get_conversation", get_conversation)
     monkeypatch.setattr(evaluation_store, "conversation_user_audio_path", lambda _value: source)
     path, trace = await evaluation_store.prepare_case_asr_clip(
-        str(batch["id"]), "C-1", "R2", _full_call_alignment_results()
+        str(batch["id"]),
+        "C-1",
+        "R2",
+        _full_call_alignment_results(),
+        _event_alignment_mapping(),
     )
 
     assert path.is_file()
     assert trace["source"].startswith("user_record/")
-    assert trace["boundary_rule"] == "full_call_diarization_consensus_v1"
+    assert trace["boundary_rule"] == "event_aligner_provider_union_v1"
     assert trace["excel_time_used"] is False
     assert trace["consensus_providers"] == ["soniox", "speechmatics"]
     assert trace["speech_start_s"] <= trace["speech_end_s"]
@@ -706,6 +777,7 @@ async def test_case_asr_clip_rejects_unreliable_shared_timeline(
             _VALID_CONVERSATION_ID,
             str(event["event_id"]),
             [],
+            {},
         )
 
 
@@ -749,6 +821,17 @@ async def test_run_asr_checkpoints_invalid_timeline_without_provider_dispatch(
     monkeypatch.setattr(evaluation_store, "get_conversation", mismatched)
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     monkeypatch.setattr(runner, "_transcribe", context_only_dispatch)
+
+    async def map_event(*_args: object) -> dict[tuple[str, str], dict[str, object]]:
+        return {
+            (_VALID_CONVERSATION_ID, str(event["event_id"])): {
+                "conversation_id": _VALID_CONVERSATION_ID,
+                "event_id": str(event["event_id"]),
+                "providers": [],
+            }
+        }
+
+    monkeypatch.setattr(runner, "_run_event_alignment", map_event)
     await runner._run_asr(
         str(batch["id"]),
         batch,
@@ -3475,6 +3558,17 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
 
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     monkeypatch.setattr(runner, "_transcribe", transcribe)
+    async def map_events(*_args: object) -> dict[tuple[str, str], dict[str, object]]:
+        return {
+            (_VALID_CONVERSATION_ID, event_id): {
+                "conversation_id": _VALID_CONVERSATION_ID,
+                "event_id": event_id,
+                "providers": [],
+            }
+            for event_id in customer_event_ids
+        }
+
+    monkeypatch.setattr(runner, "_run_event_alignment", map_events)
     source = evaluation_store.conversation_user_audio_path(_VALID_CONVERSATION_ID)
     assert source is not None
 
@@ -3483,6 +3577,7 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
         _conversation_id: str,
         _event_id: str,
         _full_call_results: list[dict[str, object]],
+        _event_mapping: dict[str, object],
     ) -> tuple[Path, dict[str, object]]:
         return source, {"start_s": 0.0, "end_s": 1.0}
 
@@ -3575,6 +3670,7 @@ async def test_run_asr_replaces_legacy_non_diarized_context_checkpoint(
         _conversation_id: str,
         _event_id: str,
         full_call_results: list[dict[str, object]],
+        _event_mapping: dict[str, object],
     ) -> tuple[Path, dict[str, object]]:
         assert full_call_results[0]["diarization_contract"] == "speaker_timestamps_v1"
         return source, {"start_s": 0.0, "end_s": 1.0}
@@ -3582,6 +3678,17 @@ async def test_run_asr_replaces_legacy_non_diarized_context_checkpoint(
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     monkeypatch.setattr(runner, "_transcribe", transcribe)
     monkeypatch.setattr(evaluation_store, "prepare_case_asr_clip", prepare_clip)
+
+    async def map_event(*_args: object) -> dict[tuple[str, str], dict[str, object]]:
+        return {
+            (_VALID_CONVERSATION_ID, event_id): {
+                "conversation_id": _VALID_CONVERSATION_ID,
+                "event_id": event_id,
+                "providers": [],
+            }
+        }
+
+    monkeypatch.setattr(runner, "_run_event_alignment", map_event)
 
     await runner._run_asr(
         str(batch["id"]),

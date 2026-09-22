@@ -187,6 +187,8 @@
 - [x] 12.48 Replace Excel-anchor speech-island selection with full-call diarization/text/order alignment, require two-provider time consensus, validate/refine only on the pure-user track, and fail closed on missing/conflicting evidence (PD-053, KI-156)
 - [ ] 12.47 Distinguish queued versus in-flight Pass 2 groups and expose last activity/elapsed time, so a multi-minute provider request cannot appear frozen as generic pending work (KI-155)
 - [x] 12.49 Materialize completed Pass 2 decisions into Manual Review and Benchmark Library even when sibling Cases remain failed, while keeping the batch retryable and the report explicitly non-final (KI-161)
+- [x] 12.50 Use accepted provider-turn unions as final short-utterance clip boundaries, forbid user-track contraction, and add production-derived R7/R13 regressions (PD-056, KI-162)
+- [x] 12.51 Implement dynamically packed Event Aligner groups over complete conversation units, validate only real turn IDs and customer-speaker ownership, isolate invalid event mappings from valid siblings, preserve actionable clip failure reasons, and add production-derived R6/R7/R13 regressions (PD-056, KI-163, KI-164, KI-165, KI-166)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

@@ -178,3 +178,7 @@ PASS_TWO_SYSTEM_PROMPT = _approved_prompt(
         "scenario_tags",
     ),
 )
+EVENT_ALIGNER_SYSTEM_PROMPT = _approved_prompt(
+    "riyadbank-event-aligner-system-prompt-v1.md",
+    ("request_group_id", "conversations"),
+)

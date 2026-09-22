@@ -8,12 +8,188 @@ import pytest
 
 from src.evaluation.executor import EvaluationRunner
 from src.evaluation.pass2_packing import (
+    EventAlignmentUnit,
     ModelTokenPolicy,
     PassOneUnit,
+    build_event_alignment_unit,
     build_pass_one_unit,
     model_token_policy,
+    pack_event_alignment_units,
     pack_pass_one_units,
 )
+
+
+def _alignment_unit(
+    conversation_id: str, payload_size: int, target_count: int = 1
+) -> EventAlignmentUnit:
+    """Build one complete synthetic Event Aligner conversation."""
+    return build_event_alignment_unit(
+        conversation_id,
+        {"conversation_id": conversation_id, "full_call_asr": "x" * payload_size},
+        target_count,
+        3,
+    )
+
+
+def test_event_aligner_prefers_one_batch_request_when_it_fits() -> None:
+    """The common path must submit the whole candidate batch once."""
+    units = [_alignment_unit(f"C{index:02d}", 100) for index in range(20)]
+    groups = pack_event_alignment_units(
+        batch_id="EV-EA-ONE",
+        units=units,
+        system_prompt="json",
+        policy=ModelTokenPolicy(200_000, 80_000, 2_000),
+    )
+
+    assert len(groups) == 1
+    assert set(groups[0].conversation_ids) == {unit.conversation_id for unit in units}
+
+
+def test_event_aligner_overflow_uses_minimum_whole_conversation_groups() -> None:
+    """Overflow may split between calls but never split one full conversation."""
+    units = [
+        EventAlignmentUnit(f"C{index}", {}, 1, 3, size)
+        for index, size in enumerate((1_000, 1_000, 1_000, 1_500, 3_000, 3_500))
+    ]
+    groups = pack_event_alignment_units(
+        batch_id="EV-EA-MIN",
+        units=units,
+        system_prompt="",
+        policy=ModelTokenPolicy(18_000, 10_000, 1_000),
+    )
+
+    assert len(groups) == 2
+    assert sum(len(group.units) for group in groups) == len(units)
+    assert {item for group in groups for item in group.conversation_ids} == {
+        unit.conversation_id for unit in units
+    }
+
+
+def _event_aligner_validation_input() -> dict[str, dict[str, object]]:
+    """Build server-owned turn evidence for Event Aligner contract tests."""
+    lookup: dict[str, dict[str, object]] = {}
+    for provider in ("soniox", "elevenlabs"):
+        lookup[f"C1:{provider}:turn:0"] = {
+            "provider": provider,
+            "speaker": "A",
+            "turn_index": 0,
+        }
+        lookup[f"C1:{provider}:turn:1"] = {
+            "provider": provider,
+            "speaker": "B",
+            "turn_index": 1,
+        }
+        lookup[f"C1:{provider}:turn:2"] = {
+            "provider": provider,
+            "speaker": "B",
+            "turn_index": 2,
+        }
+    return {
+        "C1": {
+            "target_events": [{"event_id": "R2"}, {"event_id": "R4"}],
+            "providers": ["soniox", "elevenlabs"],
+            "turn_lookup": lookup,
+        }
+    }
+
+
+def test_event_aligner_rejects_robot_turns_at_event_scope() -> None:
+    """Real IDs are insufficient unless each selected turn belongs to the customer."""
+    result = {
+        "request_group_id": "EAG1",
+        "results": [
+            {
+                "conversation_id": "C1",
+                "speaker_roles": [
+                    {
+                        "provider": provider,
+                        "customer_speaker": "B",
+                        "robot_speakers": ["A"],
+                    }
+                    for provider in ("soniox", "elevenlabs")
+                ],
+                "events": [
+                    {
+                        "event_id": event_id,
+                        "providers": [
+                            {
+                                "provider": provider,
+                                "status": "mapped",
+                                "turn_id": f"C1:{provider}:turn:{turn_index}",
+                            }
+                            for provider in ("soniox", "elevenlabs")
+                        ],
+                    }
+                    for event_id, turn_index in (("R2", 0), ("R4", 2))
+                ],
+            }
+        ],
+    }
+
+    indexed = EvaluationRunner._validate_event_alignment_group(
+        result,
+        expected_group_id="EAG1",
+        units_by_conversation=_event_aligner_validation_input(),
+    )
+
+    assert indexed["C1"]["events"][0]["alignment_error"] == (
+        "selected_non_customer_speaker"
+    )
+    assert indexed["C1"]["events"][1]["alignment_error"] is None
+
+
+def test_event_aligner_isolates_one_insufficient_event_from_valid_sibling() -> None:
+    """One event with one mapped provider must not discard a valid sibling event."""
+    provider_roles = [
+        {"provider": provider, "customer_speaker": "B", "robot_speakers": ["A"]}
+        for provider in ("soniox", "elevenlabs")
+    ]
+    result = {
+        "request_group_id": "EAG1",
+        "results": [
+            {
+                "conversation_id": "C1",
+                "speaker_roles": provider_roles,
+                "events": [
+                    {
+                        "event_id": "R2",
+                        "providers": [
+                            {
+                                "provider": provider,
+                                "status": "mapped",
+                                "turn_id": f"C1:{provider}:turn:1",
+                            }
+                            for provider in ("soniox", "elevenlabs")
+                        ],
+                    },
+                    {
+                        "event_id": "R4",
+                        "providers": [
+                            {
+                                "provider": "soniox",
+                                "status": "mapped",
+                                "turn_id": "C1:soniox:turn:2",
+                            },
+                            {
+                                "provider": "elevenlabs",
+                                "status": "missing",
+                                "turn_id": None,
+                            },
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+
+    indexed = EvaluationRunner._validate_event_alignment_group(
+        result,
+        expected_group_id="EAG1",
+        units_by_conversation=_event_aligner_validation_input(),
+    )
+
+    assert indexed["C1"]["events"][0]["alignment_error"] is None
+    assert indexed["C1"]["events"][1]["alignment_error"] == "fewer_than_two_providers"
 
 
 def _unit(

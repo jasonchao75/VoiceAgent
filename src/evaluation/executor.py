@@ -17,12 +17,15 @@ from google.genai import types
 from openai import AsyncOpenAI
 
 from src.bots.crypto import BotKeyCipher
+from src.evaluation.alignment import build_turn_catalog
 from src.evaluation.asr_contract import ASRError, ASRResult
 from src.evaluation.pass2_packing import (
+    build_event_alignment_unit,
     build_pass_one_unit,
     build_unit,
     estimate_tokens,
     model_token_policy,
+    pack_event_alignment_units,
     pack_pass_one_units,
     pack_units,
     split_group,
@@ -30,6 +33,7 @@ from src.evaluation.pass2_packing import (
 from src.evaluation.pricing import normalize_pricing_model_id
 from src.evaluation.prompts import (
     EVALUATION_CONTEXT,
+    EVENT_ALIGNER_SYSTEM_PROMPT,
     PASS_ONE_SYSTEM_PROMPT,
     PASS_TWO_SYSTEM_PROMPT,
     REFERENCE_DICTIONARIES,
@@ -204,13 +208,25 @@ def _asr_error(provider: str, exc: Exception) -> str:
     safe = _safe_error(exc)
     categories = {"authentication_failed", "rate_limited", "timeout"}
     category = safe if safe in categories else "provider_error"
+    message = safe
+    if isinstance(exc, ValueError) and str(exc).startswith("Event Aligner"):
+        category = "event_alignment_failed"
+        message = str(exc)[:160]
+    elif isinstance(exc, ValueError) and (
+        "provider turns" in str(exc) or "provider union" in str(exc)
+    ):
+        category = "event_alignment_failed"
+        message = str(exc)[:160]
+    elif isinstance(exc, ValueError) and "user" in str(exc).casefold():
+        category = "user_signal_validation_failed"
+        message = str(exc)[:160]
     if type(exc).__name__ == "ValidationError":
         category = "invalid_result"
     return ASRError(
         provider=provider,
         category=category,
         retryable=category in {"rate_limited", "timeout", "provider_error"},
-        message=safe,
+        message=message,
     ).model_dump_json()
 
 
@@ -1727,6 +1743,307 @@ class EvaluationRunner:
                     ordered.append(events.pop(0))
         return ordered
 
+    @staticmethod
+    def _validate_event_alignment_group(
+        result: dict[str, Any],
+        *,
+        expected_group_id: str,
+        units_by_conversation: dict[str, dict[str, Any]],
+    ) -> dict[str, dict[str, Any]]:
+        """Validate complete real-ID mappings, order and customer-speaker consistency."""
+        if result.get("request_group_id") != expected_group_id:
+            raise ValueError("Event Aligner returned the wrong request group")
+        rows = result.get("results")
+        if not isinstance(rows, list):
+            raise ValueError("Event Aligner omitted results")
+        indexed: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            if not isinstance(row, dict):
+                raise ValueError("Event Aligner conversation result must be an object")
+            conversation_id = str(row.get("conversation_id") or "")
+            if conversation_id not in units_by_conversation or conversation_id in indexed:
+                raise ValueError("Event Aligner returned an unknown or duplicate conversation")
+            expected = units_by_conversation[conversation_id]
+            target_ids = [str(item["event_id"]) for item in expected["target_events"]]
+            event_rows = row.get("events")
+            if not isinstance(event_rows, list):
+                raise ValueError("Event Aligner omitted event mappings")
+            mapped_events: dict[str, dict[str, Any]] = {}
+            turn_owners: set[str] = set()
+            catalog = expected["turn_lookup"]
+            providers = set(expected["providers"])
+            available_speakers: dict[str, set[str]] = {provider: set() for provider in providers}
+            for turn in catalog.values():
+                available_speakers[str(turn["provider"])].add(str(turn["speaker"]))
+            role_rows = row.get("speaker_roles")
+            if not isinstance(role_rows, list):
+                raise ValueError("Event Aligner omitted provider speaker roles")
+            customer_speakers: dict[str, str] = {}
+            for role_row in role_rows:
+                if not isinstance(role_row, dict):
+                    raise ValueError("Event Aligner speaker role must be an object")
+                provider = str(role_row.get("provider") or "")
+                customer_speaker = str(role_row.get("customer_speaker") or "")
+                robot_speakers = role_row.get("robot_speakers")
+                if provider not in providers or provider in customer_speakers:
+                    raise ValueError("Event Aligner returned unknown or duplicate speaker roles")
+                if not isinstance(robot_speakers, list) or not robot_speakers:
+                    raise ValueError("Event Aligner omitted robot speaker evidence")
+                normalized_robot = {str(speaker) for speaker in robot_speakers if str(speaker)}
+                if (
+                    customer_speaker not in available_speakers[provider]
+                    or not normalized_robot
+                    or not normalized_robot.issubset(available_speakers[provider])
+                    or customer_speaker in normalized_robot
+                ):
+                    raise ValueError("Event Aligner returned invalid customer speaker ownership")
+                customer_speakers[provider] = customer_speaker
+            if set(customer_speakers) != providers:
+                raise ValueError("Event Aligner omitted provider speaker roles")
+            for event_row in event_rows:
+                if not isinstance(event_row, dict):
+                    raise ValueError("Event Aligner event mapping must be an object")
+                event_id = str(event_row.get("event_id") or "")
+                if event_id not in target_ids or event_id in mapped_events:
+                    raise ValueError("Event Aligner returned an unknown or duplicate event")
+                mappings = event_row.get("providers")
+                if not isinstance(mappings, list):
+                    raise ValueError("Event Aligner omitted provider mappings")
+                seen_providers: set[str] = set()
+                mapped_count = 0
+                wrong_role = False
+                for mapping in mappings:
+                    if not isinstance(mapping, dict):
+                        raise ValueError("Event Aligner provider mapping must be an object")
+                    provider = str(mapping.get("provider") or "")
+                    status = str(mapping.get("status") or "")
+                    turn_id = mapping.get("turn_id")
+                    if provider not in providers or provider in seen_providers:
+                        raise ValueError("Event Aligner returned an unknown or duplicate provider")
+                    seen_providers.add(provider)
+                    if status not in {"mapped", "missing", "ambiguous"}:
+                        raise ValueError("Event Aligner returned an invalid mapping status")
+                    if status != "mapped":
+                        if turn_id is not None:
+                            raise ValueError(
+                                "Unmapped Event Aligner result must not include turn_id"
+                            )
+                        continue
+                    selected = catalog.get(str(turn_id or ""))
+                    if selected is None or selected["provider"] != provider:
+                        raise ValueError("Event Aligner selected an unknown provider turn_id")
+                    if str(turn_id) in turn_owners:
+                        raise ValueError("Event Aligner reused one turn_id for multiple events")
+                    turn_owners.add(str(turn_id))
+                    if str(selected["speaker"]) != customer_speakers[provider]:
+                        wrong_role = True
+                    mapped_count += 1
+                if seen_providers != providers:
+                    raise ValueError("Event Aligner omitted a provider")
+                mapped_events[event_id] = {
+                    **event_row,
+                    "conversation_id": conversation_id,
+                    "alignment_error": (
+                        "selected_non_customer_speaker"
+                        if wrong_role
+                        else "fewer_than_two_providers"
+                        if mapped_count < 2
+                        else None
+                    ),
+                }
+            if set(mapped_events) != set(target_ids):
+                raise ValueError("Event Aligner omitted a target event")
+            provider_positions: dict[str, list[int]] = {}
+            for event_id in target_ids:
+                if mapped_events[event_id]["alignment_error"] is not None:
+                    continue
+                for mapping in mapped_events[event_id]["providers"]:
+                    if mapping["status"] != "mapped":
+                        continue
+                    selected = catalog[str(mapping["turn_id"])]
+                    provider = str(mapping["provider"])
+                    provider_positions.setdefault(provider, []).append(
+                        int(selected["turn_index"])
+                    )
+            if any(positions != sorted(positions) for positions in provider_positions.values()):
+                raise ValueError("Event Aligner mappings violate conversation order")
+            indexed[conversation_id] = {
+                "conversation_id": conversation_id,
+                "speaker_roles": role_rows,
+                "events": [mapped_events[event_id] for event_id in target_ids],
+            }
+        if set(indexed) != set(units_by_conversation):
+            raise ValueError("Event Aligner omitted a conversation")
+        return indexed
+
+    async def _run_event_alignment(
+        self,
+        batch_id: str,
+        batch: dict[str, Any],
+        case_keys: list[tuple[str, str]],
+        context_by_conversation: dict[str, list[dict[str, Any]]],
+    ) -> dict[tuple[str, str], dict[str, Any]]:
+        """Map all target events with batch-first, conversation-atomic LLM requests."""
+        targets_by_conversation: dict[str, list[str]] = {}
+        for conversation_id, event_id in case_keys:
+            targets_by_conversation.setdefault(conversation_id, []).append(event_id)
+        unit_payloads: dict[str, dict[str, Any]] = {}
+        units = []
+        for conversation_id, target_ids in sorted(targets_by_conversation.items()):
+            conversation = await self.store.get_conversation(conversation_id)
+            if conversation is None:
+                raise EvaluationExecutionError("Event Aligner conversation is unavailable")
+            providers, lookup = build_turn_catalog(
+                conversation_id, context_by_conversation.get(conversation_id, [])
+            )
+            target_events = [
+                {"event_id": str(event["event_id"]), "text": str(event.get("text") or "")}
+                for event in conversation["events"]
+                if str(event.get("event_id")) in set(target_ids)
+                and event.get("speaker") == "customer"
+            ]
+            payload = {
+                "conversation_id": conversation_id,
+                "conversation_history": conversation["events"],
+                "target_events": target_events,
+                "full_call_asr": providers,
+            }
+            unit_payloads[conversation_id] = {
+                **payload,
+                "turn_lookup": lookup,
+                "providers": [str(item["provider"]) for item in providers],
+            }
+            if len(providers) < 2 or len(target_events) != len(target_ids):
+                await self.store.checkpoint_result(
+                    "evaluation_event_alignment_runs",
+                    (batch_id, conversation_id),
+                    status="failed",
+                    attempts=0,
+                    error=_safe_structured_error(
+                        ValueError(
+                            "Event Aligner requires two usable providers and every target event"
+                        )
+                    ),
+                )
+                continue
+            units.append(
+                build_event_alignment_unit(
+                    conversation_id,
+                    payload,
+                    len(target_events),
+                    len(providers),
+                )
+            )
+        model_id = str(batch["snapshot"]["pass_1_model"])
+        provider = await self._model_provider(model_id)
+        policy = model_token_policy(provider, model_id.split("::", 1)[-1])
+        groups = pack_event_alignment_units(
+            batch_id=batch_id,
+            units=units,
+            system_prompt=EVENT_ALIGNER_SYSTEM_PROMPT,
+            policy=policy,
+        )
+        prior_rows = await self.store.event_alignment_group_rows(batch_id)
+        prior_groups = {str(row["group_id"]): row for row in prior_rows}
+        for group in groups:
+            prior = prior_groups.get(group.group_id)
+            if prior is not None:
+                if (
+                    str(prior["idempotency_key"]) != group.idempotency_key
+                    or tuple(str(value) for value in prior["conversation_ids"])
+                    != group.conversation_ids
+                ):
+                    raise EvaluationExecutionError("Frozen Event Aligner group membership changed")
+                continue
+            await self.store.checkpoint_event_alignment_group(
+                batch_id=batch_id,
+                group_id=group.group_id,
+                idempotency_key=group.idempotency_key,
+                conversation_ids=list(group.conversation_ids),
+                estimated_input_tokens=group.estimated_input_tokens,
+                reserved_output_tokens=group.reserved_output_tokens,
+                status="pending",
+                attempts=0,
+            )
+
+        semaphore = asyncio.Semaphore(3)
+
+        async def align_group(group: Any) -> None:
+            prior = prior_groups.get(group.group_id)
+            if prior is not None and prior.get("status") == "completed":
+                return
+            prior_attempts = int(prior.get("attempts") or 0) if prior is not None else 0
+            payload = {
+                "request_group_id": group.group_id,
+                "conversations": [unit.payload for unit in group.units],
+            }
+            async with semaphore:
+                for local_attempt in range(1, 4):
+                    attempt = prior_attempts + local_attempt
+                    try:
+                        result = await self._llm_json(
+                            model_id,
+                            EVENT_ALIGNER_SYSTEM_PROMPT,
+                            payload,
+                            max_output_tokens=group.reserved_output_tokens,
+                            batch_id=batch_id,
+                            stage="event_alignment",
+                            item_key=group.group_id,
+                            attempt=attempt,
+                            disable_thinking=True,
+                        )
+                        expected = {
+                            conversation_id: unit_payloads[conversation_id]
+                            for conversation_id in group.conversation_ids
+                        }
+                        indexed = self._validate_event_alignment_group(
+                            result,
+                            expected_group_id=group.group_id,
+                            units_by_conversation=expected,
+                        )
+                        await self.store.checkpoint_event_alignment_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=list(group.conversation_ids),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="completed",
+                            attempts=attempt,
+                            conversation_results=indexed,
+                        )
+                        return
+                    except EvaluationBudgetReached:
+                        return
+                    except Exception as exc:
+                        terminal = local_attempt == 3
+                        await self.store.checkpoint_event_alignment_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=list(group.conversation_ids),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="failed" if terminal else "pending",
+                            attempts=attempt,
+                            error=_safe_structured_error(exc),
+                        )
+                        if not terminal:
+                            await asyncio.sleep(float(local_attempt))
+
+        await asyncio.gather(*(align_group(group) for group in groups))
+        rows = await self.store.checkpoint_rows(
+            "evaluation_event_alignment_runs", batch_id
+        )
+        mappings: dict[tuple[str, str], dict[str, Any]] = {}
+        for row in rows:
+            if row.get("status") != "completed" or not isinstance(row.get("result"), dict):
+                continue
+            for event in row["result"].get("events") or []:
+                if isinstance(event, dict):
+                    mappings[(str(row["conversation_id"]), str(event.get("event_id")))] = event
+        return mappings
+
     async def _run_asr(
         self, batch_id: str, batch: dict[str, Any], candidates: list[dict[str, Any]]
     ) -> None:
@@ -1886,10 +2203,24 @@ class EvaluationRunner:
             context_by_conversation.setdefault(str(row["conversation_id"]), []).append(
                 {"provider": str(row["provider"]), **result}
             )
+        event_mappings = await self._run_event_alignment(
+            batch_id,
+            batch,
+            case_keys,
+            context_by_conversation,
+        )
         prepared_clips: dict[tuple[str, str], tuple[Path, dict[str, Any]]] = {}
         clip_errors: dict[tuple[str, str], Exception] = {}
         for conversation_id, event_id in case_keys:
             try:
+                event_mapping = event_mappings.get((conversation_id, event_id))
+                if event_mapping is None:
+                    raise ValueError("Event Aligner produced no validated mapping for this event")
+                if event_mapping.get("alignment_error"):
+                    raise ValueError(
+                        "Event Aligner could not validate this event: "
+                        f"{event_mapping['alignment_error']}"
+                    )
                 prepared_clips[
                     (conversation_id, event_id)
                 ] = await self.store.prepare_case_asr_clip(
@@ -1897,6 +2228,7 @@ class EvaluationRunner:
                     conversation_id,
                     event_id,
                     context_by_conversation.get(conversation_id, []),
+                    event_mapping,
                 )
             except (FileNotFoundError, LookupError, OSError, RuntimeError, ValueError) as exc:
                 clip_errors[(conversation_id, event_id)] = exc

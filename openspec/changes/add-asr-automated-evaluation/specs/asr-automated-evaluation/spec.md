@@ -138,7 +138,7 @@
 
 ### Requirement: User-event ASR retranscription
 
-第一轮识别出需要评估的目标用户事件后，系统 MUST 先为每个命中 conversation/provider 至多提交一次显式启用 speaker diarization 的完整通话转写，并保存逐词/逐段的文本、开始/结束时间和匿名 speaker 标签。系统 MUST 通过历史转写文本、worksheet 事件顺序与已知角色对齐 speaker，并以至少两家成功完整录音 ASR 的时间区间共识定位目标用户句子。Excel `time (s)` MUST 完全退出定位计算，只可作为原始审计字段保留。共识区间映射到已验证共用时间轴的 `user_record/{conversation_id}.wav` 后，该用户轨只用于信号存在性校验和小范围边缘微调；系统不得使用全局能量/VAD 选择目标事件。最终单句纯用户音频才分别提交给每家启用的评测 ASR；第二轮可读取完整上下文，但正式候选、Good/Bad 对比和人工复核候选 MUST 只使用事件级纯用户重转录结果。
+第一轮识别出需要评估的目标用户事件后，系统 MUST 先为每个命中 conversation/provider 至多提交一次显式启用 speaker diarization 的完整通话转写，并保存逐词/逐段的文本、开始/结束时间、匿名 speaker 标签和可稳定引用的 turn ID。系统 MUST 使用独立 Event Aligner，把完整有序 worksheet 事件及全部目标 R 映射到各 provider 已存在的 turn ID；模型不得生成时间戳或不存在的 ID。Event Aligner MUST 按模型已验证上下文限制动态装箱：整批安全可容纳时只发起一个请求，超限时才按完整 conversation 不可拆分生成最少请求组；失败仅重试失败组。程序 MUST 校验请求组、conversation/event/provider/turn ID、单调事件顺序、用户 speaker 角色和至少两家 provider 对同一用户发言的映射，并以获接纳 turns 的时间区间并集定位目标句子。Excel `time (s)` MUST 完全退出定位计算，只可作为原始审计字段保留。并集映射到已验证共用时间轴的 `user_record/{conversation_id}.wav` 后，该用户轨只可校验信号和向外补齐语音边缘，MUST NOT 向内缩短 provider 并集，也不得使用全局能量/VAD 选择另一事件。最终单句纯用户音频才分别提交给每家启用的评测 ASR；第二轮可读取完整上下文，但正式候选、Good/Bad 对比和人工复核候选 MUST 只使用事件级纯用户重转录结果。
 
 #### Scenario: Transcribe one target user event
 
@@ -155,14 +155,24 @@
 - **WHEN** 同一 conversation 包含一个或多个目标用户事件
 - **THEN** 系统为每家启用的评测 ASR 至多提交一次完整通话录音并跨该 conversation 的所有 Case 复用上下文结果，同时继续为每个 Case 独立提交纯用户单句切片
 
+#### Scenario: Pack Event Aligner requests dynamically
+
+- **WHEN** 全部命中 conversation 的 worksheet 事件、目标 R 和三家完整录音 turns 可在冻结模型的上下文与结构化输出预留内安全容纳
+- **THEN** 系统只发起一个 Event Aligner 请求；只有超限时才按完整 conversation 不可拆分生成最少请求组，并只重试失败组
+
+#### Scenario: Bind events only to real provider turns
+
+- **WHEN** Event Aligner 返回目标 R 与各 provider turn 的映射
+- **THEN** 每个映射 MUST 引用请求输入中真实存在且属于对应 conversation/provider 的 turn ID；程序回查真实时间戳，拒绝虚构 ID、越权 ID、事件遗漏/重复、非单调顺序或非用户角色
+
 #### Scenario: Align a target event without Excel time
 
-- **WHEN** 两家或以上完整录音 ASR 可以按文本、事件顺序和 speaker 角色将同一目标用户事件对齐到相互重叠的时间区间
-- **THEN** 系统使用该共识区间在纯用户 WAV 上校验并裁片，且修改 Excel `time (s)` 不得改变生成的区间
+- **WHEN** Event Aligner 将同一目标用户事件映射到两家或以上完整录音 ASR 的真实用户 turns
+- **THEN** 系统使用所有获接纳 turn 时间区间的并集在纯用户 WAV 上校验并裁片，可向外补齐语音边缘但不得向内缩短并集，且修改 Excel `time (s)` 不得改变生成的区间
 
 #### Scenario: Reject an unreliable user-event clip
 
-- **WHEN** 少于两家完整录音 ASR 产生可用 speaker 时间表、角色映射或文本对齐不唯一、多家时间区间不形成共识、用户轨校验失败，或无法生成非空单句切片
+- **WHEN** 少于两家完整录音 ASR 产生可用 speaker 时间表、Event Aligner 映射缺失/歧义/不合法、获选 turns 形成明显跨事件宽区间、用户轨校验失败，或无法生成非空单句切片
 - **THEN** 对应事件级 ASR 任务明确失败且不产生候选文本，不得回退到 Excel 时间、单家猜测或完整通话转写片段
 
 #### Scenario: Receive an asynchronous callback twice
