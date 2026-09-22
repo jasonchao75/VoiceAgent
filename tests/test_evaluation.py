@@ -26,6 +26,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from src.bots.crypto import BotKeyCipher
+from src.evaluation.alignment import align_customer_event
 from src.evaluation.asr_contract import ASRError, ASRResult
 from src.evaluation.connections import ASRConnectionError
 from src.evaluation.connections import test_asr_connection as run_asr_connection_test
@@ -473,102 +474,215 @@ def test_playback_range_uses_exact_user_event_boundaries() -> None:
     assert fallback == (0.0, 0.0, "unavailable", False)
 
 
-def test_excel_anchor_finds_r6_and_r10_style_user_speech(tmp_path: Path) -> None:
-    """Late workbook anchors must resolve the nearby speech, not start after it."""
+def _full_call_alignment_results() -> list[dict[str, object]]:
+    """Return two agreeing diarized timelines for alignment regressions."""
+    results: list[dict[str, object]] = []
+    for provider, offset in (("soniox", 0.0), ("speechmatics", 0.1)):
+        segments = []
+        for index, (text, speaker, start_s, end_s) in enumerate(
+            (
+                ("Welcome to the bank", "agent", 1.0, 2.5),
+                ("yes please", "customer", 4.0, 5.0),
+                ("Which branch do you need", "agent", 6.5, 8.0),
+            )
+        ):
+            segments.append(
+                {
+                    "segment_id": f"C-1:{provider}:{index}",
+                    "start": start_s + offset,
+                    "end": end_s + offset,
+                    "speaker": speaker,
+                    "text": text,
+                }
+            )
+        results.append({"provider": provider, "text": "", "segments": segments})
+    return results
+
+
+def test_full_call_diarization_consensus_ignores_excel_time() -> None:
+    """Changing an unreliable workbook timestamp must not move the event interval."""
+    events = [
+        {"event_id": "R1", "speaker": "robot", "text": "Welcome to the bank", "time_s": 1},
+        {"event_id": "R2", "speaker": "customer", "text": "yes please", "time_s": 999},
+        {
+            "event_id": "R3",
+            "speaker": "robot",
+            "text": "Which branch do you need",
+            "time_s": -50,
+        },
+    ]
+
+    first = align_customer_event(events, "R2", _full_call_alignment_results())
+    events[1]["time_s"] = -1000
+    second = align_customer_event(events, "R2", _full_call_alignment_results())
+
+    assert first == second
+    assert first["start_s"] == pytest.approx(4.1)
+    assert first["end_s"] == pytest.approx(5.0)
+    assert first["excel_time_used"] is False
+    assert first["consensus_providers"] == ["soniox", "speechmatics"]
+
+
+def test_full_call_diarization_consensus_requires_two_providers() -> None:
+    """One diarized provider cannot establish a source interval by itself."""
+    events = [
+        {"event_id": "R1", "speaker": "robot", "text": "Welcome to the bank"},
+        {"event_id": "R2", "speaker": "customer", "text": "yes please"},
+        {"event_id": "R3", "speaker": "robot", "text": "Which branch do you need"},
+    ]
+    with pytest.raises(ValueError, match="Fewer than two"):
+        align_customer_event(events, "R2", _full_call_alignment_results()[:1])
+
+    duplicate = _full_call_alignment_results()[0]
+    with pytest.raises(ValueError, match="Fewer than two"):
+        align_customer_event(events, "R2", [duplicate, duplicate])
+
+
+def test_full_call_diarization_consensus_rejects_non_overlapping_intervals() -> None:
+    """Nearby but non-overlapping provider turns must not count as agreement."""
+    events = [
+        {"event_id": "R1", "speaker": "robot", "text": "Welcome to the bank"},
+        {"event_id": "R2", "speaker": "customer", "text": "yes please"},
+        {"event_id": "R3", "speaker": "robot", "text": "Which branch do you need"},
+    ]
+    results = _full_call_alignment_results()
+    for segment in cast(list[dict[str, object]], results[1]["segments"]):
+        if segment["text"] == "yes please":
+            segment["start"] = 5.1
+            segment["end"] = 6.1
+
+    with pytest.raises(ValueError, match="Fewer than two"):
+        align_customer_event(events, "R2", results)
+
+
+def test_full_call_diarization_consensus_rejects_bridged_three_provider_conflict() -> None:
+    """One broad interval cannot hide two incompatible two-provider interpretations."""
+    events = [
+        {"event_id": "R1", "speaker": "robot", "text": "Welcome to the bank"},
+        {"event_id": "R2", "speaker": "customer", "text": "yes please"},
+        {"event_id": "R3", "speaker": "robot", "text": "Which branch do you need"},
+    ]
+
+    def result(provider: str, start_s: float, end_s: float) -> dict[str, object]:
+        return {
+            "provider": provider,
+            "segments": [
+                {"start": 0.0, "end": 1.0, "speaker": "A", "text": "Welcome to the bank"},
+                {"start": start_s, "end": end_s, "speaker": "B", "text": "yes please"},
+                {
+                    "start": 7.0,
+                    "end": 8.0,
+                    "speaker": "A",
+                    "text": "Which branch do you need",
+                },
+            ],
+        }
+
+    results = [
+        result("soniox", 2.0, 6.0),
+        result("speechmatics", 2.0, 4.0),
+        result("elevenlabs", 4.1, 6.0),
+    ]
+    with pytest.raises(ValueError, match="competing event intervals"):
+        align_customer_event(events, "R2", results)
+
+
+def test_user_track_refinement_is_bounded_by_asr_consensus(tmp_path: Path) -> None:
+    """Noise outside the ASR interval must not redirect user-track validation."""
     sample_rate = 8_000
-    samples = np.zeros(sample_rate * 70, dtype=np.float32)
-    # A much louder earlier utterance must not raise the local threshold enough to
-    # hide the quiet target near R6's approximate workbook anchor.
-    loud_start = round(5.98 * sample_rate)
-    loud_end = round(7.38 * sample_rate)
-    loud_timeline = np.arange(loud_end - loud_start, dtype=np.float32) / sample_rate
-    samples[loud_start:loud_end] = 0.32 * np.sin(2 * np.pi * 180 * loud_timeline)
-    for start_s, end_s in ((10.22, 10.60), (57.77, 59.38)):
-        start = round(start_s * sample_rate)
-        end = round(end_s * sample_rate)
-        timeline = np.arange(end - start, dtype=np.float32) / sample_rate
-        samples[start:end] = 0.12 * np.sin(2 * np.pi * 220 * timeline)
-    source = tmp_path / "1030000000086502.wav"
+    samples = np.full(sample_rate * 10, 0.006, dtype=np.float32)
+    samples[: sample_rate * 2] = 0.2
+    start = round(4.12 * sample_rate)
+    end = round(4.88 * sample_rate)
+    timeline = np.arange(end - start, dtype=np.float32) / sample_rate
+    samples[start:end] = 0.12 * np.sin(2 * np.pi * 220 * timeline)
+    source = tmp_path / "user.wav"
     sf.write(source, samples, sample_rate, subtype="PCM_16")
 
-    r6 = EvaluationStore._locate_user_speech(
-        source,
-        anchor_s=11.984,
-        lower_bound_s=0.0,
-        upper_bound_s=14.984,
-    )
-    r10 = EvaluationStore._locate_user_speech(
-        source,
-        anchor_s=60.254,
-        lower_bound_s=52.9,
-        upper_bound_s=63.254,
-    )
+    trace = EvaluationStore._validate_and_refine_user_interval(source, start_s=4.0, end_s=5.0)
 
-    assert float(r6["speech_start_s"]) == pytest.approx(10.22, abs=0.03)
-    assert float(r6["speech_end_s"]) == pytest.approx(10.60, abs=0.03)
-    assert float(r10["speech_start_s"]) == pytest.approx(57.77, abs=0.03)
-    assert float(r10["speech_end_s"]) == pytest.approx(59.38, abs=0.03)
-    assert float(r6["start_s"]) < 10.22
-    assert float(r10["end_s"]) < 60.254
+    assert float(trace["speech_start_s"]) == pytest.approx(4.12, abs=0.03)
+    assert float(trace["speech_end_s"]) == pytest.approx(4.88, abs=0.03)
+    assert 3.65 <= float(trace["start_s"]) <= 4.0
+    assert 5.0 <= float(trace["end_s"]) <= 5.35
 
 
-def test_excel_anchor_rejects_equally_close_speech_islands(tmp_path: Path) -> None:
-    """Fail closed when an approximate anchor cannot identify one speech island."""
+def test_user_track_refinement_rejects_noise_only_interval(tmp_path: Path) -> None:
+    """Steady background noise must not validate an ASR consensus interval as speech."""
     sample_rate = 8_000
-    samples = np.zeros(sample_rate * 8, dtype=np.float32)
-    for start_s, end_s in ((3.0, 3.5), (4.5, 5.0)):
-        start = round(start_s * sample_rate)
-        end = round(end_s * sample_rate)
-        timeline = np.arange(end - start, dtype=np.float32) / sample_rate
-        samples[start:end] = 0.12 * np.sin(2 * np.pi * 220 * timeline)
-    source = tmp_path / "ambiguous.wav"
+    samples = np.full(sample_rate * 8, 0.01, dtype=np.float32)
+    source = tmp_path / "noise.wav"
     sf.write(source, samples, sample_rate, subtype="PCM_16")
 
-    with pytest.raises(ValueError, match="Multiple user speech intervals"):
-        EvaluationStore._locate_user_speech(
-            source,
-            anchor_s=4.25,
-            lower_bound_s=0.0,
-            upper_bound_s=8.0,
-        )
+    with pytest.raises(ValueError, match="No validated user signal"):
+        EvaluationStore._validate_and_refine_user_interval(source, start_s=3.0, end_s=5.0)
 
 
 @pytest.mark.asyncio
 async def test_case_asr_clip_uses_pure_user_event_interval(
     evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
-    """The provider input must be the detected speech nearest the workbook anchor."""
+    """The provider input must use diarization consensus, not the workbook timestamp."""
     batch = await evaluation_store.create_batch(
         EvaluationBatchCreate(
             name="Pure user clip",
-            asr_providers=["elevenlabs"],
+            asr_providers=["soniox", "speechmatics"],
             pass_1_model="deepseek-chat",
             pass_2_model="deepseek-chat",
             budget_limit=10,
             idempotency_key="pure-user-clip-001",
         )
     )
-    conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
-    assert conversation is not None
-    events = conversation["events"]
-    index = next(
-        position for position, item in enumerate(events[:-1]) if item["speaker"] == "customer"
-    )
-    event = events[index]
+    sample_rate = 8_000
+    samples = np.full(sample_rate * 10, 0.004, dtype=np.float32)
+    start = round(4.1 * sample_rate)
+    end = round(4.9 * sample_rate)
+    timeline = np.arange(end - start, dtype=np.float32) / sample_rate
+    samples[start:end] = 0.12 * np.sin(2 * np.pi * 220 * timeline)
+    source = tmp_path / "C-1.wav"
+    sf.write(source, samples, sample_rate, subtype="PCM_16")
+    conversation = {
+        "conversation_id": "C-1",
+        "user_audio": {"duration_s": 10.0},
+        "issues": [],
+        "events": [
+            {
+                "event_id": "R1",
+                "speaker": "robot",
+                "text": "Welcome to the bank",
+                "time_s": 500.0,
+            },
+            {"event_id": "R2", "speaker": "customer", "text": "yes please", "time_s": -1.0},
+            {
+                "event_id": "R3",
+                "speaker": "robot",
+                "text": "Which branch do you need",
+                "time_s": 900.0,
+            },
+        ],
+    }
+
+    async def get_conversation(_conversation_id: str) -> dict[str, object]:
+        return conversation
+
+    monkeypatch.setattr(evaluation_store, "get_conversation", get_conversation)
+    monkeypatch.setattr(evaluation_store, "conversation_user_audio_path", lambda _value: source)
     path, trace = await evaluation_store.prepare_case_asr_clip(
-        str(batch["id"]), _VALID_CONVERSATION_ID, str(event["event_id"])
+        str(batch["id"]), "C-1", "R2", _full_call_alignment_results()
     )
 
     assert path.is_file()
     assert trace["source"].startswith("user_record/")
-    assert trace["boundary_rule"] == "excel_anchor_to_detected_user_speech_v2"
-    assert trace["start_s"] < float(event["time_s"])
+    assert trace["boundary_rule"] == "full_call_diarization_consensus_v1"
+    assert trace["excel_time_used"] is False
+    assert trace["consensus_providers"] == ["soniox", "speechmatics"]
     assert trace["speech_start_s"] <= trace["speech_end_s"]
-    assert trace["anchor_distance_s"] <= 4.0
     with wave.open(str(path), "rb") as audio:
         duration = audio.getnframes() / audio.getframerate()
     assert duration == pytest.approx(float(trace["end_s"]) - float(trace["start_s"]), abs=0.002)
-    assert duration < 12.0
+    assert duration < 2.0
 
 
 @pytest.mark.asyncio
@@ -591,6 +705,7 @@ async def test_case_asr_clip_rejects_unreliable_shared_timeline(
             "mismatched-timeline",
             _VALID_CONVERSATION_ID,
             str(event["event_id"]),
+            [],
         )
 
 
@@ -623,7 +738,13 @@ async def test_run_asr_checkpoints_invalid_timeline_without_provider_dispatch(
         *_args: object, **kwargs: object
     ) -> tuple[dict[str, object], str]:
         dispatched_event_ids.append(cast(str | None, kwargs.get("event_id")))
-        return {"text": "context", "segments": []}, "context-job"
+        return {
+            "text": "agent customer",
+            "segments": [
+                {"start": 0.0, "end": 0.5, "speaker": "S1", "text": "agent"},
+                {"start": 0.6, "end": 1.0, "speaker": "S2", "text": "customer"},
+            ],
+        }, "context-job"
 
     monkeypatch.setattr(evaluation_store, "get_conversation", mismatched)
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
@@ -784,6 +905,7 @@ async def test_speechmatics_job_is_deleted_after_result(tmp_path: Path) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         observed.append((request.method, request.url.path))
         if request.method == "POST":
+            assert b'"diarization": "speaker"' in request.content
             return httpx.Response(200, json={"id": "job-123"}, request=request)
         if request.method == "DELETE":
             return httpx.Response(204, request=request)
@@ -820,6 +942,52 @@ async def test_speechmatics_job_is_deleted_after_result(tmp_path: Path) -> None:
     assert result["remote_cleanup"] == "completed"
     assert result["segments"][0]["segment_id"] == "conversation-1:speechmatics:0"
     assert observed[-1] == ("DELETE", "/v2/jobs/job-123")
+
+
+@pytest.mark.asyncio
+async def test_soniox_requests_speaker_diarization(tmp_path: Path) -> None:
+    """A Soniox full-call job must explicitly request speaker diarization."""
+    audio_path = tmp_path / "conversation.mp3"
+    audio_path.write_bytes(b"test-audio")
+    observed_payload: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/v1/files":
+            return httpx.Response(200, json={"id": "file-123"}, request=request)
+        if request.method == "POST" and request.url.path == "/v1/transcriptions":
+            observed_payload.update(cast(dict[str, object], json.loads(request.content)))
+            return httpx.Response(200, json={"id": "job-123"}, request=request)
+        if request.method == "GET" and request.url.path.endswith("/transcript"):
+            return httpx.Response(
+                200,
+                json={
+                    "tokens": [
+                        {
+                            "start_ms": 1000,
+                            "end_ms": 1500,
+                            "speaker": "1",
+                            "text": "hello",
+                        }
+                    ]
+                },
+                request=request,
+            )
+        if request.method == "GET":
+            return httpx.Response(200, json={"status": "completed"}, request=request)
+        return httpx.Response(204, request=request)
+
+    runner = EvaluationRunner(cast(EvaluationStore, None), None)
+    result, job_id = await runner._soniox(
+        "https://api.soniox.test",
+        "secret",
+        audio_path,
+        "conversation-1",
+        transport=httpx.MockTransport(handler),
+    )
+
+    assert job_id == "job-123"
+    assert observed_payload["enable_speaker_diarization"] is True
+    assert result["segments"][0]["speaker"] == "1"
 
 
 @pytest.mark.asyncio
@@ -3153,20 +3321,44 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
     ) -> tuple[dict[str, object], str]:
         nonlocal calls
         calls += 1
-        return {
-            "text": "evidence",
-            "segments": [
+        segments = [
+            {
+                "segment_id": f"{conversation_id}:elevenlabs:0",
+                "start": 0.0,
+                "end": 0.4,
+                "speaker": "S1" if event_id is None else None,
+                "text": "agent" if event_id is None else "evidence",
+            }
+        ]
+        if event_id is None:
+            segments.append(
                 {
-                    "segment_id": f"{conversation_id}:elevenlabs:0",
-                    "start": 0.0,
+                    "segment_id": f"{conversation_id}:elevenlabs:1",
+                    "start": 0.5,
                     "end": 1.0,
-                    "text": "evidence",
+                    "speaker": "S2",
+                    "text": "customer",
                 }
-            ],
-        }, "remote-job-1"
+            )
+        return {
+            "text": "agent customer" if event_id is None else "evidence",
+            "segments": segments,
+        }, ("remote-job-1")
 
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     monkeypatch.setattr(runner, "_transcribe", transcribe)
+    source = evaluation_store.conversation_user_audio_path(_VALID_CONVERSATION_ID)
+    assert source is not None
+
+    async def prepare_clip(
+        _batch_id: str,
+        _conversation_id: str,
+        _event_id: str,
+        _full_call_results: list[dict[str, object]],
+    ) -> tuple[Path, dict[str, object]]:
+        return source, {"start_s": 0.0, "end_s": 1.0}
+
+    monkeypatch.setattr(evaluation_store, "prepare_case_asr_clip", prepare_clip)
     conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
     assert conversation is not None
     customer_event_ids = [
@@ -3187,6 +3379,142 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
     rows = await evaluation_store.checkpoint_rows("evaluation_case_asr_runs", batch["id"])
     assert len(rows) == 2
     assert all(row["remote_job_id"] == "remote-job-1" for row in rows)
+
+
+@pytest.mark.asyncio
+async def test_run_asr_replaces_legacy_non_diarized_context_checkpoint(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A resumed batch must replace a completed pre-diarization full-call result."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Refresh legacy ASR context",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="refresh-legacy-context-001",
+        )
+    )
+    conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert conversation is not None
+    event_id = str(
+        next(item["event_id"] for item in conversation["events"] if item["speaker"] == "customer")
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_asr_runs",
+        (str(batch["id"]), "elevenlabs", _VALID_CONVERSATION_ID),
+        status="completed",
+        attempts=1,
+        result={
+            "text": "legacy context",
+            "segments": [{"start": 0.0, "end": 1.0, "speaker": None, "text": "legacy context"}],
+            "scope": "full_call_context",
+        },
+        remote_job_id="legacy-job",
+    )
+    calls: list[tuple[int, str | None]] = []
+
+    async def transcribe(
+        _batch_id: str,
+        _provider: str,
+        _path: Path,
+        _conversation_id: str,
+        attempt: int,
+        *,
+        event_id: str | None = None,
+    ) -> tuple[dict[str, object], str]:
+        calls.append((attempt, event_id))
+        if event_id is not None:
+            return {
+                "text": "event",
+                "segments": [{"start": 0.0, "end": 1.0, "text": "event"}],
+            }, "event-job"
+        return {
+            "text": "agent customer",
+            "segments": [
+                {"start": 0.0, "end": 0.4, "speaker": "S1", "text": "agent"},
+                {"start": 0.5, "end": 1.0, "speaker": "S2", "text": "customer"},
+            ],
+        }, "replacement-job"
+
+    source = evaluation_store.conversation_user_audio_path(_VALID_CONVERSATION_ID)
+    assert source is not None
+
+    async def prepare_clip(
+        _batch_id: str,
+        _conversation_id: str,
+        _event_id: str,
+        full_call_results: list[dict[str, object]],
+    ) -> tuple[Path, dict[str, object]]:
+        assert full_call_results[0]["diarization_contract"] == "speaker_timestamps_v1"
+        return source, {"start_s": 0.0, "end_s": 1.0}
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(runner, "_transcribe", transcribe)
+    monkeypatch.setattr(evaluation_store, "prepare_case_asr_clip", prepare_clip)
+
+    await runner._run_asr(
+        str(batch["id"]),
+        batch,
+        [{"conversation_id": _VALID_CONVERSATION_ID, "event_id": event_id}],
+    )
+
+    assert calls == [(2, None), (1, event_id)]
+    context_rows = await evaluation_store.checkpoint_rows("evaluation_asr_runs", str(batch["id"]))
+    assert context_rows[0]["remote_job_id"] == "replacement-job"
+    assert context_rows[0]["attempts"] == 2
+    assert context_rows[0]["result"]["diarization_contract"] == "speaker_timestamps_v1"
+
+
+@pytest.mark.asyncio
+async def test_completed_unusable_diarization_attempts_remain_in_cost_ledger(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Completed paid responses stay charged even when their diarization is unusable."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Charge unusable diarization",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="charge-unusable-diarization-001",
+        )
+    )
+    conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert conversation is not None
+    event_id = str(
+        next(item["event_id"] for item in conversation["events"] if item["speaker"] == "customer")
+    )
+    calls = 0
+
+    async def transcribe(*_args: object, **_kwargs: object) -> tuple[dict[str, object], str]:
+        nonlocal calls
+        calls += 1
+        return {
+            "text": "one speaker only",
+            "segments": [{"start": 0.0, "end": 1.0, "speaker": "S1", "text": "one speaker only"}],
+        }, f"completed-job-{calls}"
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(runner, "_transcribe", transcribe)
+
+    await runner._run_asr(
+        str(batch["id"]),
+        batch,
+        [{"conversation_id": _VALID_CONVERSATION_ID, "event_id": event_id}],
+    )
+
+    assert calls == 3
+    context_rows = await evaluation_store.checkpoint_rows("evaluation_asr_runs", str(batch["id"]))
+    assert context_rows[0]["status"] == "failed"
+    assert context_rows[0]["attempts"] == 3
+    ledger = await evaluation_store.cost_summary(str(batch["id"]))
+    assert ledger["asr"][0]["calls"] == 3
+    assert ledger["asr"][0]["estimated_cost"] > 0
 
 
 @pytest.mark.asyncio

@@ -214,6 +214,28 @@ def _asr_error(provider: str, exc: Exception) -> str:
     ).model_dump_json()
 
 
+def _has_usable_diarized_timeline(result: object) -> bool:
+    """Return whether a full-call result satisfies the current speaker contract."""
+    if not isinstance(result, dict) or result.get("diarization_contract") != (
+        "speaker_timestamps_v1"
+    ):
+        return False
+    speakers: set[str] = set()
+    for segment in result.get("segments") or []:
+        if not isinstance(segment, dict):
+            continue
+        speaker = str(segment.get("speaker") or "").strip()
+        text = str(segment.get("text") or "").strip()
+        try:
+            start_s = float(segment["start"])
+            end_s = float(segment["end"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if speaker and text and start_s >= 0 and end_s > start_s:
+            speakers.add(speaker)
+    return len(speakers) >= 2
+
+
 def _contains_key(value: object, forbidden_key: str) -> bool:
     """Detect a forbidden model-output field at any nesting level."""
     if isinstance(value, dict):
@@ -1732,7 +1754,10 @@ class EvaluationRunner:
         )
 
         async def transcribe_context(provider: str, conversation_id: str) -> None:
-            if existing_context.get((provider, conversation_id), {}).get("status") == "completed":
+            prior = existing_context.get((provider, conversation_id), {})
+            if prior.get("status") == "completed" and _has_usable_diarized_timeline(
+                prior.get("result")
+            ):
                 return
             conversation = await self.store.get_conversation(conversation_id)
             path = self.store.conversation_audio_path(conversation_id)
@@ -1757,9 +1782,11 @@ class EvaluationRunner:
                 return
             rate = self._frozen_asr_rate(batch, provider)
             async with semaphore, provider_semaphores[provider]:
-                for attempt in range(1, 4):
+                previous_attempts = int(prior.get("attempts") or 0)
+                for attempt in range(previous_attempts + 1, previous_attempts + 4):
                     reserve_key = (
-                        f"reserve:{batch_id}:asr-context:{provider}:{conversation_id}:{attempt}"
+                        f"reserve:{batch_id}:asr-context-speaker-v1:"
+                        f"{provider}:{conversation_id}:{attempt}"
                     )
                     try:
                         if not await self.store.reserve_budget(
@@ -1778,8 +1805,12 @@ class EvaluationRunner:
                             attempt,
                         )
                         result["scope"] = "full_call_context"
+                        result["diarization_contract"] = "speaker_timestamps_v1"
                         await self.store.record_cost_entry(
-                            idempotency_key=f"{batch_id}:asr-context:{provider}:{conversation_id}",
+                            idempotency_key=(
+                                f"{batch_id}:asr-context-speaker-v1:"
+                                f"{provider}:{conversation_id}:{attempt}"
+                            ),
                             batch_id=batch_id,
                             category="asr",
                             provider=provider,
@@ -1788,6 +1819,10 @@ class EvaluationRunner:
                             estimated_cost=(duration / 3600) * rate,
                             reservation_key=reserve_key,
                         )
+                        if not _has_usable_diarized_timeline(result):
+                            raise EvaluationExecutionError(
+                                "Provider returned no usable diarized full-call speaker timeline"
+                            )
                         await self.store.checkpoint_result(
                             "evaluation_asr_runs",
                             (batch_id, provider, conversation_id),
@@ -1809,7 +1844,7 @@ class EvaluationRunner:
                         return
                     except Exception as exc:
                         await self.store.release_budget(reserve_key)
-                        if attempt == 3:
+                        if attempt == previous_attempts + 3:
                             await self.store.checkpoint_result(
                                 "evaluation_asr_runs",
                                 (batch_id, provider, conversation_id),
@@ -1835,21 +1870,42 @@ class EvaluationRunner:
             progress_start=55,
             progress_end=75,
         )
+        context_rows = await self.store.checkpoint_rows("evaluation_asr_runs", batch_id)
+        context_by_conversation: dict[str, list[dict[str, Any]]] = {}
+        for row in context_rows:
+            result = row.get("result")
+            if row.get("status") != "completed" or not _has_usable_diarized_timeline(result):
+                continue
+            assert isinstance(result, dict)
+            context_by_conversation.setdefault(str(row["conversation_id"]), []).append(
+                {"provider": str(row["provider"]), **result}
+            )
+        prepared_clips: dict[tuple[str, str], tuple[Path, dict[str, Any]]] = {}
+        clip_errors: dict[tuple[str, str], Exception] = {}
+        for conversation_id, event_id in case_keys:
+            try:
+                prepared_clips[
+                    (conversation_id, event_id)
+                ] = await self.store.prepare_case_asr_clip(
+                    batch_id,
+                    conversation_id,
+                    event_id,
+                    context_by_conversation.get(conversation_id, []),
+                )
+            except (FileNotFoundError, LookupError, OSError, RuntimeError, ValueError) as exc:
+                clip_errors[(conversation_id, event_id)] = exc
 
         async def transcribe(provider: str, conversation_id: str, event_id: str) -> None:
             if existing.get((provider, conversation_id, event_id), {}).get("status") == "completed":
                 return
-            try:
-                path, clip_trace = await self.store.prepare_case_asr_clip(
-                    batch_id, conversation_id, event_id
-                )
-            except (FileNotFoundError, LookupError, OSError, RuntimeError, ValueError) as exc:
+            clip_error = clip_errors.get((conversation_id, event_id))
+            if clip_error is not None:
                 await self.store.checkpoint_result(
                     "evaluation_case_asr_runs",
                     (batch_id, provider, conversation_id, event_id),
                     status="failed",
                     attempts=0,
-                    error=_asr_error(provider, exc),
+                    error=_asr_error(provider, clip_error),
                 )
                 await self.store.refresh_execution_progress(
                     batch_id,
@@ -1860,6 +1916,7 @@ class EvaluationRunner:
                     progress_end=75,
                 )
                 return
+            path, clip_trace = prepared_clips[(conversation_id, event_id)]
             duration = float(clip_trace["end_s"]) - float(clip_trace["start_s"])
             rate = self._frozen_asr_rate(batch, provider)
             async with semaphore, provider_semaphores[provider]:
@@ -2019,7 +2076,7 @@ class EvaluationRunner:
         )
         if not normalized.text.strip():
             raise EvaluationExecutionError(
-                "Provider returned no transcript for the pure-user event clip"
+                "Provider returned no transcript for the submitted audio"
             )
         return normalized.model_dump(exclude_none=True), remote_id
 
@@ -2109,7 +2166,11 @@ class EvaluationRunner:
         headers = {"Authorization": f"Bearer {key}"}
         config = {
             "type": "transcription",
-            "transcription_config": {"language": "ar", "operating_point": "enhanced"},
+            "transcription_config": {
+                "language": "ar",
+                "operating_point": "enhanced",
+                "diarization": "speaker",
+            },
         }
         job_id: str | None = None
         cleanup_status = "not_required"
@@ -2188,13 +2249,19 @@ class EvaluationRunner:
         }, job_id
 
     async def _soniox(
-        self, base_url: str, key: str, path: Path, conversation_id: str
+        self,
+        base_url: str,
+        key: str,
+        path: Path,
+        conversation_id: str,
+        *,
+        transport: httpx.AsyncBaseTransport | None = None,
     ) -> tuple[dict[str, Any], str]:
         """Upload, transcribe, retrieve, and clean up one Soniox batch job."""
         headers = {"Authorization": f"Bearer {key}"}
         file_id: str | None = None
         transcription_id: str | None = None
-        async with httpx.AsyncClient(timeout=300) as client:
+        async with httpx.AsyncClient(timeout=300, transport=transport) as client:
             try:
                 with path.open("rb") as audio:
                     uploaded = await client.post(
@@ -2213,6 +2280,7 @@ class EvaluationRunner:
                         "client_reference_id": conversation_id,
                         "language_hints": ["ar", "en"],
                         "enable_language_identification": True,
+                        "enable_speaker_diarization": True,
                     },
                 )
                 created.raise_for_status()

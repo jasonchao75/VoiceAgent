@@ -97,7 +97,7 @@
 
 质检目标 MUST 仅限于检测线上 ASR 是否准确保留用户实际语音及必要业务含义。用户未回答机器人、回答不符合预期流程、意图不合理、业务未完成或机器人表现异常本身 MUST NOT 构成 ASR 疑点；只有历史转写文本存在可被录音或评测 ASR 核验的遗漏、替换、截断、边界或说话人归属风险时才可进入候选。
 
-系统 MUST 同时在包含疑点的对话内维护额外 Good Case 候选池；候选池只包含第一轮未发现实质疑点且具备有效文本、时间和音频关联的用户事件。
+系统 MUST 同时在包含疑点的对话内维护额外 Good Case 候选池；候选池只包含第一轮未发现实质疑点且具备有效文本和音频关联的用户事件。Excel `time (s)` 的准确性不得决定候选是否有效。
 
 第一轮请求 MUST 使用动态 Token 装箱。每通完整对话及其全部历史事件 MUST 作为不可拆分单元；当整个批次在冻结模型的上下文限制、结构化输出预留和安全余量内可安全容纳时 MUST 只发送一个外部请求，超限时 MUST 自动形成最少安全分组，不得按固定对话数拆分、截断对话或遗漏事件。每组 MUST 使用稳定 `request_group_id` 和冻结成员关系，模型输出 MUST 对组内每通对话恰好返回一个完整结果；组 ID 不匹配、对话遗漏、重复或越界时 MUST 拒绝整组。重试 MUST 复用原组成员和幂等键，并且只重试失败组。
 
@@ -138,7 +138,7 @@
 
 ### Requirement: User-event ASR retranscription
 
-第一轮识别出需要评估的目标用户事件后，系统 MUST 将 Excel 时间仅作为 `user_record/{conversation_id}.wav` 上的近似定位锚点，在其附近检测与该事件对应的真实用户发声区间，并将该单句纯用户音频分别提交给每家启用的评测 ASR。系统 MUST 同时为每个命中 conversation/provider 至多提交一次完整通话录音并保存为上下文证据。第二轮可读取该完整上下文，但正式候选、Good/Bad 对比和人工复核候选 MUST 只使用事件级纯用户重转录结果，不得从完整通话结果、相邻事件或长静音区间拼接候选文本。
+第一轮识别出需要评估的目标用户事件后，系统 MUST 先为每个命中 conversation/provider 至多提交一次显式启用 speaker diarization 的完整通话转写，并保存逐词/逐段的文本、开始/结束时间和匿名 speaker 标签。系统 MUST 通过历史转写文本、worksheet 事件顺序与已知角色对齐 speaker，并以至少两家成功完整录音 ASR 的时间区间共识定位目标用户句子。Excel `time (s)` MUST 完全退出定位计算，只可作为原始审计字段保留。共识区间映射到已验证共用时间轴的 `user_record/{conversation_id}.wav` 后，该用户轨只用于信号存在性校验和小范围边缘微调；系统不得使用全局能量/VAD 选择目标事件。最终单句纯用户音频才分别提交给每家启用的评测 ASR；第二轮可读取完整上下文，但正式候选、Good/Bad 对比和人工复核候选 MUST 只使用事件级纯用户重转录结果。
 
 #### Scenario: Transcribe one target user event
 
@@ -155,10 +155,15 @@
 - **WHEN** 同一 conversation 包含一个或多个目标用户事件
 - **THEN** 系统为每家启用的评测 ASR 至多提交一次完整通话录音并跨该 conversation 的所有 Case 复用上下文结果，同时继续为每个 Case 独立提交纯用户单句切片
 
+#### Scenario: Align a target event without Excel time
+
+- **WHEN** 两家或以上完整录音 ASR 可以按文本、事件顺序和 speaker 角色将同一目标用户事件对齐到相互重叠的时间区间
+- **THEN** 系统使用该共识区间在纯用户 WAV 上校验并裁片，且修改 Excel `time (s)` 不得改变生成的区间
+
 #### Scenario: Reject an unreliable user-event clip
 
-- **WHEN** 纯用户 WAV 无法在 Excel 时间锚点附近唯一定位目标发声、事件边界无效或无法生成非空单句切片
-- **THEN** 对应事件级 ASR 任务明确失败且不产生候选文本，不得回退到完整通话转写片段冒充纯用户结果
+- **WHEN** 少于两家完整录音 ASR 产生可用 speaker 时间表、角色映射或文本对齐不唯一、多家时间区间不形成共识、用户轨校验失败，或无法生成非空单句切片
+- **THEN** 对应事件级 ASR 任务明确失败且不产生候选文本，不得回退到 Excel 时间、单家猜测或完整通话转写片段
 
 #### Scenario: Receive an asynchronous callback twice
 
@@ -273,7 +278,7 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 #### Scenario: Precise alignment is unavailable
 
 - **WHEN** 系统无法可靠定位到句子级时间范围
-- **THEN** 回听范围降级为更宽区间或完整录音并明确定位精度，不伪造精确时间戳
+- **THEN** 对应 Case 明确标记为定位失败且不生成事件级回听或 Benchmark 切片，不得回退到更宽区间、完整录音或 Excel 时间
 
 #### Scenario: Control inline Case playback
 

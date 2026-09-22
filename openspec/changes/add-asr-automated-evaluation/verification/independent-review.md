@@ -1,3 +1,70 @@
+# Final Independent Re-review — Diarization-first user-event alignment
+
+- Status: **PASS**
+- Date: 2026-09-21
+- Scope: PD-053, Task 12.48 and KI-156 through KI-160 only
+- Reviewer boundary: independent verification only; no implementation fix, paid provider call, deployment, push, or production-data mutation was performed.
+
+## Decision
+
+The reviewed PD-053 increment passes deterministic independent verification. Excel `time (s)` is retained only as source data and does not enter positioning. Soniox, Speechmatics and ElevenLabs full-call requests explicitly enable diarization; normalized speaker/timestamp segments are aligned to historical text and event order; and the pure-user track validates/refines only the resulting narrow interval.
+
+Consensus now excludes duplicate provider identities, enumerates distinct-provider subsets, requires a non-empty common interval, accepts only one uniquely largest agreeing subset and returns that intersection. Missing, gapped, bridged or competing evidence fails closed. Legacy or malformed completed full-call checkpoints are re-requested with monotonic attempts before clipping. Every completed provider transcription settles an attempt-scoped frozen-rate cost before diarization usability is judged, so unusable results remain charged and the hard budget can stop later attempts.
+
+`KI-156` through `KI-160` are resolved with regression evidence. This PASS is limited to static, fixture, mock and local deterministic evidence; it does not mark User Gate 2 accepted and does not claim a current paid three-provider production run.
+
+## Reproducible evidence
+
+- Focused diarization/alignment/clip/adapter/retry/cost suite: **14 passed**.
+- Full repository suite: **233 passed**, with two existing dependency deprecation warnings.
+- Duplicate-provider, pairwise-gapped and three-provider bridge-conflict regressions fail closed; the normal two-provider result returns only the common overlap.
+- Legacy completed context is replaced from monotonic attempt 2 with a valid `speaker_timestamps_v1` result before event clipping.
+- Three completed one-speaker responses persist a failed context after the bounded third attempt while all three attempt-scoped ASR costs remain in the ledger; the low-budget regression prevents calls beyond the available budget.
+- Soniox mock requests `enable_speaker_diarization=true`; Speechmatics requests `diarization="speaker"`; ElevenLabs retains `diarize=true`.
+- Excel independence, bounded user-track signal validation and noise-only rejection regressions pass.
+- Scoped Ruff, Mypy and `git diff --check`: **PASS**.
+- Change gate: **PASS with warnings** (0 errors, 14 disclosed warnings, two unrelated unchecked tasks).
+
+## Remaining boundary
+
+- `UV-025` remains open: no current paid full-call sample has yet exercised all three provider response shapes and their real diarization quality. A paid run still requires separate authorization.
+
+---
+
+# Independent Review — Diarization-first user-event alignment
+
+- Status: **BLOCKED**
+- Date: 2026-09-21
+- Scope: PD-053, Task 12.48 and KI-156 only
+- Reviewer boundary: independent verification only; no implementation fix, paid provider call, deployment, push, or production-data mutation was performed.
+
+## Decision
+
+The increment is not ready for user acceptance. The intended data flow is present: Excel `time (s)` no longer enters event positioning; full-call Soniox, Speechmatics and ElevenLabs requests carry speaker diarization; normalized speaker/timestamp segments feed text-and-order alignment; and the pure-user track is examined only inside a narrow band around the proposed interval. Missing usable provider timelines fail closed, and event-level provider jobs reuse one generated clip.
+
+Two contract defects block PASS. First, the interval cluster accepts ranges with up to a 0.75-second gap and counts rows rather than distinct provider identities. Soniox `4.0–4.5s` plus Speechmatics `5.0–5.5s` therefore produced a synthetic `4.5–5.0s` interval covered by neither provider; two rows both named Soniox also satisfied the two-provider threshold. This is not the overlapping multi-provider consensus required by PD-053. Second, resume skips every completed full-call checkpoint before verifying `diarization_contract=speaker_timestamps_v1` or usable speaker labels. A partially completed pre-PD-053 batch can therefore reuse legacy non-diarized Soniox/Speechmatics rows forever and cannot recover through retry or restart.
+
+These findings are registered as `KI-157` and `KI-158` in `verification/delivery-status.json`. Task 12.48 and KI-156 must not remain accepted/resolved until both defects have fixes and regressions.
+
+## Reproducible evidence
+
+- Focused diarization/alignment/clip/adapter/retry suite: **10 passed**.
+- Full repository suite: **229 passed**, with two existing dependency deprecation warnings.
+- Soniox mock request contains `enable_speaker_diarization=true`; Speechmatics multipart config contains `diarization="speaker"`; the existing ElevenLabs request uses `diarize=true`.
+- Excel independence regression passes after changing the target event time from `999` to `-1000`; static tracing shows `prepare_case_asr_clip` passes only ordered events, target ID and persisted full-call results into alignment.
+- Independent adversarial trace: gapped intervals (`4.0–4.5s`, `5.0–5.5s`) were accepted as consensus `4.5–5.0s`; duplicate provider rows returned `['soniox', 'soniox']`.
+- Restart trace: `EvaluationRunner._run_asr` returns immediately for any completed `(provider, conversation)` context row, while the new contract marker is written only after a fresh request. No migration/validation branch exists before reuse.
+- Scoped Ruff, Mypy and `git diff --check`: **PASS**.
+- Change gate: **PASS with warnings** (0 errors, 14 warnings, two unchecked tasks). `UV-025` correctly records that no current paid three-provider full-call run has been performed.
+
+## Required before re-review
+
+- Require two or more distinct providers with a non-empty common interval overlap; reject gapped and duplicate-provider evidence and add deterministic regressions.
+- Validate the persisted diarization contract and usable speaker timeline before checkpoint reuse; add a legacy-checkpoint restart regression and an auditable re-request/migration path.
+- Rerun focused/full tests, scoped static checks and the Change gate, then request a new independent review. Do not perform paid external calls without separate authorization.
+
+---
+
 # Independent Review — Adaptive Pass 2 retry and truthful progress
 
 - Status: **PASS**

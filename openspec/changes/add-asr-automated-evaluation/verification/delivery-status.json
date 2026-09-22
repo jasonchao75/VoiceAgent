@@ -68,6 +68,56 @@
   ],
   "known_issues": [
     {
+      "id": "KI-160",
+      "status": "resolved",
+      "summary": "Completed paid full-call transcriptions that fail the new usable-diarization check are retried but never entered in the cost ledger.",
+      "impact": "A provider can successfully transcribe the complete recording yet return one speaker or otherwise unusable diarization. The runner then releases the reservation, retries up to three paid calls and records zero ASR cost, understating spend and weakening the hard budget stop.",
+      "source": "Independent PD-053 re-review on 2026-09-21: an isolated run with three completed one-speaker provider responses made three calls, persisted attempts=3/failed, released all reservations, and returned an empty ASR cost ledger.",
+      "next_action": "Settle estimated ASR cost for every completed provider transcription before applying the diarization usability gate, with an attempt-scoped ledger identity; add a regression proving three unusable completed responses remain charged and bounded by budget.",
+      "resolution": "Every completed full-call provider response now settles its attempt-scoped frozen-rate cost before diarization usability is checked. Three completed one-speaker responses remain three charged calls while the context checkpoint fails after the bounded third attempt.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-159",
+      "status": "resolved",
+      "summary": "Three-provider interval clustering can merge mutually conflicting ranges through one broad provider and return boundaries outside any common overlap.",
+      "impact": "For target intervals A=2.0-6.0s, B=2.0-4.0s and C=4.1-6.0s, B and C do not overlap, yet all three are accepted as one cluster and the returned interval is 2.0-6.0s. This hides competing two-provider interpretations instead of failing closed and can include audio not supported by the provider consensus.",
+      "source": "Independent PD-053 adversarial trace on 2026-09-21 against align_customer_event using three distinct diarized provider results.",
+      "next_action": "Build consensus from a non-empty common intersection (or explicitly select one uniquely winning subset), reject tied incompatible subsets, derive returned bounds from the accepted consensus, and add a three-provider bridging-conflict regression.",
+      "resolution": "Consensus now enumerates distinct-provider subsets, requires a non-empty common intersection, chooses only one uniquely largest agreeing subset, derives clip bounds from that common intersection, and rejects the three-provider bridge conflict in a deterministic regression.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-158",
+      "status": "resolved",
+      "summary": "A resumed batch reuses any completed full-call ASR checkpoint without verifying that it was produced under the new speaker-timestamp diarization contract.",
+      "impact": "Batches with pre-PD-053 completed Soniox or Speechmatics context rows can remain permanently unable to form two-provider consensus: retries skip those rows, event clips fail closed, and the same stale context is reused again after every restart.",
+      "source": "Independent PD-053 review on 2026-09-21: EvaluationRunner._run_asr returns immediately for every completed evaluation_asr_runs row before checking result.diarization_contract or usable speaker labels.",
+      "next_action": "Treat completed context rows as reusable only when they satisfy speaker_timestamps_v1 and contain a usable diarized timeline; otherwise create an explicit migration/retry path with preserved accounting and add a restart regression using legacy completed rows.",
+      "resolution": "Full-call checkpoints are now reusable only when they carry speaker_timestamps_v1 and a valid timestamped timeline containing at least two speakers. Legacy or malformed completed rows are re-requested with monotonic attempt numbering and a versioned reservation/cost identity; a restart regression proves replacement before event clipping.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-157",
+      "status": "resolved",
+      "summary": "The new interval clustering can label non-overlapping ranges, or duplicate results from one provider, as the required two-provider consensus.",
+      "impact": "Two ranges separated by up to 0.75 seconds are accepted and their median endpoints can produce a clip interval covered by neither provider; two rows carrying the same provider name also satisfy the count of two. This violates PD-053's overlapping, multi-provider fail-closed contract and can select the wrong user audio.",
+      "source": "Independent PD-053 deterministic trace on 2026-09-21: Soniox 4.0-4.5s plus Speechmatics 5.0-5.5s returned a 4.5-5.0s consensus, and two Soniox rows returned consensus_providers=['soniox','soniox'].",
+      "next_action": "Require distinct provider identities and a non-empty common overlap before accepting a cluster, derive the interval from that overlap (with any tolerance explicitly specified), and add regressions for gapped and duplicate-provider inputs.",
+      "resolution": "Alignment now rejects missing or duplicate provider identities and accepts only intervals with an actual overlap. Deterministic regressions cover both duplicate-provider and nearby-but-gapped evidence.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-156",
+      "status": "resolved",
+      "summary": "User-event clipping still selects a nearby energy island from the pure-user WAV using the unreliable Excel event time as its anchor instead of aligning the persisted full-call ASR speaker timetable.",
+      "impact": "A noisy user track or materially incorrect Excel VAD timestamp can select the wrong utterance even though the full-call ASR results already contain transcript text, timestamps and optional speaker labels; event-level retranscriptions can therefore represent the wrong Case.",
+      "source": "Product-owner review on 2026-09-21 plus source inspection of EvaluationRunner._run_asr and EvaluationStore.prepare_case_asr_clip.",
+      "next_action": "Implement PD-053: explicitly enable diarization for every full-call provider, align historical text and ordered roles to provider speaker timelines, require two-provider interval consensus, and use the pure-user track only for validation and narrow edge refinement.",
+      "resolution": "PD-053 now explicitly enables provider diarization, aligns worksheet text/order/known roles to anonymous full-call speaker turns, requires a unique common intersection from at least two distinct providers, ignores Excel time during positioning, and limits pure-user WAV processing to bounded signal validation and edge refinement. Deterministic adapter/alignment/noise/fail-closed/restart/cost tests pass, and the full repository suite passes with 233 tests.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-148",
       "status": "resolved",
       "summary": "The current Delta Spec and design still state that every Thinking-enabled Qwen request must omit JSON Mode, contradicting the implemented and independently verified qwen3.8-specific JSON Object behavior.",
@@ -1499,6 +1549,13 @@
     }
   ],
   "unverified_items": [
+    {
+      "id": "UV-025",
+      "status": "open",
+      "summary": "The new diarization-first event alignment has not yet been exercised against one current paid full-call result from Soniox, Speechmatics and ElevenLabs.",
+      "reason": "This implementation turn is limited to repository-contained local-real audio plus deterministic/mock provider responses; no new paid external call has been authorized.",
+      "disclosed_to_user": true
+    },
     {
       "id": "UV-001",
       "status": "resolved",

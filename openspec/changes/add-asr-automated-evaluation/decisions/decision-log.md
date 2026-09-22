@@ -4,12 +4,40 @@
 
 ## Status
 
-- Recorded decisions: 39 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 41 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-21
 
 ## Decisions
+
+### PD-054 — 发布说话人分离定位增量供产品验收
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: PD-053 完成独立复验后，是否将本次定位逻辑单独推送生产供用户验收
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，用户明确询问并授权本次修改先推送线上验收
+- Confirmation quote: “本次修改的这部分能不能先推送到线上，我来验收”
+- Decision: 仅提交并推送 PD-053 的完整录音说话人分离、文本/顺序角色映射、多厂商共同区间、用户轨校验、旧检查点迁移、成本记账及对应规格/测试/独立验收记录。不得夹带当前工作区内其他未提交改动；发布本身不触发真实评测、不发送客户录音，也不主动产生 ASR/LLM 费用。
+- Reason: 让产品负责人通过现有线上入口发起受控真实批次并验收新定位效果，同时保持本轮发布范围可追溯、可回滚。
+- Consequences: `main` 推送将触发现有 CI/生产发布流程；既有报告保持不可变，旧批次仅在用户主动重试时才可能按新契约重新请求不合格的完整录音检查点并产生相应费用。
+- Updated artifacts: PD-053 实现、Delta Spec、design、tasks、交付状态、独立验收与部署证据。
+- Verification: 推送前验证暂存内容只包含 PD-053，运行全量测试、Ruff、Mypy、Change gate；推送后核对 GitHub Actions 与生产健康状态。
+
+### PD-053 — Excel 时间完全退出定位，使用完整录音说话人分离与文本顺序对齐
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: Excel VAD 时间不可靠时，如何从完整录音 ASR 结果确定目标用户事件的真实说话区间
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，用户先确认 Excel 时间完全退出，随后确认说话人分离为主的实现方案
+- Confirmation quote: “完全退出。”；“行，那你改一下这个逻辑？然后再和我对一下”
+- Decision: Excel `time (s)` 不得参与用户事件定位，仅作源数据审计字段保留。完整录音 ASR 必须显式启用说话人分离并保存逐词/逐段时间表；系统通过历史转写文本、对话顺序和说话人标签将匿名 speaker 映射为 Agent/User，并以至少两家成功 ASR 的时间区间共识生成目标用户句子边界。`user_record` 只用于校验该区间存在用户信号和微调裁剪边缘，不得用简单能量/VAD 在全局中选择目标句。不足两家或结果冲突时必须失败关闭，不得回退到 Excel 时间或猜测 speaker。
+- Reason: Excel 时间由不准确的开源 VAD 产生，局部能量检测也可被线路底噪和呼吸声误导；完整录音异步 ASR 同时具备全局上下文、说话人标签和精确时间戳，更适合作为主定位证据。
+- Consequences: Soniox 和 Speechmatics 完整录音请求需显式开启 speaker diarization，ElevenLabs 保留已有 `diarize=true`；不启用 ElevenLabs 额外计费的自动角色识别。既有报告保持不可变，新建或重新执行的事件定位必须满足新共识契约。
+- Updated artifacts: Delta Spec、`design.md`、`tasks.md`、ASR 适配器、事件对齐/裁片逻辑、回归测试和交付记录。
+- Verification: deterministic/mock 覆盖三家 diarization 请求、匿名 speaker 角色映射、两家时间共识、Excel 时间完全不影响结果、底噪下的用户轨校验以及冲突/缺失失败关闭；不主动发起付费外部调用。
 
 ### PD-052 — 失败组自适应拆分、真实进度与稳定 Case 口径
 

@@ -124,7 +124,7 @@ All valid pass events in conversations containing at least one candidate form th
 
 ### Evaluation ASR fan-out
 
-After Pass 1 identifies target user events, the orchestrator derives each event boundary from its start time to the next historical event start, validates the shared timeline, writes a stable WAV clip from `user_record`, and creates the Cartesian set of target events × selected providers. A provider adapter exposes submit, poll/callback reconcile, fetch result and cancel-if-supported operations with explicit timeouts. Pass 2 consumes these event-level results; full-call ASR output is never used to construct the review candidate text.
+After Pass 1 identifies target user events, the orchestrator aligns the ordered historical text and known worksheet roles against every provider's diarized full-call timeline. It requires at least two providers to agree on one interval, validates and narrowly refines that interval on `user_record`, writes one stable WAV clip, and creates the Cartesian set of target events × selected providers. Excel `time (s)` is retained only for audit and never enters alignment. A provider adapter exposes submit, poll/callback reconcile, fetch result and cancel-if-supported operations with explicit timeouts. Pass 2 consumes the event-level results; full-call ASR output is never used to construct the review candidate text.
 
 Provider responses are normalized but raw safe response payloads may be retained access-controlled for troubleshooting. Local segment IDs use full conversation ID and provider identity; UI only exposes them inside technical evidence.
 
@@ -163,8 +163,10 @@ Because provider transcription is conversation-scoped and these events come only
 
 ## Audio alignment and clipping
 
-- Treat the workbook event time only as a search anchor. Detect the nearest bounded speech island in the pure-user WAV, include a small non-overlapping guard margin, and reject ambiguous/missing islands instead of stretching to the next event or audio end.
-- Transcribe the full-call recording once per selected provider and candidate-bearing conversation as contextual evidence; persist and account for it separately from event-level candidates.
+- Retain the workbook event time only as source audit metadata; it never participates in alignment, ranking, tie-breaking or clipping.
+- Transcribe the full-call recording once per selected provider and candidate-bearing conversation with speaker diarization explicitly enabled. Persist word/segment text, start/end timestamps and anonymous speaker labels separately from event-level candidates.
+- Align historical events to each provider timeline by normalized transcript similarity and monotonic worksheet order, then infer anonymous speaker roles from aligned Agent/User turns. Require at least two successful providers to align the target customer event to overlapping time ranges; otherwise fail closed.
+- Use the verified shared `record`/`user_record` timeline to validate user-track signal and refine only a narrow edge band around the ASR consensus interval. Noise/energy detection must never choose a different event or replace missing diarization consensus.
 - Write one stable user-event WAV and reuse it across the selected providers, review player and Benchmark materialization.
 - Treat provider segment timestamps as clip-relative technical evidence; never expand the source interval from provider boundaries or LLM references.
 - Fail the event-level ASR resource explicitly when the shared timeline or interval is invalid; never fall back to mixed full-call text.
