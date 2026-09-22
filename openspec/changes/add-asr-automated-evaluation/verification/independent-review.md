@@ -24,7 +24,7 @@ The corrected production renderer treats `final_partial` as **“Final report ·
 ## Remaining boundary
 
 - This review made no paid external call and did not operate production batch `EV-20260922-7D19`.
-- Production deployment, deployed commit and public health remain the delivery agent's responsibility and are not claimed by this local PASS.
+- Production deployment remained the delivery agent's responsibility and was subsequently recorded as PASS at commit `ff0100a51067295e8ae3966fa5159906bf82fdca`, CI run `35726185927`, deployment run `35726412542` and public health `status=ok`; this operational evidence is not part of the verifier's local PASS claim.
 - The existing open KI-171 retry-scope defect and KI-172 Pass 1 corrective-instruction packing defect are outside PD-060 and remain unresolved.
 
 ---

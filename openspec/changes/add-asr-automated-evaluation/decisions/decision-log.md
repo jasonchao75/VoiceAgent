@@ -23,7 +23,7 @@
 - Reason: 7D19 已有足够的成功成果形成部分覆盖交付，但现有提前结束入口只允许 `awaiting_review`，导致确定性失败批次只能重复重试或长期停在暂停状态。
 - Consequences: 确认弹窗复用现有产品弹窗模式并明确保留、排除、不可变与不发起外部调用；部分报告必须披露排除数量和结束方式。该修复不替代 KI-171 的重试范围修正或 KI-172 的 Pass 1 纠正指令装箱修正。
 - Updated artifacts: `proposal.md`、Delta Spec、`design.md`、`tasks.md`、`prototypes/README.md`、实现、回归测试、独立验收与发布证据。
-- Verification: Implementation and independent local review PASS; production deployment is pending under Task 12.68.
+- Verification: Implementation and independent review PASS; commit `ff0100a51067295e8ae3966fa5159906bf82fdca`, CI run `35726185927`, production deployment run `35726412542` and public health all PASS. The release did not operate 7D19 or make a paid provider call.
 
 ### PD-059 — 修复跨厂商输出预算、失败进度与 ASR 安全诊断并发布
 

@@ -205,7 +205,7 @@
 - [ ] 12.65 Account for the longest corrective retry instruction during Pass 1 packing, or deterministically re-plan a failed near-cap group before retry, so a schema correction cannot turn a previously dispatched group into a permanent local input-cap failure (KI-172)
 - [x] 12.66 Add a version-checked, idempotent no-provider command that freezes paused/partially-failed batches with a preliminary report as `final_partial`/`completed_partial`, preserving successes and excluding incomplete work (PD-060, KI-173)
 - [x] 12.67 Add the “Use current results” batch action and confirmation copy by reusing the frozen dialog pattern, with API/UI regressions for preservation, exclusion, no provider dispatch and invalid states (PD-060)
-- [ ] 12.68 Complete independent verification and deploy PD-060 while preserving production data and without operating 7D19 or making paid provider calls
+- [x] 12.68 Complete independent verification and deploy PD-060 while preserving production data and without operating 7D19 or making paid provider calls
 
 ## 13. Production deployment boundary (authorized by PD-042)
 
