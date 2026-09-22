@@ -27,7 +27,7 @@
     "status": "PASS",
     "reviewed_at": "2026-09-21",
     "evidence": "verification/independent-review.md",
-    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run. Qwen native/compatible and grouped LLM source review PASS on 2026-09-21 with 220 repository tests, 134 focused tests, scoped Ruff/Mypy, frontend build, and independent native/compatible executor mocks covering request shape, usage, cost and idempotency. PD-052 adaptive retry release PASS on 2026-09-21: commit b4e03cb0ce792c95503c259aef1d2830ce40e1c6, CI run 35679326836 and deployment run 35679448992 succeeded, including public health verification; production Evaluation data/checkpoints were preserved and EV-20260921-BA92 was not automatically retried. PD-053 diarization-first alignment release PASS on 2026-09-21: commit f0ce94372c7ce591e8e3f20d4ec1ba36d3c7d641, CI run 35683722888 and production deployment run 35683865638 succeeded, including public health verification; no paid evaluation or customer-audio dispatch was started by the release."
+    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run. Qwen native/compatible and grouped LLM source review PASS on 2026-09-21 with 220 repository tests, 134 focused tests, scoped Ruff/Mypy, frontend build, and independent native/compatible executor mocks covering request shape, usage, cost and idempotency. PD-052 adaptive retry release PASS on 2026-09-21: commit b4e03cb0ce792c95503c259aef1d2830ce40e1c6, CI run 35679326836 and deployment run 35679448992 succeeded, including public health verification; production Evaluation data/checkpoints were preserved and EV-20260921-BA92 was not automatically retried. PD-053 diarization-first alignment release PASS on 2026-09-21: commit f0ce94372c7ce591e8e3f20d4ec1ba36d3c7d641, CI run 35683722888 and production deployment run 35683865638 succeeded, including public health verification; no paid evaluation or customer-audio dispatch was started by the release. PD-057 Event Aligner release PASS on 2026-09-22: after CI run 35699863501 exposed formatting and deployment run 35700335615 exposed the missing Prompt fixture, commits c28f8a1 and 577b556 corrected those release defects; CI run 35700851418 and deployment run 35701047235 succeeded, the server reported Healthy at commit 577b55621f840a85a6cdccf36d35faa2ee22ae99, and public health returned status=ok. No paid evaluation was started."
   },
   "ki161_release": {
     "status": "PASS",
@@ -37,6 +37,14 @@
     "public_health": "PASS",
     "production_recovery": "EV-20260921-BA92 materialized 18 reviews and 20 Benchmarks without external provider calls; 6 failed Pass 2 rows remain retryable, the batch remains partially_failed, and no frozen report was created.",
     "backup": "/evaluation-data/evaluation-before-BA92-backfill-20260922T035053Z.db"
+  },
+  "pd057_release": {
+    "status": "PASS",
+    "commit": "577b55621f840a85a6cdccf36d35faa2ee22ae99",
+    "ci_run": 35700851418,
+    "deployment_run": 35701047235,
+    "public_health": "PASS",
+    "production_behavior": "The production container became Healthy with the Event Aligner Prompt packaged at its runtime path; the public /health endpoint returned status=ok. The release did not start or retry any paid evaluation batch."
   },
   "external_calls": [
     {
@@ -78,11 +86,12 @@
   "known_issues": [
     {
       "id": "KI-168",
-      "status": "open",
+      "status": "resolved",
       "summary": "The PD-057 production deployment workflow failed after the corrected CI run succeeded.",
       "impact": "Commit c28f8a1 is present on main and CI run 35700149260 is green, but deployment run 35700335615 failed, so the Event Aligner release is not yet confirmed live.",
       "source": "GitHub Actions Deploy VoiceAgent Platform run 35700335615 reported conclusion=failure on 2026-09-22 UTC; exact failed step is pending log inspection.",
       "next_action": "Inspect the failed deployment log, identify whether the cause is release code, deployment infrastructure or transient state, then apply the narrowest safe correction and rerun deployment/public-health verification.",
+      "resolution": "The container was unhealthy because prompts.py imports the new Event Aligner fixture at startup but the Dockerfile did not copy that fixture into /app. Commit 577b556 added the exact Dockerfile COPY and deny-by-default .dockerignore allow-list plus a packaging regression. CI run 35700851418 built the production image successfully; deployment run 35701047235 installed commit 577b556, reported the container Healthy and passed the public health endpoint. The failed deployment had already restored the previous revision, so no outage or data cleanup occurred.",
       "disclosed_to_user": true
     },
     {
@@ -1648,9 +1657,10 @@
   "unverified_items": [
     {
       "id": "UV-027",
-      "status": "open",
+      "status": "resolved",
       "summary": "The corrected production image could not be built locally because the desktop Docker daemon is not running.",
       "reason": "The attempted local docker build failed before reading the Dockerfile with `Cannot connect to the Docker daemon`. Source tests prove the Dockerfile and .dockerignore include the Event Aligner Prompt, but the corrected image startup must be verified by CI and the production deployment health gate.",
+      "resolution": "CI run 35700851418 built the corrected production image. Deployment run 35701047235 then built and started the same commit 577b556 on the production host, explicitly copied the Event Aligner Prompt, reported the container Healthy, and passed https://platform.voiceagentdemo.org/health with status=ok.",
       "disclosed_to_user": true
     },
     {
