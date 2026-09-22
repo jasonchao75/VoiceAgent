@@ -23,7 +23,7 @@
 - Reason: 7D19 的 Gemini 策略把 32K Thinking 预留与每个 Case 的可见 JSON 预留相加，导致任何非空 Pass 2 Case 都在本地确定性失败；通用异常映射又把它标为供应商响应错误，并把已完成阶段的 75% 进度覆盖为 0%。同时 ASR 检查点仅保存 `EvaluationExecutionError` 类名，无法判断失败范围和后续操作。
 - Consequences: 现有页面复用批次错误区、部分结果提示和 Case provider 单元格展示安全诊断，不新增页面区域或改变冻结视觉基线。历史成功资源、费用和报告不可变；旧批次只有产品负责人主动重试时才按新契约执行。
 - Updated artifacts: `proposal.md`、Delta Spec、`design.md`、`tasks.md`、`prototypes/README.md`、实现、回归测试、独立验收与发布证据。
-- Verification: 覆盖所有支持的 LLM provider 的预算回归、单 Case preflight 分类、失败进度保持、ASR 安全诊断脱敏、全库测试、Scoped Ruff/Mypy、Change gate、独立验收、CI/部署与公网健康；不通过真实付费批次验证。
+- Verification: 128 项定向与 262 项全库测试、Scoped Ruff/Mypy、前端构建、Change gate、独立验收和桌面/窄屏生产 DOM 检查均 PASS；提交 `e13502b` 的 CI `35717197895`、生产部署 `35717398439` 和公网健康检查均成功。未自动重试 CB26/7D19，也未发起真实付费调用。
 
 ### PD-058 — 两轮评测使用统一 128K 包络并去除重复证据投影
 

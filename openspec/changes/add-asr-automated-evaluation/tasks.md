@@ -200,7 +200,7 @@
 - [x] 12.60 Correct the shared Pass 2 generation budget across Gemini, DeepSeek, Qwen, GPT/Azure and OpenRouter so visible JSON is reserved first and Thinking uses only the remaining 32K allowance (PD-059, KI-170)
 - [x] 12.61 Give single-Case local input/output planning failures dedicated preflight categories and preserve the last meaningful stage, progress, checkpoints and cost when a guarded run becomes partially failed (PD-059, KI-170)
 - [x] 12.62 Persist and display safe ASR failure diagnostics with provider, full-call/event scope, attempts, retryability, controlled category and actionable reason, excluding raw responses and customer evidence (PD-059)
-- [ ] 12.63 Add cross-provider budget, truthful-progress and ASR-redaction regressions; complete independent verification and deploy without automatically retrying CB26 or 7D19 or making paid calls (PD-059)
+- [x] 12.63 Add cross-provider budget, truthful-progress and ASR-redaction regressions; complete independent verification and deploy without automatically retrying CB26 or 7D19 or making paid calls (PD-059)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 
