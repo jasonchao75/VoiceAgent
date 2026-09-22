@@ -1118,6 +1118,97 @@ test("exposes every persisted batch lifecycle state and its next action", async 
   await expect(page.locator('tr[data-batch-id="EV-PARTIAL"] .job-state')).toContainText("Final · partial");
 });
 
+test("confirms finishing an incomplete batch with current results", async ({ page }) => {
+  const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
+  bootstrap.batches = [{
+    id: "EV-FINISH-CURRENT",
+    name: "Finish current results",
+    context_name: "Riyad Bank branch routing v4",
+    status: "paused",
+    stage: "evaluation_asr",
+    progress: 53,
+    input_count: 56,
+    denominator: 381,
+    excluded_count: 0,
+    suspected_numerator: 17,
+    cost: 1.25,
+    budget: 10,
+    providers: ["soniox", "speechmatics", "elevenlabs"],
+    updated_at: "2026-09-22T00:00:00Z",
+    version: 8,
+    report_type: "preliminary",
+    result_disposition: "formal",
+    review_total: 7,
+    review_completed: 3,
+    snapshot: {
+      execution_status: {
+        pass_2: { completed: 17, failed: 0, pending: 4, finished: 17, total: 21 },
+      },
+    },
+  }];
+  await page.route("**/api/evaluation/bootstrap", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(bootstrap) });
+  });
+  const finalReport = {
+    report_id: "EV-FINISH-CURRENT-R2",
+    report_type: "final_partial",
+    payload: {
+      batch_id: "EV-FINISH-CURRENT",
+      batch_name: "Finish current results",
+      context_name: "Riyad Bank branch routing v4",
+      report_type: "final_partial",
+      completion_mode: "current_results",
+      partial_coverage: true,
+      input_conversations: 56,
+      valid_user_events: 381,
+      candidate_count: 21,
+      suspected_count: 7,
+      suspected_rate: 1.84,
+      review_total: 7,
+      review_completed: 3,
+      review_pending: 4,
+      benchmark_count: 10,
+      result_excluded_count: 4,
+      incomplete_case_count: 4,
+      excluded_reasons: [{ reason: "unreviewed", count: 4 }],
+      decision_counts: { "Good Case": 3, "Bad Case": 7, "Not completed": 4 },
+      proposed_tags: [],
+      production_asr_observations: [],
+      cases: [],
+    },
+  };
+  let completionRequest;
+  await page.route("**/api/evaluation/batches/EV-FINISH-CURRENT/complete-with-current-results", async (route) => {
+    completionRequest = route.request().postDataJSON();
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(finalReport) });
+  });
+  await page.route("**/api/evaluation/batches/EV-FINISH-CURRENT/report", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(finalReport) });
+  });
+  await page.goto("/evaluation.html");
+  await page.getByRole("button", { name: "Use current results" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Finish with current results?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Completed Pass 2 decisions");
+  await expect(dialog).toContainText("does not call ASR or LLM services");
+  await expect(dialog.getByText("17", { exact: true })).toBeVisible();
+  const overflow = await dialog.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth);
+  await dialog.getByRole("button", { name: "Finish with current results" }).click();
+  await expect(page.locator("#page-report .eyebrow")).toHaveText(
+    "Final report · partial coverage",
+  );
+  await expect(page.locator("#runtime-partial-results-note")).toContainText(
+    "persisted results only",
+  );
+  await expect(page.locator("#runtime-partial-results-note")).toContainText("Unreviewed: 4");
+  expect(completionRequest.expected_version).toBe(8);
+});
+
 test("labels a legacy failed preliminary report honestly and exposes retry", async ({ page }) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   bootstrap.batches = [{

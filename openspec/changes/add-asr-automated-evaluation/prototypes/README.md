@@ -47,6 +47,7 @@
 32. 失败重试不再只显示百分比：沿用批次状态区域展示 Case 与请求组的成功、失败、处理中和尝试次数；疑点全部成功前不追加 Good 平衡样本，超时父组拆分状态使用同一区域呈现（PD-052；不改变冻结页面结构）。
 33. 两轮评测采用统一 128K 运行包络并在发送前完成去重与装箱；Pass 2 单通可按 Case 子集预拆。该行为继续复用既有 Case/请求组计数和错误状态，不新增页面区域、不修改冻结视觉基线（PD-058）。
 34. Pass 2 的 Thinking 与可见 JSON 共享 32K 生成预算；规划失败保留最后阶段和进度。ASR 安全诊断复用批次错误区、部分结果提示与既有 provider 单元格，不新增页面区域、不修改冻结视觉基线（PD-059）。
+35. 已有初步报告的暂停/部分失败批次在现有操作区增加“使用现有结果结束”，复用既有危险操作确认弹窗模式；文案明确保留成功结果、排除未完成项、生成不可变部分报告且不调用外部资源，不新增页面结构或修改冻结视觉基线（PD-060）。
 
 ## 需求到页面区域映射
 
@@ -60,6 +61,7 @@
 | Benchmark ingestion, single deletion and download | `#page-library`、`#sample-dialog`、删除确认弹窗 | 已确认；删除复用冻结按钮与弹窗模式 |
 | Tags / context / Prompt / connections / cost | Configuration 四个入口；Azure GPT/OpenRouter 独立连接卡片 | 已确认；新增资源复用冻结卡片模式 |
 | Failed-batch partial results | 批次操作 → 复用 `#page-report` 详情组件并显示“部分结果 · 非完整报告”状态条 | 已确认；不改变正常报告基线 |
+| Finish with current results | 批次操作 → 复用 `#finish-dialog` 确认模式 → `#page-report` 最终部分覆盖报告 | 已确认；复用冻结弹窗与报告结构 |
 | Bilingual and overflow-safe UI | 全页面、dialog、drawer | 已确认；截图和自动断言在 Engineering Checkpoint A/C 留证 |
 
 ## 原型状态覆盖

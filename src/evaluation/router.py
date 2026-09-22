@@ -611,6 +611,39 @@ def create_evaluation_router(
         except (LookupError, ValueError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    @router.post("/batches/{batch_id}/complete-with-current-results")
+    async def complete_with_current_results(
+        batch_id: str,
+        payload: EvaluationReviewComplete,
+    ) -> dict[str, object]:
+        """Freeze durable successes without resuming execution or calling providers."""
+        previous = await store.command_result(payload.idempotency_key)
+        if previous is not None:
+            return previous
+        batch = await store.get_batch(batch_id)
+        if batch is None:
+            raise HTTPException(status_code=404, detail="Batch not found")
+        if batch["version"] != payload.expected_version:
+            raise HTTPException(
+                status_code=409,
+                detail="The batch changed; refresh before retrying",
+            )
+        if batch["status"] not in {"paused", "partially_failed"}:
+            raise HTTPException(
+                status_code=422,
+                detail="Only paused or partially failed batches can use current results",
+            )
+        try:
+            return await store.freeze_final_report(
+                batch_id,
+                allow_partial=True,
+                force_partial=True,
+                completion_mode="current_results",
+                idempotency_key=payload.idempotency_key,
+            )
+        except (LookupError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
     @router.post("/pricing/official")
     async def sync_official_pricing(payload: PricingSyncRequest) -> dict[str, object]:
         """Verify official public list prices without silently keeping stale values."""

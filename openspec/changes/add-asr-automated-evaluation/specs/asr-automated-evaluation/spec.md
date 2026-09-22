@@ -368,6 +368,12 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 - **WHEN** 负责人确认提前结束且仍有未复核 Case
 - **THEN** 系统冻结未完成队列，生成最终报告，并明确展示复核完成率、已复核、未复核、听不清及结论覆盖范围
 
+#### Scenario: Finish a paused or partially failed batch with current results
+
+- **WHEN** 负责人对已有初步报告的 `paused` 或 `partially_failed` 批次二次确认“使用现有结果结束”
+- **THEN** 系统 MUST 保留已完成 Pass 2 结论、已提交人工复核、现有 Benchmark、费用和检查点，排除待复核、未完成、失败或无法可靠裁片的 Case，事务性冻结不可变 `final_partial` 报告并将批次设为 `completed_partial` 和 100%
+- **AND** 该操作 MUST NOT 恢复执行器、重试失败资源、调用 ASR/LLM、删除成功结果或把被排除 Case 写入 Benchmark/正式结论；运行中批次 MUST 先暂停
+
 ### Requirement: Evaluation metrics
 
 系统 MUST 使用以下稳定口径并同时展示分子、分母、排除数量和原因：

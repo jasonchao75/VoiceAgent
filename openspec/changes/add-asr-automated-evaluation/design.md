@@ -62,8 +62,9 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | `validating` | 校验输入 | ready, validation_failed |
 | `ready` | 校验通过、等待确认 | running, cancelled |
 | `running` | 自动阶段执行中 | awaiting_review, partially_failed, budget_paused, stopped |
-| `partially_failed` | 至少一个可恢复资源失败 | running, awaiting_review, stopped |
+| `partially_failed` | 至少一个可恢复资源失败 | running, awaiting_review, completed_partial, stopped |
 | `budget_paused` | 已达费用上限 | running, stopped |
+| `paused` | 用户暂停；保留全部成功检查点 | running, completed_partial, stopped |
 | `awaiting_review` | 自动分析完成且存在人工任务 | completed, completed_partial |
 | `completed` | 全部复核完成并已生成最终报告 | terminal |
 | `completed_partial` | 负责人提前结束并生成部分覆盖最终报告 | terminal |
@@ -215,6 +216,8 @@ Metrics are computed from immutable event/result rows, never from UI counters:
 | Review completion | Submitted Good + Bad + unclear | Total manual-review tasks |
 
 The preliminary report freezes after the automated stage and shows zero/current manual coverage. Freezing also updates the owning batch's report pointer and final suspected numerator before the operation returns; startup recovery links and reconciles an already-frozen report when a prior interruption left those batch fields stale. Scenario tags are canonicalized to the frozen tag key before aggregation, while the renderer provides the same canonical projection for already-immutable historical payloads. The final report is a new version created after full or explicitly early review completion. Reports include excluded counts/reasons, actual Good:Bad balance, labels, language/scenario distributions, evidence-linked observations and structured proposed tags. They do not directly recommend changing production resources.
+
+For a paused or partially failed batch that already has a preliminary report, an explicit “use current results” command reuses the immutable-report transaction but always freezes `final_partial` and `completed_partial`. It retains successful Pass 2 decisions, completed reviews, Benchmark rows, costs and checkpoints; pending reviews and incomplete/failed/unclippable Cases remain visible only as excluded coverage. The version-checked and idempotent command never starts the executor or any provider call.
 
 ## Benchmark lifecycle
 

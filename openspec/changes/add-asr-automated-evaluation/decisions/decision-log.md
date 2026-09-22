@@ -4,12 +4,26 @@
 
 ## Status
 
-- Recorded decisions: 46 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 47 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-22
 
 ## Decisions
+
+### PD-060 — 暂停或部分失败批次使用现有结果结束并发布
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: `EV-20260922-7D19` 已保存 17 条 Pass 2 结果、7 条人工复核和 10 条 Benchmark，但因确定性失败停在暂停状态时，能否不增加复杂人工流程而直接结束
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人确认推荐的“使用现有结果结束”方案
+- Confirmation quote: “确认这个修复方案。”
+- Decision: 对已有初步报告的 `paused` 或 `partially_failed` 批次，在现有批次操作区提供“使用现有结果结束”。二次确认后系统只使用已持久化的成功 Pass 2、已完成人工复核和已生成 Benchmark，排除待复核、未完成、失败或未能可靠裁片的 Case，事务性冻结不可变 `final_partial` 报告并将批次置为 `completed_partial`/100%。操作不得恢复执行器、重试失败资源、调用 ASR/LLM、删除成功结果或改写费用/检查点。运行中批次必须先暂停；发布本能力但不得由 Agent 代为操作生产批次 7D19。
+- Reason: 7D19 已有足够的成功成果形成部分覆盖交付，但现有提前结束入口只允许 `awaiting_review`，导致确定性失败批次只能重复重试或长期停在暂停状态。
+- Consequences: 确认弹窗复用现有产品弹窗模式并明确保留、排除、不可变与不发起外部调用；部分报告必须披露排除数量和结束方式。该修复不替代 KI-171 的重试范围修正或 KI-172 的 Pass 1 纠正指令装箱修正。
+- Updated artifacts: `proposal.md`、Delta Spec、`design.md`、`tasks.md`、`prototypes/README.md`、实现、回归测试、独立验收与发布证据。
+- Verification: Implementation and independent local review PASS; production deployment is pending under Task 12.68.
 
 ### PD-059 — 修复跨厂商输出预算、失败进度与 ASR 安全诊断并发布
 

@@ -1,3 +1,34 @@
+# Independent Review — PD-060 finish with current results
+
+- Status: **PASS**
+- Date: 2026-09-22
+- Scope: PD-060 and Tasks 12.66–12.68 verification portion only
+- Reviewer boundary: independent verification only; no implementation fix, requirement change, deployment, push, production mutation, batch retry/resume, or paid provider call was performed.
+
+## Decision
+
+PD-060 passes independent deterministic/local verification. The new endpoint accepts only `paused` or `partially_failed` batches, checks the submitted version before entering the store, requires an existing preliminary report, and calls only `freeze_final_report(...)`; it has no executor or provider-dispatch dependency. The store freezes a new immutable `final_partial` version, moves the batch to `completed_partial` / `completed` / 100%, retains cost and checkpoint rows, preserves pending reviews as pending, and marks pending, incomplete and unclippable Cases as excluded from formal Good/Bad aggregation. Repeating the same idempotency key returns the same report.
+
+The corrected production renderer treats `final_partial` as **“Final report · partial coverage / 最终报告 · 部分覆盖”**. It consumes the persisted `completion_mode`, `result_excluded_count` and `excluded_reasons`, explicitly states that current persisted results were used without an ASR/LLM retry, and displays the excluded total plus reason breakdown. The end-to-end browser regression follows the operator from the batch action, through the confirmation request, to the opened immutable final-partial report on both required viewports.
+
+## Reproducible evidence
+
+- Change gate: **PASS with warnings** (`0 errors`, `17 warnings`, `5 tasks remain unchecked` after resolving KI-174).
+- Full Evaluation backend plus UI-contract suite: **103 passed**.
+- Scoped Ruff and Mypy for the changed Python files: **PASS**.
+- Frontend production build: **PASS**.
+- PD-060 production-route confirmation-to-report flow: **2 passed** across 1440×1000 and 1024×1000 Chromium; the accessible dialog contains preservation/exclusion/no-provider copy with no horizontal overflow, submits the expected batch version, then opens a report labeled final partial coverage with current-results and `Unreviewed: 4` disclosure.
+- Static final-report trace: `renderReport()` has an explicit `final_partial` branch and renders `completion_mode`, `result_excluded_count` and every positive persisted `excluded_reasons` row through a fixed bilingual reason map.
+- Data-flow trace: `POST /api/evaluation/batches/{id}/complete-with-current-results` calls only store reads plus `freeze_final_report`; no runner start/resume, ASR adapter or LLM adapter is reachable from this route.
+
+## Remaining boundary
+
+- This review made no paid external call and did not operate production batch `EV-20260922-7D19`.
+- Production deployment, deployed commit and public health remain the delivery agent's responsibility and are not claimed by this local PASS.
+- The existing open KI-171 retry-scope defect and KI-172 Pass 1 corrective-instruction packing defect are outside PD-060 and remain unresolved.
+
+---
+
 # Independent Review — PD-059 budget, progress and safe ASR diagnostics
 
 - Status: **PASS**

@@ -2949,6 +2949,101 @@ async def test_early_review_completion_is_idempotent(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("batch_status", ["paused", "partially_failed"])
+async def test_incomplete_batch_can_finish_with_current_results_without_retry(
+    evaluation_store: EvaluationStore,
+    batch_status: str,
+) -> None:
+    """A force finish must freeze only durable results and never resume execution."""
+    batch, review = await _prepare_pending_review(
+        evaluation_store,
+        run_key="finish-current-results-run",
+    )
+    paused = await evaluation_store.set_batch_state(
+        str(batch["id"]),
+        status=batch_status,
+        stage="evaluation_asr",
+        progress=53,
+        cost=1.25,
+    )
+    app = FastAPI()
+    app.include_router(create_evaluation_router(evaluation_store))
+    command = {
+        "expected_version": paused["version"],
+        "idempotency_key": "finish-current-results-command",
+    }
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        first = await client.post(
+            f"/api/evaluation/batches/{batch['id']}/complete-with-current-results",
+            json=command,
+        )
+        repeated = await client.post(
+            f"/api/evaluation/batches/{batch['id']}/complete-with-current-results",
+            json=command,
+        )
+
+    assert first.status_code == 200
+    assert repeated.json() == first.json()
+    report = first.json()
+    assert report["report_type"] == "final_partial"
+    assert report["payload"]["completion_mode"] == "current_results"
+    assert report["payload"]["partial_coverage"] is True
+    assert report["payload"]["review_pending"] == 1
+    assert report["payload"]["result_excluded_count"] == 1
+    assert report["payload"]["cases"][0]["decision"] == "Not completed"
+    assert report["payload"]["cases"][0]["label_status"] == "Excluded as unreviewed"
+    final_batch = await evaluation_store.get_batch(str(batch["id"]))
+    assert final_batch is not None
+    assert final_batch["status"] == "completed_partial"
+    assert final_batch["stage"] == "completed"
+    assert final_batch["progress"] == 100
+    assert final_batch["cost"] == pytest.approx(1.25)
+    pass_two = await evaluation_store.checkpoint_rows(
+        "evaluation_pass2_runs",
+        str(batch["id"]),
+    )
+    assert len(pass_two) == 1
+    assert pass_two[0]["status"] == "completed"
+    pending_reviews = await evaluation_store.list_reviews("pending")
+    assert [item["id"] for item in pending_reviews] == [review["id"]]
+
+
+@pytest.mark.asyncio
+async def test_running_batch_cannot_finish_with_current_results(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Operators must pause active work before freezing partial coverage."""
+    batch, _review = await _prepare_pending_review(
+        evaluation_store,
+        run_key="reject-running-finish-current-run",
+    )
+    running = await evaluation_store.set_batch_state(
+        str(batch["id"]),
+        status="running",
+        stage="pass_2",
+        progress=75,
+    )
+    app = FastAPI()
+    app.include_router(create_evaluation_router(evaluation_store))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post(
+            f"/api/evaluation/batches/{batch['id']}/complete-with-current-results",
+            json={
+                "expected_version": running["version"],
+                "idempotency_key": "reject-running-finish-command",
+            },
+        )
+
+    assert response.status_code == 422
+    current = await evaluation_store.get_batch(str(batch["id"]))
+    assert current is not None
+    assert current["status"] == "running"
+    latest = await evaluation_store.latest_report(str(batch["id"]))
+    assert latest is not None
+    assert latest["report_type"] == "preliminary"
+
+
+@pytest.mark.asyncio
 async def test_unclear_review_is_excluded_from_benchmark(
     evaluation_store: EvaluationStore,
 ) -> None:

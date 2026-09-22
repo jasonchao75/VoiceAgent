@@ -29,3 +29,18 @@ def test_partial_results_render_safe_asr_failure_diagnostics() -> None:
     assert 'failure.scope === "full_call_context"' in RUNTIME
     assert "failure.retryable" in RUNTIME
     assert "item.evaluation_asr_failures?.[provider]" in RUNTIME
+
+
+def test_paused_or_partial_batches_can_finish_with_current_results() -> None:
+    """The UI must disclose preservation, exclusion, immutability, and zero provider calls."""
+    assert 'copy("Use current results", "使用现有结果结束")' in RUNTIME
+    assert "/complete-with-current-results" in RUNTIME
+    assert (
+        "Completed Pass 2 decisions, submitted reviews, and existing Benchmark samples" in RUNTIME
+    )
+    assert "does not call ASR or LLM services" in RUNTIME
+    assert 'runtime.finishMode === "current_results"' in RUNTIME
+    assert 'copy("Final report · partial coverage", "最终报告 · 部分覆盖")' in RUNTIME
+    assert 'payload.completion_mode === "current_results"' in RUNTIME
+    assert "payload.result_excluded_count" in RUNTIME
+    assert 'id="finish-dialog-warning"' in PAGE

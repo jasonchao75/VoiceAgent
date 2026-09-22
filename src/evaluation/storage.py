@@ -3526,6 +3526,8 @@ class EvaluationStore:
         batch_id: str,
         *,
         allow_partial: bool = False,
+        force_partial: bool = False,
+        completion_mode: str | None = None,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         """Freeze a second immutable report version from submitted human reviews."""
@@ -3544,8 +3546,10 @@ class EvaluationStore:
         pending = [row for row in batch_reviews if row["status"] == "pending"]
         if pending and not allow_partial:
             raise ValueError("Manual review is not complete")
+        final_is_partial = force_partial or bool(pending)
 
         payload = json.loads(_json(preliminary["payload"]))
+        preliminary_suspected_count = int(payload.get("suspected_count") or 0)
         review_by_key = {
             (str(row["conversation_id"]), str(row["event_id"])): row
             for row in batch_reviews
@@ -3554,9 +3558,15 @@ class EvaluationStore:
         manual_bad = 0
         manual_good = 0
         unclear = 0
+        pending_keys = {(str(row["conversation_id"]), str(row["event_id"])) for row in pending}
         for case in payload["cases"]:
-            review = review_by_key.get((str(case["conversation_id"]), str(case["event_id"])))
+            case_key = (str(case["conversation_id"]), str(case["event_id"]))
+            review = review_by_key.get(case_key)
             if review is None:
+                if case_key in pending_keys:
+                    case["decision"] = "Not completed"
+                    case["reference_text"] = None
+                    case["label_status"] = "Excluded as unreviewed"
                 continue
             case["language"] = review["language"]
             case["scenario_tag"] = review["scenario_tag"]
@@ -3578,16 +3588,117 @@ class EvaluationStore:
 
         tag_counts: dict[str, int] = {}
         language_counts: dict[str, int] = {}
+        unclippable_count = 0
         for case in payload["cases"]:
+            if (
+                force_partial
+                and case["decision"] in {"Good Case", "Bad Case"}
+                and not case.get("audio_available")
+            ):
+                unclippable_count += 1
+                case["decision"] = "Not completed"
+                case["reference_text"] = None
+                case["label_status"] = "Excluded as unclippable"
+        included_cases = [
+            case for case in payload["cases"] if case["decision"] in {"Good Case", "Bad Case"}
+        ]
+        manual_good = sum(
+            case["decision"] == "Good Case" and case["label_status"] == "Manual labeled"
+            for case in included_cases
+        )
+        manual_bad = sum(
+            case["decision"] == "Bad Case" and case["label_status"] == "Manual labeled"
+            for case in included_cases
+        )
+        result_excluded_count = len(payload["cases"]) - len(included_cases)
+        unfinished_count = max(
+            0,
+            result_excluded_count - len(pending) - unclear - unclippable_count,
+        )
+        exclusion_reasons = list(payload.get("excluded_reasons") or [])
+        exclusion_reasons.extend(
+            item
+            for item in (
+                {"reason": "unreviewed", "count": len(pending)},
+                {"reason": "unclear_audio", "count": unclear},
+                {"reason": "unclippable", "count": unclippable_count},
+                {"reason": "unfinished_or_failed", "count": unfinished_count},
+            )
+            if item["count"]
+        )
+        final_decision_counts = {
+            "Good Case": sum(case["decision"] == "Good Case" for case in included_cases),
+            "Bad Case": sum(case["decision"] == "Bad Case" for case in included_cases),
+            "Unclear": unclear,
+            "Not completed": sum(
+                case["decision"] not in {"Good Case", "Bad Case", "Unclear"}
+                for case in payload["cases"]
+            ),
+        }
+        included_keys = {
+            (str(case["conversation_id"]), str(case["event_id"])) for case in included_cases
+        }
+        filtered_proposals: list[dict[str, Any]] = []
+        for proposal in payload.get("proposed_tags") or []:
+            case_keys = [
+                key
+                for key in proposal.get("case_keys") or []
+                if len(key) == 2 and (str(key[0]), str(key[1])) in included_keys
+            ]
+            if case_keys:
+                filtered_proposals.append({**proposal, "case_keys": case_keys})
+        observation_groups: dict[str, dict[str, Any]] = {}
+        for case in included_cases:
+            group = observation_groups.setdefault(
+                str(case["scenario_tag"]),
+                {"case_keys": [], "findings": []},
+            )
+            group["case_keys"].append([case["conversation_id"], case["event_id"]])
+            reason = str(case.get("reason") or "").strip()
+            if reason and reason not in group["findings"]:
+                group["findings"].append(reason)
+        final_suspected_count = (
+            final_decision_counts["Bad Case"] if force_partial else preliminary_suspected_count
+        )
+        for case in included_cases:
             tag = str(case["scenario_tag"])
             tag_counts[tag] = tag_counts.get(tag, 0) + 1
             language = str(case.get("language") or "unknown")
             language_counts[language] = language_counts.get(language, 0) + 1
         payload.update(
             {
-                "report_type": "final_partial" if pending else "final",
+                "report_type": "final_partial" if final_is_partial else "final",
+                "completion_mode": completion_mode or "manual_review",
+                "partial_coverage": final_is_partial,
                 "review_completed": len(batch_reviews) - len(pending),
                 "review_pending": len(pending),
+                "evaluated_case_count": len(included_cases),
+                "result_excluded_count": result_excluded_count,
+                "excluded_reasons": exclusion_reasons,
+                "incomplete_case_count": sum(
+                    case["decision"] not in {"Good Case", "Bad Case", "Unclear"}
+                    for case in payload["cases"]
+                ),
+                "benchmark_count": len(included_cases),
+                "decision_counts": final_decision_counts,
+                "suspected_count": final_suspected_count,
+                "suspected_rate": round(
+                    (final_suspected_count / int(payload["valid_user_events"]) * 100)
+                    if payload["valid_user_events"]
+                    else 0,
+                    2,
+                ),
+                "proposed_tags": filtered_proposals,
+                "production_asr_observations": [
+                    {
+                        "scenario_tag": name,
+                        "case_count": len(group["case_keys"]),
+                        "finding": " | ".join(group["findings"][:3])
+                        or "No meaning-changing difference was recorded for this group.",
+                        "case_keys": group["case_keys"],
+                    }
+                    for name, group in sorted(observation_groups.items())
+                ],
                 "manual_decision_counts": {
                     "Good Case": manual_good,
                     "Bad Case": manual_bad,
@@ -3630,11 +3741,13 @@ class EvaluationStore:
             await database.execute(
                 """UPDATE evaluation_batches
                    SET status=?,stage='completed',progress=100,review_completed=?,
-                       report_type=?,updated_at=?,version=version+1 WHERE id=?""",
+                       report_type=?,suspected_numerator=?,updated_at=?,version=version+1
+                   WHERE id=?""",
                 (
-                    "completed_partial" if pending else "completed",
+                    "completed_partial" if final_is_partial else "completed",
                     len(batch_reviews) - len(pending),
                     payload["report_type"],
+                    final_suspected_count,
                     now,
                     batch_id,
                 ),
@@ -3644,7 +3757,8 @@ class EvaluationStore:
                 "report.final_frozen",
                 report_id,
                 {
-                    "partial": bool(pending),
+                    "partial": final_is_partial,
+                    "completion_mode": completion_mode or "manual_review",
                     "review_completed": len(batch_reviews) - len(pending),
                     "review_pending": len(pending),
                 },

@@ -30,6 +30,8 @@ const runtime = {
   editingTagId: null,
   pendingDeleteTagId: null,
   pendingDeleteBatchId: null,
+  pendingFinishBatchId: null,
+  finishMode: "review",
   editingContextId: null,
   editingDictionaryId: null,
   previewContextId: null,
@@ -688,6 +690,11 @@ function renderBatches(batches) {
       const partialResultsAction = !auditOnly && ["partially_failed", "budget_paused", "stopped"].includes(batch.status)
         ? `<button class="btn small runtime-batch-action" data-action="partial_results" data-version="${batch.version}">${copy("Partial results", "查看部分结果")}</button>`
         : "";
+      const finishCurrentAction = !auditOnly
+        && ["paused", "partially_failed"].includes(batch.status)
+        && batch.report_type
+        ? `<button class="btn small danger runtime-finish-current" data-version="${batch.version}">${copy("Use current results", "使用现有结果结束")}</button>`
+        : "";
       const inspectAction = canInspect && !auditOnly
         ? `<button class="btn small runtime-open-batch">${copy("View task", "查看任务")}</button>`
         : "";
@@ -698,7 +705,7 @@ function renderBatches(batches) {
       const primaryAction = action === "report" && reportAction
         ? ""
         : `<button class="btn small runtime-batch-action ${action === "start" ? "primary" : ""}" data-action="${action}" data-version="${batch.version}">${actionLabel}</button>`;
-      const actions = `${inspectAction}${reportAction}${partialResultsAction}${primaryAction}${deleteAction}`;
+      const actions = `${inspectAction}${reportAction}${partialResultsAction}${primaryAction}${finishCurrentAction}${deleteAction}`;
       return `<tr data-batch-id="${safe(batch.id)}"><td><b>${safe(seededDisplay(batch.name))}</b><br><span class="muted">${safe(batch.id)}</span></td><td>${safe(seededDisplay(batch.context_name))}</td><td>${batch.input_count} ${copy("calls", "通")}</td><td><span class="pill ${status[0]} job-state">${copy(status[1], status[2])}${progress}</span>${progressBar}${checkpoint ? `<small class="batch-progress-copy">${safe(checkpoint)}</small>` : ""}</td><td>${suspect}</td><td>$${batch.cost.toFixed(2)} / $${batch.budget.toFixed(2)}</td><td>${new Date(batch.updated_at).toLocaleString()}</td><td><div class="batch-actions">${actions}</div></td></tr>`;
     })
     .join("");
@@ -797,6 +804,16 @@ function renderRun(batch) {
     actions.insertAdjacentHTML(
       "beforeend",
       `<button class="btn runtime-open-review">${copy("Open manual review", "进入人工复核")}</button>`,
+    );
+  }
+  if (
+    !auditOnly
+    && ["paused", "partially_failed"].includes(batch.status)
+    && batch.report_type
+  ) {
+    actions.insertAdjacentHTML(
+      "beforeend",
+      `<button class="btn danger runtime-finish-current" data-version="${batch.version}">${copy("Use current results", "使用现有结果结束")}</button>`,
     );
   }
   if (!auditOnly && batch.report_type) {
@@ -1051,11 +1068,14 @@ function renderReport(report) {
   const page = document.querySelector("#page-report");
   const header = page.querySelector(".page-head > div");
   const partialResults = payload.report_type === "partial_results";
+  const finalPartial = payload.report_type === "final_partial";
   header.querySelector(".eyebrow").textContent = partialResults
     ? copy("Partial results · not a complete report", "部分结果 · 非完整报告")
     : payload.report_type === "final"
       ? copy("Final report", "最终报告")
-      : copy("Preliminary report", "初步报告");
+      : finalPartial
+        ? copy("Final report · partial coverage", "最终报告 · 部分覆盖")
+        : copy("Preliminary report", "初步报告");
   header.querySelector("h1").textContent = seededDisplay(payload.batch_name);
   header.querySelector("h1 + p").textContent = partialResults
     ? `${payload.input_conversations} ${copy("calls", "通")} · ${seededDisplay(payload.context_name)} · ${copy("successful checkpoints through", "成功结果截至")} ${payload.failed_stage || "—"}`
@@ -1072,6 +1092,39 @@ function renderReport(report) {
         "This view contains only persisted successful work. Missing sections were not run or failed; retrying reuses successful checkpoints. It is not an immutable preliminary or final report.",
         "这里只展示已成功持久化的内容；缺失部分代表尚未运行或执行失败。重试会复用成功检查点，本页不是不可变初步报告或最终报告。",
       )}${payload.failure?.message ? ` ${safe(payload.failure.message)}` : ""}${asrFailureSummary}</div>`,
+    );
+  } else if (finalPartial) {
+    const exclusionLabels = {
+      pass_1_failed_or_unavailable: copy(
+        "Pass 1 failed or unavailable",
+        "第一轮失败或不可用",
+      ),
+      unreviewed: copy("Unreviewed", "未复核"),
+      unclear_audio: copy("Unclear audio", "听不清"),
+      unclippable: copy("Unclippable", "无法可靠裁片"),
+      unfinished_or_failed: copy("Unfinished or failed", "未完成或失败"),
+    };
+    const exclusionSummary = (payload.excluded_reasons || [])
+      .filter((item) => Number(item.count || 0) > 0)
+      .map((item) => `${exclusionLabels[item.reason] || item.reason}: ${Number(item.count)}`)
+      .join(" · ");
+    const completionCopy = payload.completion_mode === "current_results"
+      ? copy(
+        "This immutable final report was finished with persisted results only. No ASR or LLM retry was run.",
+        "该不可变最终报告仅使用已持久化结果结束，未执行 ASR 或 LLM 重试。",
+      )
+      : copy(
+        "This immutable final report has partial review coverage.",
+        "该不可变最终报告仅覆盖部分人工复核。",
+      );
+    page.querySelector(".page-head").insertAdjacentHTML(
+      "afterend",
+      `<div class="report-note" id="runtime-partial-results-note"><b>${copy(
+        "Partial coverage",
+        "部分覆盖",
+      )}</b> · ${safe(completionCopy)} ${copy("Excluded from formal results", "未计入正式结果")}: ${Number(
+        payload.result_excluded_count ?? payload.incomplete_case_count ?? 0,
+      )}${exclusionSummary ? ` · ${safe(exclusionSummary)}` : ""}</div>`,
     );
   }
 
@@ -2888,6 +2941,100 @@ async function completeReviewEarly() {
   }
 }
 
+function configureFinishDialog(mode, batch = null) {
+  runtime.finishMode = mode;
+  runtime.pendingFinishBatchId = batch?.id || null;
+  const dialog = document.querySelector("#finish-dialog");
+  const metrics = dialog.querySelectorAll(".metric");
+  if (mode === "current_results" && batch) {
+    const completed = Number(batch.snapshot?.execution_status?.pass_2?.completed || 0);
+    const pending = Number(batch.snapshot?.execution_status?.pass_2?.pending || 0)
+      + Math.max(0, Number(batch.review_total || 0) - Number(batch.review_completed || 0));
+    dialog.querySelector("#finish-dialog-title").textContent = copy(
+      "Finish with current results?",
+      "使用现有结果结束？",
+    );
+    dialog.querySelector("#finish-dialog-warning").textContent = copy(
+      "Completed Pass 2 decisions, submitted reviews, and existing Benchmark samples will be kept. Pending, failed, or unclippable Cases will be excluded. This freezes an immutable partial report and does not call ASR or LLM services.",
+      "已完成的 Pass 2 结论、已提交复核和现有 Benchmark 会保留；待处理、失败或无法可靠裁片的 Case 会被排除。系统将冻结不可变的部分覆盖报告，不会调用 ASR 或 LLM。",
+    );
+    metrics[0].querySelector(".label").textContent = copy("Completed Pass 2", "已完成 Pass 2");
+    metrics[0].querySelector("strong").textContent = completed;
+    metrics[0].querySelector("small").textContent = copy("Preserved", "保留现有成功结果");
+    metrics[1].querySelector(".label").textContent = copy("Pending / excluded", "待处理 / 排除");
+    metrics[1].querySelector("strong").textContent = pending;
+    metrics[1].querySelector("small").textContent = copy("No retry will run", "不会执行重试");
+    metrics[2].querySelector(".label").textContent = copy("Final report", "最终报告");
+    metrics[2].querySelector("strong").textContent = copy("Partial coverage", "部分覆盖");
+    metrics[2].querySelector("small").textContent = copy("Immutable", "冻结后不可变");
+    dialog.querySelector("#cancel-finish").textContent = copy("Keep processing", "继续处理");
+    dialog.querySelector("#confirm-finish").textContent = copy(
+      "Finish with current results",
+      "确认使用现有结果结束",
+    );
+  } else {
+    const reviewBatchId = runtime.reviewBatchId || runtime.selectedBatchId;
+    const reviewBatch = runtime.bootstrap?.batches.find((item) => item.id === reviewBatchId);
+    const completed = Number(reviewBatch?.review_completed || 0);
+    const total = Number(reviewBatch?.review_total || 0);
+    const pending = Math.max(0, total - completed);
+    dialog.querySelector("#finish-dialog-title").textContent = copy(
+      "Finish manual review early?",
+      "提前结束人工复核？",
+    );
+    dialog.querySelector("#finish-dialog-warning").textContent = copy(
+      `${pending} review Cases are still pending. They will not enter the formal Benchmark or manual conclusions.`,
+      `仍有 ${pending} 个目标用户句子未复核；这些样本不会进入正式 Benchmark，也不会作为人工确认结论。`,
+    );
+    metrics[0].querySelector(".label").textContent = copy("Review completion", "复核完成率");
+    metrics[0].querySelector("strong").textContent = total
+      ? `${Math.round((completed / total) * 100)}%`
+      : "100%";
+    metrics[0].querySelector("small").textContent = `${completed} / ${total}`;
+    metrics[1].querySelector(".label").textContent = copy("Unreviewed", "未复核");
+    metrics[1].querySelector("strong").textContent = pending;
+    metrics[1].querySelector("small").textContent = copy("Remain excluded", "保持未复核状态");
+    metrics[2].querySelector(".label").textContent = copy("Final diagnosis", "最终诊断");
+    metrics[2].querySelector("strong").textContent = copy("Partial coverage", "部分覆盖");
+    metrics[2].querySelector("small").textContent = copy("Coverage disclosed", "报告披露覆盖范围");
+    dialog.querySelector("#cancel-finish").textContent = copy("Continue review", "继续复核");
+    dialog.querySelector("#confirm-finish").textContent = copy(
+      "Finish early and generate report",
+      "确认提前结束并生成报告",
+    );
+  }
+  if (!dialog.open) dialog.showModal();
+}
+
+async function completeWithCurrentResults() {
+  const batch = runtime.bootstrap?.batches.find(
+    (item) => item.id === runtime.pendingFinishBatchId,
+  );
+  if (!batch) {
+    notify(copy("Refresh and select the batch again.", "请刷新后重新选择批次。"));
+    return;
+  }
+  try {
+    await json(
+      `/api/evaluation/batches/${encodeURIComponent(batch.id)}/complete-with-current-results`,
+      {
+        method: "POST",
+        body: {
+          expected_version: Number(batch.version),
+          idempotency_key: idempotency("complete-with-current-results"),
+        },
+      },
+    );
+    document.querySelector("#finish-dialog")?.close();
+    runtime.pendingFinishBatchId = null;
+    await refreshBootstrap({ quiet: true });
+    await openReport(batch.id);
+    notify(copy("Partial final report frozen without provider calls.", "已使用现有结果生成部分覆盖最终报告，未调用外部资源。"));
+  } catch (error) {
+    notify(error.message);
+  }
+}
+
 function benchmarkQuery() {
   const rawScenario = document.querySelector("#benchmark-scenario-filter").value;
   return {
@@ -3436,6 +3583,16 @@ function installEvents() {
         );
         return;
       }
+      const finishCurrentButton = event.target.closest(".runtime-finish-current");
+      if (finishCurrentButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const batchId = finishCurrentButton.closest("tr")?.dataset.batchId
+          || runtime.selectedBatchId;
+        const batch = runtime.bootstrap.batches.find((item) => item.id === batchId);
+        if (batch) configureFinishDialog("current_results", batch);
+        return;
+      }
       const batchButton = event.target.closest(".runtime-batch-action");
       if (batchButton) {
         event.preventDefault();
@@ -3583,10 +3740,18 @@ function installEvents() {
         await submitDecision("unclear");
         return;
       }
+      if (event.target.closest("#finish-early")) {
+        configureFinishDialog("review");
+        return;
+      }
       if (event.target.closest("#confirm-finish")) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        await completeReviewEarly();
+        if (runtime.finishMode === "current_results") {
+          await completeWithCurrentResults();
+        } else {
+          await completeReviewEarly();
+        }
         return;
       }
       const check = event.target.closest(".runtime-benchmark-check");

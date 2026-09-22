@@ -21,7 +21,7 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call. PD-060 authorizes publishing the independently verified finish-with-current-results capability while preserving production data, leaving 7D19 untouched, and making no paid provider call.",
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
   "independent_release_review": {
     "status": "PASS",
@@ -100,6 +100,44 @@
     }
   ],
   "known_issues": [
+    {
+      "id": "KI-174",
+      "status": "resolved",
+      "summary": "PD-060 freezes a final_partial report, but the report renderer labels it as a preliminary report and omits the persisted completion mode and exclusion breakdown.",
+      "impact": "After an operator confirms 'Use current results', the batch reaches completed_partial and the confirmation says partial final, but the immutable report page says Preliminary report and does not disclose how many Cases were excluded or why. This contradicts the confirmed partial-coverage reporting contract and can mislead delivery acceptance.",
+      "source": "Independent PD-060 source/data-flow review on 2026-09-22. frontend/src/evaluation-runtime.js renderReport() treats only exact report_type=final as final and has no reads of completion_mode, result_excluded_count or excluded_reasons.",
+      "next_action": "Render final_partial explicitly as final partial coverage, show current-results completion mode and excluded counts/reasons, and add a desktop/narrow production-route regression that follows confirmation through the resulting report.",
+      "resolution": "The report renderer now recognizes final_partial as 'Final report · partial coverage', displays current-results completion without ASR/LLM retry, and renders the excluded total plus persisted reason breakdown. Independent re-review passed 103 Evaluation tests, scoped Ruff/Mypy, frontend build, Change gate, and the end-to-end confirmation-to-final-report Playwright scenario on desktop and narrow Chromium.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-173",
+      "status": "resolved",
+      "summary": "Paused or partially failed batches with durable successful results cannot be explicitly completed from those states; the existing early-finish command only accepts awaiting_review.",
+      "impact": "EV-20260922-7D19 has 17 completed Pass 2 decisions, completed reviews, 10 Benchmark samples and a preliminary report, but remains paused at evaluation_asr/53%. The operator must either leave it paused or invoke a retry that may repeat deterministic/non-retryable work.",
+      "source": "Read-only production inspection on 2026-09-22 plus router/storage trace: complete-review rejects any status other than awaiting_review even though freeze_final_report can reuse the persisted preliminary report.",
+      "next_action": "Implement PD-060 as a version-checked idempotent no-provider completion command, UI confirmation and regression coverage; deploy without operating 7D19.",
+      "resolution": "PD-060 adds a separate version-checked and idempotent completion command for paused/partially_failed batches with an existing preliminary report. It freezes final_partial/completed_partial from durable successes, excludes pending/incomplete/unclippable work, preserves checkpoints/cost/reviews/Benchmarks, and has no executor or provider-dispatch dependency. Independent verification passed 103 Evaluation tests, scoped Ruff/Mypy, frontend build, Change gate and the complete desktop/narrow confirmation-to-report flow. Production deployment remains tracked by Task 12.68.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-172",
+      "status": "open",
+      "summary": "Pass 1 packing does not reserve space for the longer corrective retry instruction, so a group that fits the first request can deterministically exceed the 64K final-input cap on every retry.",
+      "impact": "In EV-20260922-64A8, group P1G0001 contains 12 conversations and was planned at 65,528 tokens, only 8 below the cap. Its first DeepSeek request reached the provider and failed schema validation; attempts 2-6 then failed locally in about 20-30 ms with preflight_input_limit because the corrective instruction enlarged the final message. The batch remains partially_failed and those 12 conversations cannot recover through the current retry button.",
+      "source": "Read-only production SQLite and telemetry inspection on 2026-09-22. P1G0001 persisted estimated_input_tokens=65528, attempts=6 and status=failed. Telemetry shows attempt 1 took 27.8 seconds as a provider schema failure, while attempts 2-6 each failed locally in 20-30 ms. The executor packs with the fixed short user instruction but dispatches retries with a longer correction string.",
+      "next_action": "Include the maximum corrective-instruction overhead in initial packing or deterministically re-plan the failed group before retry, while preserving stable conversation membership and avoiding paid size discovery.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-171",
+      "status": "open",
+      "summary": "Retry failed resources does not filter persisted failures by retryability and can re-run deterministic or explicitly non-retryable failures.",
+      "impact": "EV-20260922-7D19 retried a Speechmatics full-call invalid_result through attempt 9 even though the new safe error marks it retryable=false. A later retry also regressed the visible batch from partial_failure/92% to evaluation_asr/53% and it was then paused, although all 17 persisted Pass 2 decisions remain completed. Event-alignment failures with completed frozen mappings are reproduced at attempts=0, and EV-20260922-64A8 repeated the deterministic Pass 1 preflight failure through attempt 6. Repeated clicks can add avoidable delay, misleading progress and, for provider work, cost without changing the outcome.",
+      "source": "Read-only production checkpoint/telemetry inspection on 2026-09-22 plus executor trace. At the latest check 7D19 had no active lease, status=paused, stage=evaluation_asr and progress=53 while evaluation_pass2_runs still contained 17 completed rows. The retry action changes the batch back to running, while Pass 1, full-call ASR and event-clip orchestration skip only completed rows and do not consult the persisted retryable contract before scheduling failed work.",
+      "next_action": "Build a retry plan from safe failure categories, skip retryable=false and deterministic completed-mapping failures, show what will and will not be retried before dispatch, and ensure a retry with no eligible work does not start paid calls.",
+      "disclosed_to_user": true
+    },
     {
       "id": "KI-170",
       "status": "resolved",
