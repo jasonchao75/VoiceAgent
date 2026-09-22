@@ -120,9 +120,7 @@ def align_customer_event_from_mapping(
     consensus_ids = {str(item["turn_id"]) for item in consensus}
     for item in accepted:
         if str(item["turn_id"]) not in consensus_ids:
-            failures.append(
-                {"provider": str(item["provider"]), "reason": "excluded_no_overlap"}
-            )
+            failures.append({"provider": str(item["provider"]), "reason": "excluded_no_overlap"})
     start_s = min(float(item["start_s"]) for item in consensus)
     end_s = max(float(item["end_s"]) for item in consensus)
     if start_s < 0 or end_s <= start_s:

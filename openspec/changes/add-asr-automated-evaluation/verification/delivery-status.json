@@ -77,6 +77,16 @@
   ],
   "known_issues": [
     {
+      "id": "KI-167",
+      "status": "resolved",
+      "summary": "The first PD-057 CI run rejected five Event Aligner source/test files because Ruff format --check was not run locally before the release commit.",
+      "impact": "GitHub Actions run 35699863501 stopped at backend checks and did not trigger production deployment; commit 910f139 is present on main but is not deployed.",
+      "source": "GitHub Actions VoiceAgent CI run 35699863501, Run backend checks: ruff format --check reported alignment.py, executor.py, pass2_packing.py, test_evaluation.py and test_evaluation_pass1_packing.py would be reformatted.",
+      "next_action": "Run the repository formatter only on the five reported files, repeat Ruff format/check, Mypy, all tests and the Change gate, then push a formatting-only follow-up commit and monitor CI/deployment.",
+      "resolution": "The five files were reformatted with the repository Ruff version. The exact CI backend sequence now passes locally: 67 files formatted, Ruff check green, Mypy green across 43 source files, 241 tests passed, Change gate 0 errors, and git diff --check green. A formatting-only follow-up commit will supersede the failed release attempt.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-166",
       "status": "resolved",
       "summary": "One insufficient Event Aligner event invalidates its complete request group and discards otherwise valid sibling mappings.",

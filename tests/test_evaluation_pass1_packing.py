@@ -132,9 +132,7 @@ def test_event_aligner_rejects_robot_turns_at_event_scope() -> None:
         units_by_conversation=_event_aligner_validation_input(),
     )
 
-    assert indexed["C1"]["events"][0]["alignment_error"] == (
-        "selected_non_customer_speaker"
-    )
+    assert indexed["C1"]["events"][0]["alignment_error"] == ("selected_non_customer_speaker")
     assert indexed["C1"]["events"][1]["alignment_error"] is None
 
 

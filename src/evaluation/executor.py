@@ -1862,9 +1862,7 @@ class EvaluationRunner:
                         continue
                     selected = catalog[str(mapping["turn_id"])]
                     provider = str(mapping["provider"])
-                    provider_positions.setdefault(provider, []).append(
-                        int(selected["turn_index"])
-                    )
+                    provider_positions.setdefault(provider, []).append(int(selected["turn_index"]))
             if any(positions != sorted(positions) for positions in provider_positions.values()):
                 raise ValueError("Event Aligner mappings violate conversation order")
             indexed[conversation_id] = {
@@ -2032,9 +2030,7 @@ class EvaluationRunner:
                             await asyncio.sleep(float(local_attempt))
 
         await asyncio.gather(*(align_group(group) for group in groups))
-        rows = await self.store.checkpoint_rows(
-            "evaluation_event_alignment_runs", batch_id
-        )
+        rows = await self.store.checkpoint_rows("evaluation_event_alignment_runs", batch_id)
         mappings: dict[tuple[str, str], dict[str, Any]] = {}
         for row in rows:
             if row.get("status") != "completed" or not isinstance(row.get("result"), dict):

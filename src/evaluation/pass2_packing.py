@@ -159,8 +159,7 @@ def event_alignment_output_reserve(
     if not units:
         return 0
     visible_json = sum(
-        768 + unit.target_event_count * max(2, unit.provider_count) * 320
-        for unit in units
+        768 + unit.target_event_count * max(2, unit.provider_count) * 320 for unit in units
     )
     return min(policy.max_output_tokens + 1, max(4_096, visible_json))
 
@@ -196,9 +195,7 @@ def pack_event_alignment_units(
     def fits(candidate: list[EventAlignmentUnit]) -> bool:
         # The frozen template embeds the payload and the provider also receives the
         # same JSON as the user message, so reserve both copies before dispatch.
-        input_tokens = prompt_tokens + 2 * sum(
-            unit.estimated_input_tokens for unit in candidate
-        )
+        input_tokens = prompt_tokens + 2 * sum(unit.estimated_input_tokens for unit in candidate)
         output_tokens = event_alignment_output_reserve(candidate, policy)
         return (
             output_tokens <= policy.max_output_tokens
@@ -246,8 +243,7 @@ def pack_event_alignment_units(
         available_context = policy.context_limit - prompt_tokens - policy.safety_margin
         total_input = 2 * sum(unit.estimated_input_tokens for unit in ordered)
         total_visible_output = sum(
-            768 + unit.target_event_count * max(2, unit.provider_count) * 320
-            for unit in ordered
+            768 + unit.target_event_count * max(2, unit.provider_count) * 320 for unit in ordered
         )
         lower_bound = max(
             1,

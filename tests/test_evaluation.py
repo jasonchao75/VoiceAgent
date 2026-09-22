@@ -3558,6 +3558,7 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
 
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     monkeypatch.setattr(runner, "_transcribe", transcribe)
+
     async def map_events(*_args: object) -> dict[tuple[str, str], dict[str, object]]:
         return {
             (_VALID_CONVERSATION_ID, event_id): {
