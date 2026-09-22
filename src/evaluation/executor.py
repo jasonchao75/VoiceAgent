@@ -20,15 +20,21 @@ from src.bots.crypto import BotKeyCipher
 from src.evaluation.alignment import build_turn_catalog
 from src.evaluation.asr_contract import ASRError, ASRResult
 from src.evaluation.pass2_packing import (
+    FIXED_EVALUATION_USER_MESSAGE,
     build_event_alignment_unit,
+    build_pass_one_payload,
     build_pass_one_unit,
+    build_pass_two_payload,
     build_unit,
     estimate_tokens,
+    evaluation_token_policy,
+    final_request_input_tokens,
+    input_limit,
     model_token_policy,
     pack_event_alignment_units,
     pack_pass_one_units,
     pack_units,
-    split_group,
+    render_prompt,
 )
 from src.evaluation.pricing import normalize_pricing_model_id
 from src.evaluation.prompts import (
@@ -67,6 +73,10 @@ class EvaluationBudgetReached(EvaluationExecutionError):
     """Raised before dispatch when the next request would exceed the frozen budget."""
 
 
+class EvaluationRequestTooLarge(EvaluationExecutionError):
+    """Raised before dispatch when a final request violates its frozen input cap."""
+
+
 def _parse_json(text: str) -> dict[str, Any]:
     """Parse a JSON object while tolerating an accidental Markdown fence."""
     value = text.strip()
@@ -81,16 +91,7 @@ def _parse_json(text: str) -> dict[str, Any]:
 
 def _render_prompt(template: str, payload: dict[str, Any]) -> str:
     """Replace every declared runtime slot with its exact serialized session value."""
-    rendered = template
-    for key, value in payload.items():
-        rendered = rendered.replace(
-            f"{{{{{key}}}}}",
-            json.dumps(value, ensure_ascii=False, separators=(",", ":")),
-        )
-    unresolved = sorted(set(part.split("}}", 1)[0] for part in rendered.split("{{")[1:]))
-    if unresolved:
-        raise ValueError("Prompt has unresolved runtime slots: " + ", ".join(unresolved))
-    return rendered
+    return render_prompt(template, payload)
 
 
 def _gemini_thinking_config(
@@ -164,6 +165,10 @@ def _safe_execution_failure(exc: Exception, stage: str) -> dict[str, object]:
     elif isinstance(exc, EvaluationBudgetReached):
         category = "budget_reached"
         message = "The frozen batch budget cannot admit the next external request."
+        retryable = False
+    elif isinstance(exc, EvaluationRequestTooLarge):
+        category = "preflight_input_limit"
+        message = str(exc).strip()[:240]
         retryable = False
     elif isinstance(exc, EvaluationExecutionError):
         controlled_message = str(exc).strip()[:240]
@@ -279,6 +284,8 @@ def _structured_retry_correction(exc: Exception) -> str:
 
 def _safe_structured_error(exc: Exception) -> str:
     """Persist an actionable schema category without provider content."""
+    if isinstance(exc, EvaluationRequestTooLarge):
+        return "preflight_input_limit"
     if isinstance(exc, json.JSONDecodeError):
         return "schema_invalid_json"
     if isinstance(exc, ValueError):
@@ -880,15 +887,32 @@ class EvaluationRunner:
         attempt: int,
         pause_batch_on_budget_rejection: bool = True,
         disable_thinking: bool = False,
+        system_only_payload: bool = False,
+        user_instruction: str | None = None,
+        max_input_tokens: int | None = None,
     ) -> dict[str, Any]:
         """Call a verified model and require one JSON object response."""
         provider = await self._model_provider(model_id)
         actual_model = model_id.split("::", 1)[1] if "::" in model_id else model_id
         base_url, key = await self._key(provider)
-        user_message = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-        system_prompt = _render_prompt(system_prompt, payload)
+        if system_only_payload:
+            user_message = user_instruction or FIXED_EVALUATION_USER_MESSAGE
+            estimated_input = final_request_input_tokens(
+                system_prompt,
+                payload,
+                user_message=user_message,
+            )
+            system_prompt = _render_prompt(system_prompt, payload)
+        else:
+            user_message = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+            system_prompt = _render_prompt(system_prompt, payload)
+            estimated_input = estimate_tokens(system_prompt) + estimate_tokens(payload)
         output_limit = max_output_tokens or 8_192
-        estimated_input = estimate_tokens(system_prompt) + estimate_tokens(payload)
+        if max_input_tokens is not None and estimated_input > max_input_tokens:
+            raise EvaluationRequestTooLarge(
+                "Final evaluation request exceeds the pre-dispatch input limit "
+                f"({estimated_input} > {max_input_tokens})."
+            )
         batch = await self.store.get_batch(batch_id)
         if batch is None:
             raise EvaluationExecutionError("Batch is unavailable")
@@ -1213,7 +1237,7 @@ class EvaluationRunner:
             return
         model_id = str(snapshot["pass_1_model"])
         provider = await self._model_provider(model_id)
-        policy = model_token_policy(provider, model_id.split("::", 1)[-1])
+        policy = evaluation_token_policy(provider, model_id.split("::", 1)[-1])
         existing = {
             str(row["conversation_id"]): row
             for row in await self.store.checkpoint_rows("evaluation_pass1_runs", batch_id)
@@ -1251,13 +1275,20 @@ class EvaluationRunner:
             )
             for conversation in pending_conversations
         ]
-        groups = pack_pass_one_units(
-            batch_id=batch_id,
-            units=units,
-            system_prompt=prompt,
-            shared_payload=shared_payload,
-            policy=policy,
-        )
+        try:
+            groups = pack_pass_one_units(
+                batch_id=batch_id,
+                units=units,
+                system_prompt=prompt,
+                shared_payload=shared_payload,
+                policy=policy,
+            )
+        except ValueError as exc:
+            if "Pass 1 token limit" in str(exc):
+                raise EvaluationRequestTooLarge(
+                    "One Pass 1 conversation exceeds the pre-dispatch input limit."
+                ) from exc
+            raise
         for group in groups:
             prior = prior_groups.get(group.group_id)
             if prior is not None:
@@ -1311,11 +1342,7 @@ class EvaluationRunner:
             prior = prior_groups.get(group.group_id)
             if prior is not None and prior.get("status") == "completed":
                 return
-            payload = {
-                "request_group_id": group.group_id,
-                "conversations": [unit.payload for unit in group.units],
-                **shared_payload,
-            }
+            payload = build_pass_one_payload(group.group_id, group.units, shared_payload)
             retry_correction: str | None = None
             if prior is not None and int(prior.get("attempts") or 0) > 0:
                 retry_correction = (
@@ -1328,13 +1355,10 @@ class EvaluationRunner:
                     attempt = prior_attempts + local_attempt
                     started_at = time.perf_counter()
                     try:
-                        attempt_payload = dict(payload)
-                        if retry_correction is not None:
-                            attempt_payload["retry_correction"] = retry_correction
                         result = await self._llm_json(
                             model_id,
                             prompt,
-                            attempt_payload,
+                            payload,
                             max_output_tokens=(
                                 policy.max_output_tokens
                                 if retry_correction is not None
@@ -1345,6 +1369,9 @@ class EvaluationRunner:
                             item_key=group.group_id,
                             attempt=attempt,
                             disable_thinking=True,
+                            system_only_payload=True,
+                            user_instruction=retry_correction,
+                            max_input_tokens=input_limit(policy),
                         )
                         indexed = self._validate_pass_one_group(
                             result,
@@ -2665,6 +2692,47 @@ class EvaluationRunner:
                         base_url.rstrip("/") + f"/v1/files/{file_id}", headers=headers
                     )
 
+    @staticmethod
+    def _bounded_full_call_evidence(
+        conversation_id: str,
+        provider_results: list[dict[str, Any]],
+        event_mapping: dict[str, Any] | None,
+    ) -> list[dict[str, Any]]:
+        """Keep only each mapped provider turn and its direct neighbors."""
+        if not event_mapping:
+            return []
+        providers, _lookup = build_turn_catalog(conversation_id, provider_results)
+        mapped_turns = {
+            str(row.get("provider") or ""): str(row.get("turn_id") or "")
+            for row in event_mapping.get("providers") or []
+            if isinstance(row, dict) and row.get("status") == "mapped"
+        }
+        bounded: list[dict[str, Any]] = []
+        for provider_row in providers:
+            provider = str(provider_row.get("provider") or "")
+            target_turn_id = mapped_turns.get(provider)
+            turns = list(provider_row.get("turns") or [])
+            target_index = next(
+                (
+                    index
+                    for index, turn in enumerate(turns)
+                    if str(turn.get("turn_id") or "") == target_turn_id
+                ),
+                None,
+            )
+            if target_index is None:
+                continue
+            start = max(0, target_index - 1)
+            end = min(len(turns), target_index + 2)
+            bounded.append(
+                {
+                    "provider": provider,
+                    "target_turn_id": target_turn_id,
+                    "turns": turns[start:end],
+                }
+            )
+        return bounded
+
     async def _run_pass_two(
         self,
         batch_id: str,
@@ -2674,7 +2742,7 @@ class EvaluationRunner:
         *,
         plan_key: str,
     ) -> None:
-        """Evaluate dynamically packed, conversation-atomic request groups."""
+        """Evaluate preflight-safe request groups with bounded per-Case evidence."""
         if not candidates:
             return
         candidate_by_key = {
@@ -2689,6 +2757,18 @@ class EvaluationRunner:
                 context_by_conversation.setdefault(str(row["conversation_id"]), []).append(
                     {"provider": row["provider"], **(row["result"] or {})}
                 )
+        alignment_by_case: dict[tuple[str, str], dict[str, Any]] = {}
+        alignment_rows = await self.store.checkpoint_rows(
+            "evaluation_event_alignment_runs", batch_id
+        )
+        for row in alignment_rows:
+            if row.get("status") != "completed" or not isinstance(row.get("result"), dict):
+                continue
+            for event in row["result"].get("events") or []:
+                if isinstance(event, dict):
+                    alignment_by_case[
+                        (str(row["conversation_id"]), str(event.get("event_id") or ""))
+                    ] = event
         asr_rows = await self.store.checkpoint_rows("evaluation_case_asr_runs", batch_id)
         asr_by_case: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for row in asr_rows:
@@ -2701,7 +2781,7 @@ class EvaluationRunner:
         prompt = str(snapshot.get("pass_2_prompt", {}).get("content", PASS_TWO_SYSTEM_PROMPT))
         model_id = str(snapshot["pass_2_model"])
         provider = await self._model_provider(model_id)
-        policy = model_token_policy(provider, model_id.split("::", 1)[-1])
+        policy = evaluation_token_policy(provider, model_id.split("::", 1)[-1])
         candidates_by_conversation: dict[str, list[dict[str, Any]]] = {}
         for candidate in candidates:
             candidates_by_conversation.setdefault(str(candidate["conversation_id"]), []).append(
@@ -2716,42 +2796,90 @@ class EvaluationRunner:
             "scenario_tags": snapshot.get("scenario_tags", SCENARIO_TAGS),
         }
         units = []
-        for conversation_id, conversation_candidates in candidates_by_conversation.items():
+        for conversation_id, conversation_candidates in sorted(candidates_by_conversation.items()):
             conversation = by_conversation[conversation_id]
             production_by_event = {
                 str(event["event_id"]): str(event["text"]) for event in conversation["events"]
             }
-            unit_payload = {
-                "conversation_id": conversation_id,
-                "conversation_history": conversation["events"],
-                "candidate_cases": conversation_candidates,
-                "full_audio_context_asr": context_by_conversation.get(conversation_id, []),
-                "production_transcripts": {
-                    str(candidate["event_id"]): production_by_event.get(
-                        str(candidate["event_id"]), ""
+            ordered_candidates = sorted(
+                conversation_candidates,
+                key=lambda candidate: str(candidate["event_id"]),
+            )
+
+            def build_case_unit(
+                subset: list[dict[str, Any]],
+                *,
+                current_conversation_id: str = conversation_id,
+                current_conversation: dict[str, Any] = conversation,
+                current_production_by_event: dict[str, str] = production_by_event,
+            ) -> Any:
+                unit_payload = {
+                    "conversation_id": current_conversation_id,
+                    "conversation_history": current_conversation["events"],
+                    "candidate_cases": subset,
+                    "full_audio_context_asr": [
+                        {
+                            "event_id": str(candidate["event_id"]),
+                            "providers": self._bounded_full_call_evidence(
+                                current_conversation_id,
+                                context_by_conversation.get(current_conversation_id, []),
+                                alignment_by_case.get(
+                                    (current_conversation_id, str(candidate["event_id"]))
+                                ),
+                            ),
+                        }
+                        for candidate in subset
+                    ],
+                    "production_transcripts": {
+                        str(candidate["event_id"]): current_production_by_event.get(
+                            str(candidate["event_id"]), ""
+                        )
+                        for candidate in subset
+                    },
+                    "asr_results": [
+                        {
+                            "event_id": str(candidate["event_id"]),
+                            "providers": asr_by_case.get(
+                                (current_conversation_id, str(candidate["event_id"])), []
+                            ),
+                        }
+                        for candidate in subset
+                    ],
+                }
+                return build_unit(
+                    current_conversation_id,
+                    unit_payload,
+                    [(current_conversation_id, str(candidate["event_id"])) for candidate in subset],
+                    policy,
+                )
+
+            pending_subsets = [ordered_candidates]
+            while pending_subsets:
+                subset = pending_subsets.pop(0)
+                unit = build_case_unit(subset)
+                try:
+                    pack_units(
+                        batch_id=f"{batch_id}:{plan_key}:preflight",
+                        units=[unit],
+                        system_prompt=prompt,
+                        policy=policy,
+                        shared_payload=shared_payload,
                     )
-                    for candidate in conversation_candidates
-                },
-                "asr_results": [
-                    {
-                        "event_id": str(candidate["event_id"]),
-                        "providers": asr_by_case.get(
-                            (conversation_id, str(candidate["event_id"])), []
-                        ),
-                    }
-                    for candidate in conversation_candidates
-                ],
-            }
-            case_keys = [
-                (conversation_id, str(candidate["event_id"]))
-                for candidate in conversation_candidates
-            ]
-            units.append(build_unit(conversation_id, unit_payload, case_keys, policy))
+                except ValueError as exc:
+                    if len(subset) == 1:
+                        raise EvaluationRequestTooLarge(
+                            "One Pass 2 Case exceeds the pre-dispatch input limit."
+                        ) from exc
+                    midpoint = len(subset) // 2
+                    pending_subsets[0:0] = [subset[:midpoint], subset[midpoint:]]
+                    continue
+                units.append(unit)
         groups = pack_units(
             batch_id=f"{batch_id}:{plan_key}",
             units=units,
-            system_prompt=prompt + json.dumps(shared_payload, ensure_ascii=False),
+            system_prompt=prompt,
             policy=policy,
+            shared_payload=shared_payload,
         )
         all_prior_groups = {
             str(row["group_id"]): row for row in await self.store.pass2_group_rows(batch_id)
@@ -2795,7 +2923,7 @@ class EvaluationRunner:
                     "unique_case_count": planned_case_total,
                     "request_group_count": planned_group_total,
                     "thinking": "enabled",
-                    "packing": "dynamic_conversation_atomic",
+                    "packing": "dynamic_case_preflight",
                 }
             },
         )
@@ -2810,21 +2938,25 @@ class EvaluationRunner:
 
         async def request_group(
             group: Any,
-            attempt_payload: dict[str, Any],
+            payload: dict[str, Any],
             attempt: int,
+            retry_correction: str | None,
         ) -> dict[str, Any]:
-            """Limit only paid provider calls, not recursive split orchestration."""
+            """Dispatch only a preflight-safe canonical request."""
             async with request_semaphore:
                 return await self._llm_json(
                     model_id,
                     prompt,
-                    attempt_payload,
+                    payload,
                     thinking=True,
                     max_output_tokens=group.reserved_output_tokens,
                     batch_id=batch_id,
                     stage="pass_2",
                     item_key=group.group_id,
                     attempt=attempt,
+                    system_only_payload=True,
+                    user_instruction=retry_correction,
+                    max_input_tokens=input_limit(policy),
                 )
 
         async def decide_group(group: Any) -> None:
@@ -2835,71 +2967,10 @@ class EvaluationRunner:
             if prior is not None and prior.get("status") == "completed":
                 return
             if prior is not None and prior.get("status") == "superseded":
-                children = split_group(
-                    batch_id=f"{batch_id}:{plan_key}",
-                    parent=group,
-                    system_prompt=prompt + json.dumps(shared_payload, ensure_ascii=False),
-                    policy=policy,
+                raise EvaluationExecutionError(
+                    "A legacy superseded Pass 2 group requires an explicit fresh retry plan."
                 )
-                if not children:
-                    raise EvaluationExecutionError(
-                        "A superseded Pass 2 group has no recoverable child groups"
-                    )
-                await split_failed_group(group, prior, children)
-                return
-            if (
-                prior is not None
-                and prior.get("status") == "failed"
-                and _pass_two_error_supports_split(prior.get("error"))
-            ):
-                children = split_group(
-                    batch_id=f"{batch_id}:{plan_key}",
-                    parent=group,
-                    system_prompt=prompt + json.dumps(shared_payload, ensure_ascii=False),
-                    policy=policy,
-                )
-                if children:
-                    await split_failed_group(group, prior, children)
-                    return
-            grouped_conversations = [unit.payload for unit in group.units]
-            payload = {
-                "request_group_id": group.group_id,
-                **shared_payload,
-                "conversations": grouped_conversations,
-                "candidate_case": [
-                    candidate
-                    for conversation in grouped_conversations
-                    for candidate in conversation["candidate_cases"]
-                ],
-                "conversation_history": [
-                    {
-                        "conversation_id": conversation["conversation_id"],
-                        "events": conversation["conversation_history"],
-                    }
-                    for conversation in grouped_conversations
-                ],
-                "production_transcript": [
-                    {
-                        "conversation_id": conversation["conversation_id"],
-                        "events": conversation["production_transcripts"],
-                    }
-                    for conversation in grouped_conversations
-                ],
-                "full_audio_context_asr": [
-                    {
-                        "conversation_id": conversation["conversation_id"],
-                        "providers": conversation["full_audio_context_asr"],
-                    }
-                    for conversation in grouped_conversations
-                ],
-                "asr_results": [
-                    {
-                        "conversation_id": conversation["conversation_id"],
-                        "providers": conversation["asr_results"],
-                    }
-                    for conversation in grouped_conversations
-                ],
-            }
+            payload = build_pass_two_payload(group.group_id, group.units, shared_payload)
             retry_correction: str | None = None
             if prior is not None and int(prior.get("attempts") or 0) > 0:
                 retry_correction = (
@@ -2911,10 +2982,7 @@ class EvaluationRunner:
                 attempt = prior_attempts + local_attempt
                 started_at = time.perf_counter()
                 try:
-                    attempt_payload = dict(payload)
-                    if retry_correction is not None:
-                        attempt_payload["retry_correction"] = retry_correction
-                    result = await request_group(group, attempt_payload, attempt)
+                    result = await request_group(group, payload, attempt, retry_correction)
                     indexed = self._validate_pass_two_group(
                         result,
                         group.case_keys,
@@ -3007,19 +3075,6 @@ class EvaluationRunner:
                     )
                     if local_attempt == 3:
                         error = _safe_structured_error(exc)
-                        children = split_group(
-                            batch_id=f"{batch_id}:{plan_key}",
-                            parent=group,
-                            system_prompt=prompt + json.dumps(shared_payload, ensure_ascii=False),
-                            policy=policy,
-                        )
-                        if children and _pass_two_error_supports_split(error):
-                            failed_parent = {
-                                "attempts": attempt,
-                                "error": error,
-                            }
-                            await split_failed_group(group, failed_parent, children)
-                            return
                         for key in group.case_keys:
                             await self.store.checkpoint_result(
                                 "evaluation_pass2_runs",
@@ -3051,59 +3106,6 @@ class EvaluationRunner:
                         )
                     else:
                         await asyncio.sleep(float(local_attempt))
-
-        async def split_failed_group(
-            parent: Any,
-            prior: dict[str, Any],
-            children: tuple[Any, ...],
-        ) -> None:
-            """Supersede one failed request and retry deterministic child groups."""
-            child_ids = [child.group_id for child in children]
-            await self.store.checkpoint_pass2_group(
-                batch_id=batch_id,
-                group_id=parent.group_id,
-                idempotency_key=parent.idempotency_key,
-                conversation_ids=[unit.conversation_id for unit in parent.units],
-                case_keys=list(parent.case_keys),
-                estimated_input_tokens=parent.estimated_input_tokens,
-                reserved_output_tokens=parent.reserved_output_tokens,
-                status="superseded",
-                attempts=int(prior.get("attempts") or 0),
-                result={"split_into": child_ids},
-                error=str(prior.get("error") or "") or None,
-            )
-            for child in children:
-                existing = {
-                    str(row["group_id"]): row for row in await self.store.pass2_group_rows(batch_id)
-                }.get(child.group_id)
-                if existing is None:
-                    await self.store.checkpoint_pass2_group(
-                        batch_id=batch_id,
-                        group_id=child.group_id,
-                        idempotency_key=child.idempotency_key,
-                        conversation_ids=[unit.conversation_id for unit in child.units],
-                        case_keys=list(child.case_keys),
-                        estimated_input_tokens=child.estimated_input_tokens,
-                        reserved_output_tokens=child.reserved_output_tokens,
-                        status="pending",
-                        attempts=0,
-                    )
-                if existing is None or existing.get("status") != "completed":
-                    for key in child.case_keys:
-                        await self.store.checkpoint_result(
-                            "evaluation_pass2_runs",
-                            (batch_id, key[0], key[1]),
-                            status="pending",
-                            attempts=int(existing.get("attempts") or 0) if existing else 0,
-                        )
-            await self._refresh_pass_two_group_status(batch_id)
-            await self.store.refresh_pass2_progress(
-                batch_id,
-                suspect_case_keys=set(candidate_by_key) if plan_key == "suspects" else None,
-                progress_start=75,
-                progress_end=92,
-            )
-            await asyncio.gather(*(decide_group(child) for child in children))
 
         await self.store.record_telemetry(
             batch_id=batch_id,

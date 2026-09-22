@@ -191,6 +191,12 @@
 - [x] 12.51 Implement dynamically packed Event Aligner groups over complete conversation units, validate only real turn IDs and customer-speaker ownership, isolate invalid event mappings from valid siblings, preserve actionable clip failure reasons, and add production-derived R6/R7/R13 regressions (PD-056, KI-163, KI-164, KI-165, KI-166)
 - [x] 12.52 Apply the repository Ruff formatter to the five Event Aligner source/test files rejected by CI, rerun the full release checks, and republish without changing behavior (KI-167)
 - [x] 12.53 Diagnose production deployment run 35700335615, record the exact failure boundary, apply only an in-scope safe correction if required, and reverify deployment plus public health (KI-168)
+- [x] 12.54 Build one canonical final-message path for Pass 1 and Pass 2: render runtime variables once into the System Prompt and send only a fixed content-free User instruction; remove nested/top-level/User-message evidence duplication (PD-058, KI-169)
+- [x] 12.55 Enforce the provider-independent 128K operating envelope for both passes using the exact final serialized request: input <= 64K, reasoning plus visible output <= 32K, safety >= 32K, further reduced by the frozen model's verified limits (PD-058)
+- [x] 12.56 Bound Pass 2 full-call evidence to each Case's Event Aligner-selected provider turns plus the immediate preceding/following provider turns, while retaining the complete historical conversation text and event-level retranscriptions (PD-058)
+- [x] 12.57 Pre-plan oversized Pass 2 conversations into stable Case subsets and fail a still-oversized single Case before dispatch; keep Pass 1 conversations indivisible and fail a still-oversized single conversation before dispatch (PD-058)
+- [x] 12.58 Add deterministic CB26-scale regressions for final-wire de-duplication, conservative preflight accounting, both-pass cap enforcement, Case-complete grouping, restart idempotency and no paid size-discovery retry; make no real external call (PD-058, KI-169)
+- [x] 12.59 Reconcile the size/schema failure categories and persisted diagnostics so an operator can distinguish preflight-cap rejection from provider JSON/ID-contract failure without logging customer evidence (PD-058, KI-169)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

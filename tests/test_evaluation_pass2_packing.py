@@ -6,12 +6,18 @@ import pytest
 
 from src.evaluation.executor import EvaluationRunner, _segment_id
 from src.evaluation.pass2_packing import (
+    FIXED_EVALUATION_USER_MESSAGE,
     ConversationUnit,
     ModelTokenPolicy,
+    build_pass_two_payload,
     build_unit,
+    evaluation_token_policy,
+    final_request_input_tokens,
     pack_units,
+    render_prompt,
     split_group,
 )
+from src.evaluation.prompts import PASS_TWO_SYSTEM_PROMPT
 
 
 def _unit(
@@ -108,6 +114,160 @@ def test_pack_units_has_stable_ids_for_retry() -> None:
     assert [(group.group_id, group.idempotency_key) for group in first] == [
         (group.group_id, group.idempotency_key) for group in second
     ]
+
+
+@pytest.mark.parametrize("provider", ["deepseek", "gemini", "gpt", "qwen"])
+def test_evaluation_policy_applies_one_shared_hard_envelope(provider: str) -> None:
+    """Every supported evaluation provider must stay inside the same operating cap."""
+    policy = evaluation_token_policy(provider)
+
+    assert policy.context_limit <= 131_072
+    assert policy.max_input_tokens is not None
+    assert policy.max_input_tokens <= 65_536
+    assert policy.max_output_tokens <= 32_768
+    assert policy.safety_margin == 32_768
+
+
+def test_canonical_pass2_request_projects_business_evidence_once() -> None:
+    """The final System Prompt owns evidence and the User message stays content-free."""
+    policy = evaluation_token_policy("deepseek")
+    marker = "UNIQUE-CUSTOMER-EVIDENCE-7f3a"
+    unit = build_unit(
+        "C1",
+        {
+            "conversation_id": "C1",
+            "conversation_history": [{"event_id": "R1", "text": marker}],
+            "candidate_cases": [{"conversation_id": "C1", "event_id": "R1"}],
+            "production_transcripts": {"R1": "history"},
+            "full_audio_context_asr": [],
+            "asr_results": [{"event_id": "R1", "providers": []}],
+        },
+        [("C1", "R1")],
+        policy,
+    )
+    payload = build_pass_two_payload("G0001-test", [unit], {})
+    template = "Evidence={{conversation_history}} Cases={{candidate_case}}"
+    rendered = render_prompt(template, payload)
+
+    assert "conversations" not in payload
+    assert rendered.count(marker) == 1
+    assert marker not in FIXED_EVALUATION_USER_MESSAGE
+    assert final_request_input_tokens(template, payload) <= 65_536
+
+
+def test_explicit_input_cap_rejects_a_large_single_case_before_dispatch() -> None:
+    """A single Case above 64K must fail locally even when provider context is larger."""
+    policy = evaluation_token_policy("deepseek")
+    unit = _unit("C-LARGE", 1, 40_000, policy)
+
+    with pytest.raises(ValueError, match="C-LARGE"):
+        pack_units(
+            batch_id="EV-LARGE",
+            units=[unit],
+            system_prompt="{{conversation_history}} {{candidate_case}} {{asr_results}}",
+            policy=policy,
+        )
+
+
+def test_pre_split_units_from_one_conversation_never_recombine() -> None:
+    """Stable Case subsets must remain separate once one conversation is pre-split."""
+    policy = ModelTokenPolicy(80_000, 20_000, 5_000, max_input_tokens=50_000)
+    units = [
+        build_unit(
+            "C1",
+            {
+                "conversation_id": "C1",
+                "conversation_history": [{"text": "history"}],
+                "candidate_cases": [{"conversation_id": "C1", "event_id": event_id}],
+                "asr_results": [],
+            },
+            [("C1", event_id)],
+            policy,
+        )
+        for event_id in ("R1", "R2")
+    ]
+
+    groups = pack_units(batch_id="EV-SPLIT", units=units, system_prompt="json", policy=policy)
+
+    assert len(groups) == 2
+    assert {group.case_keys[0][1] for group in groups} == {"R1", "R2"}
+
+
+def test_cb26_scale_plan_stays_under_the_final_wire_cap() -> None:
+    """The 34-Case/15-conversation shape must pre-pack below 64K per final request."""
+    policy = evaluation_token_policy("deepseek", "deepseek-v4-flash")
+    units: list[ConversationUnit] = []
+    for conversation_index in range(15):
+        case_count = 3 if conversation_index < 4 else 2
+        conversation_id = f"CB26-C{conversation_index:02d}"
+        case_keys = [(conversation_id, f"R{case_index:02d}") for case_index in range(case_count)]
+        units.append(
+            build_unit(
+                conversation_id,
+                {
+                    "conversation_id": conversation_id,
+                    "conversation_history": [
+                        {"event_id": "R00", "speaker": "customer", "text": "h" * 1_200}
+                    ],
+                    "candidate_cases": [
+                        {
+                            "conversation_id": conversation_id,
+                            "event_id": event_id,
+                            "issue_id": f"I{event_id}",
+                        }
+                        for _, event_id in case_keys
+                    ],
+                    "production_transcripts": {event_id: "production" for _, event_id in case_keys},
+                    "full_audio_context_asr": [
+                        {
+                            "event_id": event_id,
+                            "providers": [
+                                {
+                                    "provider": provider,
+                                    "target_turn_id": f"{conversation_id}:{provider}:turn:5",
+                                    "turns": [
+                                        {"turn_id": f"{conversation_id}:{provider}:turn:{turn}"}
+                                        for turn in (4, 5, 6)
+                                    ],
+                                }
+                                for provider in ("soniox", "speechmatics", "elevenlabs")
+                            ],
+                        }
+                        for _, event_id in case_keys
+                    ],
+                    "asr_results": [
+                        {
+                            "event_id": event_id,
+                            "providers": [
+                                {"provider": provider, "text": "a" * 240, "segments": []}
+                                for provider in ("soniox", "speechmatics", "elevenlabs")
+                            ],
+                        }
+                        for _, event_id in case_keys
+                    ],
+                },
+                case_keys,
+                policy,
+            )
+        )
+
+    groups = pack_units(
+        batch_id="EV-20260922-CB26-REGRESSION",
+        units=units,
+        system_prompt=PASS_TWO_SYSTEM_PROMPT,
+        policy=policy,
+        shared_payload={
+            "evaluation_context": {},
+            "reference_dictionaries": [],
+            "screening_strategy": "focused",
+            "scenario_tags": [],
+        },
+    )
+
+    assert sum(len(group.case_keys) for group in groups) == 34
+    assert len({key for group in groups for key in group.case_keys}) == 34
+    assert all(group.estimated_input_tokens <= 65_536 for group in groups)
+    assert all(group.reserved_output_tokens <= 32_768 for group in groups)
 
 
 def test_pack_units_rejects_one_oversized_conversation() -> None:

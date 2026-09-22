@@ -18,8 +18,9 @@
 ### 两阶段自动分析
 
 - 第一轮 LLM 仅从历史对话的用户事件中筛选可能改变业务含义的疑点 Case，同时保留同一疑点对话中的正常用户句子作为额外 Good Case 候选池；完整对话作为不可拆分单元动态装箱，整批安全可容纳时一次请求，超限时才按 Token 拆组。
+- Pass 1 与 Pass 2 使用统一的 128K 运行包络（最终输入最多 64K、Thinking 与可见输出合计最多 32K、保留 32K 安全余量），并按最终序列化消息预检；业务证据只在完成变量替换的 System Prompt 中出现一次，不再同时复制到 User JSON。
 - 每家评测 ASR 对每个命中的完整对话只提交一次显式开启说话人分离的异步文件转写；批量动态装箱的 Event Aligner 将目标 R 事件映射到各家既有 turn ID，程序要求至少两家映射同一用户发言并以这些真实 turn 区间的并集定位。Excel `time (s)` 不参与定位，纯用户 WAV 只校验并向外补齐边缘、不得缩短并集；最终单句切片再分别提交给各评测 ASR。
-- 第二轮 LLM 综合线上历史转写、完整对话、质检上下文、标签字典和各家评测 ASR 结果，输出 `Good Case`、`Bad Case` 或 `需人工复核`，不使用置信度阈值控制入库。
+- 第二轮 LLM 综合线上历史转写、完整对话、质检上下文、标签字典和各家评测 ASR 结果，输出 `Good Case`、`Bad Case` 或 `需人工复核`，不使用置信度阈值控制入库。完整历史文本保留；完整录音 ASR 上下文只携带 Event Aligner 命中的目标 turns 和直接相邻 turns，单通仍超限时在发送前按稳定 Case 子集拆组。
 - 第一轮疑点被第二轮判为 Good 是 Good Case 的一个来源；系统再从同一批疑点对话的正常候选池中抽取额外 Good Case，使最终可用 Good:Bad 目标为 1:1。候选不足时允许低于目标并披露差额。
 - 首期评测 ASR 为 Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scribe_v2` webhook。
 

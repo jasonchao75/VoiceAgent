@@ -8,8 +8,8 @@
 
 1. 完整历史文本对话；
 2. 第一轮 issue、目标事件和具体核验问题；
-3. 所有成功评测 ASR 对完整双向通话的重新转写；
-4. 目标事件附近包含 segment_id、时间范围、speaker 和原文的候选片段；
+3. Event Aligner 为目标事件选中的各家完整通话 ASR turn，以及同一厂商中紧邻的前一条和后一条 turn；
+4. 目标事件纯用户切片中包含 segment_id、时间范围、speaker 和原文的候选片段；
 5. 冻结的质检上下文、通用参考词典集合和已启用场景标签。
 
 你不能直接听音频。历史转写和每家评测 ASR 都只是证据，不是真值；多家一致也不能作为多数票直接决定答案。
@@ -26,7 +26,7 @@
   `{{conversation_history}}`
 - 按 conversation_id 分组的历史转写（`production_transcript`）：
   `{{production_transcript}}`
-- 按 conversation_id 分组的完整通话 ASR 上下文（`full_audio_context_asr`）。这些结果只用于理解对话上下文，绝不能作为当前 event 的正式候选文本、reference_text 或 segment 证据：
+- 按 conversation_id 和 event_id 分组的有限完整通话 ASR 上下文（`full_audio_context_asr`）。每家只包含 Event Aligner 选中的目标 turn 及其直接前后相邻 turn；这些结果只用于理解语境，绝不能作为当前 event 的正式候选文本、reference_text 或 segment 证据：
   `{{full_audio_context_asr}}`
 - 按 conversation_id 与目标 event_id 分组的纯用户事件切片重转录结果及分段（`asr_results`）。每家结果只对应当前目标用户事件，不得引用或补入相邻机器人轮次：
   `{{asr_results}}`

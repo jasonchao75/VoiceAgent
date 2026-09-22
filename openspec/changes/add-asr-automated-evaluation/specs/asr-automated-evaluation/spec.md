@@ -99,7 +99,7 @@
 
 系统 MUST 同时在包含疑点的对话内维护额外 Good Case 候选池；候选池只包含第一轮未发现实质疑点且具备有效文本和音频关联的用户事件。Excel `time (s)` 的准确性不得决定候选是否有效。
 
-第一轮请求 MUST 使用动态 Token 装箱。每通完整对话及其全部历史事件 MUST 作为不可拆分单元；当整个批次在冻结模型的上下文限制、结构化输出预留和安全余量内可安全容纳时 MUST 只发送一个外部请求，超限时 MUST 自动形成最少安全分组，不得按固定对话数拆分、截断对话或遗漏事件。每组 MUST 使用稳定 `request_group_id` 和冻结成员关系，模型输出 MUST 对组内每通对话恰好返回一个完整结果；组 ID 不匹配、对话遗漏、重复或越界时 MUST 拒绝整组。重试 MUST 复用原组成员和幂等键，并且只重试失败组。
+第一轮请求 MUST 使用动态 Token 装箱。每通完整对话及其全部历史事件 MUST 作为不可拆分单元。系统 MUST 对最终将发送的完整消息执行统一运行包络预检：输入不得超过 64K Token，Thinking 与可见输出合计不得超过 32K Token，并在 128K 总包络中保留至少 32K Token 安全余量；若冻结模型的已验证限制更小，则使用较小值。业务证据 MUST 只在完成变量替换的 System Prompt 中出现一次，User message MUST 为不含业务证据的固定执行指令，不得再次序列化同一 payload。当整个批次可安全容纳时 MUST 只发送一个外部请求，超限时 MUST 自动形成最少安全分组，不得按固定对话数拆分、截断对话或遗漏事件。每组 MUST 使用稳定 `request_group_id` 和冻结成员关系，模型输出 MUST 对组内每通对话恰好返回一个完整结果；组 ID 不匹配、对话遗漏、重复或越界时 MUST 拒绝整组。重试 MUST 复用原组成员和幂等键，并且只重试失败组。
 
 #### Scenario: Pack the complete first pass into one request
 
@@ -110,6 +110,11 @@
 
 - **WHEN** 整个批次不能安全容纳，但每通完整对话均可独立容纳
 - **THEN** 系统按 Token 和输出预留形成最少安全分组，保持每通对话完整且只出现一次
+
+#### Scenario: Reject one oversized first-pass conversation before dispatch
+
+- **WHEN** 单通完整对话在独立成组后仍超过最终消息的 64K 输入硬上限
+- **THEN** 系统在外部调用前将该对话标记为可操作的尺寸失败，不得拆断历史事件、截断文本或先向供应商付费试错
 
 #### Scenario: Retry only one failed first-pass group
 
@@ -203,14 +208,24 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 第二轮 LLM MUST 将历史转写和每家评测 ASR 都视为证据而非真值，并结合完整对话、语义、实体、数字、否定、语种、说话人和事件边界，为每个被评估用户事件输出 `Good Case`、`Bad Case` 或 `需人工复核`。
 
-第二轮 MUST 启用所选模型的 Thinking 能力，并使用动态 Token 装箱：同一通对话的完整历史、全部可用评测 ASR 证据及其候选 Case MUST 作为不可拆分单元；系统 MUST 根据已验证上下文上限、System Prompt、推理/输出预留、安全余量和 Case 输出数量计算最少安全分组，不得使用固定“每组几通”。全部单元可安全容纳时 MUST 只发起一组请求。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
+第二轮 MUST 启用所选模型的 Thinking 能力，并使用与第一轮相同的 128K 运行包络和最终消息预检。每个 Case MUST 保留所属 conversation 的完整历史文本、事件级重转录和必要配置证据；完整录音 ASR 上下文 MUST 只包含 Event Aligner 为该 Case 选中的 provider turns，以及同一 provider 中紧邻的前一条和后一条 turn（存在时），不得把无关的完整录音 turns 投影到请求中。系统 MUST 先按 conversation 装箱；单通仍超过 64K 输入硬上限时，MUST 在发送前按稳定 Case 子集拆组并为各子组重复必要的完整历史，不得截断历史文本。单个 Case 经限定证据后仍超限时 MUST 在外部调用前明确失败。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
 
 每个请求组 MUST 携带稳定 `request_group_id`。第二轮结构化输出 MUST 原样返回该 ID，并以顶层 `results[]` 为组内每个输入 Case 恰好返回一个结果；每个结果 MUST 包含匹配的 conversation/issue/event ID 和 `positioning_quality`。组 ID 不匹配、Case 遗漏、重复或越界 MUST 使整个组失败并按相同冻结成员重试，不得保存部分结论。
 
 #### Scenario: Dynamic packing grows with the batch
 
 - **WHEN** 一个批次的完整第二轮输入无法在预留 Thinking 和结构化输出空间后放入一个请求
-- **THEN** 系统按对话不可拆分地生成最少安全分组，只重试失败组，并保持每个唯一 Case 恰好获得一个最终决定
+- **THEN** 系统先按完整对话形成最少安全分组；单通超限时再按稳定 Case 子集预拆，同时在每个子组保留完整历史，并保持每个唯一 Case 恰好出现一次
+
+#### Scenario: Send one canonical evidence projection
+
+- **WHEN** 系统完成任一 Pass 1 或 Pass 2 请求组的变量渲染
+- **THEN** 最终 System Prompt 包含且仅包含一份业务证据，User message 只含固定执行指令；预检统计完整最终消息和协议结构开销，不得只统计去重前的逻辑单元或把同一 payload 再发送一次
+
+#### Scenario: Reject one oversized second-pass case before dispatch
+
+- **WHEN** 一个 Case 在保留完整历史、事件级重转录、Event Aligner 目标 turns 和直接相邻 turns 后仍超过最终输入硬上限
+- **THEN** 系统在供应商调用前记录明确尺寸失败，不得截断证据、扩大输出上限或通过付费递归请求发现该失败
 
 #### Scenario: Reject a mismatched grouped response
 
@@ -428,10 +443,10 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 - **WHEN** 用户对部分失败批次执行定向重试
 - **THEN** 系统只为失败且可重试的 provider/conversation job 创建新尝试，复用成功结果且不重复生成 Case 或 Benchmark
 
-#### Scenario: Adapt a failed Pass 2 request group
+#### Scenario: Retry a safely sized Pass 2 request group
 
-- **WHEN** 一个包含多个完整对话的第二轮请求组超时或持续返回无效 Segment ID
-- **THEN** 系统保留成功 Case 检查点，把失败组按完整对话边界拆为更小且身份稳定的子组后重试；不得再次原样提交已耗尽自动尝试的父组，也不得拆散单通完整对话
+- **WHEN** 已通过最终消息硬上限预检的第二轮请求组超时、返回无效 JSON 或引用不存在的 Segment ID
+- **THEN** 系统保留成功 Case 检查点，仅对相同安全成员执行有界且可审计的纠正重试；不得把请求尺寸发现留到失败后递归拆分，也不得再次提交已耗尽自动尝试的同一失败条件
 
 #### Scenario: Report truthful retry progress
 

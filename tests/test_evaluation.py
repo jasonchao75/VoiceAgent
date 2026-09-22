@@ -34,6 +34,7 @@ from src.evaluation.dataset import audit_dataset
 from src.evaluation.executor import (
     EvaluationBudgetReached,
     EvaluationExecutionError,
+    EvaluationRequestTooLarge,
     EvaluationRunner,
     _completion_limit_field,
     _gemini_thinking_config,
@@ -90,6 +91,15 @@ def test_structured_retry_correction_is_content_free_and_actionable() -> None:
     assert _safe_structured_error(ValueError("Pass 1 group omitted results")) == (
         "schema_contract: Pass 1 group omitted results"
     )
+    assert _safe_structured_error(EvaluationRequestTooLarge("too large")) == (
+        "preflight_input_limit"
+    )
+    failure = _safe_execution_failure(
+        EvaluationRequestTooLarge("One Pass 2 Case exceeds the pre-dispatch input limit."),
+        "pass_2",
+    )
+    assert failure["category"] == "preflight_input_limit"
+    assert failure["retryable"] is False
 
 
 @pytest.mark.asyncio
@@ -111,14 +121,16 @@ async def test_pass1_schema_retry_includes_correction_feedback(
     conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
     assert conversation is not None
     observed_payloads: list[dict[str, object]] = []
+    observed_instructions: list[str | None] = []
 
     async def llm_json(
         _model_id: str,
         _prompt: str,
         payload: dict[str, object],
-        **_kwargs: object,
+        **kwargs: object,
     ) -> dict[str, object]:
         observed_payloads.append(payload)
+        observed_instructions.append(cast(str | None, kwargs.get("user_instruction")))
         if len(observed_payloads) == 1:
             raise ValueError("Pass 1 group omitted results")
         return {
@@ -150,7 +162,9 @@ async def test_pass1_schema_retry_includes_correction_feedback(
     await runner._run_pass_one(batch["id"], [conversation])
 
     assert "retry_correction" not in observed_payloads[0]
-    assert "omitted results" in str(observed_payloads[1]["retry_correction"])
+    assert observed_instructions[0] is None
+    assert "omitted results" in str(observed_instructions[1])
+    assert observed_payloads[1] == observed_payloads[0]
     rows = await evaluation_store.checkpoint_rows("evaluation_pass1_runs", batch["id"])
     assert rows[0]["status"] == "completed", rows
     assert rows[0]["attempts"] == 2
@@ -211,10 +225,11 @@ async def test_pass1_retry_reuses_groups_and_skips_completed_membership(
         + max(unit.estimated_input_tokens for unit in units)
         + pass_one_output_reserve(1, 1, ModelTokenPolicy(1_000_000, 100_000, safety_margin))
         + safety_margin
+        + 4_096
     )
     policy = ModelTokenPolicy(one_unit_limit, 100_000, safety_margin)
     monkeypatch.setattr(
-        "src.evaluation.executor.model_token_policy", lambda _provider, _model=None: policy
+        "src.evaluation.executor.evaluation_token_policy", lambda _provider, _model=None: policy
     )
     calls: list[str] = []
     attempts: list[tuple[str, int]] = []
@@ -548,6 +563,48 @@ def test_full_call_diarization_consensus_ignores_excel_time() -> None:
     assert first["end_s"] == pytest.approx(5.0)
     assert first["excel_time_used"] is False
     assert first["consensus_providers"] == ["soniox", "speechmatics"]
+
+
+def test_pass2_full_call_context_keeps_only_target_and_direct_neighbors() -> None:
+    """Pass 2 must not receive unrelated turns from a long full-call transcript."""
+    conversation_id = "C-BOUNDED"
+    provider_result = {
+        "provider": "soniox",
+        "segments": [
+            {
+                "segment_id": f"s{index}",
+                "start": float(index * 2),
+                "end": float(index * 2 + 1),
+                "speaker": "A" if index % 2 == 0 else "B",
+                "text": f"turn-{index}",
+            }
+            for index in range(7)
+        ],
+    }
+    mapping = {
+        "event_id": "R4",
+        "providers": [
+            {
+                "provider": "soniox",
+                "status": "mapped",
+                "turn_id": f"{conversation_id}:soniox:turn:3",
+            }
+        ],
+    }
+
+    bounded = EvaluationRunner._bounded_full_call_evidence(
+        conversation_id,
+        [provider_result],
+        mapping,
+    )
+
+    turns = bounded[0]["turns"]
+    assert [turn["turn_id"] for turn in turns] == [
+        f"{conversation_id}:soniox:turn:2",
+        f"{conversation_id}:soniox:turn:3",
+        f"{conversation_id}:soniox:turn:4",
+    ]
+    assert all("turn-0" not in turn["text"] and "turn-6" not in turn["text"] for turn in turns)
 
 
 @pytest.mark.parametrize(
@@ -3840,7 +3897,44 @@ async def test_pass2_retry_reuses_failed_frozen_group(
         result={
             "scope": "full_call_context",
             "text": "complete call context",
-            "segments": [],
+            "segments": [
+                {"segment_id": "ctx-0", "start": 0.0, "end": 1.0, "speaker": "A", "text": "Prompt"},
+                {
+                    "segment_id": "ctx-1",
+                    "start": 1.0,
+                    "end": 2.0,
+                    "speaker": "B",
+                    "text": str(event["text"]),
+                },
+                {
+                    "segment_id": "ctx-2",
+                    "start": 2.0,
+                    "end": 3.0,
+                    "speaker": "A",
+                    "text": "Follow-up",
+                },
+            ],
+        },
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_event_alignment_runs",
+        (batch["id"], _VALID_CONVERSATION_ID),
+        status="completed",
+        attempts=1,
+        result={
+            "conversation_id": _VALID_CONVERSATION_ID,
+            "events": [
+                {
+                    "event_id": event_id,
+                    "providers": [
+                        {
+                            "provider": "elevenlabs",
+                            "status": "mapped",
+                            "turn_id": f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1",
+                        }
+                    ],
+                }
+            ],
         },
     )
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
@@ -3880,22 +3974,128 @@ async def test_pass2_retry_reuses_failed_frozen_group(
     assert second[0]["status"] == "failed"
     assert attempts == [1, 2, 3, 4, 5, 6]
     first_context = cast(list[dict[str, object]], observed_contexts[0])[0]
-    assert first_context["providers"] == [
-        {
-            "provider": "elevenlabs",
-            "scope": "full_call_context",
-            "text": "complete call context",
-            "segments": [],
-        }
-    ]
+    context_events = cast(list[dict[str, object]], first_context["events"])
+    providers = cast(list[dict[str, object]], context_events[0]["providers"])
+    assert providers[0]["target_turn_id"] == (f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1")
+    assert len(cast(list[object], providers[0]["turns"])) == 3
 
 
 @pytest.mark.asyncio
-async def test_pass2_split_resume_reuses_children_and_never_replays_parent(
+async def test_pass2_preflight_splits_one_large_conversation_by_case(
     evaluation_store: EvaluationStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A superseded parent must resume its stable children after restart."""
+    """One large conversation must become stable Case subsets before any paid request."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Preflight Case split",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-flash",
+            pass_2_model="deepseek-flash",
+            budget_limit=10,
+            idempotency_key="preflight-case-split-001",
+        )
+    )
+    source = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert source is not None
+    customer_events = [event for event in source["events"] if event["speaker"] == "customer"][:2]
+    assert len(customer_events) == 2
+    conversation = {
+        **source,
+        "events": [
+            {**event, "text": str(event.get("text") or "") + "h" * 500}
+            for event in source["events"]
+        ],
+    }
+    candidates = [
+        {
+            "conversation_id": _VALID_CONVERSATION_ID,
+            "event_id": str(event["event_id"]),
+            "origin": "suspect_candidate",
+        }
+        for event in customer_events
+    ]
+    for index, event in enumerate(customer_events):
+        await evaluation_store.checkpoint_result(
+            "evaluation_case_asr_runs",
+            (batch["id"], "elevenlabs", _VALID_CONVERSATION_ID, str(event["event_id"])),
+            status="completed",
+            attempts=1,
+            result={
+                "text": "z" * 4_000,
+                "segments": [
+                    {
+                        "segment_id": f"case-segment-{index}",
+                        "start": 0.0,
+                        "end": 1.0,
+                        "text": "z" * 4_000,
+                    }
+                ],
+            },
+        )
+    snapshot = dict(batch["snapshot"])
+    snapshot.update(
+        {
+            "evaluation_context": {},
+            "reference_dictionaries": [],
+            "scenario_tags": [],
+            "screening_strategy": "focused",
+            "pass_2_prompt": {
+                "content": (
+                    "{{request_group_id}}{{candidate_case}}{{conversation_history}}"
+                    "{{production_transcript}}{{full_audio_context_asr}}{{asr_results}}"
+                    "{{evaluation_context}}{{reference_dictionaries}}"
+                    "{{screening_strategy}}{{scenario_tags}}"
+                )
+            },
+        }
+    )
+    batch = {**batch, "snapshot": snapshot}
+    observed_case_counts: list[int] = []
+
+    async def provider(_model_id: str) -> str:
+        return "deepseek"
+
+    async def fail_request(*args: object, **_kwargs: object) -> dict[str, object]:
+        payload = cast(dict[str, object], args[2])
+        observed_case_counts.append(len(cast(list[object], payload["candidate_case"])))
+        raise EvaluationExecutionError("test-only provider failure")
+
+    async def no_wait(_seconds: float) -> None:
+        return None
+
+    monkeypatch.setattr(
+        runner := EvaluationRunner(evaluation_store, cast(BotKeyCipher, object())),
+        "_model_provider",
+        provider,
+    )
+    monkeypatch.setattr(runner, "_llm_json", fail_request)
+    monkeypatch.setattr(asyncio, "sleep", no_wait)
+    monkeypatch.setattr(
+        "src.evaluation.executor.evaluation_token_policy",
+        lambda _provider, _model=None: ModelTokenPolicy(
+            40_000,
+            20_000,
+            5_000,
+            reasoning_reserve=4_000,
+            max_input_tokens=22_000,
+        ),
+    )
+
+    await runner._run_pass_two(batch["id"], batch, [conversation], candidates, plan_key="suspects")
+
+    groups = await evaluation_store.pass2_group_rows(batch["id"])
+    assert len(groups) == 2
+    assert all(len(row["case_keys"]) == 1 for row in groups)
+    assert observed_case_counts == [1, 1, 1, 1, 1, 1]
+
+
+@pytest.mark.asyncio
+async def test_pass2_safe_group_failure_does_not_trigger_paid_recursive_split(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A preflight-safe schema failure keeps stable membership without paid splitting."""
     batch = await evaluation_store.create_batch(
         EvaluationBatchCreate(
             name="Adaptive grouped retry",
@@ -3955,37 +4155,10 @@ async def test_pass2_split_resume_reuses_children_and_never_replays_parent(
 
     async def grouped_request(*args: object, **kwargs: object) -> dict[str, object]:
         payload = cast(dict[str, object], args[2])
-        grouped = cast(list[dict[str, object]], payload["conversations"])
+        grouped = cast(list[dict[str, object]], payload["conversation_history"])
         membership = tuple(str(item["conversation_id"]) for item in grouped)
         calls.append(membership)
-        if len(membership) > 1:
-            raise TimeoutError("provider timeout")
-        request_group_id = str(payload["request_group_id"])
-        rows = []
-        for candidate in cast(list[dict[str, object]], payload["candidate_case"]):
-            rows.append(
-                {
-                    "conversation_id": str(candidate["conversation_id"]),
-                    "event_id": str(candidate["event_id"]),
-                    "decision": "Good Case",
-                    "reference_text": str(event["text"]),
-                    "reason": "The providers agree with the historical transcript.",
-                    "scenario_tag": "numbers-codes",
-                    "evidence_completeness": "complete",
-                    "positioning_quality": "exact",
-                    "vendor_evidence": [
-                        {
-                            "provider": "elevenlabs",
-                            "segment_ids": ["segment-1"],
-                            "relationship_to_history": "agrees",
-                        }
-                    ],
-                    "recommended_listening_segment_ids": ["segment-1"],
-                    "manual_review_question": None,
-                    "proposed_tag": None,
-                }
-            )
-        return {"request_group_id": request_group_id, "results": rows}
+        raise ValueError("Pass 2 references unknown ASR segments")
 
     async def no_wait(_seconds: float) -> None:
         return None
@@ -3998,14 +4171,15 @@ async def test_pass2_split_resume_reuses_children_and_never_replays_parent(
     first_calls = list(calls)
     await runner._run_pass_two(batch["id"], batch, conversations, candidates, plan_key="suspects")
 
-    assert calls == first_calls
-    assert [len(membership) for membership in calls] == [2, 2, 2, 1, 1]
+    assert len(first_calls) == 3
+    assert len(calls) == 6
+    assert all(len(membership) == 2 for membership in calls)
     groups = await evaluation_store.pass2_group_rows(batch["id"])
-    assert sum(row["status"] == "superseded" for row in groups) == 1
-    assert sum(row["status"] == "completed" for row in groups) == 2
+    assert len(groups) == 1
+    assert groups[0]["status"] == "failed"
     results = await evaluation_store.checkpoint_rows("evaluation_pass2_runs", batch["id"])
     assert len(results) == 2
-    assert all(row["status"] == "completed" for row in results)
+    assert all(row["status"] == "failed" for row in results)
 
 
 @pytest.mark.asyncio

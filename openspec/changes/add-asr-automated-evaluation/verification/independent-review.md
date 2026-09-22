@@ -1,3 +1,35 @@
+# Independent Review — PD-058 two-pass evaluation hard cap
+
+- Status: **PASS**
+- Date: 2026-09-22
+- Scope: PD-058 and Tasks 12.54–12.59 only
+- Reviewer boundary: independent verification only; no implementation change, deployment, push, production mutation, batch resume, or paid provider call was performed.
+
+## Decision
+
+PD-058 passes independent local verification. Pass 1 and Pass 2 now derive an effective policy from the lower of the frozen provider limits and the shared 131,072-token operating envelope, with final input capped at 65,536, combined reasoning/visible generation capped at 32,768, and 32,768 reserved as safety. Both packing and the final dispatch boundary measure the rendered System message, fixed content-free User instruction and protocol overhead before budget reservation or provider dispatch.
+
+The runtime uses one canonical payload per pass and projects it only through the rendered System Prompt; Pass 2 no longer emits the former nested `conversations` copy alongside top-level fields or repeats the payload in the User message. Pass 2 reconstructs per-Case full-call context from persisted Event Aligner mappings and retains only the mapped provider turn plus its direct same-provider neighbors. Complete historical conversation text and event-level retranscriptions remain present.
+
+An oversized Pass 2 conversation is deterministically bisected by ordered Case membership before dispatch until every unit fits; pre-split units from the same conversation cannot recombine. A still-oversized single Case, or an indivisible oversized Pass 1 conversation, raises the content-free `preflight_input_limit` category before any LLM request. Once a group is preflight-safe, schema/unknown-ID failures retry the same frozen membership and are not used as paid size-discovery signals. The CB26-shaped 34-Case/15-conversation regression preserves all unique Cases and keeps every final request below the common cap.
+
+## Reproducible evidence
+
+- Change gate: **PASS with warnings** (0 errors, 15 disclosed warnings, 2 unrelated unchecked tasks).
+- PD-058 focused suites: **126 passed**.
+- Full repository suite: **251 passed**, with the two already-disclosed dependency deprecation warnings.
+- Scoped Ruff, Mypy for `src/evaluation`, and `git diff --check`: **PASS**.
+- Static request trace: Gemini, Azure GPT, native Qwen and OpenAI-compatible providers all receive rendered evidence in the System role and only the fixed/retry execution instruction in the User role; preflight runs before budget reservation and the network call.
+- Stored-data path trace: `evaluation_event_alignment_runs` supplies target turn IDs, `evaluation_asr_runs` supplies persisted full-call provider turns, and `evaluation_case_asr_runs` remains the separate event-level candidate source.
+
+## Remaining boundary
+
+- `UV-028` remains open: the stopped `EV-20260922-CB26` batch was not resumed or mutated, and no new user-initiated production batch has yet demonstrated the corrected policy with real provider usage/output.
+- `UV-026` remains open: the integrated Event Aligner has deterministic/local coverage but no paid full-batch production run.
+- This verdict covers static, deterministic and mocked local evidence. It does not claim production deployment or external-real provider validation.
+
+---
+
 # Independent Review — Event Aligner production-image packaging correction
 
 - Status: **PASS** (source/package contract only)

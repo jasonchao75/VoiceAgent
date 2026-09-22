@@ -85,6 +85,15 @@
   ],
   "known_issues": [
     {
+      "id": "KI-169",
+      "status": "open",
+      "summary": "EV-20260922-CB26 reached 75% while DeepSeek Pass 2 repeatedly returned invalid JSON or referenced unknown ASR segment IDs across recursively split groups; the product owner then stopped the batch.",
+      "impact": "All 34 suspect Cases remain pending with zero completed decisions and the batch is paused at USD 1.8973. The largest original requests used 604,856 and 534,095 actual provider input tokens, below DeepSeek's advertised 1M context, but each combined a large noisy evidence set with a strict structured-output and exact-ID contract. Adaptive splitting reduced group size but did not eliminate the failure condition before the stop.",
+      "source": "Read-only production SQLite, telemetry and cost-ledger inspection on 2026-09-22 UTC. The persisted 770,961/637,206 figures are conservative UTF-8-byte estimates, not provider token counts; no context-length HTTP error occurred. Of 1,382,599 unique Pass 2 payload bytes, full-call three-provider ASR contributes 1,031,619 (74.6%), event-level ASR contributes 284,188 (20.6%), and the request schema projects the complete unit evidence a second time at top level. Pass 1 also used about 83.8k actual input tokens, failed schema validation once, then succeeded on attempt two.",
+      "next_action": "Deploy the locally verified PD-058 implementation, confirm CI, production revision and public health, then let the product owner validate the corrected behavior only through a new user-initiated batch. Do not resume CB26 or make a paid call without separate authorization.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-168",
       "status": "resolved",
       "summary": "The PD-057 production deployment workflow failed after the corrected CI run succeeded.",
@@ -1655,6 +1664,13 @@
     }
   ],
   "unverified_items": [
+    {
+      "id": "UV-028",
+      "status": "open",
+      "summary": "EV-20260922-CB26 was stopped at Pass 2 with no completed Cases, so recovery under a corrected hard-cap policy remains unverified.",
+      "reason": "Read-only inspection confirms status=paused, progress=75, cost=USD 1.8973 and 34 pending suspect Cases. The user stopped the run; the agent made no production mutation or external request. PD-058 is implemented and locally verified with a deterministic 34-Case/15-conversation CB26-shaped regression, but production deployment and a corrected user-initiated real batch have not yet been observed.",
+      "disclosed_to_user": true
+    },
     {
       "id": "UV-027",
       "status": "resolved",

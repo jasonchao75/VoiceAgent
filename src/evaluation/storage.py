@@ -783,7 +783,7 @@ class EvaluationStore:
         approved = {"pass_1": PASS_ONE_SYSTEM_PROMPT, "pass_2": PASS_TWO_SYSTEM_PROMPT}
         policy_markers = {
             "pass_1": "唯一质检目标是检测线上 ASR",
-            "pass_2": "纯用户事件切片重转录结果",
+            "pass_2": "每家只包含 Event Aligner 选中的目标 turn",
         }
         for template_key, slots in required_slots.items():
             row = await (

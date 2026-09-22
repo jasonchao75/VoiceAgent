@@ -4,12 +4,26 @@
 
 ## Status
 
-- Recorded decisions: 44 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 45 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
-- Last reviewed: 2026-09-21
+- Last reviewed: 2026-09-22
 
 ## Decisions
+
+### PD-058 — 两轮评测使用统一 128K 包络并去除重复证据投影
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: CB26 第二轮为何在 DeepSeek 标称 1M 上下文内仍持续返回无效 JSON/未知 Segment ID，以及应如何限制两轮评测请求
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人先确认推荐的两轮共同硬上限方案，随后确认修订现有 `add-asr-automated-evaluation` Change，而不是建立并行 Change
+- Confirmation quote: “可以，不过当时为什么有重复投影啊？”；“同意”
+- Decision: Pass 1 与 Pass 2 采用与供应商无关的 128K Token 运行包络：最终序列化输入硬上限 64K，Thinking 与可见输出合计最多 32K，并保留 32K 安全余量；实际生效值取该公共上限与冻结模型已验证限制中的较小者。装箱必须基于最终发送的完整消息计算，而不是只统计去重后的 conversation unit。动态证据只在完成变量替换的 System Prompt 中出现一次，User message 仅保留不含业务证据的固定执行指令，不得再次序列化同一 payload。Pass 2 保留每个 Case 所属 conversation 的完整历史文本，但完整录音 ASR 上下文只发送 Event Aligner 已映射的目标 turns 及每家 provider 的直接相邻 turns；同一 conversation 仍超限时，发送前按稳定 Case 子集拆组并重复必要的完整历史。单个 Pass 1 conversation 或单个 Pass 2 Case 在上述裁剪后仍无法满足 64K 输入上限时，必须在外部调用前明确失败，不得靠付费请求或失败后递归拆分发现超限。Event Aligner 不在本决定范围内。
+- Reason: `EV-20260922-CB26` 的 77 万“Token”是 UTF-8 字节上界，不是供应商实际 Token；真实 DeepSeek Pass 2 输入仍达到 534,095–604,856 Token，并在未触发上下文长度错误的情况下返回无效 JSON或引用不存在的 ASR Segment ID。根因是同一证据同时存在于嵌套 `conversations`、旧顶层字段、完成变量替换的 System Prompt 和 User JSON 中，且完整录音 ASR 占去重后输入约 74.6%。标称上下文容量不能保证超长、重复结构化任务的 ID 与 JSON 可靠性。
+- Consequences: PD-017、PD-052 中“Pass 2 单通完整对话永不拆分”和“失败后才递归拆组”的部分被本决定收窄：完整历史仍不截断，但 Case 可在同一 conversation 内预拆；尺寸规划在付费调用前完成。第一轮继续保持 conversation 不可拆。已有批次和报告保持不可变，已停止的 CB26 不自动恢复或重跑。该范围作为现有 Change 的增量里程碑实施，不另建并行 Change。
+- Updated artifacts: `proposal.md`、Delta Specs、`design.md`、`tasks.md`、`prototypes/README.md`、`verification/delivery-status.json`。
+- Verification: deterministic/mock 必须证明最终消息只含一份业务证据、两轮均执行 64K 输入/32K 生成/32K 安全预检、Pass 1 单通超限预失败、Pass 2 同通按 Case 预拆、目标及直接相邻 provider turns 被保留、无关完整录音 turns 被排除，并使用 CB26 规模回归证明发送前形成安全组；不得主动恢复 CB26 或发起真实付费调用。
 
 ### PD-057 — 发布 Event Aligner 增量供线上验收
 

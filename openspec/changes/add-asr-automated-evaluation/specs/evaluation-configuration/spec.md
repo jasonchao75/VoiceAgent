@@ -73,7 +73,7 @@
 
 两轮完整 System Prompt MUST 对管理员全文可见，但默认 MUST 为只读状态。页面 MUST 提供明确的“编辑固定模板”入口；进入编辑状态后才允许修改、恢复完整默认模板并另存新版本。Prompt 原文 MUST NOT 随界面语言切换自动翻译，应用代码 MUST NOT 隐藏另一段会改变业务判断的 Prompt 规则。
 
-质检上下文 MUST 提供两轮成品 Prompt 预览。预览 MUST 同时显示保留 `{{variable}}` 插槽的 Prompt 模板，以及使用当前上下文字段和代表性 Session 数据完成替换后的成品 Prompt；`evaluation_context` MUST 使用当前表单值，`reference_dictionaries` MUST 展开所有关联词典的完整 entries。第一轮模板 MUST 包含 `{{conversation_history}}`、`{{evaluation_context}}`、`{{reference_dictionaries}}`、`{{screening_strategy}}` 和 `{{scenario_tags}}`；第二轮还 MUST 包含 `{{request_group_id}}`、`{{candidate_case}}`、`{{production_transcript}}` 和 `{{asr_results}}`，并公开 `results[]` 与 `positioning_quality` 输出契约。
+质检上下文 MUST 提供两轮成品 Prompt 预览。预览 MUST 同时显示保留 `{{variable}}` 插槽的 Prompt 模板，以及使用当前上下文字段和代表性 Session 数据完成替换后的成品 Prompt；`evaluation_context` MUST 使用当前表单值，`reference_dictionaries` MUST 展开所有关联词典的完整 entries。第一轮模板 MUST 包含 `{{conversation_history}}`、`{{evaluation_context}}`、`{{reference_dictionaries}}`、`{{screening_strategy}}` 和 `{{scenario_tags}}`；第二轮还 MUST 包含 `{{request_group_id}}`、`{{candidate_case}}`、`{{production_transcript}}` 和 `{{asr_results}}`，并公开 `results[]` 与 `positioning_quality` 输出契约。运行时完成变量替换后的 System Prompt MUST 是这些动态业务证据的唯一线上投影；User message MUST 只使用不含业务数据的固定执行指令，不得再次发送变量包、嵌套 conversation 或同一 JSON payload。
 
 预览 MUST 提供“表单字段 → 模板变量 → 成品 Prompt 字段”的对应关系。管理员点击任一对应项时，页面 MUST 同时标记模板中的变量插槽和成品 Prompt 中已替换的字段或内容位置。
 
@@ -103,6 +103,11 @@
 
 - **WHEN** 管理员预览第二轮 Prompt
 - **THEN** 页面展示请求组 ID、组内候选数组、按 conversation ID 分组的历史对话/历史转写/评测 ASR，以及外层 `results[]` 和逐 Case `positioning_quality` 契约，不得仍展示单 Case 顶层输出
+
+#### Scenario: Preview the canonical final request
+
+- **WHEN** 管理员查看任一轮成品请求预览
+- **THEN** 页面将完成变量替换的 System Prompt 标为业务证据的唯一投影，并说明 User message 是固定执行指令；不得把重复的 User JSON 展示或描述为运行时必需输入
 
 ### Requirement: Idempotent prepared evaluation defaults
 

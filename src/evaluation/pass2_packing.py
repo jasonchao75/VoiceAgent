@@ -1,4 +1,4 @@
-"""Deterministic, conversation-atomic packing for Pass 2 requests."""
+"""Deterministic request packing for evaluation LLM stages."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ class ModelTokenPolicy:
     max_output_tokens: int
     safety_margin: int
     reasoning_reserve: int = 16_384
+    max_input_tokens: int | None = None
 
 
 @dataclass(frozen=True)
@@ -99,6 +100,16 @@ class EventAlignmentGroup:
         return tuple(unit.conversation_id for unit in self.units)
 
 
+EVALUATION_CONTEXT_LIMIT = 131_072
+EVALUATION_INPUT_LIMIT = 65_536
+EVALUATION_OUTPUT_LIMIT = 32_768
+EVALUATION_SAFETY_MARGIN = 32_768
+FIXED_EVALUATION_USER_MESSAGE = (
+    "Evaluate the evidence in the system prompt and return only the required JSON object."
+)
+_MESSAGE_PROTOCOL_OVERHEAD = 1_024
+
+
 _PROVIDER_POLICIES = {
     # Safe operating ceilings, not advertised maxima. DeepSeek's current official
     # context is larger; keeping headroom protects structured output and reasoning.
@@ -121,6 +132,27 @@ def model_token_policy(provider: str, model_id: str | None = None) -> ModelToken
         raise ValueError(f"No verified token policy for provider: {provider}") from exc
 
 
+def evaluation_token_policy(provider: str, model_id: str | None = None) -> ModelTokenPolicy:
+    """Apply the shared Pass 1/Pass 2 envelope below provider-specific limits."""
+    provider_policy = model_token_policy(provider, model_id)
+    context_limit = min(provider_policy.context_limit, EVALUATION_CONTEXT_LIMIT)
+    max_output_tokens = min(provider_policy.max_output_tokens, EVALUATION_OUTPUT_LIMIT)
+    safety_margin = min(EVALUATION_SAFETY_MARGIN, max(0, context_limit - max_output_tokens))
+    max_input_tokens = min(
+        EVALUATION_INPUT_LIMIT,
+        max(0, context_limit - max_output_tokens - safety_margin),
+    )
+    if max_input_tokens <= 0:
+        raise ValueError(f"Model cannot satisfy the evaluation token envelope: {provider}")
+    return ModelTokenPolicy(
+        context_limit=context_limit,
+        max_output_tokens=max_output_tokens,
+        safety_margin=safety_margin,
+        reasoning_reserve=min(provider_policy.reasoning_reserve, max_output_tokens),
+        max_input_tokens=max_input_tokens,
+    )
+
+
 def estimate_tokens(value: object) -> int:
     """Overestimate multilingual JSON tokens from UTF-8 bytes.
 
@@ -129,6 +161,93 @@ def estimate_tokens(value: object) -> int:
     """
     encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     return max(1, len(encoded))
+
+
+def render_prompt(template: str, payload: dict[str, Any]) -> str:
+    """Replace every declared runtime slot with its exact serialized value."""
+    rendered = template
+    for key, value in payload.items():
+        rendered = rendered.replace(
+            f"{{{{{key}}}}}",
+            json.dumps(value, ensure_ascii=False, separators=(",", ":")),
+        )
+    unresolved = sorted(set(part.split("}}", 1)[0] for part in rendered.split("{{")[1:]))
+    if unresolved:
+        raise ValueError("Prompt has unresolved runtime slots: " + ", ".join(unresolved))
+    return rendered
+
+
+def final_request_input_tokens(
+    system_prompt_template: str,
+    payload: dict[str, Any],
+    *,
+    user_message: str = FIXED_EVALUATION_USER_MESSAGE,
+) -> int:
+    """Return a conservative upper bound for the exact final message pair."""
+    rendered = render_prompt(system_prompt_template, payload)
+    return estimate_tokens(rendered) + estimate_tokens(user_message) + _MESSAGE_PROTOCOL_OVERHEAD
+
+
+def input_limit(policy: ModelTokenPolicy) -> int:
+    """Return the explicit input cap after provider and shared-envelope limits."""
+    derived = max(0, policy.context_limit - policy.safety_margin)
+    return min(policy.max_input_tokens or derived, derived)
+
+
+def build_pass_one_payload(
+    request_group_id: str,
+    units: list[PassOneUnit] | tuple[PassOneUnit, ...],
+    shared_payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the single canonical Pass 1 runtime payload."""
+    return {
+        "request_group_id": request_group_id,
+        "conversations": [unit.payload for unit in units],
+        **shared_payload,
+    }
+
+
+def build_pass_two_payload(
+    request_group_id: str,
+    units: list[ConversationUnit] | tuple[ConversationUnit, ...],
+    shared_payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Build one de-duplicated Pass 2 payload from internal Case units."""
+    return {
+        "request_group_id": request_group_id,
+        **shared_payload,
+        "candidate_case": [
+            candidate for unit in units for candidate in unit.payload.get("candidate_cases", [])
+        ],
+        "conversation_history": [
+            {
+                "conversation_id": unit.conversation_id,
+                "events": unit.payload.get("conversation_history", []),
+            }
+            for unit in units
+        ],
+        "production_transcript": [
+            {
+                "conversation_id": unit.conversation_id,
+                "events": unit.payload.get("production_transcripts", {}),
+            }
+            for unit in units
+        ],
+        "full_audio_context_asr": [
+            {
+                "conversation_id": unit.conversation_id,
+                "events": unit.payload.get("full_audio_context_asr", []),
+            }
+            for unit in units
+        ],
+        "asr_results": [
+            {
+                "conversation_id": unit.conversation_id,
+                "events": unit.payload.get("asr_results", []),
+            }
+            for unit in units
+        ],
+    }
 
 
 def output_reserve(case_count: int, policy: ModelTokenPolicy) -> int:
@@ -350,17 +469,30 @@ def pack_pass_one_units(
     policy: ModelTokenPolicy,
 ) -> list[PassOneGroup]:
     """Pack complete conversations into deterministic first-pass request groups."""
-    prompt_tokens = estimate_tokens(system_prompt) + estimate_tokens(shared_payload)
+    placeholder_group_id = "P1G0000-000000000000"
+    fixed_input_tokens = (
+        estimate_tokens(system_prompt)
+        + estimate_tokens(shared_payload)
+        + estimate_tokens(FIXED_EVALUATION_USER_MESSAGE)
+        + _MESSAGE_PROTOCOL_OVERHEAD
+    )
 
     def fits(candidate: list[PassOneUnit]) -> bool:
-        input_tokens = prompt_tokens + sum(unit.estimated_input_tokens for unit in candidate)
+        input_tokens = max(
+            final_request_input_tokens(
+                system_prompt,
+                build_pass_one_payload(placeholder_group_id, candidate, shared_payload),
+            ),
+            fixed_input_tokens + sum(unit.estimated_input_tokens for unit in candidate),
+        )
         output_tokens = pass_one_output_reserve(
             len(candidate),
             sum(unit.user_event_count for unit in candidate),
             policy,
         )
         return (
-            output_tokens <= policy.max_output_tokens
+            input_tokens <= input_limit(policy)
+            and output_tokens <= policy.max_output_tokens
             and input_tokens + output_tokens + policy.safety_margin <= policy.context_limit
         )
 
@@ -391,8 +523,12 @@ def pack_pass_one_units(
                     placements,
                     key=lambda placement: (
                         policy.context_limit
-                        - prompt_tokens
-                        - sum(item.estimated_input_tokens for item in placement[1])
+                        - final_request_input_tokens(
+                            system_prompt,
+                            build_pass_one_payload(
+                                placeholder_group_id, placement[1], shared_payload
+                            ),
+                        )
                         - pass_one_output_reserve(
                             len(placement[1]),
                             sum(item.user_event_count for item in placement[1]),
@@ -406,7 +542,11 @@ def pack_pass_one_units(
                 greedy.append([unit])
 
         best = [list(members) for members in greedy]
-        available_context = policy.context_limit - prompt_tokens - policy.safety_margin
+        fixed_input = fixed_input_tokens
+        available_context = min(
+            input_limit(policy) - fixed_input,
+            policy.context_limit - fixed_input - policy.safety_margin,
+        )
         total_input = sum(unit.estimated_input_tokens for unit in ordered)
         total_visible_output = sum(512 + unit.user_event_count * 192 for unit in ordered)
         lower_bound = max(
@@ -503,8 +643,15 @@ def pack_pass_one_units(
                 group_id=f"P1G{index:04d}-{digest[:12]}",
                 idempotency_key=digest,
                 units=tuple(members),
-                estimated_input_tokens=prompt_tokens
-                + sum(unit.estimated_input_tokens for unit in members),
+                estimated_input_tokens=max(
+                    final_request_input_tokens(
+                        system_prompt,
+                        build_pass_one_payload(
+                            f"P1G{index:04d}-{digest[:12]}", members, shared_payload
+                        ),
+                    ),
+                    fixed_input_tokens + sum(unit.estimated_input_tokens for unit in members),
+                ),
                 reserved_output_tokens=pass_one_output_reserve(
                     len(members),
                     sum(unit.user_event_count for unit in members),
@@ -547,18 +694,35 @@ def pack_units(
     units: list[ConversationUnit],
     system_prompt: str,
     policy: ModelTokenPolicy,
+    shared_payload: dict[str, Any] | None = None,
 ) -> list[PassTwoGroup]:
     """Pack units into the minimum safe number of deterministic request groups."""
-    prompt_tokens = estimate_tokens(system_prompt)
+    shared_payload = shared_payload or {}
+    placeholder_group_id = "G0000-000000000000"
+    fixed_input_tokens = (
+        estimate_tokens(system_prompt)
+        + estimate_tokens(shared_payload)
+        + estimate_tokens(FIXED_EVALUATION_USER_MESSAGE)
+        + _MESSAGE_PROTOCOL_OVERHEAD
+    )
     ordered = sorted(units, key=lambda unit: unit.conversation_id)
     groups: list[list[ConversationUnit]] = []
 
     def fits(candidate: list[ConversationUnit]) -> bool:
-        input_tokens = prompt_tokens + sum(unit.estimated_input_tokens for unit in candidate)
+        if len({unit.conversation_id for unit in candidate}) != len(candidate):
+            return False
+        input_tokens = max(
+            final_request_input_tokens(
+                system_prompt,
+                build_pass_two_payload(placeholder_group_id, candidate, shared_payload),
+            ),
+            fixed_input_tokens + sum(unit.estimated_input_tokens for unit in candidate),
+        )
         cases = sum(len(unit.case_keys) for unit in candidate)
         reserved_output = output_reserve(cases, policy)
         return (
-            reserved_output <= policy.max_output_tokens
+            input_tokens <= input_limit(policy)
+            and reserved_output <= policy.max_output_tokens
             and input_tokens + reserved_output + policy.safety_margin <= policy.context_limit
         )
 
@@ -578,8 +742,12 @@ def pack_units(
             candidate = [*members, unit]
             if not fits(candidate):
                 continue
-            input_tokens = prompt_tokens + sum(
-                member.estimated_input_tokens for member in candidate
+            input_tokens = max(
+                final_request_input_tokens(
+                    system_prompt,
+                    build_pass_two_payload(placeholder_group_id, candidate, shared_payload),
+                ),
+                fixed_input_tokens + sum(unit.estimated_input_tokens for unit in candidate),
             )
             cases = sum(len(member.case_keys) for member in candidate)
             remaining = (
@@ -613,8 +781,15 @@ def pack_units(
                 group_id=f"G{index:04d}-{digest[:12]}",
                 idempotency_key=digest,
                 units=tuple(members),
-                estimated_input_tokens=prompt_tokens
-                + sum(unit.estimated_input_tokens for unit in members),
+                estimated_input_tokens=max(
+                    final_request_input_tokens(
+                        system_prompt,
+                        build_pass_two_payload(
+                            f"G{index:04d}-{digest[:12]}", members, shared_payload
+                        ),
+                    ),
+                    fixed_input_tokens + sum(unit.estimated_input_tokens for unit in members),
+                ),
                 reserved_output_tokens=output_reserve(len(case_keys), policy),
             )
         )
@@ -630,6 +805,7 @@ def split_group(
     parent: PassTwoGroup,
     system_prompt: str,
     policy: ModelTokenPolicy,
+    shared_payload: dict[str, Any] | None = None,
 ) -> tuple[PassTwoGroup, ...]:
     """Split a failed group at a complete-conversation boundary.
 
@@ -663,6 +839,7 @@ def split_group(
             units=list(members),
             system_prompt=system_prompt,
             policy=policy,
+            shared_payload=shared_payload,
         )
         if len(child) != 1:
             raise ValueError("Adaptive Pass 2 split produced an unstable child group")
