@@ -23,7 +23,7 @@
 - Reason: 让产品负责人通过现有线上入口发起受控真实批次并验收新定位效果，同时保持本轮发布范围可追溯、可回滚。
 - Consequences: `main` 推送将触发现有 CI/生产发布流程；既有报告保持不可变，旧批次仅在用户主动重试时才可能按新契约重新请求不合格的完整录音检查点并产生相应费用。
 - Updated artifacts: PD-053 实现、Delta Spec、design、tasks、交付状态、独立验收与部署证据。
-- Verification: 推送前验证暂存内容只包含 PD-053，运行全量测试、Ruff、Mypy、Change gate；推送后核对 GitHub Actions 与生产健康状态。
+- Verification: 实现提交 `f0ce94372c7ce591e8e3f20d4ec1ba36d3c7d641` 已推送；CI run `35683722888` 与生产部署 run `35683865638` 均成功，部署流程完成公网健康检查。
 
 ### PD-053 — Excel 时间完全退出定位，使用完整录音说话人分离与文本顺序对齐
 
