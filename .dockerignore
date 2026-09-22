@@ -12,6 +12,7 @@
 !openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md
 !openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md
 !openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md
+!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md
 !scripts/
 !scripts/deploy/
 !scripts/deploy/verify_evaluation_production.py

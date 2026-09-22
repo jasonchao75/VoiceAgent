@@ -396,9 +396,16 @@ def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
 
 def test_runtime_image_packages_active_prompt_fixtures() -> None:
     """The production image must contain every Prompt loaded during app startup."""
-    dockerfile = (Path(__file__).resolve().parents[1] / "Dockerfile").read_text(encoding="utf-8")
+    root = Path(__file__).resolve().parents[1]
+    dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
+    dockerignore = (root / ".dockerignore").read_text(encoding="utf-8")
     assert "riyadbank-pass-1-system-prompt-v2.md" in dockerfile
     assert "riyadbank-pass-2-system-prompt-v2.md" in dockerfile
+    assert "riyadbank-event-aligner-system-prompt-v1.md" in dockerfile
+    assert (
+        "!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md"
+        in dockerignore
+    )
 
 
 def test_llm_cost_estimate_preserves_supplier_currency() -> None:

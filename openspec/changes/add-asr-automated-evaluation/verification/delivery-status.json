@@ -77,6 +77,15 @@
   ],
   "known_issues": [
     {
+      "id": "KI-168",
+      "status": "open",
+      "summary": "The PD-057 production deployment workflow failed after the corrected CI run succeeded.",
+      "impact": "Commit c28f8a1 is present on main and CI run 35700149260 is green, but deployment run 35700335615 failed, so the Event Aligner release is not yet confirmed live.",
+      "source": "GitHub Actions Deploy VoiceAgent Platform run 35700335615 reported conclusion=failure on 2026-09-22 UTC; exact failed step is pending log inspection.",
+      "next_action": "Inspect the failed deployment log, identify whether the cause is release code, deployment infrastructure or transient state, then apply the narrowest safe correction and rerun deployment/public-health verification.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-167",
       "status": "resolved",
       "summary": "The first PD-057 CI run rejected five Event Aligner source/test files because Ruff format --check was not run locally before the release commit.",
@@ -1637,6 +1646,13 @@
     }
   ],
   "unverified_items": [
+    {
+      "id": "UV-027",
+      "status": "open",
+      "summary": "The corrected production image could not be built locally because the desktop Docker daemon is not running.",
+      "reason": "The attempted local docker build failed before reading the Dockerfile with `Cannot connect to the Docker daemon`. Source tests prove the Dockerfile and .dockerignore include the Event Aligner Prompt, but the corrected image startup must be verified by CI and the production deployment health gate.",
+      "disclosed_to_user": true
+    },
     {
       "id": "UV-026",
       "status": "open",

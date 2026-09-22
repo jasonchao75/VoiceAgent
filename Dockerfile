@@ -27,6 +27,7 @@ COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation
 COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md
 COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md
 COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md
+COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md
 COPY --chown=voiceagent:voiceagent --from=frontend-builder /build/frontend/dist ./frontend/dist/
 
 # Named-volume target for the bot database; ownership survives first mount.

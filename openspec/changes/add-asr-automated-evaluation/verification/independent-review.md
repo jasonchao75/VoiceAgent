@@ -1,3 +1,30 @@
+# Independent Review — Event Aligner production-image packaging correction
+
+- Status: **PASS** (source/package contract only)
+- Date: 2026-09-22
+- Scope: KI-168 corrective patch only
+- Reviewer boundary: independent verification only; no implementation fix, image build, deployment, push, production mutation, or paid provider call was performed.
+
+## Decision
+
+The packaging correction passes source-level independent review. `.dockerignore` now explicitly admits `riyadbank-event-aligner-system-prompt-v1.md` into the otherwise deny-by-default build context, and the runtime stage copies that same source path to the exact `/app/openspec/.../fixtures/` location resolved by `src/evaluation/prompts.py` during application import. The change touches only Docker packaging and its regression assertion; it does not alter Event Aligner prompts, validation, orchestration, persistence or other business logic.
+
+The regression test checks both required boundaries: the active Prompt filename must remain in `Dockerfile`, and its exact allow-list path must remain in `.dockerignore`. Removing either packaging addition reproduces a test failure, so it prevents recurrence of the missing-file omission at source review/CI. It does not substitute for building and starting the actual image.
+
+## Reproducible evidence
+
+- `tests/test_evaluation.py::test_runtime_image_packages_active_prompt_fixtures`: **1 passed**.
+- Direct source trace: `Dockerfile` copies the Event Aligner fixture at line 30; `.dockerignore` admits its exact path at line 15.
+- Scoped Ruff and `git diff --check`: **PASS**.
+- Change gate: **PASS with warnings** (0 errors); KI-168 and UV-027 correctly remain open.
+
+## Remaining boundary
+
+- `KI-168` remains open until the corrected deployment succeeds and public production health is verified.
+- `UV-027` remains open because the local Docker daemon is unavailable; no corrected image was built or started during this review.
+
+---
+
 # Final Independent Re-review — Batch-first Event Aligner
 
 - Status: **PASS**
