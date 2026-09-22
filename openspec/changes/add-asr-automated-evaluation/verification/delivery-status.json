@@ -21,13 +21,13 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request.",
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
   "independent_release_review": {
     "status": "PASS",
     "reviewed_at": "2026-09-21",
     "evidence": "verification/independent-review.md",
-    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run. Qwen native/compatible and grouped LLM source review PASS on 2026-09-21 with 220 repository tests, 134 focused tests, scoped Ruff/Mypy, frontend build, and independent native/compatible executor mocks covering request shape, usage, cost and idempotency. PD-052 adaptive retry release PASS on 2026-09-21: commit b4e03cb0ce792c95503c259aef1d2830ce40e1c6, CI run 35679326836 and deployment run 35679448992 succeeded, including public health verification; production Evaluation data/checkpoints were preserved and EV-20260921-BA92 was not automatically retried. PD-053 diarization-first alignment release PASS on 2026-09-21: commit f0ce94372c7ce591e8e3f20d4ec1ba36d3c7d641, CI run 35683722888 and production deployment run 35683865638 succeeded, including public health verification; no paid evaluation or customer-audio dispatch was started by the release. PD-057 Event Aligner release PASS on 2026-09-22: after CI run 35699863501 exposed formatting and deployment run 35700335615 exposed the missing Prompt fixture, commits c28f8a1 and 577b556 corrected those release defects; CI run 35700851418 and deployment run 35701047235 succeeded, the server reported Healthy at commit 577b55621f840a85a6cdccf36d35faa2ee22ae99, and public health returned status=ok. No paid evaluation was started."
+    "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run. Qwen native/compatible and grouped LLM source review PASS on 2026-09-21 with 220 repository tests, 134 focused tests, scoped Ruff/Mypy, frontend build, and independent native/compatible executor mocks covering request shape, usage, cost and idempotency. PD-052 adaptive retry release PASS on 2026-09-21: commit b4e03cb0ce792c95503c259aef1d2830ce40e1c6, CI run 35679326836 and deployment run 35679448992 succeeded, including public health verification; production Evaluation data/checkpoints were preserved and EV-20260921-BA92 was not automatically retried. PD-053 diarization-first alignment release PASS on 2026-09-21: commit f0ce94372c7ce591e8e3f20d4ec1ba36d3c7d641, CI run 35683722888 and production deployment run 35683865638 succeeded, including public health verification; no paid evaluation or customer-audio dispatch was started by the release. PD-057 Event Aligner release PASS on 2026-09-22: after CI run 35699863501 exposed formatting and deployment run 35700335615 exposed the missing Prompt fixture, commits c28f8a1 and 577b556 corrected those release defects; CI run 35700851418 and deployment run 35701047235 succeeded, the server reported Healthy at commit 577b55621f840a85a6cdccf36d35faa2ee22ae99, and public health returned status=ok. PD-058 two-pass hard-cap release PASS on 2026-09-22: commit a18a963a0d032038c82394ad7ba49fc59937faf8, CI run 35712072904 and deployment run 35712275233 succeeded, including production image and public health status=ok. No paid evaluation was started."
   },
   "ki161_release": {
     "status": "PASS",
@@ -45,6 +45,14 @@
     "deployment_run": 35701047235,
     "public_health": "PASS",
     "production_behavior": "The production container became Healthy with the Event Aligner Prompt packaged at its runtime path; the public /health endpoint returned status=ok. The release did not start or retry any paid evaluation batch."
+  },
+  "pd058_release": {
+    "status": "PASS",
+    "commit": "a18a963a0d032038c82394ad7ba49fc59937faf8",
+    "ci_run": 35712072904,
+    "deployment_run": 35712275233,
+    "public_health": "PASS",
+    "production_behavior": "The production deployment and public /health verification succeeded with status=ok. EV-20260922-CB26 remained stopped and the release made no paid evaluation request."
   },
   "external_calls": [
     {
@@ -86,11 +94,12 @@
   "known_issues": [
     {
       "id": "KI-169",
-      "status": "open",
+      "status": "resolved",
       "summary": "EV-20260922-CB26 reached 75% while DeepSeek Pass 2 repeatedly returned invalid JSON or referenced unknown ASR segment IDs across recursively split groups; the product owner then stopped the batch.",
       "impact": "All 34 suspect Cases remain pending with zero completed decisions and the batch is paused at USD 1.8973. The largest original requests used 604,856 and 534,095 actual provider input tokens, below DeepSeek's advertised 1M context, but each combined a large noisy evidence set with a strict structured-output and exact-ID contract. Adaptive splitting reduced group size but did not eliminate the failure condition before the stop.",
       "source": "Read-only production SQLite, telemetry and cost-ledger inspection on 2026-09-22 UTC. The persisted 770,961/637,206 figures are conservative UTF-8-byte estimates, not provider token counts; no context-length HTTP error occurred. Of 1,382,599 unique Pass 2 payload bytes, full-call three-provider ASR contributes 1,031,619 (74.6%), event-level ASR contributes 284,188 (20.6%), and the request schema projects the complete unit evidence a second time at top level. Pass 1 also used about 83.8k actual input tokens, failed schema validation once, then succeeded on attempt two.",
-      "next_action": "Deploy the locally verified PD-058 implementation, confirm CI, production revision and public health, then let the product owner validate the corrected behavior only through a new user-initiated batch. Do not resume CB26 or make a paid call without separate authorization.",
+      "next_action": "Let the product owner validate real provider behavior only through a new user-initiated batch; keep CB26 stopped.",
+      "resolution": "PD-058 removed duplicate final-wire evidence, bounded Pass 2 full-call context to mapped and directly adjacent turns, added a shared hard envelope to both passes, pre-split Pass 2 by Case before dispatch and made single-unit overflow fail locally. Local deterministic/mocked verification and independent review passed. Commit a18a963a0d032038c82394ad7ba49fc59937faf8 passed CI run 35712072904 and production deployment run 35712275233, including public health status=ok. CB26 was not resumed or mutated and no paid evaluation request was made.",
       "disclosed_to_user": true
     },
     {
@@ -1668,7 +1677,7 @@
       "id": "UV-028",
       "status": "open",
       "summary": "EV-20260922-CB26 was stopped at Pass 2 with no completed Cases, so recovery under a corrected hard-cap policy remains unverified.",
-      "reason": "Read-only inspection confirms status=paused, progress=75, cost=USD 1.8973 and 34 pending suspect Cases. The user stopped the run; the agent made no production mutation or external request. PD-058 is implemented and locally verified with a deterministic 34-Case/15-conversation CB26-shaped regression, but production deployment and a corrected user-initiated real batch have not yet been observed.",
+      "reason": "Read-only inspection confirms status=paused, progress=75, cost=USD 1.8973 and 34 pending suspect Cases. The user stopped the run; the agent made no production mutation or external request. PD-058 is implemented, independently verified and deployed at commit a18a963a0d032038c82394ad7ba49fc59937faf8 with CI/deployment/public health PASS, but a corrected user-initiated real batch has not yet been observed.",
       "disclosed_to_user": true
     },
     {

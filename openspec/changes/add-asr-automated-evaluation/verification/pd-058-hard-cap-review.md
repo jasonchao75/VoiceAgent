@@ -40,3 +40,11 @@ The regression set includes:
 - No paid provider request was made in this implementation cycle.
 - The stopped production batch `EV-20260922-CB26` was not resumed or mutated.
 - A new user-initiated production batch has not yet demonstrated the corrected policy with real provider usage and output.
+
+## Production deployment
+
+- Commit: `a18a963a0d032038c82394ad7ba49fc59937faf8`
+- GitHub CI: run `35712072904` PASS, including backend checks, frontend build and production image build.
+- Production deployment: run `35712275233` PASS, including deploy verification and the workflow public-health check.
+- Independent public check: `https://platform.voiceagentdemo.org/health` returned `status=ok`, Pipecat `1.8.1`, and zero pending/active sessions.
+- The release did not resume or mutate `EV-20260922-CB26` and made no paid provider request.
