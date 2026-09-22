@@ -45,6 +45,58 @@ _PENDING_DATASET_META = "evaluation.pending_dataset"
 _SAFE_CONVERSATION_ID = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 _CJK_TEXT = re.compile(r"[\u3400-\u9fff]")
 
+_SAFE_ASR_FAILURE_MESSAGES = {
+    "authentication_failed": "Provider authentication failed. Recheck the saved connection.",
+    "rate_limited": "Provider rate limit was reached. Retry after the limit resets.",
+    "timeout": "Provider request timed out. Retry the failed ASR work.",
+    "provider_error": "Provider job failed without a usable result.",
+    "provider_job_failed": "Provider ASR job failed before producing a usable result.",
+    "provider_job_rejected": "Provider rejected the ASR job. Check the audio and settings.",
+    "empty_transcript": "Provider returned no transcript for the submitted audio.",
+    "configuration_error": "The ASR provider configuration is not supported.",
+    "invalid_result": "Provider returned an invalid or unusable ASR result.",
+    "event_alignment_failed": "The event could not be mapped to safe provider turns.",
+    "user_signal_validation_failed": "The selected event clip failed user-signal validation.",
+}
+
+
+def _safe_asr_failure(row: dict[str, Any], scope: str) -> dict[str, Any]:
+    """Return an allowlisted ASR diagnostic without raw provider or customer data."""
+    error: dict[str, Any] = {}
+    try:
+        parsed = json.loads(str(row.get("error") or "{}"))
+        if isinstance(parsed, dict):
+            error = parsed
+    except json.JSONDecodeError:
+        pass
+    category = str(error.get("category") or "provider_error")
+    if category not in _SAFE_ASR_FAILURE_MESSAGES:
+        category = "provider_error"
+    retryable = bool(
+        error.get(
+            "retryable",
+            category
+            in {
+                "rate_limited",
+                "timeout",
+                "provider_error",
+                "provider_job_failed",
+                "empty_transcript",
+            },
+        )
+    )
+    return {
+        "provider": str(row.get("provider") or "unknown"),
+        "scope": scope,
+        "conversation_id": str(row.get("conversation_id") or ""),
+        "event_id": str(row.get("event_id") or "") or None,
+        "attempts": max(0, int(row.get("attempts") or 0)),
+        "category": category,
+        "retryable": retryable,
+        "message": _SAFE_ASR_FAILURE_MESSAGES[category],
+    }
+
+
 _ASR_CAPABILITY_PROFILES: dict[str, dict[str, Any]] = {
     "soniox": {
         "display_name": "Soniox",
@@ -3185,7 +3237,19 @@ class EvaluationStore:
                     tag_aliases[str(alias).strip()] = tag_key
         pass_one = await self.checkpoint_rows("evaluation_pass1_runs", batch_id)
         pass_two = await self.checkpoint_rows("evaluation_pass2_runs", batch_id)
+        context_asr_rows = await self.checkpoint_rows("evaluation_asr_runs", batch_id)
         asr_rows = await self.checkpoint_rows("evaluation_case_asr_runs", batch_id)
+        asr_failures = [
+            _safe_asr_failure(row, "full_call_context")
+            for row in context_asr_rows
+            if row["status"] == "failed"
+        ] + [_safe_asr_failure(row, "event_clip") for row in asr_rows if row["status"] == "failed"]
+        asr_failures_by_case: dict[tuple[str, str], dict[str, dict[str, Any]]] = {}
+        for failure in asr_failures:
+            if failure["scope"] != "event_clip" or failure["event_id"] is None:
+                continue
+            case_key = (str(failure["conversation_id"]), str(failure["event_id"]))
+            asr_failures_by_case.setdefault(case_key, {})[str(failure["provider"])] = failure
         candidates: dict[tuple[str, str], dict[str, Any]] = {}
         for row in pass_one:
             for issue in (row.get("result") or {}).get("issues", []):
@@ -3278,6 +3342,7 @@ class EvaluationStore:
                     # Store only the evidence quoted for this Case. Repeating a full-call
                     # transcript in every row obscures the event-level decision trail.
                     "evaluation_asr": evaluation_asr,
+                    "evaluation_asr_failures": asr_failures_by_case.get(key, {}),
                     "decision": decision_name,
                     "reference_text": decision.get("reference_text"),
                     "scenario_tag": tag,
@@ -3357,6 +3422,7 @@ class EvaluationStore:
                 }
                 for name, count in sorted(tag_counts.items(), key=lambda item: (-item[1], item[0]))
             ],
+            "asr_failures": asr_failures,
             "cases": cases,
             "frozen_snapshot": batch["snapshot"],
         }

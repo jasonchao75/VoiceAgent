@@ -77,6 +77,10 @@ class EvaluationRequestTooLarge(EvaluationExecutionError):
     """Raised before dispatch when a final request violates its frozen input cap."""
 
 
+class EvaluationRequestOutputTooLarge(EvaluationExecutionError):
+    """Raised before dispatch when one unit cannot fit its generation cap."""
+
+
 def _parse_json(text: str) -> dict[str, Any]:
     """Parse a JSON object while tolerating an accidental Markdown fence."""
     value = text.strip()
@@ -170,6 +174,10 @@ def _safe_execution_failure(exc: Exception, stage: str) -> dict[str, object]:
         category = "preflight_input_limit"
         message = str(exc).strip()[:240]
         retryable = False
+    elif isinstance(exc, EvaluationRequestOutputTooLarge):
+        category = "preflight_output_limit"
+        message = str(exc).strip()[:240]
+        retryable = False
     elif isinstance(exc, EvaluationExecutionError):
         controlled_message = str(exc).strip()[:240]
         lowered = controlled_message.lower()
@@ -213,7 +221,14 @@ def _asr_error(provider: str, exc: Exception) -> str:
     safe = _safe_error(exc)
     categories = {"authentication_failed", "rate_limited", "timeout"}
     category = safe if safe in categories else "provider_error"
-    message = safe
+    message = {
+        "authentication_failed": "Provider authentication failed.",
+        "rate_limited": "Provider rate limit was reached.",
+        "timeout": "Provider request timed out.",
+    }.get(category, "Provider job failed without a usable result.")
+    retryable = category in {"rate_limited", "timeout", "provider_error"}
+    controlled = str(exc).strip()
+    lowered = controlled.casefold()
     if isinstance(exc, ValueError) and str(exc).startswith("Event Aligner"):
         category = "event_alignment_failed"
         message = str(exc)[:160]
@@ -225,12 +240,33 @@ def _asr_error(provider: str, exc: Exception) -> str:
     elif isinstance(exc, ValueError) and "user" in str(exc).casefold():
         category = "user_signal_validation_failed"
         message = str(exc)[:160]
+    elif isinstance(exc, EvaluationExecutionError):
+        if "no usable diarized full-call speaker timeline" in lowered:
+            category = "invalid_result"
+            message = "Provider returned no usable diarized speaker timeline."
+            retryable = False
+        elif "no transcript for the submitted audio" in lowered:
+            category = "empty_transcript"
+            message = "Provider returned no transcript for the submitted audio."
+        elif "job rejected" in lowered:
+            category = "provider_job_rejected"
+            message = "Provider rejected the ASR job. Check the audio and provider settings."
+            retryable = False
+        elif "job error" in lowered or "job failed" in lowered:
+            category = "provider_job_failed"
+            message = "Provider ASR job failed before producing a usable result."
+        elif "unsupported" in lowered or "configuration" in lowered:
+            category = "configuration_error"
+            message = "The ASR provider configuration is not supported."
+            retryable = False
     if type(exc).__name__ == "ValidationError":
         category = "invalid_result"
+        message = "Provider returned an invalid ASR result."
+        retryable = False
     return ASRError(
         provider=provider,
         category=category,
-        retryable=category in {"rate_limited", "timeout", "provider_error"},
+        retryable=retryable,
         message=message,
     ).model_dump_json()
 
@@ -286,6 +322,8 @@ def _safe_structured_error(exc: Exception) -> str:
     """Persist an actionable schema category without provider content."""
     if isinstance(exc, EvaluationRequestTooLarge):
         return "preflight_input_limit"
+    if isinstance(exc, EvaluationRequestOutputTooLarge):
+        return "preflight_output_limit"
     if isinstance(exc, json.JSONDecodeError):
         return "schema_invalid_json"
     if isinstance(exc, ValueError):
@@ -528,8 +566,8 @@ class EvaluationRunner:
             await self.store.set_batch_state(
                 batch_id,
                 status="partially_failed",
-                stage="failed",
-                progress=0,
+                stage=str(current["stage"]) if current is not None else "failed",
+                progress=int(current["progress"]) if current is not None else 0,
                 snapshot_updates={
                     "execution_error": failure["category"],
                     "execution_failure": failure,
@@ -2856,8 +2894,8 @@ class EvaluationRunner:
             pending_subsets = [ordered_candidates]
             while pending_subsets:
                 subset = pending_subsets.pop(0)
-                unit = build_case_unit(subset)
                 try:
+                    unit = build_case_unit(subset)
                     pack_units(
                         batch_id=f"{batch_id}:{plan_key}:preflight",
                         units=[unit],
@@ -2867,6 +2905,11 @@ class EvaluationRunner:
                     )
                 except ValueError as exc:
                     if len(subset) == 1:
+                        message = str(exc).casefold()
+                        if "output limit" in message:
+                            raise EvaluationRequestOutputTooLarge(
+                                "One Pass 2 Case exceeds the pre-dispatch generation limit."
+                            ) from exc
                         raise EvaluationRequestTooLarge(
                             "One Pass 2 Case exceeds the pre-dispatch input limit."
                         ) from exc

@@ -1,3 +1,39 @@
+# Independent Review — PD-059 budget, progress and safe ASR diagnostics
+
+- Status: **PASS**
+- Date: 2026-09-22
+- Scope: PD-059 and Tasks 12.60–12.63 verification portion only
+- Reviewer boundary: independent verification only; no implementation or requirement change, deployment, push, production mutation, batch retry/resume, or paid provider call was performed.
+
+## Decision
+
+PD-059 passes independent deterministic/local verification. Pass 2 now treats the effective generation ceiling as one shared allowance: visible JSON grows with Case count, and the reasoning reservation is reduced to the remaining allowance instead of being added above it. The same calculation is exercised for Gemini, DeepSeek, Qwen, GPT, Azure GPT and OpenRouter; a non-empty Gemini group no longer fails locally merely because its prior 32K reasoning reserve was combined with an additional JSON reserve.
+
+Single-Case input and generation planning failures have separate content-free `preflight_input_limit` and `preflight_output_limit` categories. The guarded failure path reloads the current durable batch and changes only its lifecycle status and safe failure metadata, preserving the last stage, progress, cost and all stage checkpoints. A 75% Pass 2 batch therefore remains at Pass 2 / 75% rather than being rewritten to `failed` / 0%.
+
+ASR failures follow one safe persisted-to-UI path. Provider adapters normalize exceptions into allowlisted categories; failed full-call and event-level checkpoint rows retain attempts independently; the partial-results projection discards every persisted provider message and reconstructs a fixed safe explanation from the allowlisted category. The existing partial-results note shows provider, full-call/event-clip scope, attempts, retryability, category and safe action. Existing provider cells show the event-level failure when no successful transcript exists. Raw provider bodies, injected customer text and source paths are not consumed by this projection.
+
+The UI continues to use `frontend/evaluation.html`, `renderReport()` and the existing report note/Case table DOM. A temporary isolated local service plus intercepted deterministic payload exercised the same production route and component tree at 1440×1000 and 1024×1000; both displayed the safe diagnostics and kept `scrollWidth == clientWidth`.
+
+## Reproducible evidence
+
+- Change gate: **PASS with warnings** (0 errors, 15 disclosed warnings, 3 unchecked tasks before this review/deployment update).
+- PD-059 focused Evaluation/packing/UI-contract suites: **128 passed**.
+- Full repository suite: **262 passed**, with the two already-disclosed dependency deprecation warnings.
+- Scoped Ruff, Mypy, `git diff --check`, and frontend production build: **PASS**.
+- Cross-provider budget trace: one Case packs successfully for `deepseek`, `gemini`, `gpt`, `qwen`, `azure_gpt` and `openrouter`, and each reserved generation value is at most the effective model ceiling.
+- Durable failure trace: an isolated batch persisted at `pass_2`, 75% and USD 1.25 remains at the same stage/progress/cost after a `preflight_output_limit` guarded failure and becomes `partially_failed`.
+- Redaction trace: checkpoint messages containing `secret upstream body` and `customer transcript must not leak` are absent from the partial-results JSON; the projection returns only fixed allowlisted messages with provider/scope/attempt/category/retryability.
+- Production-route UI trace: desktop note `scrollWidth/clientWidth = 1072/1072`; narrow note `656/656`. Both render two full-call/event-clip failures with attempts and retryability in the existing partial-results region.
+
+## Remaining boundary
+
+- This PASS does not claim deployment or external-real provider behavior. CI, production deployment, deployed commit and public health remain the delivery agent's responsibility.
+- `EV-20260922-7D19` and `EV-20260922-CB26` were not retried, resumed or mutated. Their final outcome under the corrected policy remains unverified until the product owner performs a later platform action.
+- A historical checkpoint that already stored only the former generic exception name cannot recover a more specific past provider reason without a new provider attempt; future failures use the new safe category contract.
+
+---
+
 # Independent Review — PD-058 two-pass evaluation hard cap
 
 - Status: **PASS**

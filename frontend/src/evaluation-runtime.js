@@ -1062,12 +1062,16 @@ function renderReport(report) {
     : `${payload.input_conversations} ${copy("calls", "通")} · ${seededDisplay(payload.context_name)} · ${copy("immutable snapshot", "不可变快照")}`;
   page.querySelector("#runtime-partial-results-note")?.remove();
   if (partialResults) {
+    const asrFailures = Array.isArray(payload.asr_failures) ? payload.asr_failures : [];
+    const asrFailureSummary = asrFailures.length
+      ? `<details><summary>${copy("ASR failures", "ASR 失败")} · ${asrFailures.length}</summary><ul>${asrFailures.map((failure) => `<li><b>${safe(failure.provider)}</b> · ${safe(failure.scope === "full_call_context" ? copy("full call", "完整录音") : copy("event clip", "事件切片"))} · ${copy("attempts", "尝试")} ${Number(failure.attempts || 0)} · ${safe(failure.category)} · ${safe(failure.message)} · ${failure.retryable ? copy("retryable", "可重试") : copy("not retryable", "不可重试")}</li>`).join("")}</ul></details>`
+      : "";
     page.querySelector(".page-head").insertAdjacentHTML(
       "afterend",
       `<div class="report-note" id="runtime-partial-results-note">${copy(
         "This view contains only persisted successful work. Missing sections were not run or failed; retrying reuses successful checkpoints. It is not an immutable preliminary or final report.",
         "这里只展示已成功持久化的内容；缺失部分代表尚未运行或执行失败。重试会复用成功检查点，本页不是不可变初步报告或最终报告。",
-      )}${payload.failure?.message ? ` ${safe(payload.failure.message)}` : ""}</div>`,
+      )}${payload.failure?.message ? ` ${safe(payload.failure.message)}` : ""}${asrFailureSummary}</div>`,
     );
   }
 
@@ -1207,9 +1211,14 @@ function renderReport(report) {
       const providers = ["soniox", "speechmatics", "elevenlabs"];
       const providerCells = providers.map((provider) => {
         const evidenceText = String(item.evaluation_asr?.[provider] || "").trim();
+        const failure = item.evaluation_asr_failures?.[provider];
         const rendered = evidenceText.length > 240
           ? `<span class="muted">${copy("Full-call transcript retained as legacy evidence", "整通转写已作为历史证据保留")}</span>`
-          : arabicComparisonHtml(payload.batch_id, evidenceText || "—");
+          : evidenceText
+            ? arabicComparisonHtml(payload.batch_id, evidenceText)
+            : failure
+              ? `<span class="muted">${safe(failure.category)} · ${safe(failure.message)} · ${copy("attempts", "尝试")} ${Number(failure.attempts || 0)}</span>`
+              : "—";
         return `<td>${rendered}</td>`;
       }).join("");
       const decisionClass = item.decision === "Bad Case" ? "bad" : item.decision === "Good Case" ? "good" : "warn";

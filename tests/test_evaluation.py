@@ -34,8 +34,10 @@ from src.evaluation.dataset import audit_dataset
 from src.evaluation.executor import (
     EvaluationBudgetReached,
     EvaluationExecutionError,
+    EvaluationRequestOutputTooLarge,
     EvaluationRequestTooLarge,
     EvaluationRunner,
+    _asr_error,
     _completion_limit_field,
     _gemini_thinking_config,
     _render_prompt,
@@ -94,12 +96,23 @@ def test_structured_retry_correction_is_content_free_and_actionable() -> None:
     assert _safe_structured_error(EvaluationRequestTooLarge("too large")) == (
         "preflight_input_limit"
     )
+    assert _safe_structured_error(EvaluationRequestOutputTooLarge("too large")) == (
+        "preflight_output_limit"
+    )
     failure = _safe_execution_failure(
         EvaluationRequestTooLarge("One Pass 2 Case exceeds the pre-dispatch input limit."),
         "pass_2",
     )
     assert failure["category"] == "preflight_input_limit"
     assert failure["retryable"] is False
+    output_failure = _safe_execution_failure(
+        EvaluationRequestOutputTooLarge(
+            "One Pass 2 Case exceeds the pre-dispatch generation limit."
+        ),
+        "pass_2",
+    )
+    assert output_failure["category"] == "preflight_output_limit"
+    assert output_failure["retryable"] is False
 
 
 @pytest.mark.asyncio
@@ -368,6 +381,75 @@ def test_batch_failure_is_actionable_without_upstream_payloads() -> None:
     unexpected = _safe_execution_failure(RuntimeError("secret upstream body"), "pass_2")
     assert unexpected["category"] == "RuntimeError"
     assert "secret upstream body" not in str(unexpected)
+
+
+def test_asr_failures_keep_actionable_categories_without_upstream_payloads() -> None:
+    """ASR checkpoints retain safe reasons but never provider response content."""
+    rejected = json.loads(
+        _asr_error(
+            "speechmatics",
+            EvaluationExecutionError("Speechmatics job rejected: secret provider body"),
+        )
+    )
+    empty = json.loads(
+        _asr_error(
+            "soniox",
+            EvaluationExecutionError("Provider returned no transcript for the submitted audio"),
+        )
+    )
+
+    assert rejected == {
+        "provider": "speechmatics",
+        "category": "provider_job_rejected",
+        "retryable": False,
+        "message": "Provider rejected the ASR job. Check the audio and provider settings.",
+    }
+    assert "secret provider body" not in json.dumps(rejected)
+    assert empty["category"] == "empty_transcript"
+    assert empty["retryable"] is True
+
+
+@pytest.mark.asyncio
+async def test_guarded_failure_preserves_last_stage_and_progress(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A planning failure must not erase completed-stage progress or cost."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Preserve progress",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="preserve-progress-001",
+        )
+    )
+    await evaluation_store.set_batch_state(
+        batch["id"],
+        status="running",
+        stage="pass_2",
+        progress=75,
+        cost=1.25,
+    )
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+
+    async def fail_planning(_batch_id: str) -> None:
+        raise EvaluationRequestOutputTooLarge(
+            "One Pass 2 Case exceeds the pre-dispatch generation limit."
+        )
+
+    monkeypatch.setattr(runner, "_run", fail_planning)
+
+    await runner._run_guarded(batch["id"])
+
+    updated = await evaluation_store.get_batch(batch["id"])
+    assert updated is not None
+    assert updated["status"] == "partially_failed"
+    assert updated["stage"] == "pass_2"
+    assert updated["progress"] == 75
+    assert updated["cost"] == 1.25
+    assert updated["snapshot"]["execution_failure"]["category"] == ("preflight_output_limit")
 
 
 def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
@@ -2568,6 +2650,31 @@ async def test_execution_checkpoints_materialize_real_manual_review(
     )
 
     review_count, benchmark_count = await evaluation_store.materialize_pass2_results(batch["id"])
+    await evaluation_store.checkpoint_result(
+        "evaluation_asr_runs",
+        (batch["id"], "speechmatics", _VALID_CONVERSATION_ID),
+        status="failed",
+        attempts=6,
+        error=(
+            '{"provider":"speechmatics","category":"provider_job_failed",'
+            '"retryable":true,"message":"secret upstream body"}'
+        ),
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_case_asr_runs",
+        (
+            batch["id"],
+            "soniox",
+            _VALID_CONVERSATION_ID,
+            str(incomplete_event["event_id"]),
+        ),
+        status="failed",
+        attempts=3,
+        error=(
+            '{"provider":"soniox","category":"timeout",'
+            '"retryable":true,"message":"customer transcript must not leak"}'
+        ),
+    )
     await evaluation_store.set_batch_state(
         batch["id"],
         status="awaiting_review",
@@ -2596,6 +2703,30 @@ async def test_execution_checkpoints_materialize_real_manual_review(
     assert partial["payload"]["failed_stage"] == "pass_2"
     assert partial["payload"]["evaluated_case_count"] == 1
     assert partial["payload"]["incomplete_case_count"] == 1
+    assert partial["payload"]["asr_failures"] == [
+        {
+            "provider": "speechmatics",
+            "scope": "full_call_context",
+            "conversation_id": _VALID_CONVERSATION_ID,
+            "event_id": None,
+            "attempts": 6,
+            "category": "provider_job_failed",
+            "retryable": True,
+            "message": "Provider ASR job failed before producing a usable result.",
+        },
+        {
+            "provider": "soniox",
+            "scope": "event_clip",
+            "conversation_id": _VALID_CONVERSATION_ID,
+            "event_id": str(incomplete_event["event_id"]),
+            "attempts": 3,
+            "category": "timeout",
+            "retryable": True,
+            "message": "Provider request timed out. Retry the failed ASR work.",
+        },
+    ]
+    assert "secret upstream body" not in json.dumps(partial)
+    assert "customer transcript must not leak" not in json.dumps(partial)
     assert await evaluation_store.latest_report(batch["id"]) is None
     await evaluation_store.set_batch_state(
         batch["id"],

@@ -204,11 +204,16 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 - **WHEN** 某个 Case 至少一家评测 ASR 已成功，无论第二轮是否为每家结果生成引用片段
 - **THEN** 报告 Case 明细均直接展示每家已落库的事件级 ASR 转写；第二轮引用只能缩小或补充证据定位，不得决定原始 ASR 转写是否可见
 
+#### Scenario: Inspect a safe ASR failure diagnostic
+
+- **WHEN** 完整录音或事件切片 ASR 在自动重试后失败，且批次存在可查看的部分结果
+- **THEN** 现有批次错误区、部分结果提示或 provider 单元格显示 provider、任务范围、尝试次数、是否可重试、受控分类和可操作原因；不得显示供应商原始响应、客户文本、源文件路径或凭证
+
 ### Requirement: Evidence-based second-pass decision
 
 第二轮 LLM MUST 将历史转写和每家评测 ASR 都视为证据而非真值，并结合完整对话、语义、实体、数字、否定、语种、说话人和事件边界，为每个被评估用户事件输出 `Good Case`、`Bad Case` 或 `需人工复核`。
 
-第二轮 MUST 启用所选模型的 Thinking 能力，并使用与第一轮相同的 128K 运行包络和最终消息预检。每个 Case MUST 保留所属 conversation 的完整历史文本、事件级重转录和必要配置证据；完整录音 ASR 上下文 MUST 只包含 Event Aligner 为该 Case 选中的 provider turns，以及同一 provider 中紧邻的前一条和后一条 turn（存在时），不得把无关的完整录音 turns 投影到请求中。系统 MUST 先按 conversation 装箱；单通仍超过 64K 输入硬上限时，MUST 在发送前按稳定 Case 子集拆组并为各子组重复必要的完整历史，不得截断历史文本。单个 Case 经限定证据后仍超限时 MUST 在外部调用前明确失败。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
+第二轮 MUST 启用所选模型的 Thinking 能力，并使用与第一轮相同的 128K 运行包络和最终消息预检。可见结构化 JSON MUST 先按 Case 数量在生成上限内预留，Thinking MUST 只使用剩余额度；二者合计不得超过所选模型与公共 32K 上限中的较小者。每个 Case MUST 保留所属 conversation 的完整历史文本、事件级重转录和必要配置证据；完整录音 ASR 上下文 MUST 只包含 Event Aligner 为该 Case 选中的 provider turns，以及同一 provider 中紧邻的前一条和后一条 turn（存在时），不得把无关的完整录音 turns 投影到请求中。系统 MUST 先按 conversation 装箱；单通仍超过 64K 输入硬上限时，MUST 在发送前按稳定 Case 子集拆组并为各子组重复必要的完整历史，不得截断历史文本。单个 Case 经限定证据后仍超过输入或生成上限时 MUST 在外部调用前以专用 preflight 分类明确失败。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
 
 每个请求组 MUST 携带稳定 `request_group_id`。第二轮结构化输出 MUST 原样返回该 ID，并以顶层 `results[]` 为组内每个输入 Case 恰好返回一个结果；每个结果 MUST 包含匹配的 conversation/issue/event ID 和 `positioning_quality`。组 ID 不匹配、Case 遗漏、重复或越界 MUST 使整个组失败并按相同冻结成员重试，不得保存部分结论。
 
@@ -216,6 +221,11 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 - **WHEN** 一个批次的完整第二轮输入无法在预留 Thinking 和结构化输出空间后放入一个请求
 - **THEN** 系统先按完整对话形成最少安全分组；单通超限时再按稳定 Case 子集预拆，同时在每个子组保留完整历史，并保持每个唯一 Case 恰好出现一次
+
+#### Scenario: Share one generation budget across supported providers
+
+- **WHEN** Gemini、DeepSeek、Qwen、GPT/Azure 或 OpenRouter 的 Pass 2 请求包含至少一个 Case
+- **THEN** 规划器先预留该组可见 JSON，再把剩余生成额度分配给 Thinking，二者之和不得超过冻结模型的生效上限；不得因固定 reasoning reserve 与 JSON reserve 相加而拒绝所有非空请求
 
 #### Scenario: Send one canonical evidence projection
 
@@ -452,6 +462,11 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 - **WHEN** 批次处于首次执行或失败重试
 - **THEN** 页面分别展示 Case 和外部请求组的成功、失败、处理中及尝试次数；失败不得计入成功进度，后续子批次不得用局部总数覆盖全阶段总数
+
+#### Scenario: Preserve progress after a guarded planning failure
+
+- **WHEN** 批次在已有阶段检查点和费用后发生发送前输入或输出规划失败
+- **THEN** 批次进入可重试的部分失败并保留最后有意义的阶段、进度、检查点和费用；不得把进度归零或把本地 preflight 失败标记为供应商无效 JSON
 
 #### Scenario: Defer Good balancing until suspect completion
 

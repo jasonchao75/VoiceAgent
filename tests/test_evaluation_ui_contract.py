@@ -21,3 +21,11 @@ def test_predefined_qwen38_is_registered_before_batch_execution() -> None:
     """The normal non-custom Qwen path must persist the exact tested model identity."""
     assert "isCustom||provider==='Qwen'" in PAGE
     assert "if(provider==='Qwen')body.register_for_evaluation_catalog=true" in PAGE
+
+
+def test_partial_results_render_safe_asr_failure_diagnostics() -> None:
+    """Existing partial-result regions must expose the safe ASR failure contract."""
+    assert 'copy("ASR failures", "ASR 失败")' in RUNTIME
+    assert 'failure.scope === "full_call_context"' in RUNTIME
+    assert "failure.retryable" in RUNTIME
+    assert "item.evaluation_asr_failures?.[provider]" in RUNTIME

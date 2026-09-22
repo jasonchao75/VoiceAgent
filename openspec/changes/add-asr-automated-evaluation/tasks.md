@@ -197,6 +197,10 @@
 - [x] 12.57 Pre-plan oversized Pass 2 conversations into stable Case subsets and fail a still-oversized single Case before dispatch; keep Pass 1 conversations indivisible and fail a still-oversized single conversation before dispatch (PD-058)
 - [x] 12.58 Add deterministic CB26-scale regressions for final-wire de-duplication, conservative preflight accounting, both-pass cap enforcement, Case-complete grouping, restart idempotency and no paid size-discovery retry; make no real external call (PD-058, KI-169)
 - [x] 12.59 Reconcile the size/schema failure categories and persisted diagnostics so an operator can distinguish preflight-cap rejection from provider JSON/ID-contract failure without logging customer evidence (PD-058, KI-169)
+- [x] 12.60 Correct the shared Pass 2 generation budget across Gemini, DeepSeek, Qwen, GPT/Azure and OpenRouter so visible JSON is reserved first and Thinking uses only the remaining 32K allowance (PD-059, KI-170)
+- [x] 12.61 Give single-Case local input/output planning failures dedicated preflight categories and preserve the last meaningful stage, progress, checkpoints and cost when a guarded run becomes partially failed (PD-059, KI-170)
+- [x] 12.62 Persist and display safe ASR failure diagnostics with provider, full-call/event scope, attempts, retryability, controlled category and actionable reason, excluding raw responses and customer evidence (PD-059)
+- [ ] 12.63 Add cross-provider budget, truthful-progress and ASR-redaction regressions; complete independent verification and deploy without automatically retrying CB26 or 7D19 or making paid calls (PD-059)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

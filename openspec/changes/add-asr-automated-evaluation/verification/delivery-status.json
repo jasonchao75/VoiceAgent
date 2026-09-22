@@ -21,7 +21,7 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call.",
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
   "independent_release_review": {
     "status": "PASS",
@@ -53,6 +53,10 @@
     "deployment_run": 35712275233,
     "public_health": "PASS",
     "production_behavior": "The production deployment and public /health verification succeeded with status=ok. EV-20260922-CB26 remained stopped and the release made no paid evaluation request."
+  },
+  "pd059_release": {
+    "status": "pending",
+    "production_behavior": "Independent local verification passed. CI, production deployment, deployed commit and public health remain pending; CB26 and 7D19 have not been retried or mutated."
   },
   "external_calls": [
     {
@@ -92,6 +96,16 @@
     }
   ],
   "known_issues": [
+    {
+      "id": "KI-170",
+      "status": "resolved",
+      "summary": "EV-20260922-7D19 reaches Pass 2 planning but the shared output-budget calculation makes every Gemini Pass 2 Case locally exceed the 32K generation ceiling; the uncaught planning error is then mislabeled as an invalid provider response and resets visible progress to 0%.",
+      "impact": "Pass 1 completed 56/56 conversations and Event Aligner completed 12/12 conversations, but no Pass 2 request group was created. The batch is partially_failed at 0% even though earlier stage work remains persisted. Retrying repeats paid upstream work/checks and reaches the same deterministic local failure.",
+      "source": "Read-only production SQLite and container-log inspection on 2026-09-22 for EV-20260922-7D19. The traceback is ValueError: Conversation exceeds Pass 2 output limit for 1030000000086502 in build_unit(). evaluation_token_policy() gives Gemini max_output_tokens=32768 and reasoning_reserve=32768; output_reserve() then adds at least 768 visible-JSON tokens, so every non-empty Case exceeds the ceiling before dispatch. _safe_execution_failure() classifies the generic ValueError as invalid_provider_response and the guarded failure path stores progress=0.",
+      "next_action": "Deploy the independently verified correction, verify CI/public health, then leave any 7D19 retry to the product owner.",
+      "resolution": "PD-059 reserves visible JSON first and limits Thinking to the remaining generation allowance across Gemini, DeepSeek, Qwen, GPT/Azure and OpenRouter. Local input/output planning failures now use dedicated preflight categories, guarded failures preserve stage/progress/cost/checkpoints, and partial results project allowlisted ASR diagnostics without raw provider or customer content. Independent verification passed with 128 focused and 262 repository tests, scoped Ruff/Mypy, frontend build, data-flow redaction checks and desktop/narrow production-DOM overflow checks. Deployment remains tracked in pd059_release.",
+      "disclosed_to_user": true
+    },
     {
       "id": "KI-169",
       "status": "resolved",
@@ -1673,6 +1687,13 @@
     }
   ],
   "unverified_items": [
+    {
+      "id": "UV-029",
+      "status": "open",
+      "summary": "Historical ASR checkpoints that stored only a generic exception name cannot expose a more specific past failure reason without a new attempt.",
+      "reason": "PD-059 safely improves future persistence and allowlisted display but intentionally does not infer or fabricate lost provider detail. Existing 7D19 rows remain generic until the product owner explicitly retries failed resources after deployment; that retry may produce paid ASR/LLM calls.",
+      "disclosed_to_user": true
+    },
     {
       "id": "UV-028",
       "status": "open",

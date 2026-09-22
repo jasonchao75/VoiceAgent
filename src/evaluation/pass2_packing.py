@@ -251,11 +251,16 @@ def build_pass_two_payload(
 
 
 def output_reserve(case_count: int, policy: ModelTokenPolicy) -> int:
-    """Reserve visible JSON plus Thinking tokens for a request group."""
+    """Reserve one shared generation budget for visible JSON and Thinking."""
     if case_count <= 0:
         return 0
     visible_json = case_count * 768
-    reasoning = max(policy.reasoning_reserve, case_count * 256)
+    if visible_json > policy.max_output_tokens:
+        return visible_json
+    reasoning = min(
+        max(policy.reasoning_reserve, case_count * 256),
+        policy.max_output_tokens - visible_json,
+    )
     return visible_json + reasoning
 
 

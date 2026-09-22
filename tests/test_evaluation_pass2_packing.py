@@ -13,6 +13,7 @@ from src.evaluation.pass2_packing import (
     build_unit,
     evaluation_token_policy,
     final_request_input_tokens,
+    output_reserve,
     pack_units,
     render_prompt,
     split_group,
@@ -116,7 +117,9 @@ def test_pack_units_has_stable_ids_for_retry() -> None:
     ]
 
 
-@pytest.mark.parametrize("provider", ["deepseek", "gemini", "gpt", "qwen"])
+@pytest.mark.parametrize(
+    "provider", ["deepseek", "gemini", "gpt", "qwen", "azure_gpt", "openrouter"]
+)
 def test_evaluation_policy_applies_one_shared_hard_envelope(provider: str) -> None:
     """Every supported evaluation provider must stay inside the same operating cap."""
     policy = evaluation_token_policy(provider)
@@ -126,6 +129,24 @@ def test_evaluation_policy_applies_one_shared_hard_envelope(provider: str) -> No
     assert policy.max_input_tokens <= 65_536
     assert policy.max_output_tokens <= 32_768
     assert policy.safety_margin == 32_768
+
+
+@pytest.mark.parametrize(
+    "provider", ["deepseek", "gemini", "gpt", "qwen", "azure_gpt", "openrouter"]
+)
+def test_generation_reserve_shares_one_cap_across_supported_providers(provider: str) -> None:
+    """A non-empty group must reserve JSON inside, not above, the generation cap."""
+    policy = evaluation_token_policy(provider)
+
+    reserved = output_reserve(1, policy)
+
+    assert 768 <= reserved <= policy.max_output_tokens
+    assert pack_units(
+        batch_id=f"EV-{provider}",
+        units=[_unit("C1", 1, 50, policy)],
+        system_prompt="json",
+        policy=policy,
+    )
 
 
 def test_canonical_pass2_request_projects_business_evidence_once() -> None:
@@ -279,16 +300,17 @@ def test_pack_units_rejects_one_oversized_conversation() -> None:
         pack_units(batch_id="EV-4", units=[unit], system_prompt="json", policy=policy)
 
 
-def test_reasoning_reserve_splits_qwen_before_json_output_can_be_starved() -> None:
-    """Thinking headroom must reduce group size instead of consuming visible JSON space."""
+def test_visible_json_reduces_thinking_inside_one_qwen_generation_cap() -> None:
+    """Visible JSON is reserved first and Thinking uses only the remaining budget."""
     policy = ModelTokenPolicy(96_000, 32_000, 16_000, reasoning_reserve=20_000)
     units = [_unit(f"C{index}", 2, 300, policy) for index in range(12)]
 
     groups = pack_units(batch_id="EV-QWEN", units=units, system_prompt="json", policy=policy)
 
-    assert len(groups) > 1
+    assert len(groups) == 1
     assert all(group.reserved_output_tokens <= policy.max_output_tokens for group in groups)
-    assert all(len(group.case_keys) <= 15 for group in groups)
+    assert groups[0].reserved_output_tokens == policy.max_output_tokens
+    assert len(groups[0].case_keys) == 24
 
 
 def test_group_validation_requires_each_case_exactly_once() -> None:

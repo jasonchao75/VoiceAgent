@@ -4,12 +4,26 @@
 
 ## Status
 
-- Recorded decisions: 45 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 46 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-22
 
 ## Decisions
+
+### PD-059 — 修复跨厂商输出预算、失败进度与 ASR 安全诊断并发布
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: `EV-20260922-7D19` 在 Pass 1 和 Event Aligner 已完成后为何变为部分失败且进度归零，以及 ASR 失败为何只显示笼统错误
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人在三项缺陷摘要上直接批注并授权修复、验证和上线
+- Confirmation quote: “那这三个缺陷你修一下吧。修完了发布上线。”
+- Decision: 修复 Gemini、DeepSeek、Qwen、GPT/Azure/OpenRouter 共用的生成预算：在冻结的生成上限内先预留结构化可见 JSON，Thinking 只能使用剩余额度，二者合计不得超过上限。发送前的单 Case 输入或输出规划失败使用专用 preflight 分类，不得冒充供应商无效响应；批次进入部分失败时保留最后阶段、已完成进度、检查点和费用，不得归零。ASR 失败只公开安全诊断，包括 provider、完整录音或事件切片范围、尝试次数、是否可重试、受控分类和可操作原因；不得公开供应商原始响应、客户文本、文件路径或凭证。发布本修复，但不自动恢复或重跑 `EV-20260922-7D19`、`EV-20260922-CB26`，Agent 不主动发起付费 ASR/LLM 调用。
+- Reason: 7D19 的 Gemini 策略把 32K Thinking 预留与每个 Case 的可见 JSON 预留相加，导致任何非空 Pass 2 Case 都在本地确定性失败；通用异常映射又把它标为供应商响应错误，并把已完成阶段的 75% 进度覆盖为 0%。同时 ASR 检查点仅保存 `EvaluationExecutionError` 类名，无法判断失败范围和后续操作。
+- Consequences: 现有页面复用批次错误区、部分结果提示和 Case provider 单元格展示安全诊断，不新增页面区域或改变冻结视觉基线。历史成功资源、费用和报告不可变；旧批次只有产品负责人主动重试时才按新契约执行。
+- Updated artifacts: `proposal.md`、Delta Spec、`design.md`、`tasks.md`、`prototypes/README.md`、实现、回归测试、独立验收与发布证据。
+- Verification: 覆盖所有支持的 LLM provider 的预算回归、单 Case preflight 分类、失败进度保持、ASR 安全诊断脱敏、全库测试、Scoped Ruff/Mypy、Change gate、独立验收、CI/部署与公网健康；不通过真实付费批次验证。
 
 ### PD-058 — 两轮评测使用统一 128K 包络并去除重复证据投影
 
