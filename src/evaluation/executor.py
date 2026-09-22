@@ -659,15 +659,18 @@ class EvaluationRunner:
             if suspect_rows.get(key, {}).get("status") != "completed"
         ]
         if incomplete_suspects:
+            review_count, benchmark_count = await self.store.materialize_pass2_results(batch_id)
             await self.store.set_batch_state(
                 batch_id,
                 status="partially_failed",
                 stage="pass_2",
                 progress=int(current["progress"]),
+                review_total=review_count,
                 snapshot_updates={
                     "provider_execution": "partially_failed",
                     "pass_2_failed": len(incomplete_suspects),
                     "good_balance_deferred": True,
+                    "benchmark_count": benchmark_count,
                 },
             )
             return
@@ -738,15 +741,18 @@ class EvaluationRunner:
             1 for row in await self.store.pass2_group_rows(batch_id) if row["status"] == "failed"
         )
         if failed or failed_groups:
+            review_count, benchmark_count = await self.store.materialize_pass2_results(batch_id)
             await self.store.set_batch_state(
                 batch_id,
                 status="partially_failed",
                 stage="pass_2",
                 progress=92,
+                review_total=review_count,
                 snapshot_updates={
                     "provider_execution": "partially_failed",
                     "pass_2_failed": failed,
                     "pass_2_failed_groups": failed_groups,
+                    "benchmark_count": benchmark_count,
                 },
             )
             return

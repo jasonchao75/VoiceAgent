@@ -1,3 +1,33 @@
+# Independent Review — Partial Pass 2 result materialization
+
+- Status: **PASS**
+- Date: 2026-09-21
+- Scope: KI-161 and Task 12.49 only
+- Reviewer boundary: independent verification only; no implementation fix, production retry, paid provider call, deployment, push, or production-data mutation was performed.
+
+## Decision
+
+The KI-161 increment passes independent deterministic verification. Both Pass 2 partial-failure exits now project every already-completed decision through the existing idempotent materialization path before returning. `Needs manual audio review` decisions become pending Manual Review records; valid `Good Case` and `Bad Case` decisions become Benchmark records and managed clips. The persisted batch totals are read back from the database, so a retry cannot inflate the displayed review or Benchmark counts when deterministic IDs are encountered again.
+
+Incomplete Case checkpoints and failed request groups remain failed and therefore eligible for the existing targeted retry path. Completed checkpoints are reused. The batch remains `partially_failed` at Pass 2, Good balancing stays deferred while suspect Cases are incomplete, and no normal preliminary/final report is frozen; the existing partial-results view remains ephemeral and explicitly non-final.
+
+## Reproducible evidence
+
+- New mixed-outcome runner regression: one completed Manual Review decision plus one failed sibling produces one pending review, persists `review_total=1`, leaves the batch `partially_failed`, and leaves `latest_report` absent.
+- Static storage trace: only completed Pass 2 rows are projected; failed rows are skipped. Review and Benchmark IDs are deterministic per batch/conversation/event and use `INSERT OR IGNORE`; returned totals are fresh database counts rather than attempted insert counts.
+- Existing partial-results regression confirms `persist=False`, `report_type=partial_results`, `ephemeral=true`, `non_final=true`, the completed/incomplete split, and no persisted latest report.
+- Focused materialization/partial-result/retry suite: **8 passed**.
+- Complete Evaluation suite: **88 passed**.
+- Full repository suite: **234 passed**, with two already-disclosed dependency deprecation warnings.
+- Scoped Ruff, Mypy and `git diff --check`: **PASS**.
+- Change gate: **PASS with warnings** (0 errors; existing disclosed warnings and two unrelated unchecked tasks).
+
+## Remaining boundary
+
+- Production batch `EV-20260921-BA92` was not retried during independent verification because that would issue paid external requests. The review verifies the same persisted checkpoint shapes locally and by source trace; the real provider recovery remains a separately authorized production action.
+
+---
+
 # Final Independent Re-review — Diarization-first user-event alignment
 
 - Status: **PASS**

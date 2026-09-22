@@ -2647,7 +2647,18 @@ class EvaluationStore:
             await database.commit()
         for benchmark_id in pending_clips:
             await self.finalize_benchmark_clip(benchmark_id)
-        return review_count, benchmark_count
+        async with aiosqlite.connect(self.database_path) as database:
+            review_row = await (
+                await database.execute(
+                    "SELECT COUNT(*) FROM evaluation_reviews WHERE batch_id=?", (batch_id,)
+                )
+            ).fetchone()
+            benchmark_row = await (
+                await database.execute(
+                    "SELECT COUNT(*) FROM evaluation_benchmarks WHERE batch_id=?", (batch_id,)
+                )
+            ).fetchone()
+        return int(review_row[0]), int(benchmark_row[0])
 
     async def _append_benchmark_revision(
         self,

@@ -108,6 +108,16 @@
       "disclosed_to_user": true
     },
     {
+      "id": "KI-161",
+      "status": "resolved",
+      "summary": "A partially failed Pass 2 run returns before projecting its completed decisions into Manual Review and Benchmark Library.",
+      "impact": "EV-20260921-BA92 has 38 completed Pass 2 decisions (11 Good, 9 Bad and 18 Needs manual audio review) plus 6 failed Cases, but review_total and the materialized review/Benchmark collections remain empty, making the successful paid work unusable from the normal product workflows.",
+      "source": "Read-only production aggregate inspection on 2026-09-21 and source inspection of EvaluationRunner._run: both partial-failure branches return before materialize_pass2_results().",
+      "next_action": "Idempotently project every completed Pass 2 result before entering partially_failed, expose the resulting review and Benchmark counts, keep failed Cases retryable, and add a regression covering mixed completed/failed decisions.",
+      "resolution": "Both Pass 2 partial-failure exits now materialize completed decisions before returning, persist the real review and Benchmark totals, retain failed rows for retry, and do not freeze a normal report. Projection counts are idempotent totals, so repeated recovery cannot duplicate Cases. The mixed completed/failed regression and all 234 repository tests pass.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-156",
       "status": "resolved",
       "summary": "User-event clipping still selects a nearby energy island from the pure-user WAV using the unreliable Excel event time as its anchor instead of aligning the persisted full-call ASR speaker timetable.",
@@ -115,6 +125,15 @@
       "source": "Product-owner review on 2026-09-21 plus source inspection of EvaluationRunner._run_asr and EvaluationStore.prepare_case_asr_clip.",
       "next_action": "Implement PD-053: explicitly enable diarization for every full-call provider, align historical text and ordered roles to provider speaker timelines, require two-provider interval consensus, and use the pure-user track only for validation and narrow edge refinement.",
       "resolution": "PD-053 now explicitly enables provider diarization, aligns worksheet text/order/known roles to anonymous full-call speaker turns, requires a unique common intersection from at least two distinct providers, ignores Excel time during positioning, and limits pure-user WAV processing to bounded signal validation and edge refinement. Deterministic adapter/alignment/noise/fail-closed/restart/cost tests pass, and the full repository suite passes with 233 tests.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-155",
+      "status": "open",
+      "summary": "Pass 2 groups that are actively waiting on a provider response are displayed as generic pending work with no heartbeat, last-activity time or elapsed duration.",
+      "impact": "EV-20260921-BA92 currently has four adaptive child groups. Gemini attempts have taken up to about 240 seconds before a timeout or schema result is checkpointed, so the visible counters can remain unchanged for several minutes even while the worker lease is healthy and requests are in flight. Users cannot distinguish a live slow request from a stopped worker.",
+      "source": "Read-only production inspection on 2026-09-21: batch status running at progress 79, active worker lease renewed through 02:41 UTC, four pending child groups updated between 02:37 and 02:40 UTC, and recent Gemini Pass 2 failures with maximum latency about 240,285 ms.",
+      "next_action": "Persist an explicit running state before provider dispatch, retain queued separately, and show current attempt, last activity and elapsed/timeout information in the batch UI.",
       "disclosed_to_user": true
     },
     {

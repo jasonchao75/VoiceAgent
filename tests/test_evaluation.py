@@ -3166,6 +3166,134 @@ async def test_all_provider_failure_stops_affected_conversation_before_pass_two(
 
 
 @pytest.mark.asyncio
+async def test_partial_pass_two_materializes_completed_results(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Completed decisions remain usable when a sibling Case fails."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Mixed Pass 2 outcome",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="mixed-pass-two-outcome-001",
+        )
+    )
+    conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert conversation is not None
+    events = [item for item in conversation["events"] if item["speaker"] == "customer"][:2]
+    assert len(events) == 2
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+
+    async def one_conversation() -> list[dict[str, object]]:
+        return [conversation]
+
+    async def connections_ok(_batch: dict[str, object]) -> None:
+        return None
+
+    async def pass_one(_batch_id: str, _conversations: list[dict[str, object]]) -> None:
+        await evaluation_store.checkpoint_result(
+            "evaluation_pass1_runs",
+            (batch["id"], _VALID_CONVERSATION_ID),
+            status="completed",
+            attempts=1,
+            result={
+                "event_results": [
+                    {"event_id": item["event_id"], "decision": "candidate"} for item in events
+                ],
+                "issues": [
+                    {
+                        "issue_id": "I1",
+                        "title": "Needs evidence",
+                        "priority": "P1",
+                        "target_events": [
+                            {
+                                "event_id": item["event_id"],
+                                "decision": "candidate",
+                                "verification_question": "What was said?",
+                            }
+                            for item in events
+                        ],
+                    }
+                ],
+            },
+        )
+
+    async def asr_results(
+        batch_id: str,
+        _batch: dict[str, object],
+        candidates: list[dict[str, object]],
+    ) -> None:
+        for candidate in candidates:
+            event_id = str(candidate["event_id"])
+            event = next(item for item in events if item["event_id"] == event_id)
+            await evaluation_store.checkpoint_result(
+                "evaluation_case_asr_runs",
+                (batch_id, "elevenlabs", _VALID_CONVERSATION_ID, event_id),
+                status="completed",
+                attempts=1,
+                result={
+                    "text": str(event["text"]),
+                    "segments": [
+                        {
+                            "segment_id": f"segment-{event_id}",
+                            "start": 0.0,
+                            "end": 1.0,
+                            "text": str(event["text"]),
+                        }
+                    ],
+                },
+            )
+
+    async def mixed_pass_two(
+        batch_id: str,
+        _batch: dict[str, object],
+        _conversations: list[dict[str, object]],
+        _candidates: list[dict[str, object]],
+        *,
+        plan_key: str,
+    ) -> None:
+        assert plan_key == "suspects"
+        await evaluation_store.checkpoint_result(
+            "evaluation_pass2_runs",
+            (batch_id, _VALID_CONVERSATION_ID, str(events[0]["event_id"])),
+            status="completed",
+            attempts=1,
+            result={
+                "event_id": str(events[0]["event_id"]),
+                "decision": "Needs manual audio review",
+                "reference_text": None,
+                "scenario_tag": "numbers",
+                "manual_review_question": "Confirm the spoken digits.",
+            },
+        )
+        await evaluation_store.checkpoint_result(
+            "evaluation_pass2_runs",
+            (batch_id, _VALID_CONVERSATION_ID, str(events[1]["event_id"])),
+            status="failed",
+            attempts=3,
+            error="provider timeout",
+        )
+
+    monkeypatch.setattr(evaluation_store, "source_conversations", one_conversation)
+    monkeypatch.setattr(runner, "_validate_connections", connections_ok)
+    monkeypatch.setattr(runner, "_run_pass_one", pass_one)
+    monkeypatch.setattr(runner, "_run_asr", asr_results)
+    monkeypatch.setattr(runner, "_run_pass_two", mixed_pass_two)
+
+    await runner._run(batch["id"])
+
+    updated = await evaluation_store.get_batch(batch["id"])
+    assert updated is not None
+    assert updated["status"] == "partially_failed"
+    assert updated["review_total"] == 1
+    assert len(await evaluation_store.list_reviews()) == 1
+    assert await evaluation_store.latest_report(batch["id"]) is None
+
+
+@pytest.mark.asyncio
 async def test_single_provider_success_continues_and_preserves_failed_evidence(
     evaluation_store: EvaluationStore,
     monkeypatch: pytest.MonkeyPatch,

@@ -185,6 +185,8 @@
 - [x] 12.45 Defer additional-Good balancing until every suspect Pass 2 group succeeds, so retrying a partially failed suspect set cannot expand the visible Case total (KI-153)
 - [x] 12.46 Make Pass 2 timeout/schema retries change the failing condition through safe regrouping or bounded fallback, instead of replaying the same oversized group up to six cumulative attempts (KI-154)
 - [x] 12.48 Replace Excel-anchor speech-island selection with full-call diarization/text/order alignment, require two-provider time consensus, validate/refine only on the pure-user track, and fail closed on missing/conflicting evidence (PD-053, KI-156)
+- [ ] 12.47 Distinguish queued versus in-flight Pass 2 groups and expose last activity/elapsed time, so a multi-minute provider request cannot appear frozen as generic pending work (KI-155)
+- [x] 12.49 Materialize completed Pass 2 decisions into Manual Review and Benchmark Library even when sibling Cases remain failed, while keeping the batch retryable and the report explicitly non-final (KI-161)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 
