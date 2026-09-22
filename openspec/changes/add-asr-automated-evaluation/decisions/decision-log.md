@@ -4,12 +4,26 @@
 
 ## Status
 
-- Recorded decisions: 41 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 42 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-21
 
 ## Decisions
+
+### PD-055 — 顺序发布 KI-161 并补投 BA92 已成功结果
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: 等待并行的 PD-053 发布结束后，是否发布部分失败结果投放修复并恢复现有 BA92 成功结果
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；用户要求等待上一任务完成后再补推
+- Confirmation quote: “好的，现在应该是还有一个独立分支在发布，你看看你改的代码有没有问题？如果没有问题的话，等上一个任务完成后，你再补推一版”
+- Decision: 在上一任务 CI 与生产部署成功后发布 KI-161；随后对 `EV-20260921-BA92` 执行不调用外部模型的幂等补投，将已完成的第二轮决定投放到人工复核和 Benchmark，同时保留失败项及部分失败状态。
+- Reason: 避免并行发布冲突，并恢复已经付费且成功持久化但未进入正常产品工作流的结果。
+- Consequences: 补投前保存生产数据库备份；不得重跑 ASR/LLM、不得产生新增供应商费用、不得生成正常完整报告或改变 6 条失败项。
+- Updated artifacts: KI-161 实现、测试、交付记录与生产批次投放状态。
+- Verification: CI、生产部署与公网健康检查通过；只读核对为 18 条人工复核、20 条 Benchmark、6 条 Pass 2 失败、0 份冻结报告，批次仍为 `partially_failed`。
 
 ### PD-054 — 发布说话人分离定位增量供产品验收
 

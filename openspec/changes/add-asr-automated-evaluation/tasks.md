@@ -197,3 +197,4 @@
 - [x] 13.5 Publish the independently verified grouped LLM and Qwen native/compatible reliability release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-047)
 - [x] 13.6 Publish the independently verified audio-alignment/full-context and single-Benchmark deletion release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-051)
 - [x] 13.7 Publish the independently verified adaptive Pass 2 retry and truthful-progress release, preserve production Evaluation data and failed checkpoints, and verify CI/CD plus public health without triggering a paid batch retry (PD-052)
+- [x] 13.8 Publish KI-161 after the PD-053 release completes, then backfill EV-20260921-BA92's completed decisions without external calls and verify 18 reviews, 20 Benchmarks, 6 retained failures and no frozen report (PD-055)

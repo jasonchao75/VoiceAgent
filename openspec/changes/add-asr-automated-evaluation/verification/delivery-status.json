@@ -29,6 +29,15 @@
     "evidence": "verification/independent-review.md",
     "deployment_execution": "PASS on 2026-09-20: CI run 35554489655 and production deployment run 35554596051 succeeded; the fail-closed first-deploy verifier confirmed production provenance and zero batch, report, review and Benchmark rows before access. KI-128 hotfix PASS on 2026-09-21: commit 343e8a7184f34bbd5801751f2e5769828a064837, CI run 35596473118 and deployment run 35596689735 succeeded; public health returned HTTP 200 and the server checkout matched the commit. Post-deploy read-only counts were batch/report/review/Benchmark 0/0/0/0; no cleanup command was run. Qwen native/compatible and grouped LLM source review PASS on 2026-09-21 with 220 repository tests, 134 focused tests, scoped Ruff/Mypy, frontend build, and independent native/compatible executor mocks covering request shape, usage, cost and idempotency. PD-052 adaptive retry release PASS on 2026-09-21: commit b4e03cb0ce792c95503c259aef1d2830ce40e1c6, CI run 35679326836 and deployment run 35679448992 succeeded, including public health verification; production Evaluation data/checkpoints were preserved and EV-20260921-BA92 was not automatically retried. PD-053 diarization-first alignment release PASS on 2026-09-21: commit f0ce94372c7ce591e8e3f20d4ec1ba36d3c7d641, CI run 35683722888 and production deployment run 35683865638 succeeded, including public health verification; no paid evaluation or customer-audio dispatch was started by the release."
   },
+  "ki161_release": {
+    "status": "PASS",
+    "commit": "e9b1a4af2c0d72562303314c4e007d6c2773a4b0",
+    "ci_run": 35684329777,
+    "deployment_run": 35684483856,
+    "public_health": "PASS",
+    "production_recovery": "EV-20260921-BA92 materialized 18 reviews and 20 Benchmarks without external provider calls; 6 failed Pass 2 rows remain retryable, the batch remains partially_failed, and no frozen report was created.",
+    "backup": "/evaluation-data/evaluation-before-BA92-backfill-20260922T035053Z.db"
+  },
   "external_calls": [
     {
       "provider": "DeepSeek / deepseek-flash",
