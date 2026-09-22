@@ -10,6 +10,7 @@ from src.evaluation.pass2_packing import (
     ModelTokenPolicy,
     build_unit,
     pack_units,
+    split_group,
 )
 
 
@@ -43,6 +44,40 @@ def test_pack_units_uses_one_request_when_everything_fits() -> None:
     assert len(groups) == 1
     assert len(groups[0].units) == 56
     assert len(groups[0].case_keys) == 112
+
+
+def test_split_group_is_deterministic_and_conversation_atomic() -> None:
+    """Adaptive retry must split membership without splitting a conversation."""
+    policy = ModelTokenPolicy(200_000, 128_000, 2_000)
+    units = [_unit(f"C{index}", 2, 200 + index * 10, policy) for index in range(4)]
+    parent = pack_units(
+        batch_id="EV-1:suspects",
+        units=units,
+        system_prompt="json",
+        policy=policy,
+    )[0]
+
+    first = split_group(
+        batch_id="EV-1:suspects",
+        parent=parent,
+        system_prompt="json",
+        policy=policy,
+    )
+    second = split_group(
+        batch_id="EV-1:suspects",
+        parent=parent,
+        system_prompt="json",
+        policy=policy,
+    )
+
+    assert first == second
+    assert len(first) == 2
+    child_conversations = [{unit.conversation_id for unit in child.units} for child in first]
+    assert child_conversations[0].isdisjoint(child_conversations[1])
+    assert child_conversations[0] | child_conversations[1] == {
+        unit.conversation_id for unit in parent.units
+    }
+    assert {key for child in first for key in child.case_keys} == set(parent.case_keys)
 
 
 def test_pack_units_splits_by_tokens_and_keeps_conversations_atomic() -> None:

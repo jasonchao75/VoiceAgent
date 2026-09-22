@@ -422,3 +422,49 @@ def pack_units(
     if seen != expected:
         raise ValueError("Pass 2 packing omitted Cases")
     return result
+
+
+def split_group(
+    *,
+    batch_id: str,
+    parent: PassTwoGroup,
+    system_prompt: str,
+    policy: ModelTokenPolicy,
+) -> tuple[PassTwoGroup, ...]:
+    """Split a failed group at a complete-conversation boundary.
+
+    The split is deterministic so a restart produces the same child identities.
+    A single conversation is intentionally indivisible because its full history is
+    required to judge every Case in that conversation.
+    """
+    if len(parent.units) < 2:
+        return ()
+    ordered = sorted(parent.units, key=lambda unit: unit.conversation_id)
+    total_weight = sum(
+        unit.estimated_input_tokens + unit.reserved_output_tokens for unit in ordered
+    )
+    running_weight = 0
+    split_index = 1
+    best_distance: int | None = None
+    for index, unit in enumerate(ordered[:-1], start=1):
+        running_weight += unit.estimated_input_tokens + unit.reserved_output_tokens
+        distance = abs(total_weight - 2 * running_weight)
+        if best_distance is None or distance < best_distance:
+            best_distance = distance
+            split_index = index
+    children: list[PassTwoGroup] = []
+    for side, members in zip(
+        ("left", "right"),
+        (ordered[:split_index], ordered[split_index:]),
+        strict=True,
+    ):
+        child = pack_units(
+            batch_id=f"{batch_id}:split:{parent.group_id}:{side}",
+            units=list(members),
+            system_prompt=system_prompt,
+            policy=policy,
+        )
+        if len(child) != 1:
+            raise ValueError("Adaptive Pass 2 split produced an unstable child group")
+        children.append(child[0])
+    return children[0], children[1]

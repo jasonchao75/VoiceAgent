@@ -269,6 +269,8 @@ Batch deletion is a non-running cleanup command, not a lifecycle shortcut. It is
 - A blocked upload is an unstarted dialog draft, not durable batch history. Opening New Evaluation discards the prior pending-candidate metadata and its exact managed candidate directory, then renders the active dataset and default controls. Active datasets and started/frozen batches are never removed by this reset.
 - Historical timestamp regressions, events beyond recorded duration and MP3/WAV duration drift remain visible audit warnings. They do not block batch creation, but affected ranges cannot be admitted as reliable precise-cut Benchmark clips without a later repair or explicit fallback.
 - Benchmark deletion is a single-sample hard delete. One transaction removes the current row and revision rows and writes a content-free tombstone; after commit, the service removes only the resolved clip path when it is inside the managed Benchmark clip root. Upstream conversation, batch, report and review rows are never deletion targets.
+- Pass 2 retry treats a timed-out or invalid-segment parent group as superseded and deterministically bisects its conversation units. Child identity derives from plan key plus exact Case membership, so restarts reuse children and never repay successful work. Splitting stops at one complete conversation; a single-conversation failure remains explicit after its bounded attempts.
+- Stage progress persists one whole-stage Case universe plus active request-group checkpoints. UI counters distinguish completed, failed and pending/running states; percentage cannot use `completed + failed` as successful completion. Additional-Good balancing begins only after every suspect checkpoint succeeds.
 
 ## UI delivery workflow
 

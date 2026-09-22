@@ -413,6 +413,21 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 - **WHEN** 用户对部分失败批次执行定向重试
 - **THEN** 系统只为失败且可重试的 provider/conversation job 创建新尝试，复用成功结果且不重复生成 Case 或 Benchmark
 
+#### Scenario: Adapt a failed Pass 2 request group
+
+- **WHEN** 一个包含多个完整对话的第二轮请求组超时或持续返回无效 Segment ID
+- **THEN** 系统保留成功 Case 检查点，把失败组按完整对话边界拆为更小且身份稳定的子组后重试；不得再次原样提交已耗尽自动尝试的父组，也不得拆散单通完整对话
+
+#### Scenario: Report truthful retry progress
+
+- **WHEN** 批次处于首次执行或失败重试
+- **THEN** 页面分别展示 Case 和外部请求组的成功、失败、处理中及尝试次数；失败不得计入成功进度，后续子批次不得用局部总数覆盖全阶段总数
+
+#### Scenario: Defer Good balancing until suspect completion
+
+- **WHEN** 任一疑点 Case 的第二轮结果仍为失败或处理中
+- **THEN** 系统不得创建新的额外 Good 平衡样本；疑点 Case 总数在重试期间保持稳定，并将既有或后续 Good 控制样本与疑点数分开统计
+
 ### Requirement: Bilingual and overflow-safe evaluation UI
 
 Evaluation 页面 MUST 支持 English 与中文。英文模式不得出现中文 UI 或中文化的演示上下文；固定系统文案、按钮、字段名、状态和提示 MUST 使用前端本地词典，MUST NOT 作为 LLM 翻译入参。中文模式打开真实英文/阿文对话时，系统 MUST 保留原文并按需复用批次冻结的第一轮 LLM 生成中文对照；只发送当前可见原始对话文本，译文仅在当前浏览器会话缓存，MUST NOT 写入原始转写、报告或 Benchmark，也 MUST NOT 作为评测证据。厂商名、Model ID 和 Prompt 原文不得被翻译。翻译失败时 MUST 保留原文并明确显示译文暂不可用。所有 dialog、drawer 和 popover 在固定桌面与窄屏视口 MUST 满足 `scrollWidth <= clientWidth`。

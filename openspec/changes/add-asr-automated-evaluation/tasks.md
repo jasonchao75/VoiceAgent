@@ -181,6 +181,9 @@
 - [x] 12.41 Support the saved Qwen China native DashScope `/api/v1` endpoint, route `qwen3.8-max` through its native generation contract, retain compatible-mode support, and expose the model in Cost Settings/New Evaluation (PD-046, KI-118)
 - [x] 12.42 Correct pure-user clip alignment when workbook `time (s)` values represent utterance completion/recording events rather than speech onset, fail closed on ambiguous boundaries, and add one reusable full-call context ASR job per conversation/provider without allowing it to become an event candidate (PD-048, PD-049, KI-149)
 - [x] 12.43 Add confirmed single-sample Benchmark deletion from list/detail, removing only its record, revisions and managed derived WAV while preserving upstream evidence and a content-free audit tombstone (PD-050)
+- [x] 12.44 Replace percentage-only retry feedback with persisted stage/group success, failure, pending and attempt counts; do not count failed work as successful progress or let a later subset overwrite whole-stage totals (KI-152)
+- [x] 12.45 Defer additional-Good balancing until every suspect Pass 2 group succeeds, so retrying a partially failed suspect set cannot expand the visible Case total (KI-153)
+- [x] 12.46 Make Pass 2 timeout/schema retries change the failing condition through safe regrouping or bounded fallback, instead of replaying the same oversized group up to six cumulative attempts (KI-154)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

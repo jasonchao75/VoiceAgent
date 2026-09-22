@@ -2374,21 +2374,29 @@ class EvaluationStore:
             database.row_factory = aiosqlite.Row
             await database.execute("PRAGMA busy_timeout = 5000")
             await database.execute("BEGIN IMMEDIATE")
-            rows = await (
-                await database.execute(
-                    f"SELECT status, COUNT(*) AS count FROM {table} "
-                    "WHERE batch_id=? GROUP BY status",
-                    (batch_id,),
-                )
-            ).fetchall()
+            if stage == "evaluation_asr":
+                rows = await (
+                    await database.execute(
+                        """SELECT status, COUNT(*) AS count FROM (
+                               SELECT status FROM evaluation_asr_runs WHERE batch_id=?
+                               UNION ALL
+                               SELECT status FROM evaluation_case_asr_runs WHERE batch_id=?
+                           ) GROUP BY status""",
+                        (batch_id, batch_id),
+                    )
+                ).fetchall()
+            else:
+                rows = await (
+                    await database.execute(
+                        f"SELECT status, COUNT(*) AS count FROM {table} "
+                        "WHERE batch_id=? GROUP BY status",
+                        (batch_id,),
+                    )
+                ).fetchall()
             counts = {str(row["status"]): int(row["count"]) for row in rows}
             completed = counts.get("completed", 0)
             failed = counts.get("failed", 0)
-            finished = min(max(total, 0), completed + failed)
-            span = max(0, progress_end - progress_start)
-            progress = progress_start
-            if total > 0:
-                progress += round(span * finished / total)
+            observed_total = sum(counts.values())
             batch = await (
                 await database.execute(
                     "SELECT snapshot_json FROM evaluation_batches WHERE id=?", (batch_id,)
@@ -2398,12 +2406,96 @@ class EvaluationStore:
                 raise LookupError("Batch not found")
             snapshot = json.loads(batch["snapshot_json"])
             execution_status = snapshot.setdefault("execution_status", {})
+            previous_total = int(execution_status.get(stage, {}).get("total") or 0)
+            effective_total = max(total, observed_total, previous_total, 0)
+            finished = min(effective_total, completed + failed)
+            pending = max(0, effective_total - finished)
+            span = max(0, progress_end - progress_start)
+            progress = progress_start
+            if effective_total > 0:
+                progress += round(span * completed / effective_total)
             execution_status[stage] = {
                 "completed": completed,
                 "failed": failed,
                 "finished": finished,
-                "total": max(total, 0),
+                "pending": pending,
+                "total": effective_total,
             }
+            await database.execute(
+                """UPDATE evaluation_batches
+                   SET progress=?,snapshot_json=?,updated_at=?,version=version+1
+                   WHERE id=?""",
+                (progress, _json(snapshot), _utcnow(), batch_id),
+            )
+            updated = await (
+                await database.execute("SELECT * FROM evaluation_batches WHERE id=?", (batch_id,))
+            ).fetchone()
+            await database.commit()
+        assert updated is not None
+        return self._batch(updated)
+
+    async def refresh_pass2_progress(
+        self,
+        batch_id: str,
+        *,
+        suspect_case_keys: set[tuple[str, str]] | None = None,
+        progress_start: int = 75,
+        progress_end: int = 92,
+    ) -> dict[str, Any]:
+        """Persist stable suspect and Good-control Case progress separately."""
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            await database.execute("PRAGMA busy_timeout = 5000")
+            await database.execute("BEGIN IMMEDIATE")
+            batch = await (
+                await database.execute(
+                    "SELECT snapshot_json FROM evaluation_batches WHERE id=?", (batch_id,)
+                )
+            ).fetchone()
+            if batch is None:
+                raise LookupError("Batch not found")
+            snapshot = json.loads(batch["snapshot_json"])
+            if suspect_case_keys is not None:
+                frozen_suspects = sorted(suspect_case_keys)
+                snapshot["pass_2_suspect_case_keys"] = frozen_suspects
+            else:
+                frozen_suspects = [
+                    (str(item[0]), str(item[1]))
+                    for item in snapshot.get("pass_2_suspect_case_keys", [])
+                    if isinstance(item, list) and len(item) == 2
+                ]
+            suspect_keys = set(frozen_suspects)
+            rows = await (
+                await database.execute(
+                    "SELECT conversation_id,event_id,status FROM evaluation_pass2_runs "
+                    "WHERE batch_id=?",
+                    (batch_id,),
+                )
+            ).fetchall()
+            statuses = {
+                (str(row["conversation_id"]), str(row["event_id"])): str(row["status"])
+                for row in rows
+            }
+
+            def counts_for(keys: set[tuple[str, str]]) -> dict[str, int]:
+                completed = sum(statuses.get(key) == "completed" for key in keys)
+                failed = sum(statuses.get(key) == "failed" for key in keys)
+                return {
+                    "completed": completed,
+                    "failed": failed,
+                    "finished": completed + failed,
+                    "pending": max(0, len(keys) - completed - failed),
+                    "total": len(keys),
+                }
+
+            suspect_status = counts_for(suspect_keys)
+            control_keys = set(statuses) - suspect_keys
+            snapshot.setdefault("execution_status", {})["pass_2"] = suspect_status
+            snapshot["pass_2_good_status"] = counts_for(control_keys)
+            span = max(0, progress_end - progress_start)
+            progress = progress_start
+            if suspect_status["total"]:
+                progress += round(span * suspect_status["completed"] / suspect_status["total"])
             await database.execute(
                 """UPDATE evaluation_batches
                    SET progress=?,snapshot_json=?,updated_at=?,version=version+1

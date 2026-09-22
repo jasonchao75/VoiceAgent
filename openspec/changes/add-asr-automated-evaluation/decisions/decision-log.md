@@ -4,12 +4,26 @@
 
 ## Status
 
-- Recorded decisions: 38 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 39 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-21
 
 ## Decisions
+
+### PD-052 — 失败组自适应拆分、真实进度与稳定 Case 口径
+
+- Status: Confirmed
+- Date: 2026-09-21
+- Source question: EV-20260921-BA92 重试持续超时、进度误导及 Case 从 38 增至 44 的修复方案
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务，用户确认先修复发布、再重试既有失败批次
+- Confirmation quote: “好的，修复并发布吧”
+- Decision: 第二轮超时或 Segment ID 契约失败时，不再原样重复同一失败组；系统按完整对话不可拆分原则递归拆成更小的稳定子组，成功检查点继续复用。页面同时展示 Case 与请求组的成功、失败、处理中和尝试次数，失败不得计作成功进度，后续子批次不得覆盖全阶段总数。只有全部疑点 Case 第二轮成功后才可生成额外 Good 平衡样本；重试期间疑点总数保持稳定，并单独展示后续新增 Good 数量。
+- Reason: 线上真实批次证明 34–72 万估算输入 Token 的大组会连续触发 120 秒超时，原样重试六次不能改变失败条件；旧进度把失败当成完成，且在疑点未完成时增加 Good 样本，造成状态误导和额外费用。
+- Consequences: 单通完整对话仍是最小不可拆单元；拆至单通仍失败时明确保留失败，不无限重试。`EV-20260921-BA92` 发布后可复用 11 个成功结果，只重试失败 Case/组；已有 6 个提前创建的 Good 检查点保留但不得参与疑点完成口径，待疑点全部成功后再按最终差额复用或补齐。
+- Updated artifacts: Delta Spec、design、tasks、运行时状态/页面文案、第二轮分组检查点与回归测试。
+- Verification: deterministic mock 覆盖超时拆组、Segment 契约拆组、成功检查点复用、单通失败上限、真实成功/失败/处理中计数、全局 ASR 总数和疑点完成前不新增 Good；发布后由用户对现有失败批次主动重试，Agent 不代发付费请求。
 
 ### PD-051 — 发布音频定位与 Benchmark 删除增量
 

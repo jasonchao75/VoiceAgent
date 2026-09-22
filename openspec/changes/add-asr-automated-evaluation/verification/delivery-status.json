@@ -1439,6 +1439,36 @@
       "disclosed_to_user": true
     },
     {
+      "id": "KI-154",
+      "status": "resolved",
+      "summary": "EV-20260921-BA92 retries replay the same large Gemini Pass 2 groups and therefore repeat the same timeout or segment-contract failure.",
+      "impact": "Two suspect groups containing 12 and 18 Cases have 340,192 and 716,535 estimated input tokens and 45,216/49,824 reserved output tokens. Each failed Gemini request consumes the full 120-second timeout; both groups reached six cumulative attempts and still failed. A separate three-Case group repeated an unknown-ASR-segment contract error for three attempts.",
+      "source": "Read-only production SQLite and telemetry inspection for EV-20260921-BA92 on 2026-09-21. Pass 2 has 11 completed and 33 failed Cases; 30 failures are timeout and 3 are schema_contract. Failed Gemini calls average 120,339 ms.",
+      "next_action": "On retry, split timeout groups into smaller stable subgroups and strengthen the segment-ID correction/fallback contract; expose the changed retry plan and stop repeating an unchanged group after the bounded policy is exhausted.",
+      "resolution": "Pass 2 now deterministically bisects an exhausted multi-conversation group, marks the parent superseded, retries only active children under the existing concurrency limit, and stops at one complete conversation. Stable child identities and completed checkpoints make restart/retry reuse safe; retry output reserve no longer expands to the provider maximum.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-153",
+      "status": "resolved",
+      "summary": "Additional-Good balancing runs before all suspect Pass 2 groups have succeeded, causing the visible Case total to grow during retry.",
+      "impact": "EV-20260921-BA92 began Pass 2 with 38 eligible suspect Cases. Despite 30 suspect Cases remaining failed, the runner used only completed decisions to calculate the Good shortage and added two three-Case Good-control groups, increasing stored Pass 2 rows from 38 to 44. These are not duplicate suspect Cases, but the timing and visible total violate stable retry expectations.",
+      "source": "Read-only production checkpoint inspection on 2026-09-21: original suspect groups contain 8+12+18=38 Cases; later good-balance groups contain 3+3=6 Cases. Pass 1 originally identified 44 candidate events.",
+      "next_action": "Run Good balancing only after all suspect Pass 2 checkpoints are complete and successful; keep suspect, control and total counts separately visible and stable across retry.",
+      "resolution": "The runner now returns a truthful partial-failure state before entering Good balancing whenever any eligible suspect Case is not completed. Existing successful control checkpoints remain reusable but no new control Cases are added until suspect completion.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-152",
+      "status": "resolved",
+      "summary": "Evaluation retry progress treats failed checkpoints as finished percentage and can overwrite whole-stage totals with the current subset.",
+      "impact": "The UI shows 75/91/92 percent without revealing success versus failure. EV-20260921-BA92 reports Pass 2 progress 92 because all 44 rows are terminal even though only 11 succeeded and 33 failed. Its ASR execution snapshot is internally inconsistent: 121 completed plus 29 failed provider rows are displayed through a later subset total of 9/9.",
+      "source": "Read-only production batch snapshot plus refresh_execution_progress implementation inspection on 2026-09-21.",
+      "next_action": "Persist immutable whole-stage totals, show completed/failed/pending and request-group attempts, and reserve completion percentage for successful work or label terminal-processing progress explicitly.",
+      "resolution": "Progress now advances from successful checkpoints only, derives ASR totals across both context and event tables instead of the latest subset, and freezes the suspect Case universe separately from historical/additional Good controls. It persists suspect and Good completed/failed/pending counts plus separately scoped request-group status and attempts; the UI renders those labels instead of a terminal-looking finished fraction.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-151",
       "status": "open",
       "summary": "GitHub Actions reports that Node.js 20 action runtimes are deprecated and are currently being forced onto Node.js 24.",
@@ -1627,8 +1657,8 @@
     {
       "id": "UV-022",
       "status": "open",
-      "summary": "The dual-viewport Evaluation browser suite did not execute against the current source build in this turn.",
-      "reason": "The frontend production build succeeded and the static progress-label regression passed, but localhost:8000 was not running. The sandbox-external Playwright retry reached Chromium successfully and then all scenarios failed at setup with ECONNREFUSED before product assertions. Generated failure traces were removed.",
+      "summary": "The full dual-viewport Evaluation browser suite is not green under the blank temporary local environment used in this turn.",
+      "reason": "The production frontend build succeeded, 17 broader desktop scenarios passed before the run was stopped, and the directly affected persisted-batch lifecycle scenario passed on both desktop and narrow Chromium. The full suite was not completed because unrelated scenarios assume configured authentication/pricing fixtures that the blank temporary service did not provide; their failures are not evidence against this retry change.",
       "disclosed_to_user": true
     },
     {

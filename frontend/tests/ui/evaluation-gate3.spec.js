@@ -1090,6 +1090,15 @@ test("exposes every persisted batch lifecycle state and its next action", async 
     status,
     stage,
     report_type: status.startsWith("completed") ? "final" : null,
+    snapshot: id === "BUDGET" ? {
+      execution_status: {
+        pass_2: { completed: 11, failed: 30, pending: 3, finished: 41, total: 44 },
+      },
+      pass_2_request_status: {
+        completed: 1, failed: 2, pending: 2, attempts: 17, total: 5, superseded: 2,
+      },
+      pass_2_good_status: { completed: 6, failed: 0, pending: 0, finished: 6, total: 6 },
+    } : {},
   }));
   await page.route("**/api/evaluation/bootstrap", async (route) => {
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(bootstrap) });
@@ -1100,7 +1109,12 @@ test("exposes every persisted batch lifecycle state and its next action", async 
     await expect(row).toBeVisible();
     await expect(row.getByRole("button", { name: action })).toHaveCount(1);
   }
-  await expect(page.locator('tr[data-batch-id="EV-BUDGET"] .job-state')).toContainText("37%");
+  const retryState = page.locator('tr[data-batch-id="EV-BUDGET"] .batch-progress-copy');
+  await expect(retryState).toContainText("11 suspect Cases succeeded");
+  await expect(retryState).toContainText("30 failed");
+  await expect(retryState).toContainText("3 pending");
+  await expect(retryState).toContainText("17 attempts");
+  await expect(retryState).toContainText("Good controls: 6 succeeded");
   await expect(page.locator('tr[data-batch-id="EV-PARTIAL"] .job-state')).toContainText("Final · partial");
 });
 

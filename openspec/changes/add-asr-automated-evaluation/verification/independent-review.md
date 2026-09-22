@@ -1,4 +1,35 @@
-# Independent Review — Single-sample Benchmark deletion
+# Independent Review — Adaptive Pass 2 retry and truthful progress
+
+- Status: **PASS**
+- Date: 2026-09-21
+- Scope: PD-052, KI-152, KI-153 and KI-154 only
+- Reviewer boundary: independent verification only; no production retry, paid provider call, deployment, push, or production-data mutation was performed.
+
+## Decision
+
+The reviewed increment passes deterministic independent verification. A failed multi-conversation Pass 2 group receives bounded attempts and, only for timeout or structured-response/Segment-ID contract failures, is marked superseded and deterministically bisected at complete-conversation boundaries. Child identities derive from exact membership and the parent identity. A restart encountering a superseded parent resumes those same children; completed children and completed original groups return without another provider request. Splitting stops at one complete conversation, whose final failure remains explicit after bounded local attempts. Non-size-related failures such as authentication errors remain failed and are not multiplied through recursive splitting.
+
+Additional-Good balancing now stops before creating new controls whenever any eligible suspect Case is not completed. Pass 2 persists a frozen suspect Case universe separately from existing or later Good controls, so historical controls do not inflate suspect completion. ASR progress combines conversation-context and event-level provider checkpoints into one non-shrinking stage total; Pass 2 percentage advances only on successful suspect Cases rather than treating failures as success.
+
+The Evaluation list renders suspect Case success/failure/pending counts, active request-group success/failure/pending counts, cumulative active-group attempts, and a separate Good-control breakdown. The same current-source component passed desktop and narrow runtime checks.
+
+## Reproducible evidence
+
+- Focused packing, Pass 2, progress and Good-control suite: **19 passed**.
+- Split/resume regression: one two-conversation parent times out three times, splits into two one-conversation children, both complete, and a second runner invocation makes no further request. Persisted state contains one superseded parent, two completed children and two completed Case checkpoints.
+- Error classification trace: only `timeout` and `schema_*` persisted errors support splitting; unrelated provider failures remain bounded failures.
+- BA92-compatible isolated-state and committed regression checks: 38 frozen suspects retain `total=38`; six pre-existing completed Good controls are independently exposed as `total=6` and do not change suspect progress or suspect request-group totals.
+- Full repository suite: **226 passed**, with two previously disclosed dependency deprecation warnings.
+- Current-source frontend lifecycle/progress check: **2/2 PASS** across `desktop-chromium` (1440×1000) and `narrow-chromium` (1024×1000), including suspect, request-group, attempt and Good-control text.
+- Scoped Ruff and Mypy, frontend production build, `git diff --check`, and Change gate: **PASS**. The gate reports 0 errors and existing disclosed warnings/one unrelated remaining task.
+
+## Remaining boundary
+
+- Production batch `EV-20260921-BA92` was not retried during independent verification because that would issue paid external requests. Compatibility is supported by its documented persisted shape, unchanged checkpoint schema, deterministic legacy failed-group splitting and an isolated 38-suspect + 6-control state reproduction; the actual provider retry remains a post-deployment user action.
+
+---
+
+# Prior Independent Review — Single-sample Benchmark deletion
 
 - Status: **PASS**
 - Date: 2026-09-21

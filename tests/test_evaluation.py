@@ -2570,12 +2570,67 @@ async def test_execution_progress_uses_real_checkpoint_counts(
         progress_end=45,
     )
 
-    assert updated["progress"] == 32
+    assert updated["progress"] == 26
     assert updated["snapshot"]["execution_status"]["pass_1"] == {
         "completed": 1,
         "failed": 1,
         "finished": 2,
+        "pending": 2,
         "total": 4,
+    }
+
+
+@pytest.mark.asyncio
+async def test_pass2_progress_separates_suspects_from_existing_good_controls(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Historical Good controls must not inflate the suspect retry denominator."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Stable suspect progress",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="stable-suspect-progress-001",
+        )
+    )
+    suspect_keys = {(f"S-{index}", "R1") for index in range(38)}
+    for index, key in enumerate(sorted(suspect_keys)):
+        await evaluation_store.checkpoint_result(
+            "evaluation_pass2_runs",
+            (batch["id"], key[0], key[1]),
+            status="completed" if index < 11 else "failed",
+            attempts=1,
+            result={"origin": "suspect_candidate"} if index < 11 else None,
+            error=None if index < 11 else "timeout",
+        )
+    for index in range(6):
+        await evaluation_store.checkpoint_result(
+            "evaluation_pass2_runs",
+            (batch["id"], f"G-{index}", "R1"),
+            status="completed",
+            attempts=1,
+            result={"origin": "additional_good_pool"},
+        )
+
+    updated = await evaluation_store.refresh_pass2_progress(
+        batch["id"], suspect_case_keys=suspect_keys
+    )
+
+    assert updated["snapshot"]["execution_status"]["pass_2"] == {
+        "completed": 11,
+        "failed": 27,
+        "finished": 38,
+        "pending": 0,
+        "total": 38,
+    }
+    assert updated["snapshot"]["pass_2_good_status"] == {
+        "completed": 6,
+        "failed": 0,
+        "finished": 6,
+        "pending": 0,
+        "total": 6,
     }
 
 
@@ -3262,6 +3317,124 @@ async def test_pass2_retry_reuses_failed_frozen_group(
             "segments": [],
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_pass2_split_resume_reuses_children_and_never_replays_parent(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A superseded parent must resume its stable children after restart."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Adaptive grouped retry",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-flash",
+            pass_2_model="deepseek-flash",
+            budget_limit=10,
+            idempotency_key="adaptive-grouped-retry-001",
+        )
+    )
+    source = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert source is not None
+    event = next(item for item in source["events"] if item["speaker"] == "customer")
+    event_id = str(event["event_id"])
+    conversations = []
+    candidates = []
+    for conversation_id in ("C-SPLIT-1", "C-SPLIT-2"):
+        conversation = json.loads(json.dumps(source))
+        conversation["conversation_id"] = conversation_id
+        conversations.append(conversation)
+        candidates.append(
+            {
+                "conversation_id": conversation_id,
+                "event_id": event_id,
+                "origin": "suspect_candidate",
+            }
+        )
+        await evaluation_store.checkpoint_result(
+            "evaluation_case_asr_runs",
+            (batch["id"], "elevenlabs", conversation_id, event_id),
+            status="completed",
+            attempts=1,
+            result={
+                "text": str(event["text"]),
+                "segments": [
+                    {
+                        "segment_id": "segment-1",
+                        "start": 0.0,
+                        "end": 1.0,
+                        "text": str(event["text"]),
+                    }
+                ],
+            },
+        )
+        await evaluation_store.checkpoint_result(
+            "evaluation_asr_runs",
+            (batch["id"], "elevenlabs", conversation_id),
+            status="completed",
+            attempts=1,
+            result={"scope": "full_call_context", "text": "context", "segments": []},
+        )
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    calls: list[tuple[str, ...]] = []
+
+    async def provider(_model_id: str) -> str:
+        return "deepseek"
+
+    async def grouped_request(*args: object, **kwargs: object) -> dict[str, object]:
+        payload = cast(dict[str, object], args[2])
+        grouped = cast(list[dict[str, object]], payload["conversations"])
+        membership = tuple(str(item["conversation_id"]) for item in grouped)
+        calls.append(membership)
+        if len(membership) > 1:
+            raise TimeoutError("provider timeout")
+        request_group_id = str(payload["request_group_id"])
+        rows = []
+        for candidate in cast(list[dict[str, object]], payload["candidate_case"]):
+            rows.append(
+                {
+                    "conversation_id": str(candidate["conversation_id"]),
+                    "event_id": str(candidate["event_id"]),
+                    "decision": "Good Case",
+                    "reference_text": str(event["text"]),
+                    "reason": "The providers agree with the historical transcript.",
+                    "scenario_tag": "numbers-codes",
+                    "evidence_completeness": "complete",
+                    "positioning_quality": "exact",
+                    "vendor_evidence": [
+                        {
+                            "provider": "elevenlabs",
+                            "segment_ids": ["segment-1"],
+                            "relationship_to_history": "agrees",
+                        }
+                    ],
+                    "recommended_listening_segment_ids": ["segment-1"],
+                    "manual_review_question": None,
+                    "proposed_tag": None,
+                }
+            )
+        return {"request_group_id": request_group_id, "results": rows}
+
+    async def no_wait(_seconds: float) -> None:
+        return None
+
+    monkeypatch.setattr(runner, "_model_provider", provider)
+    monkeypatch.setattr(runner, "_llm_json", grouped_request)
+    monkeypatch.setattr(asyncio, "sleep", no_wait)
+
+    await runner._run_pass_two(batch["id"], batch, conversations, candidates, plan_key="suspects")
+    first_calls = list(calls)
+    await runner._run_pass_two(batch["id"], batch, conversations, candidates, plan_key="suspects")
+
+    assert calls == first_calls
+    assert [len(membership) for membership in calls] == [2, 2, 2, 1, 1]
+    groups = await evaluation_store.pass2_group_rows(batch["id"])
+    assert sum(row["status"] == "superseded" for row in groups) == 1
+    assert sum(row["status"] == "completed" for row in groups) == 2
+    results = await evaluation_store.checkpoint_rows("evaluation_pass2_runs", batch["id"])
+    assert len(results) == 2
+    assert all(row["status"] == "completed" for row in results)
 
 
 @pytest.mark.asyncio

@@ -25,6 +25,7 @@ from src.evaluation.pass2_packing import (
     model_token_policy,
     pack_pass_one_units,
     pack_units,
+    split_group,
 )
 from src.evaluation.pricing import normalize_pricing_model_id
 from src.evaluation.prompts import (
@@ -246,6 +247,12 @@ def _safe_structured_error(exc: Exception) -> str:
         detail = str(exc).strip()[:160]
         return f"schema_contract: {detail}" if detail else "schema_contract"
     return _safe_error(exc)
+
+
+def _pass_two_error_supports_split(error: str | None) -> bool:
+    """Split only failures whose condition can improve with a smaller payload."""
+    normalized = str(error or "").casefold()
+    return normalized == "timeout" or normalized.startswith("schema_")
 
 
 class EvaluationRunner:
@@ -619,6 +626,28 @@ class EvaluationRunner:
         )
         current = await self.store.get_batch(batch_id)
         if current is None or current["status"] == "budget_paused":
+            return
+        suspect_rows = {
+            (str(row["conversation_id"]), str(row["event_id"])): row
+            for row in await self.store.checkpoint_rows("evaluation_pass2_runs", batch_id)
+        }
+        incomplete_suspects = [
+            key
+            for key in candidate_keys & evidence_case_keys
+            if suspect_rows.get(key, {}).get("status") != "completed"
+        ]
+        if incomplete_suspects:
+            await self.store.set_batch_state(
+                batch_id,
+                status="partially_failed",
+                stage="pass_2",
+                progress=int(current["progress"]),
+                snapshot_updates={
+                    "provider_execution": "partially_failed",
+                    "pass_2_failed": len(incomplete_suspects),
+                    "good_balance_deferred": True,
+                },
+            )
             return
         good_pool = self._good_pool(
             pass_one_rows,
@@ -2346,14 +2375,14 @@ class EvaluationRunner:
                     status="pending",
                     attempts=0,
                 )
-        planned_group_total = len(await self.store.pass2_group_rows(batch_id))
-        planned_case_total = len(
-            {
-                (str(row["conversation_id"]), str(row["event_id"]))
-                for row in await self.store.checkpoint_rows("evaluation_pass2_runs", batch_id)
-            }
-            | set(candidate_by_key)
+        planned_group_total = len(
+            [
+                row
+                for row in await self.store.pass2_group_rows(batch_id)
+                if row["status"] != "superseded"
+            ]
         )
+        planned_case_total = len(candidate_by_key)
         await self.store.set_batch_state(
             batch_id,
             status="running",
@@ -2368,21 +2397,68 @@ class EvaluationRunner:
                 }
             },
         )
-        await self.store.refresh_execution_progress(
+        await self.store.refresh_pass2_progress(
             batch_id,
-            table="evaluation_pass2_runs",
-            stage="pass_2",
-            total=planned_case_total,
+            suspect_case_keys=set(candidate_by_key) if plan_key == "suspects" else None,
             progress_start=75,
             progress_end=92,
         )
 
-        semaphore = asyncio.Semaphore(2)
+        request_semaphore = asyncio.Semaphore(2)
+
+        async def request_group(
+            group: Any,
+            attempt_payload: dict[str, Any],
+            attempt: int,
+        ) -> dict[str, Any]:
+            """Limit only paid provider calls, not recursive split orchestration."""
+            async with request_semaphore:
+                return await self._llm_json(
+                    model_id,
+                    prompt,
+                    attempt_payload,
+                    thinking=True,
+                    max_output_tokens=group.reserved_output_tokens,
+                    batch_id=batch_id,
+                    stage="pass_2",
+                    item_key=group.group_id,
+                    attempt=attempt,
+                )
 
         async def decide_group(group: Any) -> None:
-            prior = prior_groups.get(group.group_id)
+            latest_groups = {
+                str(row["group_id"]): row for row in await self.store.pass2_group_rows(batch_id)
+            }
+            prior = latest_groups.get(group.group_id)
             if prior is not None and prior.get("status") == "completed":
                 return
+            if prior is not None and prior.get("status") == "superseded":
+                children = split_group(
+                    batch_id=f"{batch_id}:{plan_key}",
+                    parent=group,
+                    system_prompt=prompt + json.dumps(shared_payload, ensure_ascii=False),
+                    policy=policy,
+                )
+                if not children:
+                    raise EvaluationExecutionError(
+                        "A superseded Pass 2 group has no recoverable child groups"
+                    )
+                await split_failed_group(group, prior, children)
+                return
+            if (
+                prior is not None
+                and prior.get("status") == "failed"
+                and _pass_two_error_supports_split(prior.get("error"))
+            ):
+                children = split_group(
+                    batch_id=f"{batch_id}:{plan_key}",
+                    parent=group,
+                    system_prompt=prompt + json.dumps(shared_payload, ensure_ascii=False),
+                    policy=policy,
+                )
+                if children:
+                    await split_failed_group(group, prior, children)
+                    return
             grouped_conversations = [unit.payload for unit in group.units]
             payload = {
                 "request_group_id": group.group_id,
@@ -2429,154 +2505,203 @@ class EvaluationRunner:
                     "Retry the same complete group and output only one complete JSON object."
                 )
             prior_attempts = int(prior.get("attempts") or 0) if prior is not None else 0
-            async with semaphore:
-                for local_attempt in range(1, 4):
-                    attempt = prior_attempts + local_attempt
-                    started_at = time.perf_counter()
-                    try:
-                        attempt_payload = dict(payload)
-                        if retry_correction is not None:
-                            attempt_payload["retry_correction"] = retry_correction
-                        result = await self._llm_json(
-                            model_id,
-                            prompt,
-                            attempt_payload,
-                            thinking=True,
-                            max_output_tokens=(
-                                policy.max_output_tokens
-                                if retry_correction is not None
-                                else group.reserved_output_tokens
-                            ),
-                            batch_id=batch_id,
-                            stage="pass_2",
-                            item_key=group.group_id,
-                            attempt=attempt,
-                        )
-                        indexed = self._validate_pass_two_group(
-                            result,
-                            group.case_keys,
-                            {
-                                (unit.conversation_id, str(event_result["event_id"])): bool(
-                                    event_result.get("providers")
-                                )
-                                for unit in group.units
-                                for event_result in unit.payload.get("asr_results", [])
-                            },
-                            {
-                                (unit.conversation_id, str(event_result["event_id"])): {
-                                    str(segment.get("segment_id"))
-                                    for asr_result in event_result.get("providers", [])
-                                    for segment in asr_result.get("segments", [])
-                                    if segment.get("segment_id")
-                                }
-                                for unit in group.units
-                                for event_result in unit.payload.get("asr_results", [])
-                            },
-                            expected_group_id=group.group_id,
-                        )
-                        for key in group.case_keys:
-                            stored_result = dict(indexed[key])
-                            stored_result["origin"] = str(
-                                candidate_by_key[key].get("origin") or "suspect_candidate"
+            for local_attempt in range(1, 4):
+                attempt = prior_attempts + local_attempt
+                started_at = time.perf_counter()
+                try:
+                    attempt_payload = dict(payload)
+                    if retry_correction is not None:
+                        attempt_payload["retry_correction"] = retry_correction
+                    result = await request_group(group, attempt_payload, attempt)
+                    indexed = self._validate_pass_two_group(
+                        result,
+                        group.case_keys,
+                        {
+                            (unit.conversation_id, str(event_result["event_id"])): bool(
+                                event_result.get("providers")
                             )
+                            for unit in group.units
+                            for event_result in unit.payload.get("asr_results", [])
+                        },
+                        {
+                            (unit.conversation_id, str(event_result["event_id"])): {
+                                str(segment.get("segment_id"))
+                                for asr_result in event_result.get("providers", [])
+                                for segment in asr_result.get("segments", [])
+                                if segment.get("segment_id")
+                            }
+                            for unit in group.units
+                            for event_result in unit.payload.get("asr_results", [])
+                        },
+                        expected_group_id=group.group_id,
+                    )
+                    for key in group.case_keys:
+                        stored_result = dict(indexed[key])
+                        stored_result["origin"] = str(
+                            candidate_by_key[key].get("origin") or "suspect_candidate"
+                        )
+                        await self.store.checkpoint_result(
+                            "evaluation_pass2_runs",
+                            (batch_id, key[0], key[1]),
+                            status="completed",
+                            attempts=attempt,
+                            result=stored_result,
+                        )
+                    await self.store.checkpoint_pass2_group(
+                        batch_id=batch_id,
+                        group_id=group.group_id,
+                        idempotency_key=group.idempotency_key,
+                        conversation_ids=[unit.conversation_id for unit in group.units],
+                        case_keys=list(group.case_keys),
+                        estimated_input_tokens=group.estimated_input_tokens,
+                        reserved_output_tokens=group.reserved_output_tokens,
+                        status="completed",
+                        attempts=attempt,
+                        result={"result_count": len(indexed)},
+                    )
+                    await self._refresh_pass_two_group_status(batch_id)
+                    await self.store.refresh_pass2_progress(
+                        batch_id,
+                        suspect_case_keys=(
+                            set(candidate_by_key) if plan_key == "suspects" else None
+                        ),
+                        progress_start=75,
+                        progress_end=92,
+                    )
+                    await self.store.record_telemetry(
+                        batch_id=batch_id,
+                        stage="pass_2",
+                        event="llm_request",
+                        provider=provider,
+                        outcome="completed",
+                        attempt=attempt,
+                        latency_ms=(time.perf_counter() - started_at) * 1000,
+                    )
+                    return
+                except EvaluationBudgetReached:
+                    return
+                except Exception as exc:
+                    retry_correction = _structured_retry_correction(exc)
+                    await self.store.checkpoint_pass2_group(
+                        batch_id=batch_id,
+                        group_id=group.group_id,
+                        idempotency_key=group.idempotency_key,
+                        conversation_ids=[unit.conversation_id for unit in group.units],
+                        case_keys=list(group.case_keys),
+                        estimated_input_tokens=group.estimated_input_tokens,
+                        reserved_output_tokens=group.reserved_output_tokens,
+                        status="pending",
+                        attempts=attempt,
+                        error=_safe_structured_error(exc),
+                    )
+                    await self.store.record_telemetry(
+                        batch_id=batch_id,
+                        stage="pass_2",
+                        event=("schema_failure" if isinstance(exc, ValueError) else "llm_request"),
+                        provider=provider,
+                        outcome="failed",
+                        attempt=attempt,
+                        latency_ms=(time.perf_counter() - started_at) * 1000,
+                    )
+                    if local_attempt == 3:
+                        error = _safe_structured_error(exc)
+                        children = split_group(
+                            batch_id=f"{batch_id}:{plan_key}",
+                            parent=group,
+                            system_prompt=prompt + json.dumps(shared_payload, ensure_ascii=False),
+                            policy=policy,
+                        )
+                        if children and _pass_two_error_supports_split(error):
+                            failed_parent = {
+                                "attempts": attempt,
+                                "error": error,
+                            }
+                            await split_failed_group(group, failed_parent, children)
+                            return
+                        for key in group.case_keys:
                             await self.store.checkpoint_result(
                                 "evaluation_pass2_runs",
                                 (batch_id, key[0], key[1]),
-                                status="completed",
-                                attempts=attempt,
-                                result=stored_result,
-                            )
-                        await self.store.checkpoint_pass2_group(
-                            batch_id=batch_id,
-                            group_id=group.group_id,
-                            idempotency_key=group.idempotency_key,
-                            conversation_ids=[unit.conversation_id for unit in group.units],
-                            case_keys=list(group.case_keys),
-                            estimated_input_tokens=group.estimated_input_tokens,
-                            reserved_output_tokens=group.reserved_output_tokens,
-                            status="completed",
-                            attempts=attempt,
-                            result={"result_count": len(indexed)},
-                        )
-                        await self._refresh_pass_two_group_status(batch_id)
-                        await self.store.refresh_execution_progress(
-                            batch_id,
-                            table="evaluation_pass2_runs",
-                            stage="pass_2",
-                            total=planned_case_total,
-                            progress_start=75,
-                            progress_end=92,
-                        )
-                        await self.store.record_telemetry(
-                            batch_id=batch_id,
-                            stage="pass_2",
-                            event="llm_request",
-                            provider=provider,
-                            outcome="completed",
-                            attempt=attempt,
-                            latency_ms=(time.perf_counter() - started_at) * 1000,
-                        )
-                        return
-                    except EvaluationBudgetReached:
-                        return
-                    except Exception as exc:
-                        retry_correction = _structured_retry_correction(exc)
-                        await self.store.checkpoint_pass2_group(
-                            batch_id=batch_id,
-                            group_id=group.group_id,
-                            idempotency_key=group.idempotency_key,
-                            conversation_ids=[unit.conversation_id for unit in group.units],
-                            case_keys=list(group.case_keys),
-                            estimated_input_tokens=group.estimated_input_tokens,
-                            reserved_output_tokens=group.reserved_output_tokens,
-                            status="pending",
-                            attempts=attempt,
-                            error=_safe_structured_error(exc),
-                        )
-                        await self.store.record_telemetry(
-                            batch_id=batch_id,
-                            stage="pass_2",
-                            event=(
-                                "schema_failure" if isinstance(exc, ValueError) else "llm_request"
-                            ),
-                            provider=provider,
-                            outcome="failed",
-                            attempt=attempt,
-                            latency_ms=(time.perf_counter() - started_at) * 1000,
-                        )
-                        if local_attempt == 3:
-                            error = _safe_structured_error(exc)
-                            for key in group.case_keys:
-                                await self.store.checkpoint_result(
-                                    "evaluation_pass2_runs",
-                                    (batch_id, key[0], key[1]),
-                                    status="failed",
-                                    attempts=attempt,
-                                    error=error,
-                                )
-                            await self.store.checkpoint_pass2_group(
-                                batch_id=batch_id,
-                                group_id=group.group_id,
-                                idempotency_key=group.idempotency_key,
-                                conversation_ids=[unit.conversation_id for unit in group.units],
-                                case_keys=list(group.case_keys),
-                                estimated_input_tokens=group.estimated_input_tokens,
-                                reserved_output_tokens=group.reserved_output_tokens,
                                 status="failed",
                                 attempts=attempt,
                                 error=error,
                             )
-                            await self._refresh_pass_two_group_status(batch_id)
-                            await self.store.refresh_execution_progress(
-                                batch_id,
-                                table="evaluation_pass2_runs",
-                                stage="pass_2",
-                                total=planned_case_total,
-                                progress_start=75,
-                                progress_end=92,
-                            )
-                        else:
-                            await asyncio.sleep(float(local_attempt))
+                        await self.store.checkpoint_pass2_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=[unit.conversation_id for unit in group.units],
+                            case_keys=list(group.case_keys),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="failed",
+                            attempts=attempt,
+                            error=error,
+                        )
+                        await self._refresh_pass_two_group_status(batch_id)
+                        await self.store.refresh_pass2_progress(
+                            batch_id,
+                            suspect_case_keys=(
+                                set(candidate_by_key) if plan_key == "suspects" else None
+                            ),
+                            progress_start=75,
+                            progress_end=92,
+                        )
+                    else:
+                        await asyncio.sleep(float(local_attempt))
+
+        async def split_failed_group(
+            parent: Any,
+            prior: dict[str, Any],
+            children: tuple[Any, ...],
+        ) -> None:
+            """Supersede one failed request and retry deterministic child groups."""
+            child_ids = [child.group_id for child in children]
+            await self.store.checkpoint_pass2_group(
+                batch_id=batch_id,
+                group_id=parent.group_id,
+                idempotency_key=parent.idempotency_key,
+                conversation_ids=[unit.conversation_id for unit in parent.units],
+                case_keys=list(parent.case_keys),
+                estimated_input_tokens=parent.estimated_input_tokens,
+                reserved_output_tokens=parent.reserved_output_tokens,
+                status="superseded",
+                attempts=int(prior.get("attempts") or 0),
+                result={"split_into": child_ids},
+                error=str(prior.get("error") or "") or None,
+            )
+            for child in children:
+                existing = {
+                    str(row["group_id"]): row for row in await self.store.pass2_group_rows(batch_id)
+                }.get(child.group_id)
+                if existing is None:
+                    await self.store.checkpoint_pass2_group(
+                        batch_id=batch_id,
+                        group_id=child.group_id,
+                        idempotency_key=child.idempotency_key,
+                        conversation_ids=[unit.conversation_id for unit in child.units],
+                        case_keys=list(child.case_keys),
+                        estimated_input_tokens=child.estimated_input_tokens,
+                        reserved_output_tokens=child.reserved_output_tokens,
+                        status="pending",
+                        attempts=0,
+                    )
+                if existing is None or existing.get("status") != "completed":
+                    for key in child.case_keys:
+                        await self.store.checkpoint_result(
+                            "evaluation_pass2_runs",
+                            (batch_id, key[0], key[1]),
+                            status="pending",
+                            attempts=int(existing.get("attempts") or 0) if existing else 0,
+                        )
+            await self._refresh_pass_two_group_status(batch_id)
+            await self.store.refresh_pass2_progress(
+                batch_id,
+                suspect_case_keys=set(candidate_by_key) if plan_key == "suspects" else None,
+                progress_start=75,
+                progress_end=92,
+            )
+            await asyncio.gather(*(decide_group(child) for child in children))
 
         await self.store.record_telemetry(
             batch_id=batch_id,
@@ -2587,29 +2712,40 @@ class EvaluationRunner:
             queue_depth=len(groups),
         )
         await asyncio.gather(*(decide_group(group) for group in groups))
-        final_groups = await self.store.pass2_group_rows(batch_id)
-        updated_batch = await self.store.get_batch(batch_id)
-        assert updated_batch is not None
-        await self.store.set_batch_state(
-            batch_id,
-            status="running",
-            stage="pass_2",
-            progress=int(updated_batch["progress"]),
-            snapshot_updates={
-                "pass_2_request_status": {
-                    "completed": sum(row["status"] == "completed" for row in final_groups),
-                    "failed": sum(row["status"] == "failed" for row in final_groups),
-                    "total": len(final_groups),
-                }
-            },
-        )
+        await self._refresh_pass_two_group_status(batch_id)
 
     async def _refresh_pass_two_group_status(self, batch_id: str) -> None:
         """Expose external request progress separately from unique Case progress."""
         rows = await self.store.pass2_group_rows(batch_id)
+        active_rows = [row for row in rows if row["status"] != "superseded"]
         batch = await self.store.get_batch(batch_id)
         if batch is None:
             raise LookupError("Batch not found")
+        suspect_keys = {
+            (str(item[0]), str(item[1]))
+            for item in batch["snapshot"].get("pass_2_suspect_case_keys", [])
+            if isinstance(item, list) and len(item) == 2
+        }
+        suspect_rows = [
+            row
+            for row in active_rows
+            if not suspect_keys
+            or {
+                (str(item[0]), str(item[1]))
+                for item in row.get("case_keys", [])
+                if isinstance(item, list) and len(item) == 2
+            }.issubset(suspect_keys)
+        ]
+
+        def group_status(group_rows: list[dict[str, Any]]) -> dict[str, int]:
+            return {
+                "completed": sum(row["status"] == "completed" for row in group_rows),
+                "failed": sum(row["status"] == "failed" for row in group_rows),
+                "pending": sum(row["status"] == "pending" for row in group_rows),
+                "attempts": sum(int(row.get("attempts") or 0) for row in group_rows),
+                "total": len(group_rows),
+            }
+
         await self.store.set_batch_state(
             batch_id,
             status="running",
@@ -2617,10 +2753,12 @@ class EvaluationRunner:
             progress=int(batch["progress"]),
             snapshot_updates={
                 "pass_2_request_status": {
-                    "completed": sum(row["status"] == "completed" for row in rows),
-                    "failed": sum(row["status"] == "failed" for row in rows),
-                    "total": len(rows),
-                }
+                    **group_status(suspect_rows),
+                    "superseded": len(rows) - len(active_rows),
+                },
+                "pass_2_good_request_status": group_status(
+                    [row for row in active_rows if row not in suspect_rows]
+                ),
             },
         )
 

@@ -613,14 +613,18 @@ function executionProgressCopy(batch, stage = batch.stage) {
   if (stage === "pass_2") {
     const requests = batch.snapshot?.pass_2_request_status;
     const plan = batch.snapshot?.pass_2_plan;
-    const requestFinished = Number(requests?.completed || 0) + Number(requests?.failed || 0);
     const requestTotal = Number(requests?.total ?? plan?.request_group_count ?? 0);
     const requestCopy = requestTotal
-      ? ` · ${requestFinished}/${requestTotal} ${copy("request groups", "个请求组")}`
+      ? ` · ${Number(requests?.completed || 0)} ${copy("request groups succeeded", "个请求组成功")} · ${Number(requests?.failed || 0)} ${copy("failed", "失败")} · ${Number(requests?.pending || 0)} ${copy("pending", "待处理")}`
       : "";
     const failed = Number(state.failed || 0);
-    const failureCopy = failed ? ` · ${failed} ${copy("failed", "失败")}` : "";
-    return `${state.finished}/${state.total} ${copy("Cases", "个样本")}${requestCopy}${failureCopy}`;
+    const pending = Number(state.pending ?? Math.max(0, Number(state.total || 0) - Number(state.finished || 0)));
+    const attempts = Number(requests?.attempts || 0);
+    const controls = batch.snapshot?.pass_2_good_status;
+    const controlCopy = Number(controls?.total || 0)
+      ? ` · ${copy("Good controls", "Good 控制样本")}: ${Number(controls.completed || 0)} ${copy("succeeded", "成功")} · ${Number(controls.failed || 0)} ${copy("failed", "失败")} · ${Number(controls.pending || 0)} ${copy("pending", "待处理")}`
+      : "";
+    return `${Number(state.completed || 0)} ${copy("suspect Cases succeeded", "个疑点样本成功")} · ${failed} ${copy("failed", "失败")} · ${pending} ${copy("pending", "待处理")}${requestCopy}${attempts ? ` · ${attempts} ${copy("attempts", "次尝试")}` : ""}${controlCopy}`;
   }
   if (stage === "pass_1") {
     const requests = batch.snapshot?.pass_1_request_status;
