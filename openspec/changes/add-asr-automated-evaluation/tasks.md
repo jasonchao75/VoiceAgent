@@ -2,7 +2,7 @@
 
 ## 0. User Gate 1 — specification and baseline
 
-- [x] 0.1 Confirm `PRD.html V1.17` plus `prototypes/index.html V1.17` (SHA-256 `fd400adde2eb769570d3766dcbe5fea4d5f6ab6976565dcdfb84be2c1fec7d5e`) as the current requirement baseline
+- [x] 0.1 Confirm `PRD.html V1.17` plus `prototypes/index.html V1.18` (SHA-256 `e88e8be8f79572d4118399e3030d227a181f504799a0e06e3421d1b5bc8922c0`) as the current requirement baseline under PD-066
 - [x] 0.2 Confirm per-conversation Excel input, suspected-rate formula, unclear exclusion, Good:Bad 1:1 sampling and no confidence threshold
 - [x] 0.3 Remove obsolete PRD artifacts and retain one latest PRD and one latest prototype
 - [x] 0.4 Draft proposal, three capability Delta Specs, design, tasks and UI verification materials
@@ -185,7 +185,7 @@
 - [x] 12.45 Defer additional-Good balancing until every suspect Pass 2 group succeeds, so retrying a partially failed suspect set cannot expand the visible Case total (KI-153)
 - [x] 12.46 Make Pass 2 timeout/schema retries change the failing condition through safe regrouping or bounded fallback, instead of replaying the same oversized group up to six cumulative attempts (KI-154)
 - [x] 12.48 Replace Excel-anchor speech-island selection with full-call diarization/text/order alignment, require two-provider time consensus, validate/refine only on the pure-user track, and fail closed on missing/conflicting evidence (PD-053, KI-156)
-- [ ] 12.47 Distinguish queued versus in-flight Pass 2 groups and expose last activity/elapsed time, so a multi-minute provider request cannot appear frozen as generic pending work (KI-155)
+- [x] 12.47 Distinguish queued versus in-flight Pass 2 groups and expose last activity/elapsed time, so a multi-minute provider request cannot appear frozen as generic pending work (KI-155)
 - [x] 12.49 Materialize completed Pass 2 decisions into Manual Review and Benchmark Library even when sibling Cases remain failed, while keeping the batch retryable and the report explicitly non-final (KI-161)
 - [x] 12.50 Use accepted provider-turn unions as final short-utterance clip boundaries, forbid user-track contraction, and add production-derived R7/R13 regressions (PD-056, KI-162)
 - [x] 12.51 Implement dynamically packed Event Aligner groups over complete conversation units, validate only real turn IDs and customer-speaker ownership, isolate invalid event mappings from valid siblings, preserve actionable clip failure reasons, and add production-derived R6/R7/R13 regressions (PD-056, KI-163, KI-164, KI-165, KI-166)
@@ -202,7 +202,7 @@
 - [x] 12.62 Persist and display safe ASR failure diagnostics with provider, full-call/event scope, attempts, retryability, controlled category and actionable reason, excluding raw responses and customer evidence (PD-059)
 - [x] 12.63 Add cross-provider budget, truthful-progress and ASR-redaction regressions; complete independent verification and deploy without automatically retrying CB26 or 7D19 or making paid calls (PD-059)
 - [ ] 12.64 Respect the persisted retryable contract when building a retry-failed plan; skip non-retryable provider results and deterministic alignment/preflight failures, and present the eligible retry scope before any paid dispatch (KI-171)
-- [ ] 12.65 Account for the longest corrective retry instruction during Pass 1 packing, or deterministically re-plan a failed near-cap group before retry, so a schema correction cannot turn a previously dispatched group into a permanent local input-cap failure (KI-172)
+- [x] 12.65 Account for the longest corrective retry instruction during Pass 1 packing, or deterministically re-plan a failed near-cap group before retry, so a schema correction cannot turn a previously dispatched group into a permanent local input-cap failure (KI-172)
 - [x] 12.66 Add a version-checked, idempotent no-provider command that freezes paused/partially-failed batches with a preliminary report as `final_partial`/`completed_partial`, preserving successes and excluding incomplete work (PD-060, KI-173)
 - [x] 12.67 Add the “Use current results” batch action and confirmation copy by reusing the frozen dialog pattern, with API/UI regressions for preservation, exclusion, no provider dispatch and invalid states (PD-060)
 - [x] 12.68 Complete independent verification and deploy PD-060 while preserving production data and without operating 7D19 or making paid provider calls
@@ -211,6 +211,12 @@
 - [x] 12.71 Update reports, failure diagnostics and regressions so mapped full-call turn text remains visible without creating event-level provider calls (PD-061)
 - [x] 12.72 Run scoped/full checks, Change gate and independent verification without making a paid external call or mutating production batches (PD-061)
 - [x] 12.73 Commit and deploy PD-061 before any new LLM call-logic implementation, then verify CI, production health, deployed SHA and preservation of E65A without a provider dispatch (PD-063)
+- [x] 12.74 Implement PD-064 Qwen policy: Pass 1 Thinking off/180 seconds, Pass 2 medium/300 seconds, and Pass 1 packing reserved for the longest corrective instruction (KI-172, KI-178)
+- [x] 12.75 Persist stable superseded-parent child groups and recursively split timeout/structure failures on complete conversation/Case boundaries, with one extra leaf attempt and no redispatch of completed work
+- [x] 12.76 Persist and expose safe active-operation stage/provider/ordinal/total/started-at/heartbeat fields; classify stale heartbeats separately from healthy waiting (KI-155)
+- [x] 12.77 Render one compact live row per active request with a local one-second elapsed timer, durable backend progress, accessible state-change announcements, and compact failed/succeeded summaries for paused/partial batches (PD-065)
+- [x] 12.78 Add backend/frontend regressions for Qwen request shape, timeouts, recursive splitting, restart idempotency, retryability, concurrent live rows, stale heartbeat, compact summaries and desktop/narrow overflow without paid calls
+- [ ] 12.79 Complete Engineering Checkpoints A/B/C, Change gate, independent verification, deployment and production health/provenance checks without automatically retrying E65A
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

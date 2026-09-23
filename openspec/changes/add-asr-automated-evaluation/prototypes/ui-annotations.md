@@ -7,14 +7,14 @@
 - Baseline locales: English and Chinese
 - Strict regions: product navigation, batch stage order, review evidence/decision hierarchy, report entry, Benchmark filter/download toolbar, dialog/drawer ownership
 - Adaptive regions: table pagination, translated text wrapping, tag count, provider/model catalog values, long transcripts
-- Dynamic masks: timestamps, task progress animation, cost values, audio progress and signed URLs only
+- Dynamic masks: timestamps, active-request elapsed seconds, task progress animation, cost values, audio progress and signed URLs only
 
 | Region | Size/layout | Required behavior | States | Delta Scenario |
 |---|---|---|---|---|
 | Product rail | 48 px product rail + 270 px Evaluation side navigation on desktop | Evaluation pages remain separate from Bot configuration | active/hover/narrow | Bilingual evaluation UI |
-| Batch list | Full main workspace with metric row and table | Percent always includes numerator/denominator; report entered from batch | running/paused/review/completed/partial/error | Evaluation metrics; immutable reports |
+| Batch list | Full main workspace with metric row and table | Running rows show only current active requests, one row per concurrent request with a ticking elapsed time; paused/partial rows show only failed and succeeded counts | running/paused/review/completed/partial/error | Evaluation metrics; live external-request visibility |
 | New batch dialog | Width bounded by viewport; vertical scroll only | Explain three directories and per-conversation files; freeze resources | empty/invalid/repaired/ready | Per-conversation package contract |
-| Stage detail | Five ordered stage cards | Show conversation-level ASR jobs and event-level Cases without conflation | active/done/partial/retry | Conversation ASR reuse |
+| Stage detail | Five ordered stage cards | Show each active conversation-level ASR or LLM request separately with provider, ordinal/total and elapsed time; backend checkpoints remain authoritative and stale heartbeat is visibly distinct | active/done/partial/retry/stale | Conversation ASR reuse; live external-request visibility |
 | Review queue | Left queue + right review at desktop; stacked narrow | One queue item equals one target user event | pending/active/submitted | Explicit manual review |
 | Review comparison | Historical transcript and current proposed label adjacent desktop, stacked narrow | Neither provider is ground truth; no default candidate | empty/candidate/manual/unclear | Submit Good/Bad/unclear |
 | Decision actions | Good and Bad visually distinct; unclear secondary | Good names production correctness; Bad requires label | enabled/disabled/pending | Submit Good; Submit Bad |
@@ -36,5 +36,6 @@
 - Additional Good origin and suspect-reclassified Good origin are distinguishable in Library/report details.
 - An AI-proposed tag always displays and creates both its bilingual name and bilingual description; name-only creation is invalid.
 - Prototype-only static counts and fake player behavior must not be presented as live production data.
+- Elapsed seconds are visual only and `aria-hidden`; assistive technology announces request start, completion, failure or stale-heartbeat state changes, never every second.
 - Prepared context and Prompt content must be seeded idempotently before launch; a redeploy cannot overwrite administrator-created versions.
 - `branch_dictionary` is not a platform field. Business-specific dictionaries are generic versioned resources linked from a context and rendered as `reference_dictionaries` for both passes.

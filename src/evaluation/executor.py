@@ -8,6 +8,7 @@ import logging
 import os
 import time
 import uuid
+from collections.abc import Awaitable
 from pathlib import Path
 from typing import Any, cast
 
@@ -125,6 +126,20 @@ def _completion_limit_field(provider: str, model_id: str) -> str:
     if provider == "qwen" and not model_id.casefold().startswith("qwen3.8-"):
         return "max_tokens"
     return "max_completion_tokens"
+
+
+def _llm_request_timeout(provider: str, stage: str) -> float:
+    """Return the frozen request timeout for one provider and evaluation stage."""
+    if provider != "qwen":
+        return 120.0
+    return 180.0 if stage == "pass_1" else 300.0 if stage == "pass_2" else 120.0
+
+
+def _qwen_reasoning_effort(*, thinking: bool, stage: str) -> str | None:
+    """Keep Pass 2 reasoning bounded while leaving non-thinking calls unconfigured."""
+    if not thinking:
+        return None
+    return "medium" if stage == "pass_2" else "high"
 
 
 def _safe_error(exc: Exception) -> str:
@@ -338,6 +353,17 @@ def _pass_two_error_supports_split(error: str | None) -> bool:
     return normalized == "timeout" or normalized.startswith("schema_")
 
 
+def _structured_error_retryable(error: str | None) -> bool:
+    """Reject deterministic/local/provider-contract failures before any redispatch."""
+    normalized = str(error or "").casefold()
+    return normalized not in {
+        "authentication_failed",
+        "bad_request",
+        "preflight_input_limit",
+        "preflight_output_limit",
+    }
+
+
 class EvaluationRunner:
     """Coordinate real LLM and ASR calls with SQLite checkpoints."""
 
@@ -347,6 +373,43 @@ class EvaluationRunner:
         self.cipher = cipher
         self._tasks: dict[str, asyncio.Task[None]] = {}
         self._worker_id = f"evaluation-worker-{uuid.uuid4().hex}"
+
+    async def _with_active_operation(
+        self,
+        awaitable: Awaitable[Any],
+        *,
+        batch_id: str,
+        operation_id: str,
+        stage: str,
+        provider: str,
+        ordinal: int,
+        total: int,
+    ) -> Any:
+        """Expose one live provider wait and keep its heartbeat fresh."""
+        await self.store.begin_active_operation(
+            batch_id,
+            operation_id,
+            stage=stage,
+            provider=provider,
+            ordinal=ordinal,
+            total=total,
+        )
+
+        async def heartbeat() -> None:
+            while True:
+                await asyncio.sleep(5)
+                await self.store.heartbeat_active_operation(batch_id, operation_id)
+
+        heartbeat_task = asyncio.create_task(heartbeat())
+        try:
+            return await awaitable
+        finally:
+            heartbeat_task.cancel()
+            try:
+                await heartbeat_task
+            except asyncio.CancelledError:
+                pass
+            await self.store.finish_active_operation(batch_id, operation_id)
 
     async def resume_pending(self) -> None:
         """Resume batches that were confirmed but interrupted by a process restart."""
@@ -541,6 +604,7 @@ class EvaluationRunner:
         """Run a batch and convert unexpected failures into an honest terminal state."""
         if not await self.store.acquire_batch_lease(batch_id, self._worker_id):
             return
+        await self.store.clear_active_operations(batch_id)
         parent_task = asyncio.current_task()
 
         async def renew_lease() -> None:
@@ -576,6 +640,7 @@ class EvaluationRunner:
         finally:
             lease_task.cancel()
             await asyncio.gather(lease_task, return_exceptions=True)
+            await self.store.clear_active_operations(batch_id)
             await self.store.release_batch_lease(batch_id, self._worker_id)
 
     async def _run(self, batch_id: str) -> None:
@@ -946,6 +1011,7 @@ class EvaluationRunner:
             system_prompt = _render_prompt(system_prompt, payload)
             estimated_input = estimate_tokens(system_prompt) + estimate_tokens(payload)
         output_limit = max_output_tokens or 8_192
+        request_timeout = _llm_request_timeout(provider, stage)
         if max_input_tokens is not None and estimated_input > max_input_tokens:
             raise EvaluationRequestTooLarge(
                 "Final evaluation request exceeds the pre-dispatch input limit "
@@ -993,7 +1059,7 @@ class EvaluationRunner:
                 if thinking:
                     config.pop("temperature")
                 config["max_output_tokens"] = output_limit
-                async with asyncio.timeout(120):
+                async with asyncio.timeout(request_timeout):
                     response = await client.aio.models.generate_content(
                         model=actual_model,
                         contents=user_message,
@@ -1046,7 +1112,7 @@ class EvaluationRunner:
                 response_format = _structured_response_format(provider, thinking, actual_model)
                 if response_format is not None:
                     request_body["response_format"] = response_format
-                async with httpx.AsyncClient(timeout=120) as azure_client:
+                async with httpx.AsyncClient(timeout=request_timeout) as azure_client:
                     response = await azure_client.post(
                         base_url,
                         headers={"api-key": key, "Content-Type": "application/json"},
@@ -1101,9 +1167,10 @@ class EvaluationRunner:
                     user_message=user_message,
                     max_output_tokens=output_limit,
                     enable_thinking=True if thinking else False if disable_thinking else None,
+                    reasoning_effort=_qwen_reasoning_effort(thinking=thinking, stage=stage),
                     structured_json=True,
                 )
-                async with httpx.AsyncClient(timeout=120) as dashscope_client:
+                async with httpx.AsyncClient(timeout=request_timeout) as dashscope_client:
                     response = await dashscope_client.post(
                         native_dashscope_generation_url(base_url, actual_model),
                         headers={
@@ -1147,7 +1214,7 @@ class EvaluationRunner:
         client = AsyncOpenAI(
             api_key=key,
             base_url=base_url.rstrip("/") + "/",
-            timeout=120,
+            timeout=request_timeout,
             max_retries=0,
         )
         try:
@@ -1166,6 +1233,10 @@ class EvaluationRunner:
                     request["reasoning_effort"] = "high"
                     request["extra_body"] = {"thinking": {"type": "enabled"}}
                 elif provider == "qwen":
+                    request["reasoning_effort"] = _qwen_reasoning_effort(
+                        thinking=thinking,
+                        stage=stage,
+                    )
                     request["extra_body"] = {"enable_thinking": True}
                 else:
                     request["reasoning_effort"] = "high"
@@ -1375,10 +1446,44 @@ class EvaluationRunner:
             str(conversation["conversation_id"]): conversation for conversation in conversations
         }
         semaphore = asyncio.Semaphore(3)
+        group_ordinals = {group.group_id: index for index, group in enumerate(groups, start=1)}
+
+        def split_pass_one_group(group: Any) -> list[Any]:
+            """Split one parent on complete conversation boundaries."""
+            midpoint = len(group.units) // 2
+            return [
+                pack_pass_one_units(
+                    batch_id=f"{batch_id}:split:{group.group_id}",
+                    units=list(child_units),
+                    system_prompt=prompt,
+                    shared_payload=shared_payload,
+                    policy=policy,
+                )[0]
+                for child_units in (group.units[:midpoint], group.units[midpoint:])
+            ]
 
         async def analyze_group(group: Any) -> None:
-            prior = prior_groups.get(group.group_id)
+            current_groups = {
+                str(row["group_id"]): row for row in await self.store.pass1_group_rows(batch_id)
+            }
+            prior = current_groups.get(group.group_id)
             if prior is not None and prior.get("status") == "completed":
+                return
+            if (
+                prior is not None
+                and prior.get("status") == "failed"
+                and (
+                    not _structured_error_retryable(str(prior.get("error") or ""))
+                    or (len(group.units) == 1 and int(prior.get("attempts") or 0) >= 2)
+                )
+            ):
+                return
+            if prior is not None and prior.get("status") == "superseded":
+                children = split_pass_one_group(group)
+                for child in children:
+                    if child.group_id not in group_ordinals:
+                        group_ordinals[child.group_id] = len(group_ordinals) + 1
+                await asyncio.gather(*(analyze_group(child) for child in children))
                 return
             payload = build_pass_one_payload(group.group_id, group.units, shared_payload)
             retry_correction: str | None = None
@@ -1388,36 +1493,88 @@ class EvaluationRunner:
                     "Retry the same complete group and output only one complete JSON object."
                 )
             prior_attempts = int(prior.get("attempts") or 0) if prior is not None else 0
-            async with semaphore:
-                for local_attempt in range(1, 4):
-                    attempt = prior_attempts + local_attempt
-                    started_at = time.perf_counter()
-                    try:
-                        result = await self._llm_json(
-                            model_id,
-                            prompt,
-                            payload,
-                            max_output_tokens=(
-                                policy.max_output_tokens
-                                if retry_correction is not None
-                                else group.reserved_output_tokens
+            for local_attempt in range(1, 4):
+                attempt = prior_attempts + local_attempt
+                started_at = time.perf_counter()
+                try:
+                    async with semaphore:
+                        result = await self._with_active_operation(
+                            self._llm_json(
+                                model_id,
+                                prompt,
+                                payload,
+                                max_output_tokens=(
+                                    policy.max_output_tokens
+                                    if retry_correction is not None
+                                    else group.reserved_output_tokens
+                                ),
+                                batch_id=batch_id,
+                                stage="pass_1",
+                                item_key=group.group_id,
+                                attempt=attempt,
+                                disable_thinking=True,
+                                system_only_payload=True,
+                                user_instruction=retry_correction,
+                                max_input_tokens=input_limit(policy),
                             ),
                             batch_id=batch_id,
+                            operation_id=f"pass_1:{group.group_id}:{attempt}",
                             stage="pass_1",
-                            item_key=group.group_id,
-                            attempt=attempt,
-                            disable_thinking=True,
-                            system_only_payload=True,
-                            user_instruction=retry_correction,
-                            max_input_tokens=input_limit(policy),
+                            provider=provider,
+                            ordinal=group_ordinals[group.group_id],
+                            total=len(group_ordinals),
                         )
-                        indexed = self._validate_pass_one_group(
-                            result,
-                            group.group_id,
-                            group.conversation_ids,
-                            by_conversation,
-                            str(snapshot["screening_strategy"]),
-                        )
+                    indexed = self._validate_pass_one_group(
+                        result,
+                        group.group_id,
+                        group.conversation_ids,
+                        by_conversation,
+                        str(snapshot["screening_strategy"]),
+                    )
+                    await self.store.checkpoint_pass1_group(
+                        batch_id=batch_id,
+                        group_id=group.group_id,
+                        idempotency_key=group.idempotency_key,
+                        conversation_ids=list(group.conversation_ids),
+                        estimated_input_tokens=group.estimated_input_tokens,
+                        reserved_output_tokens=group.reserved_output_tokens,
+                        status="completed",
+                        attempts=attempt,
+                        conversation_results=indexed,
+                    )
+                    await self.store.refresh_execution_progress(
+                        batch_id,
+                        table="evaluation_pass1_runs",
+                        stage="pass_1",
+                        total=len(conversations),
+                        progress_start=20,
+                        progress_end=45,
+                    )
+                    await self.store.record_telemetry(
+                        batch_id=batch_id,
+                        stage="pass_1",
+                        event="llm_request",
+                        provider=provider,
+                        outcome="completed",
+                        attempt=attempt,
+                        latency_ms=(time.perf_counter() - started_at) * 1000,
+                    )
+                    return
+                except EvaluationBudgetReached:
+                    return
+                except Exception as exc:
+                    retry_correction = _structured_retry_correction(exc)
+                    error = _safe_structured_error(exc)
+                    await self.store.record_telemetry(
+                        batch_id=batch_id,
+                        stage="pass_1",
+                        event=("schema_failure" if isinstance(exc, ValueError) else "llm_request"),
+                        provider=provider,
+                        outcome="failed",
+                        attempt=attempt,
+                        latency_ms=(time.perf_counter() - started_at) * 1000,
+                    )
+                    if _pass_two_error_supports_split(error) and len(group.units) > 1:
                         await self.store.checkpoint_pass1_group(
                             batch_id=batch_id,
                             group_id=group.group_id,
@@ -1425,9 +1582,42 @@ class EvaluationRunner:
                             conversation_ids=list(group.conversation_ids),
                             estimated_input_tokens=group.estimated_input_tokens,
                             reserved_output_tokens=group.reserved_output_tokens,
-                            status="completed",
+                            status="superseded",
                             attempts=attempt,
-                            conversation_results=indexed,
+                            error=error,
+                        )
+                        children = split_pass_one_group(group)
+                        for child in children:
+                            if child.group_id not in group_ordinals:
+                                group_ordinals[child.group_id] = len(group_ordinals) + 1
+                            await self.store.checkpoint_pass1_group(
+                                batch_id=batch_id,
+                                group_id=child.group_id,
+                                idempotency_key=child.idempotency_key,
+                                conversation_ids=list(child.conversation_ids),
+                                estimated_input_tokens=child.estimated_input_tokens,
+                                reserved_output_tokens=child.reserved_output_tokens,
+                                status="pending",
+                                attempts=0,
+                            )
+                        await asyncio.gather(*(analyze_group(child) for child in children))
+                        return
+                    leaf_exhausted = len(group.units) == 1 and local_attempt >= 2
+                    if (
+                        not _structured_error_retryable(error)
+                        or leaf_exhausted
+                        or local_attempt == 3
+                    ):
+                        await self.store.checkpoint_pass1_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=list(group.conversation_ids),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="failed",
+                            attempts=attempt,
+                            error=error,
                         )
                         await self.store.refresh_execution_progress(
                             batch_id,
@@ -1437,64 +1627,19 @@ class EvaluationRunner:
                             progress_start=20,
                             progress_end=45,
                         )
-                        await self.store.record_telemetry(
-                            batch_id=batch_id,
-                            stage="pass_1",
-                            event="llm_request",
-                            provider=provider,
-                            outcome="completed",
-                            attempt=attempt,
-                            latency_ms=(time.perf_counter() - started_at) * 1000,
-                        )
                         return
-                    except EvaluationBudgetReached:
-                        return
-                    except Exception as exc:
-                        retry_correction = _structured_retry_correction(exc)
-                        await self.store.checkpoint_pass1_group(
-                            batch_id=batch_id,
-                            group_id=group.group_id,
-                            idempotency_key=group.idempotency_key,
-                            conversation_ids=list(group.conversation_ids),
-                            estimated_input_tokens=group.estimated_input_tokens,
-                            reserved_output_tokens=group.reserved_output_tokens,
-                            status="pending",
-                            attempts=attempt,
-                            error=_safe_structured_error(exc),
-                        )
-                        await self.store.record_telemetry(
-                            batch_id=batch_id,
-                            stage="pass_1",
-                            event=(
-                                "schema_failure" if isinstance(exc, ValueError) else "llm_request"
-                            ),
-                            provider=provider,
-                            outcome="failed",
-                            attempt=attempt,
-                            latency_ms=(time.perf_counter() - started_at) * 1000,
-                        )
-                        if local_attempt == 3:
-                            await self.store.checkpoint_pass1_group(
-                                batch_id=batch_id,
-                                group_id=group.group_id,
-                                idempotency_key=group.idempotency_key,
-                                conversation_ids=list(group.conversation_ids),
-                                estimated_input_tokens=group.estimated_input_tokens,
-                                reserved_output_tokens=group.reserved_output_tokens,
-                                status="failed",
-                                attempts=attempt,
-                                error=_safe_structured_error(exc),
-                            )
-                            await self.store.refresh_execution_progress(
-                                batch_id,
-                                table="evaluation_pass1_runs",
-                                stage="pass_1",
-                                total=len(conversations),
-                                progress_start=20,
-                                progress_end=45,
-                            )
-                        else:
-                            await asyncio.sleep(float(local_attempt))
+                    await self.store.checkpoint_pass1_group(
+                        batch_id=batch_id,
+                        group_id=group.group_id,
+                        idempotency_key=group.idempotency_key,
+                        conversation_ids=list(group.conversation_ids),
+                        estimated_input_tokens=group.estimated_input_tokens,
+                        reserved_output_tokens=group.reserved_output_tokens,
+                        status="pending",
+                        attempts=attempt,
+                        error=error,
+                    )
+                    await asyncio.sleep(float(local_attempt))
 
         await self.store.record_telemetry(
             batch_id=batch_id,
@@ -1506,6 +1651,7 @@ class EvaluationRunner:
         )
         await asyncio.gather(*(analyze_group(group) for group in groups))
         final_groups = await self.store.pass1_group_rows(batch_id)
+        active_final_groups = [row for row in final_groups if row["status"] != "superseded"]
         updated_batch = await self.store.get_batch(batch_id)
         assert updated_batch is not None
         await self.store.set_batch_state(
@@ -1515,9 +1661,11 @@ class EvaluationRunner:
             progress=int(updated_batch["progress"]),
             snapshot_updates={
                 "pass_1_request_status": {
-                    "completed": sum(row["status"] == "completed" for row in final_groups),
-                    "failed": sum(row["status"] == "failed" for row in final_groups),
-                    "total": len(final_groups),
+                    "completed": sum(row["status"] == "completed" for row in active_final_groups),
+                    "failed": sum(row["status"] == "failed" for row in active_final_groups),
+                    "pending": sum(row["status"] == "pending" for row in active_final_groups),
+                    "total": len(active_final_groups),
+                    "superseded": len(final_groups) - len(active_final_groups),
                 }
             },
         )
@@ -2030,6 +2178,7 @@ class EvaluationRunner:
             )
 
         semaphore = asyncio.Semaphore(3)
+        group_ordinals = {group.group_id: index for index, group in enumerate(groups, start=1)}
 
         async def align_group(group: Any) -> None:
             prior = prior_groups.get(group.group_id)
@@ -2044,16 +2193,24 @@ class EvaluationRunner:
                 for local_attempt in range(1, 4):
                     attempt = prior_attempts + local_attempt
                     try:
-                        result = await self._llm_json(
-                            model_id,
-                            EVENT_ALIGNER_SYSTEM_PROMPT,
-                            payload,
-                            max_output_tokens=group.reserved_output_tokens,
+                        result = await self._with_active_operation(
+                            self._llm_json(
+                                model_id,
+                                EVENT_ALIGNER_SYSTEM_PROMPT,
+                                payload,
+                                max_output_tokens=group.reserved_output_tokens,
+                                batch_id=batch_id,
+                                stage="event_alignment",
+                                item_key=group.group_id,
+                                attempt=attempt,
+                                disable_thinking=True,
+                            ),
                             batch_id=batch_id,
+                            operation_id=f"event_alignment:{group.group_id}:{attempt}",
                             stage="event_alignment",
-                            item_key=group.group_id,
-                            attempt=attempt,
-                            disable_thinking=True,
+                            provider=provider,
+                            ordinal=group_ordinals[group.group_id],
+                            total=len(group_ordinals),
                         )
                         expected = {
                             conversation_id: unit_payloads[conversation_id]
@@ -2126,6 +2283,17 @@ class EvaluationRunner:
             provider: asyncio.Semaphore(_ASR_PROVIDER_CONCURRENCY[provider])
             for provider in batch["providers"]
         }
+        context_job_ordinals = {
+            (provider, conversation_id): index
+            for index, (provider, conversation_id) in enumerate(
+                (
+                    (provider, conversation_id)
+                    for provider in batch["providers"]
+                    for conversation_id in conversation_ids
+                ),
+                start=1,
+            )
+        }
         context_jobs = len(batch["providers"]) * len(conversation_ids)
         await self.store.refresh_execution_progress(
             batch_id,
@@ -2180,12 +2348,20 @@ class EvaluationRunner:
                             raise EvaluationBudgetReached(
                                 "Batch budget reached before the next ASR context call"
                             )
-                        result, remote_id = await self._transcribe(
-                            batch_id,
-                            provider,
-                            path,
-                            conversation_id,
-                            attempt,
+                        result, remote_id = await self._with_active_operation(
+                            self._transcribe(
+                                batch_id,
+                                provider,
+                                path,
+                                conversation_id,
+                                attempt,
+                            ),
+                            batch_id=batch_id,
+                            operation_id=(f"evaluation_asr:{provider}:{conversation_id}:{attempt}"),
+                            stage="evaluation_asr",
+                            provider=provider,
+                            ordinal=context_job_ordinals[(provider, conversation_id)],
+                            total=context_jobs,
                         )
                         result["scope"] = "full_call_context"
                         result["diarization_contract"] = "speaker_timestamps_v1"
@@ -2952,6 +3128,54 @@ class EvaluationRunner:
         )
 
         request_semaphore = asyncio.Semaphore(2)
+        group_ordinals = {group.group_id: index for index, group in enumerate(groups, start=1)}
+
+        def split_pass_two_group(group: Any) -> list[Any]:
+            """Build two deterministic children without splitting a Case."""
+            ordered_keys = list(group.case_keys)
+            midpoint = len(ordered_keys) // 2
+            children = []
+            for child_keys in (ordered_keys[:midpoint], ordered_keys[midpoint:]):
+                selected = set(child_keys)
+                child_units = []
+                for unit in group.units:
+                    unit_keys = [key for key in unit.case_keys if key in selected]
+                    if not unit_keys:
+                        continue
+                    event_ids = {key[1] for key in unit_keys}
+                    payload = dict(unit.payload)
+                    payload["candidate_cases"] = [
+                        item
+                        for item in unit.payload.get("candidate_cases", [])
+                        if str(item.get("event_id")) in event_ids
+                    ]
+                    payload["full_audio_context_asr"] = [
+                        item
+                        for item in unit.payload.get("full_audio_context_asr", [])
+                        if str(item.get("event_id")) in event_ids
+                    ]
+                    payload["production_transcripts"] = {
+                        key: value
+                        for key, value in unit.payload.get("production_transcripts", {}).items()
+                        if str(key) in event_ids
+                    }
+                    payload["asr_results"] = [
+                        item
+                        for item in unit.payload.get("asr_results", [])
+                        if str(item.get("event_id")) in event_ids
+                    ]
+                    child_units.append(build_unit(unit.conversation_id, payload, unit_keys, policy))
+                packed = pack_units(
+                    batch_id=f"{batch_id}:{plan_key}:split:{group.group_id}",
+                    units=child_units,
+                    system_prompt=prompt,
+                    policy=policy,
+                    shared_payload=shared_payload,
+                )
+                if len(packed) != 1:
+                    raise EvaluationExecutionError("Pass 2 split child was not one safe group")
+                children.append(packed[0])
+            return children
 
         async def request_group(
             group: Any,
@@ -2961,19 +3185,27 @@ class EvaluationRunner:
         ) -> dict[str, Any]:
             """Dispatch only a preflight-safe canonical request."""
             async with request_semaphore:
-                return await self._llm_json(
-                    model_id,
-                    prompt,
-                    payload,
-                    thinking=True,
-                    max_output_tokens=group.reserved_output_tokens,
+                return await self._with_active_operation(
+                    self._llm_json(
+                        model_id,
+                        prompt,
+                        payload,
+                        thinking=True,
+                        max_output_tokens=group.reserved_output_tokens,
+                        batch_id=batch_id,
+                        stage="pass_2",
+                        item_key=group.group_id,
+                        attempt=attempt,
+                        system_only_payload=True,
+                        user_instruction=retry_correction,
+                        max_input_tokens=input_limit(policy),
+                    ),
                     batch_id=batch_id,
+                    operation_id=f"pass_2:{group.group_id}:{attempt}",
                     stage="pass_2",
-                    item_key=group.group_id,
-                    attempt=attempt,
-                    system_only_payload=True,
-                    user_instruction=retry_correction,
-                    max_input_tokens=input_limit(policy),
+                    provider=provider,
+                    ordinal=group_ordinals[group.group_id],
+                    total=len(group_ordinals),
                 )
 
         async def decide_group(group: Any) -> None:
@@ -2983,10 +3215,22 @@ class EvaluationRunner:
             prior = latest_groups.get(group.group_id)
             if prior is not None and prior.get("status") == "completed":
                 return
-            if prior is not None and prior.get("status") == "superseded":
-                raise EvaluationExecutionError(
-                    "A legacy superseded Pass 2 group requires an explicit fresh retry plan."
+            if (
+                prior is not None
+                and prior.get("status") == "failed"
+                and (
+                    not _structured_error_retryable(str(prior.get("error") or ""))
+                    or (len(group.case_keys) == 1 and int(prior.get("attempts") or 0) >= 2)
                 )
+            ):
+                return
+            if prior is not None and prior.get("status") == "superseded":
+                children = split_pass_two_group(group)
+                for child in children:
+                    if child.group_id not in group_ordinals:
+                        group_ordinals[child.group_id] = len(group_ordinals) + 1
+                await asyncio.gather(*(decide_group(child) for child in children))
+                return
             payload = build_pass_two_payload(group.group_id, group.units, shared_payload)
             retry_correction: str | None = None
             if prior is not None and int(prior.get("attempts") or 0) > 0:
@@ -3069,6 +3313,47 @@ class EvaluationRunner:
                     return
                 except Exception as exc:
                     retry_correction = _structured_retry_correction(exc)
+                    error = _safe_structured_error(exc)
+                    await self.store.record_telemetry(
+                        batch_id=batch_id,
+                        stage="pass_2",
+                        event=("schema_failure" if isinstance(exc, ValueError) else "llm_request"),
+                        provider=provider,
+                        outcome="failed",
+                        attempt=attempt,
+                        latency_ms=(time.perf_counter() - started_at) * 1000,
+                    )
+                    if _pass_two_error_supports_split(error) and len(group.case_keys) > 1:
+                        await self.store.checkpoint_pass2_group(
+                            batch_id=batch_id,
+                            group_id=group.group_id,
+                            idempotency_key=group.idempotency_key,
+                            conversation_ids=[unit.conversation_id for unit in group.units],
+                            case_keys=list(group.case_keys),
+                            estimated_input_tokens=group.estimated_input_tokens,
+                            reserved_output_tokens=group.reserved_output_tokens,
+                            status="superseded",
+                            attempts=attempt,
+                            error=error,
+                        )
+                        children = split_pass_two_group(group)
+                        for child in children:
+                            if child.group_id not in group_ordinals:
+                                group_ordinals[child.group_id] = len(group_ordinals) + 1
+                            await self.store.checkpoint_pass2_group(
+                                batch_id=batch_id,
+                                group_id=child.group_id,
+                                idempotency_key=child.idempotency_key,
+                                conversation_ids=[unit.conversation_id for unit in child.units],
+                                case_keys=list(child.case_keys),
+                                estimated_input_tokens=child.estimated_input_tokens,
+                                reserved_output_tokens=child.reserved_output_tokens,
+                                status="pending",
+                                attempts=0,
+                            )
+                        await self._refresh_pass_two_group_status(batch_id)
+                        await asyncio.gather(*(decide_group(child) for child in children))
+                        return
                     await self.store.checkpoint_pass2_group(
                         batch_id=batch_id,
                         group_id=group.group_id,
@@ -3079,19 +3364,14 @@ class EvaluationRunner:
                         reserved_output_tokens=group.reserved_output_tokens,
                         status="pending",
                         attempts=attempt,
-                        error=_safe_structured_error(exc),
+                        error=error,
                     )
-                    await self.store.record_telemetry(
-                        batch_id=batch_id,
-                        stage="pass_2",
-                        event=("schema_failure" if isinstance(exc, ValueError) else "llm_request"),
-                        provider=provider,
-                        outcome="failed",
-                        attempt=attempt,
-                        latency_ms=(time.perf_counter() - started_at) * 1000,
-                    )
-                    if local_attempt == 3:
-                        error = _safe_structured_error(exc)
+                    leaf_exhausted = len(group.case_keys) == 1 and local_attempt >= 2
+                    if (
+                        not _structured_error_retryable(error)
+                        or leaf_exhausted
+                        or local_attempt == 3
+                    ):
                         for key in group.case_keys:
                             await self.store.checkpoint_result(
                                 "evaluation_pass2_runs",
@@ -3121,6 +3401,7 @@ class EvaluationRunner:
                             progress_start=75,
                             progress_end=92,
                         )
+                        return
                     else:
                         await asyncio.sleep(float(local_attempt))
 

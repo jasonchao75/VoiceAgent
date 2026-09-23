@@ -46,6 +46,7 @@ def test_native_qwen_request_supports_thinking_and_parses_usage() -> None:
         user_message='{"value":1}',
         max_output_tokens=4096,
         enable_thinking=True,
+        reasoning_effort="medium",
         structured_json=True,
     )
 
@@ -53,6 +54,7 @@ def test_native_qwen_request_supports_thinking_and_parses_usage() -> None:
         "result_format": "message",
         "max_completion_tokens": 4096,
         "enable_thinking": True,
+        "reasoning_effort": "medium",
         "response_format": {"type": "json_object"},
     }
     text, usage = parse_native_dashscope_response(

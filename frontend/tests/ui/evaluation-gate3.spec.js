@@ -813,7 +813,7 @@ test("renders a persisted report into the frozen report structure", async ({ pag
   );
   await expect(page.locator("#batch-case-details .card-title select")).toHaveCount(1);
   await expect(page.locator("#batch-case-details tbody tr").first()).toContainText(
-    "Full-call transcript retained as legacy evidence",
+    "legacy full-call evidence",
   );
   await expect(page.locator("#batch-case-details .runtime-case-reason")).toHaveText(
     "The stored evidence indicates a meaning-changing transcript mismatch. Review the linked provider evidence for details.",
@@ -1084,12 +1084,33 @@ test("exposes every persisted batch lifecycle state and its next action", async 
     ["DONE", "completed", "completed", "Evaluation report"],
     ["PARTIAL", "completed_partial", "completed", "Evaluation report"],
   ];
+  const now = Date.now();
   bootstrap.batches = states.map(([id, status, stage]) => ({
     ...base,
     id: `EV-${id}`,
     status,
     stage,
     report_type: status.startsWith("completed") ? "final" : null,
+    active_operations: id === "RUNNING" ? [
+      {
+        operation_id: "pass-1-group-1",
+        stage: "pass_1",
+        provider: "qwen",
+        ordinal: 1,
+        total: 2,
+        started_at: new Date(now - 2_000).toISOString(),
+        heartbeat_at: new Date(now).toISOString(),
+      },
+      {
+        operation_id: "pass-1-group-2",
+        stage: "pass_1",
+        provider: "qwen",
+        ordinal: 2,
+        total: 2,
+        started_at: new Date(now - 32_000).toISOString(),
+        heartbeat_at: new Date(now - 25_000).toISOString(),
+      },
+    ] : [],
     snapshot: id === "BUDGET" ? {
       execution_status: {
         pass_2: { completed: 11, failed: 30, pending: 3, finished: 41, total: 44 },
@@ -1110,11 +1131,23 @@ test("exposes every persisted batch lifecycle state and its next action", async 
     await expect(row.getByRole("button", { name: action })).toHaveCount(1);
   }
   const retryState = page.locator('tr[data-batch-id="EV-BUDGET"] .batch-progress-copy');
-  await expect(retryState).toContainText("11 suspect Cases succeeded");
-  await expect(retryState).toContainText("30 failed");
-  await expect(retryState).toContainText("3 pending");
-  await expect(retryState).toContainText("17 attempts");
-  await expect(retryState).toContainText("Good controls: 6 succeeded");
+  await expect(retryState).toHaveText("30 failed · 11 succeeded");
+  await expect(retryState).not.toContainText("pending");
+  await expect(retryState).not.toContainText("attempts");
+  const activeRows = page.locator('tr[data-batch-id="EV-RUNNING"] .runtime-live-operation');
+  await expect(activeRows).toHaveCount(2);
+  await expect(activeRows.first()).toContainText("Group 1/2 · Waiting for qwen");
+  await expect(activeRows.nth(1)).toContainText("Status sync interrupted");
+  const elapsed = activeRows.first().locator("time");
+  await expect(elapsed).toHaveAttribute("aria-hidden", "true");
+  const operationStatus = page.locator("#runtime-operation-status");
+  await expect(operationStatus).toContainText("qwen request 1/2 started");
+  await expect(operationStatus).toContainText("qwen request 2/2 status sync interrupted");
+  const announcement = await operationStatus.textContent();
+  const before = await elapsed.textContent();
+  await page.waitForTimeout(1_100);
+  await expect(elapsed).not.toHaveText(before);
+  await expect(operationStatus).toHaveText(announcement);
   await expect(page.locator('tr[data-batch-id="EV-PARTIAL"] .job-state')).toContainText("Final · partial");
 });
 

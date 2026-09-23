@@ -452,3 +452,48 @@ Pass 2 receives the mapped target turn as its formal `asr_results` candidate. It
 
 - `UV-030` remains open: no newly created production batch has yet exercised PD-061 against live ASR/LLM providers or demonstrated the reduced task total externally. Historical `EV-20260923-E65A` remains immutable.
 - This PASS does not cover the separately open Qwen Pass 2 timeout/cost-accounting work, retryability filtering, Pass 1 corrective-retry packing, or running-group heartbeat defects.
+# Independent Review — PD-064 / PD-065 V1.18 increment
+
+Date: 2026-09-22
+Reviewer: independent Codex verifier (`change-verifier`)
+Result: **PASS**
+
+## Re-review resolution
+
+1. **Event Aligner visibility — resolved.** `_run_event_alignment()` now wraps every dispatched `_llm_json(..., stage="event_alignment")` call in `_with_active_operation`, with stable operation ID, stage, provider and ordinal/total. Deterministic coverage observes the persisted Event Aligner operation during a blocked provider wait, proves durable progress does not advance, then proves the row is removed on completion.
+2. **Assistive-technology state announcements — resolved.** The production page now owns `#runtime-operation-status` with `role="status"`, `aria-live="polite"` and `aria-atomic="true"`. `announceOperationStateChanges()` compares operation identity/state across server refreshes and announces only start, stale, restored and finished transitions. Elapsed `<time>` remains `aria-hidden`; desktop/narrow browser coverage proves its visible value changes after one second while the live-region text remains unchanged.
+3. **Checkpoint evidence integrity — resolved.** `verification/ui-checklist.md` now states that Engineering Checkpoints A/B passed and Checkpoint C re-review is pending; the independent-PASS box remains unchecked. It no longer assumes this verdict before the verifier records it.
+
+## Contract trace
+
+- Frozen prototype: `prototypes/index.html` hashes to `e88e8be8f79572d4118399e3030d227a181f504799a0e06e3421d1b5bc8922c0`, matching PD-066 and `prototypes/README.md`.
+- Qwen request policy: deterministic source/tests prove Pass 1 timeout 180 seconds with Thinking disabled, Pass 2 timeout 300 seconds with `reasoning_effort=medium`, and the native DashScope body carries `reasoning_effort`.
+- Pass 1 packing: the final-input estimate reserves `MAX_STRUCTURED_RETRY_USER_MESSAGE`, so the corrective instruction is included before initial dispatch.
+- Recursive recovery: timeout/schema failures supersede a multi-member parent and produce deterministic child IDs; completed groups are skipped; single conversation/Case leaves stop after two total attempts. Re-entering the tested runners does not redispatch exhausted leaves.
+- Active-operation persistence: the store exposes only operation ID, stage, provider, ordinal/total, start and heartbeat, deletes rows on completion and clears stale projections on worker ownership/finalization. The browser derives elapsed time locally and does not mutate durable progress.
+- Compact history: paused, budget-paused and partially-failed list rows render only failed/succeeded stage counts; the focused desktop/narrow production-route test confirms pending/group/attempt text is absent.
+- Production UI route: the focused Playwright test exercises `evaluation.html` and `evaluation-runtime.js` in both declared desktop and narrow projects; no separate acceptance shell was introduced.
+
+## Reproducible checks
+
+- Change gate: **PASS with warnings** — 0 errors, 18 warnings, 3 unchecked tasks. Open warnings include the separately tracked retry-failed filtering defect and external-real gaps.
+- Focused backend/contract suite after re-review fixes: **124 passed** — `tests/test_evaluation.py`, `tests/test_evaluation_pass1_packing.py`, `tests/test_evaluation_ui_contract.py`, `tests/test_qwen_dashscope.py`.
+- Full Python suite after re-review fixes: **271 passed**, with the two already-recorded dependency deprecation warnings.
+- Scoped Ruff: **PASS** for the changed Evaluation/Qwen source and tests.
+- Scoped Mypy: **PASS** for the four changed source modules.
+- Frontend production build: **PASS**.
+- Focused production-route browser check: **2 passed** (desktop Chromium and narrow Chromium). The initial sandboxed Chromium launch failed at macOS Mach-port registration; the same command passed outside the sandbox. No application assertion failed.
+
+## Evidence classification and external-state boundary
+
+- `static`: frozen hash, source/spec/decision trace, request wiring and accessibility inspection.
+- `deterministic/mock`: 124 focused tests, 271 full tests, scoped lint/type checks and two intercepted browser cases.
+- `local-real`: production frontend bundle build and SQLite active-operation lifecycle exercised against temporary test databases.
+- `external-real`: PD-062 remains historical evidence that the exact G0008 two-Case Qwen request succeeds at medium in 223.373 seconds. This review made **no provider request** and therefore does not externally prove the new integrated timeout/split path.
+- `EV-20260923-E65A`: no retry, resume, write, or paid dispatch was performed by this review. The local `data/evaluation.db` has no E65A row, so current production immutability must still be checked after deployment against production state; historical evidence records `updated_at=2026-09-23T02:26:50+00:00`, 8 failed groups and 30 failed Cases.
+
+## Remaining boundary
+
+This PASS covers static, deterministic/mock and local-real verification of PD-064/PD-065. It does not claim production deployment or a new external-real integrated Qwen split. PD-062 remains the external-real timing/reasoning evidence; a future user-initiated batch is still required to prove the released 180/300-second policy, heartbeat projection and recursive split against live providers. The release agent must separately verify CI, deployed SHA, public health and unchanged production E65A state. This re-review made no provider call and did not retry, resume or mutate E65A.
+
+---

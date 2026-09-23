@@ -3,10 +3,10 @@
 ## 最新版本
 
 - 原型：`index.html`
-- 版本：V1.17（2026-09-17，增加误传暂存包与无效/失败/停止批次删除契约）
-- 状态：Gate 1 已确认并冻结，作为正式 UI baseline
-- 基线 SHA-256：`fd400adde2eb769570d3766dcbe5fea4d5f6ab6976565dcdfb84be2c1fec7d5e`
-- 确认人/日期：Product owner / 2026-09-17（PD-026；V1.16 历史基线见 PD-025）
+- 版本：V1.18（2026-09-22，增加逐请求等待计时与非运行批次精简摘要）
+- 状态：Gate 1 已确认并冻结，作为唯一当前 UI baseline
+- 基线 SHA-256：`e88e8be8f79572d4118399e3030d227a181f504799a0e06e3421d1b5bc8922c0`
+- 确认人/日期：Product owner / 2026-09-22（PD-066；V1.17 历史基线见 PD-026）
 - 需求基线：同目录 `../PRD.html` V1.17 与本 Change Delta Specs
 - 数据：业务结果仍为固定演示数据；file 原型不调用真实 ASR、LLM 或音频接口，正式页面的“实测模型”复用现有 LLM 诊断接口
 - 历史原型：无；本目录只保留当前最新版
@@ -48,6 +48,8 @@
 33. 两轮评测采用统一 128K 运行包络并在发送前完成去重与装箱；Pass 2 单通可按 Case 子集预拆。该行为继续复用既有 Case/请求组计数和错误状态，不新增页面区域、不修改冻结视觉基线（PD-058）。
 34. Pass 2 的 Thinking 与可见 JSON 共享 32K 生成预算；规划失败保留最后阶段和进度。ASR 安全诊断复用批次错误区、部分结果提示与既有 provider 单元格，不新增页面区域、不修改冻结视觉基线（PD-059）。
 35. 已有初步报告的暂停/部分失败批次在现有操作区增加“使用现有结果结束”，复用既有危险操作确认弹窗模式；文案明确保留成功结果、排除未完成项、生成不可变部分报告且不调用外部资源，不新增页面结构或修改冻结视觉基线（PD-060）。
+36. 运行中的进度区域只展示当前正在等待的外部请求；每个并发请求独占一行，显示阶段/厂商、序号/总数和每秒变化的已等待时间。百分比和完成数仍由服务端检查点决定，计时不推动进度；心跳过期显示“状态同步中断”（PD-065）。
+37. 暂停或部分失败的批次列表只显示 `N failed · M succeeded`；第一轮按 conversation、ASR 按完整通话 provider job、第二轮按 Case 计数，请求组与尝试明细只留在任务详情（PD-065）。
 
 ## 需求到页面区域映射
 
@@ -62,6 +64,7 @@
 | Tags / context / Prompt / connections / cost | Configuration 四个入口；Azure GPT/OpenRouter 独立连接卡片 | 已确认；新增资源复用冻结卡片模式 |
 | Failed-batch partial results | 批次操作 → 复用 `#page-report` 详情组件并显示“部分结果 · 非完整报告”状态条 | 已确认；不改变正常报告基线 |
 | Finish with current results | 批次操作 → 复用 `#finish-dialog` 确认模式 → `#page-report` 最终部分覆盖报告 | 已确认；复用冻结弹窗与报告结构 |
+| Live external-request visibility | 批次列表运行行与 `#page-run` 当前阶段 → 每个活动请求一行计时；暂停/部分失败列表使用精简摘要 | 已确认并冻结（V1.18 / PD-066） |
 | Bilingual and overflow-safe UI | 全页面、dialog、drawer | 已确认；截图和自动断言在 Engineering Checkpoint A/C 留证 |
 
 ## 原型状态覆盖

@@ -4,12 +4,54 @@
 
 ## Status
 
-- Recorded decisions: 50 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 53 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
-- Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
+- Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-22
 
 ## Decisions
+
+### PD-066 — 冻结 V1.18 并在独立验收后发布
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: V1.18 逐请求计时与非运行状态精简摘要原型是否作为新的唯一 UI baseline，并继续实现上线
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人查看原型后的明确回复
+- Confirmation quote: “确认，实现并上线吧”
+- Decision: 将 `prototypes/index.html` V1.18 冻结为本 Change 唯一当前 UI baseline。按 PD-064/PD-065 完成生产后端、正式页面和回归测试；通过 Engineering Checkpoint A/B/C、Change 门禁和独立验收后，提交并发布到现有生产流程。发布必须保留线上 Evaluation 数据，不自动重试、恢复或改写 `EV-20260923-E65A`，也不由 Agent 发起新的付费 ASR/LLM 调用。
+- Reason: 产品负责人已确认行为方案和高保真原型，并明确授权实现与上线。
+- Consequences: V1.17 降为历史基线；V1.18 的完整 SHA-256 成为唯一冻结校验值。正式 UI 必须复用现有生产路由和 DOM，不另造静态验收页。发布完成后仍由用户决定是否重试历史失败批次。
+- Updated artifacts: `prototypes/README.md`、`verification/gate-1-review.md`、proposal/design/spec/tasks、正式实现、测试、独立验收与发布证据。
+- Verification: Implementation, 271 backend tests, frontend build, focused desktop/narrow production-route checks and independent re-review pass; CI/deployment and public health verification remain pending.
+
+### PD-065 — 运行中逐请求显示秒级等待，非运行状态只显示成功与失败
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: 长时间 ASR/LLM 调用如何在进度区域证明仍在等待，而不堆叠过多中间态
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人连续确认逐请求计时和历史状态精简方案
+- Confirmation quote: “就是每一秒都能看到数字在动，这样状态可见。你先设计一下，不要改代码。”；“应该展示当前每个请求处理的时长吧？”；“历史这个部分失败数据，和暂停的数据，也不用显示这么长。就写有几个failed，有几个success就行了”；“好的，现在方案确认了”
+- Decision: 批次列表与任务详情的活动阶段只展示当前正在执行的外部请求，每个并发请求使用一条紧凑状态，包含阶段/供应商、当前请求序号与总数、等待动作和从服务端请求开始时间计算的秒级耗时。完成请求立即移除并由下一条活动请求替换；排队项和历史尝试不进入该区域。进度百分比仍只来自持久化完成量，不随计时器伪增长。暂停和部分失败状态只按当前阶段业务单位显示 `N failed · M succeeded`：Pass 1 按 conversation、Multi-ASR 按完整录音 provider job、Pass 2 按 Case；请求组、尝试次数和详细错误只保留在任务详情/日志。
+- Reason: 秒级变化可区分“正在等待供应商”与“页面卡住”，逐请求计时又避免“最久等待”隐藏其他并发请求；非运行状态无需重复展示 Case、请求组、pending 和 attempts 的长串技术统计。
+- Consequences: 后端需为活动请求暴露安全的 operation ID、stage、provider、ordinal/total、started_at 和 heartbeat；前端每秒只更新显示耗时，并继续短轮询真实状态。心跳过期时显示状态同步异常，不得继续把请求呈现为健康运行。计时变化不进入屏幕阅读器逐秒播报；状态切换才通过 live region 通知。桌面、窄屏和最小移动视口不得横向溢出。
+- Updated artifacts: Delta Spec、`design.md`、`tasks.md`、`prototypes/`；V1.18 已由 PD-066 冻结，正式代码与测试进入实施。
+- Verification: User Gate 1 and Engineering Checkpoints A/B/C pass; production deployment remains pending.
+
+### PD-064 — 恢复并实施 Qwen 分阶段超时、medium Thinking 与失败拆分
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: PD-062 证明真实两 Case 请求在 medium 下需 223.373 秒后，如何修复 Pass 1/Pass 2 超时与重复失败
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人确认推荐方案，并在 PD-061 发布完成后明确恢复实施和上线
+- Confirmation quote: “明白了，就是太慢。可以这样做。”；“好的。执行修复吧，修复完成后就上线。”
+- Decision: Qwen Pass 1 保持非 Thinking，单次 timeout 为 180 秒；初始动态装箱必须为最长纠正提示预留最终消息空间。timeout 或结构失败后按完整 conversation 稳定二分，失败父组标记 superseded 且不得原样重放。Qwen Pass 2 固定 `reasoning_effort=medium`，单次 timeout 为 300 秒；timeout 或结构失败后按完整 Case 稳定二分，父组同样不得原样重放。可继续拆分的子组递归拆分；最小 conversation/Case 最多额外重试一次后明确失败。任何已成功子组、conversation 或 Case 均立即持久化并在恢复/重试中复用。
+- Reason: 外部真实验证已排除上下文溢出并证明 120 秒不足；medium 原组在 223.373 秒正确完成。原样重放父组不能改变失败条件，且 Pass 1 的较长纠正指令会把贴近 64K 的组推过发送前上限。
+- Consequences: PD-063 的临时顺序发布暂停已经解除；本决定只改变新执行或产品负责人主动重试的失败资源，不自动重跑或改写 E65A。超时拆分仍受批次预算、幂等、成功检查点复用和可重试分类约束。完成实现、独立验收和生产发布后，不由 Agent 自动操作旧批次。
+- Updated artifacts: Delta Spec、`design.md`、`tasks.md`、执行器、Qwen 原生请求、持久化分组状态、进度 UI 和回归测试。
+- Verification: PD-062 external-real 作为 timeout/medium 参数证据；拆分、恢复、最长纠正提示预留和不重复成功检查点已由 deterministic/mock 回归验证，生产发布后仍由用户主动批次提供 external-real 验收。
 
 ### PD-063 — 先发布完整录音 turn 投影，再开发新的 LLM 调用逻辑
 
@@ -664,7 +706,7 @@
 - Confirmation quote: “不对啊，那你应该把这个删了。而且现在传错的内容也没法删除。你先继续吧，我已经发起真实评测了”
 - Decision: 删除旧无效批次 `EV-20260916-1400`；页面为 audit-only、失败或已停止的批次提供显式删除入口，并允许删除未启动的暂存上传。运行中的真实评测不得直接删除，必须先停止，避免留下仍计费的外部任务。正式完成且有效的评测仍执行 PD-011 的 10 年留存。
 - Reason: 仅隐藏无效批次不能解决脏记录和误建内容不可撤销的问题，同时直接删除运行中任务会造成状态、费用和供应商作业失联。
-- Consequences: PD-010 的“永久保留旧批次审计证据”被本决定取代；删除只清理该批次拥有的结果、复核、Benchmark、报告、执行检查点和成本记录，不删除共享源数据、连接、上下文、词典、标签或价格版本；保留不含客户内容的删除审计墓碑。当前唯一 UI baseline 更新为 V1.17（SHA-256 `fd400adde2eb769570d3766dcbe5fea4d5f6ab6976565dcdfb84be2c1fec7d5e`）。
+- Consequences: PD-010 的“永久保留旧批次审计证据”被本决定取代；删除只清理该批次拥有的结果、复核、Benchmark、报告、执行检查点和成本记录，不删除共享源数据、连接、上下文、词典、标签或价格版本；保留不含客户内容的删除审计墓碑。V1.17 历史基线（SHA-256 前缀 `fd400add…`）已被 PD-066 的 V1.18 取代。
 - Updated artifacts: `specs/asr-automated-evaluation/spec.md`、`design.md`、`tasks.md`、批次 API/页面和回归测试。
 - Verification: 旧批次从列表和正式统计消失；失败/停止批次可二次确认后删除；运行中批次删除返回冲突；暂存上传可主动丢弃且不影响当前正式数据。
 

@@ -50,4 +50,21 @@ def test_paused_or_partial_batches_can_finish_with_current_results() -> None:
     assert 'copy("Final report · partial coverage", "最终报告 · 部分覆盖")' in RUNTIME
     assert 'payload.completion_mode === "current_results"' in RUNTIME
     assert "payload.result_excluded_count" in RUNTIME
+
+
+def test_running_batches_show_live_request_elapsed_time_without_verbose_history() -> None:
+    """Only current work should tick each second; historical rows stay compact."""
+    assert "function liveOperationsBlock(batch)" in RUNTIME
+    assert 'data-started-at="${safe(operation.started_at)}"' in RUNTIME
+    assert 'aria-hidden="true"' in RUNTIME
+    assert "runtime.elapsedPoll = window.setInterval(refreshVisibleElapsedTimes, 1000)" in RUNTIME
+    assert 'copy("Status sync interrupted", "状态同步中断")' in RUNTIME
+    assert "function compactStageSummary(batch)" in RUNTIME
+    assert 'copy("failed", "失败")' in RUNTIME
+    assert 'copy("succeeded", "成功")' in RUNTIME
+    assert "function announceOperationStateChanges(batches)" in RUNTIME
+    assert 'document.querySelector("#runtime-operation-status")' in RUNTIME
+    assert 'id="runtime-operation-status"' in PAGE
+    assert 'role="status"' in PAGE
+    assert 'aria-live="polite"' in PAGE
     assert 'id="finish-dialog-warning"' in PAGE

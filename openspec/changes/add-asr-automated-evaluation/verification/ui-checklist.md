@@ -8,7 +8,7 @@ Status: User Gate 1 and Engineering Checkpoints A/B/C passed; User Gate 2 accept
 |---|---|
 | Risk | High |
 | Latest PRD | `PRD.html` V1.17 |
-| Latest prototype | `prototypes/index.html` V1.17 |
+| Latest prototype | `prototypes/index.html` V1.18 |
 | Annotations | `prototypes/ui-annotations.md` |
 | State matrix | `prototypes/ui-state-matrix.md` |
 | Fixture source | `benchmarks/RiyadBankConversation/` plus non-secret derived fixture |
@@ -65,6 +65,9 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 - [x] All three ASR connections can be checked directly on the Resource connections page and synchronize their status with the matching async capability card
 - [x] All four LLM connection cards expose an actionable live-test button and show testing, success or classified failure feedback in place
 - [x] Successful ASR/LLM tests encrypt and persist the connection in SQLite; page reload and application restart restore only safe metadata and never return the Key
+- [x] Every active ASR/LLM request renders as one compact live row with provider, ordinal/total and its own one-second elapsed timer
+- [x] A stale request heartbeat changes to “status sync interrupted” instead of continuing to appear healthy
+- [x] Paused, budget-paused and partially-failed batch rows show only stage-level failed and succeeded counts
 
 ## Engineering Checkpoint B — real integration and resilience
 
@@ -89,6 +92,7 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 - [x] Benchmark search/filter/detail, selected-ID/all-filtered grouped ZIP generation and failure manifest pass
 - [x] English UI contains no Chinese residue; Chinese UI preserves original transcripts
 - [x] Keyboard, focus, accessible names and dialog/drawer behavior pass across desktop and narrow browser regressions
+- [x] The elapsed timer is hidden from assistive technology and does not create a per-second live-region announcement
 - [x] Every state-matrix row is mapped to the frozen baseline, the same production route/DOM, and named functional/accessibility evidence; representative V1.17 desktop/narrow captures are byte-identical to baseline
 - [x] Engineering Checkpoint C independent review returns PASS
 - [ ] Product gives User Gate 2 final acceptance

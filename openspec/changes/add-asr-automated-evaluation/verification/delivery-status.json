@@ -1,5 +1,5 @@
 {
-  "phase": "user_gate_2_pending",
+  "phase": "pd064_pd065_independent_pass",
   "product_acceptance": "pending",
   "local_acceptance_deployment": "pd030_image_rebuilt_and_running_healthy_at_127.0.0.1_8000_on_2026-09-19;_display_translation_route_present;_EV-20260918-2655_remains_awaiting_review",
   "production_paths": [
@@ -21,7 +21,7 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call. PD-060 authorizes publishing the independently verified finish-with-current-results capability while preserving production data, leaving 7D19 untouched, and making no paid provider call. PD-063 authorizes publishing PD-061 before any new LLM call-logic implementation, preserving E65A and making no paid provider call.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call. PD-060 authorizes publishing the independently verified finish-with-current-results capability while preserving production data, leaving 7D19 untouched, and making no paid provider call. PD-063 authorizes publishing PD-061 before any new LLM call-logic implementation, preserving E65A and making no paid provider call. PD-064 and PD-065 authorize implementing and deploying the Qwen timeout/splitting correction and live-request progress UI after the V1.18 User Gate 1 amendment, independent verification and release checks, without automatically retrying E65A.",
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification. PD-062 grants one pre-fix Qwen3.8-Max Pass 2 diagnostic for EV-20260923-E65A group G0008, limited to the original two-Case request plus at most two single-Case fallbacks and USD 5 total.",
   "independent_release_review": {
     "status": "PASS",
@@ -168,11 +168,12 @@
     },
     {
       "id": "KI-178",
-      "status": "open",
+      "status": "resolved",
       "summary": "The native Qwen3.8 Pass 2 path enables Thinking without selecting a reasoning effort, so qwen3.8-max uses the provider's xhigh default; explicit medium still needs more than the fixed 120-second timeout for a real two-Case group.",
       "impact": "The authorized G0008 replay completed correctly at medium in 223.373 seconds, so lowering reasoning effort alone would still time out in production. The current path needs both an explicit effort and a Qwen-specific timeout/recovery policy; otherwise valid in-window requests continue to be reported as failures.",
       "source": "Source inspection plus PD-062 external-real evidence on 2026-09-22. G0008 exactly matched the frozen 60,894 request estimate, returned HTTP 200 with both Cases valid, and used 20,529 input, 5,199 reasoning and 5,713 visible output tokens. Evidence: verification/qwen-g0008-medium-diagnostic-2026-09-22.md.",
-      "next_action": "Confirm the product-level Qwen timeout and split policy, then implement explicit medium plus the chosen timeout and deterministic timeout/structure-triggered split recovery.",
+      "next_action": "PD-064 is confirmed. After the V1.18 User Gate 1 amendment, implement explicit medium/300 seconds, Pass 1 non-Thinking/180 seconds, corrective-prompt reserve and deterministic timeout/structure-triggered split recovery.",
+      "resolution": "Qwen Pass 1 now disables Thinking with a 180-second timeout, and Qwen Pass 2 explicitly sends reasoning_effort=medium with a 300-second timeout in native and compatible modes. Timeout/schema failures split deterministically to complete conversation/Case children, reuse successes, and stop after one extra leaf attempt. Deterministic request, split and restart regressions pass without a paid call.",
       "disclosed_to_user": true
     },
     {
@@ -186,20 +187,22 @@
     },
     {
       "id": "KI-176",
-      "status": "open",
+      "status": "resolved",
       "summary": "The running batch detail can keep showing zero Pass 2 request groups after durable groups and failures already exist.",
       "impact": "For EV-20260923-E65A the UI continued to show 0 request groups succeeded, failed and pending while production SQLite already contained eight groups, including terminal failures. Operators can misdiagnose an active provider-timeout/retry sequence as a planner or queue stall.",
       "source": "Read-only production browser and SQLite inspection on 2026-09-22 Pacific time. The task page showed 0/0/0 request groups while the batch snapshot contained pass_2_request_status total=8, failed=4, pending=4 and attempts=20; a later check reached failed=6, pending=2 without the open page refreshing.",
       "next_action": "Poll or push running-batch progress, reconcile the visible task state from the latest durable batch snapshot, and add a browser regression that observes request-group counters advance without leaving the task page.",
+      "resolution": "The backend now persists active operations with stage, provider, ordinal/total, start time and heartbeat. The existing bootstrap polling projects the latest durable batch and active operations, while the UI refreshes elapsed time locally every second and marks stale heartbeats separately. Focused desktop/narrow production-route regressions pass.",
       "disclosed_to_user": true
     },
     {
       "id": "KI-175",
-      "status": "open",
+      "status": "resolved",
       "summary": "EV-20260923-E65A Qwen3.8-Max Pass 2 groups all hit the fixed 120-second request timeout and exhaust the three-attempt policy without producing a decision.",
       "impact": "Thirty eligible suspect Cases are split across eight groups, but no group has succeeded. At the latest read-only check six groups and 23 Cases were terminally failed while two groups remained on their final queued/running attempt; the batch stays at Pass 2 75% until the remaining attempts settle, then is expected to become partially_failed.",
       "source": "Read-only production SQLite and source inspection on 2026-09-22 Pacific time. Every recorded Pass 2 failure category is timeout against provider=qwen; per-dispatch latency is approximately 120 seconds, while larger telemetry durations include time waiting behind the two-request semaphore. The native DashScope client timeout is fixed at 120 seconds.",
       "next_action": "Do not retry this batch unchanged. PD-062 proves the smallest original group succeeds at medium in 223.373 seconds, so confirm and implement a Qwen-specific timeout above that observation plus deterministic split recovery, while preserving cost and idempotency controls.",
+      "resolution": "The fixed 120-second Qwen policy and unchanged three-attempt replay have been replaced for future/user-initiated work by PD-064's 180/300-second stage policy, medium Pass 2 reasoning, deterministic recursive splitting and checkpoint reuse. Historical E65A remains unchanged and was not retried.",
       "disclosed_to_user": true
     },
     {
@@ -224,11 +227,12 @@
     },
     {
       "id": "KI-172",
-      "status": "open",
+      "status": "resolved",
       "summary": "Pass 1 packing does not reserve space for the longer corrective retry instruction, so a group that fits the first request can deterministically exceed the 64K final-input cap on every retry.",
       "impact": "In EV-20260922-64A8, group P1G0001 contains 12 conversations and was planned at 65,528 tokens, only 8 below the cap. Its first DeepSeek request reached the provider and failed schema validation; attempts 2-6 then failed locally in about 20-30 ms with preflight_input_limit because the corrective instruction enlarged the final message. The batch remains partially_failed and those 12 conversations cannot recover through the current retry button.",
       "source": "Read-only production SQLite and telemetry inspection on 2026-09-22. P1G0001 persisted estimated_input_tokens=65528, attempts=6 and status=failed. Telemetry shows attempt 1 took 27.8 seconds as a provider schema failure, while attempts 2-6 each failed locally in 20-30 ms. The executor packs with the fixed short user instruction but dispatches retries with a longer correction string.",
       "next_action": "Include the maximum corrective-instruction overhead in initial packing or deterministically re-plan the failed group before retry, while preserving stable conversation membership and avoiding paid size discovery.",
+      "resolution": "Pass 1 packing now reserves the longest corrective retry user instruction in every initial final-input calculation, so a planned group cannot cross the frozen input cap only because the schema correction is added. The near-cap packing regression passes without provider calls.",
       "disclosed_to_user": true
     },
     {
@@ -238,6 +242,7 @@
       "impact": "EV-20260922-7D19 retried a Speechmatics full-call invalid_result through attempt 9 even though the new safe error marks it retryable=false. A later retry also regressed the visible batch from partial_failure/92% to evaluation_asr/53% and it was then paused, although all 17 persisted Pass 2 decisions remain completed. Event-alignment failures with completed frozen mappings are reproduced at attempts=0, and EV-20260922-64A8 repeated the deterministic Pass 1 preflight failure through attempt 6. Repeated clicks can add avoidable delay, misleading progress and, for provider work, cost without changing the outcome.",
       "source": "Read-only production checkpoint/telemetry inspection on 2026-09-22 plus executor trace. At the latest check 7D19 had no active lease, status=paused, stage=evaluation_asr and progress=53 while evaluation_pass2_runs still contained 17 completed rows. The retry action changes the batch back to running, while Pass 1, full-call ASR and event-clip orchestration skip only completed rows and do not consult the persisted retryable contract before scheduling failed work.",
       "next_action": "Build a retry plan from safe failure categories, skip retryable=false and deterministic completed-mapping failures, show what will and will not be retried before dispatch, and ensure a retry with no eligible work does not start paid calls.",
+      "resolution_note": "PD-064 now prevents non-retryable Qwen group failures from being redispatched and preserves exhausted leaf failures. The broader retry-failed planner still does not filter all persisted ASR/alignment failures or preview eligible scope, so this issue remains open under task 12.64.",
       "disclosed_to_user": true
     },
     {
@@ -392,11 +397,12 @@
     },
     {
       "id": "KI-155",
-      "status": "open",
+      "status": "resolved",
       "summary": "Pass 2 groups that are actively waiting on a provider response are displayed as generic pending work with no heartbeat, last-activity time or elapsed duration.",
       "impact": "EV-20260921-BA92 currently has four adaptive child groups. Gemini attempts have taken up to about 240 seconds before a timeout or schema result is checkpointed, so the visible counters can remain unchanged for several minutes even while the worker lease is healthy and requests are in flight. Users cannot distinguish a live slow request from a stopped worker.",
       "source": "Read-only production inspection on 2026-09-21: batch status running at progress 79, active worker lease renewed through 02:41 UTC, four pending child groups updated between 02:37 and 02:40 UTC, and recent Gemini Pass 2 failures with maximum latency about 240,285 ms.",
-      "next_action": "Persist an explicit running state before provider dispatch, retain queued separately, and show current attempt, last activity and elapsed/timeout information in the batch UI.",
+      "next_action": "PD-065 is confirmed. After the V1.18 User Gate 1 amendment, persist safe active-operation timing/heartbeat fields and show each current request with its own elapsed timer; use compact failed/succeeded summaries outside running state.",
+      "resolution": "Active ASR/LLM calls now publish safe persisted operation timing and heartbeat fields. Batch list and task detail render one compact row per concurrent request with a local one-second timer, remove completed rows, show a stale-heartbeat warning, and collapse non-running rows to failed/succeeded counts. The timer is aria-hidden and desktop/narrow overflow regressions pass.",
       "disclosed_to_user": true
     },
     {
@@ -1833,9 +1839,9 @@
   "unverified_items": [
     {
       "id": "UV-031",
-      "status": "excluded",
-      "summary": "Qwen Pass 1/Pass 2 timeout, reasoning-effort and failure-splitting policy is intentionally excluded from the PD-061 production release.",
-      "reason": "PD-063 confirms sequential delivery: publish the independently verified ASR turn-projection change first, then let the separate LLM call-logic task re-open the product options after this deployment. No LLM runtime behavior is changed by this release.",
+      "status": "open",
+      "summary": "PD-064/PD-065 implementation and production release are in progress after V1.18 User Gate 1 confirmation.",
+      "reason": "PD-066 froze the V1.18 prototype and authorized implementation and deployment after Checkpoints A/B/C and independent verification. Production code, tests and release evidence are not yet complete.",
       "disclosed_to_user": true
     },
     {
@@ -2042,7 +2048,7 @@
       "id": "UV-022",
       "status": "open",
       "summary": "The full dual-viewport Evaluation browser suite is not green under the blank temporary local environment used in this turn.",
-      "reason": "The production frontend build succeeded, 17 broader desktop scenarios passed before the run was stopped, and the directly affected persisted-batch lifecycle scenario passed on both desktop and narrow Chromium. The full suite was not completed because unrelated scenarios assume configured authentication/pricing fixtures that the blank temporary service did not provide; their failures are not evidence against this retry change.",
+      "reason": "The production frontend build succeeded and all directly affected production-route checks pass on desktop and narrow Chromium, including concurrent elapsed rows, stale heartbeat, compact summaries and overflow. The full shared-environment run completed 82/106; 24 unrelated failures depend on authentication, Bot records, mutable pricing/test state or stale historical expectations. This item remains open until the suite is isolated from shared local state.",
       "disclosed_to_user": true
     },
     {

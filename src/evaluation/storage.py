@@ -519,6 +519,17 @@ class EvaluationStore:
                     PRIMARY KEY (batch_id, group_id),
                     UNIQUE (batch_id, idempotency_key)
                 );
+                CREATE TABLE IF NOT EXISTS evaluation_active_operations (
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    operation_id TEXT NOT NULL,
+                    stage TEXT NOT NULL,
+                    provider TEXT NOT NULL,
+                    ordinal INTEGER NOT NULL,
+                    total INTEGER NOT NULL,
+                    started_at TEXT NOT NULL,
+                    heartbeat_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id, operation_id)
+                );
                 CREATE TABLE IF NOT EXISTS evaluation_reports (
                     report_id TEXT PRIMARY KEY,
                     batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
@@ -2034,7 +2045,20 @@ class EvaluationStore:
                     "SELECT * FROM evaluation_batches ORDER BY created_at DESC, id DESC"
                 )
             ).fetchall()
-        return [self._batch(row) for row in rows]
+            operations = await (
+                await database.execute(
+                    "SELECT * FROM evaluation_active_operations ORDER BY ordinal,operation_id"
+                )
+            ).fetchall()
+        by_batch: dict[str, list[dict[str, Any]]] = {}
+        for operation in operations:
+            item = dict(operation)
+            item.pop("batch_id", None)
+            by_batch.setdefault(str(operation["batch_id"]), []).append(item)
+        result = [self._batch(row) for row in rows]
+        for batch in result:
+            batch["active_operations"] = by_batch.get(str(batch["id"]), [])
+        return result
 
     async def get_batch(self, batch_id: str) -> dict[str, Any] | None:
         """Return one persisted batch without synthesizing execution state."""
@@ -2043,7 +2067,83 @@ class EvaluationStore:
             row = await (
                 await database.execute("SELECT * FROM evaluation_batches WHERE id=?", (batch_id,))
             ).fetchone()
-        return self._batch(row) if row is not None else None
+            operations = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_active_operations
+                       WHERE batch_id=? ORDER BY ordinal,operation_id""",
+                    (batch_id,),
+                )
+            ).fetchall()
+        if row is None:
+            return None
+        result = self._batch(row)
+        result["active_operations"] = [
+            {key: value for key, value in dict(operation).items() if key != "batch_id"}
+            for operation in operations
+        ]
+        return result
+
+    async def begin_active_operation(
+        self,
+        batch_id: str,
+        operation_id: str,
+        *,
+        stage: str,
+        provider: str,
+        ordinal: int,
+        total: int,
+    ) -> None:
+        """Persist one in-flight external request without customer content."""
+        now = _utcnow()
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute(
+                """INSERT INTO evaluation_active_operations
+                       (batch_id,operation_id,stage,provider,ordinal,total,started_at,heartbeat_at)
+                   VALUES (?,?,?,?,?,?,?,?)
+                   ON CONFLICT(batch_id,operation_id) DO UPDATE SET
+                       stage=excluded.stage,provider=excluded.provider,
+                       ordinal=excluded.ordinal,total=excluded.total,
+                       heartbeat_at=excluded.heartbeat_at""",
+                (
+                    batch_id,
+                    operation_id,
+                    stage,
+                    provider,
+                    max(1, ordinal),
+                    max(1, total),
+                    now,
+                    now,
+                ),
+            )
+            await database.commit()
+
+    async def heartbeat_active_operation(self, batch_id: str, operation_id: str) -> None:
+        """Refresh the health timestamp for one in-flight request."""
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute(
+                """UPDATE evaluation_active_operations SET heartbeat_at=?
+                   WHERE batch_id=? AND operation_id=?""",
+                (_utcnow(), batch_id, operation_id),
+            )
+            await database.commit()
+
+    async def finish_active_operation(self, batch_id: str, operation_id: str) -> None:
+        """Remove one request from the current-operation projection."""
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute(
+                "DELETE FROM evaluation_active_operations WHERE batch_id=? AND operation_id=?",
+                (batch_id, operation_id),
+            )
+            await database.commit()
+
+    async def clear_active_operations(self, batch_id: str) -> None:
+        """Discard stale in-flight projections when a worker takes ownership."""
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute(
+                "DELETE FROM evaluation_active_operations WHERE batch_id=?",
+                (batch_id,),
+            )
+            await database.commit()
 
     async def mark_batch_audit_only(self, batch_id: str, *, reason: str) -> dict[str, Any]:
         """Retain a batch as evidence while excluding it from formal product outputs."""

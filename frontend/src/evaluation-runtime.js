@@ -20,6 +20,8 @@ const runtime = {
   displayTranslationCache: new Map(),
   arabicTranslations: new Map(),
   poll: null,
+  elapsedPoll: null,
+  operationStates: new Map(),
   reviewDirty: false,
   datasetAudit: null,
   datasetCandidateId: null,
@@ -650,6 +652,81 @@ function executionProgressCopy(batch, stage = batch.stage) {
   return `${state.finished}/${state.total} ${unit}${failureCopy}`;
 }
 
+function activeOperationRows(batch) {
+  if (batch.status !== "running") return "";
+  const now = Date.now();
+  const operations = Array.isArray(batch.active_operations) ? batch.active_operations : [];
+  return operations.map((operation) => {
+    const heartbeat = Date.parse(operation.heartbeat_at || "");
+    const stale = !Number.isFinite(heartbeat) || now - heartbeat > 20_000;
+    const provider = String(operation.provider || "LLM");
+    const ordinal = Number(operation.ordinal || 1);
+    const total = Number(operation.total || 1);
+    const stage = String(operation.stage || "");
+    const action = stale
+      ? copy("Status sync interrupted", "状态同步中断")
+      : stage === "evaluation_asr"
+        ? copy(`Call ${ordinal}/${total}`, `对话 ${ordinal}/${total}`)
+        : copy(`Group ${ordinal}/${total} · Waiting for ${provider}`, `请求组 ${ordinal}/${total} · 等待 ${provider}`);
+    const asrPrefix = stage === "evaluation_asr" ? `${safe(provider)} · ` : "";
+    return `<div class="runtime-live-operation ${stale ? "stale" : ""}" data-operation-id="${safe(operation.operation_id)}"><i aria-hidden="true"></i><span>${asrPrefix}${safe(action)}</span><time class="runtime-live-elapsed" data-started-at="${safe(operation.started_at)}" aria-hidden="true">00:00</time></div>`;
+  }).join("");
+}
+
+function liveOperationsBlock(batch) {
+  const rows = activeOperationRows(batch);
+  return rows ? `<div class="runtime-live-operations" aria-label="${copy("Current external requests", "当前外部请求")}">${rows}</div>` : "";
+}
+
+function announceOperationStateChanges(batches) {
+  const region = document.querySelector("#runtime-operation-status");
+  if (!region) return;
+  const next = new Map();
+  const announcements = [];
+  batches.forEach((batch) => {
+    if (batch.status !== "running") return;
+    (batch.active_operations || []).forEach((operation) => {
+      const key = `${batch.id}:${operation.operation_id}`;
+      const heartbeat = Date.parse(operation.heartbeat_at || "");
+      const state = !Number.isFinite(heartbeat) || Date.now() - heartbeat > 20_000
+        ? "stale"
+        : "active";
+      next.set(key, state);
+      const previous = runtime.operationStates.get(key);
+      if (previous === state) return;
+      const provider = String(operation.provider || "LLM");
+      const position = `${Number(operation.ordinal || 1)}/${Number(operation.total || 1)}`;
+      announcements.push(state === "stale"
+        ? copy(`${provider} request ${position} status sync interrupted.`, `${provider} 请求 ${position} 状态同步中断。`)
+        : previous === "stale"
+          ? copy(`${provider} request ${position} status sync restored.`, `${provider} 请求 ${position} 状态同步已恢复。`)
+          : copy(`${provider} request ${position} started.`, `${provider} 请求 ${position} 已开始。`));
+    });
+  });
+  runtime.operationStates.forEach((_state, key) => {
+    if (!next.has(key)) announcements.push(copy("External request finished.", "外部请求已结束。"));
+  });
+  runtime.operationStates = next;
+  if (announcements.length) region.textContent = announcements.join(" ");
+}
+
+function compactStageSummary(batch) {
+  if (!["paused", "budget_paused", "partially_failed"].includes(batch.status)) return "";
+  const state = batch.snapshot?.execution_status?.[batch.stage];
+  if (!state) return "";
+  return `${Number(state.failed || 0)} failed · ${Number(state.completed || 0)} succeeded`;
+}
+
+function refreshVisibleElapsedTimes() {
+  const now = Date.now();
+  document.querySelectorAll(".runtime-live-elapsed[data-started-at]").forEach((node) => {
+    const started = Date.parse(node.dataset.startedAt || "");
+    const total = Math.max(0, Math.floor((now - started) / 1000));
+    if (!Number.isFinite(total)) return;
+    node.textContent = `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  });
+}
+
 function renderBatches(batches) {
   const body = document.querySelector("#page-batches tbody");
   if (!batches.length) {
@@ -682,7 +759,8 @@ function renderBatches(batches) {
           ? ` · ${batch.review_total - batch.review_completed}`
           : "";
       const progressBar = `<div class="batch-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${batch.progress}"><i style="width:${batch.progress}%"></i></div>`;
-      const checkpoint = executionProgressCopy(batch);
+      const liveOperations = liveOperationsBlock(batch);
+      const compactSummary = compactStageSummary(batch);
       const canInspect = ["running", "paused", "budget_paused", "partially_failed"].includes(batch.status);
       const reportAction = !auditOnly && batch.report_type
         ? `<button class="btn small runtime-batch-action" data-action="report" data-version="${batch.version}">${copy("Evaluation report", "评测报告")}</button>`
@@ -706,7 +784,7 @@ function renderBatches(batches) {
         ? ""
         : `<button class="btn small runtime-batch-action ${action === "start" ? "primary" : ""}" data-action="${action}" data-version="${batch.version}">${actionLabel}</button>`;
       const actions = `${inspectAction}${reportAction}${partialResultsAction}${primaryAction}${finishCurrentAction}${deleteAction}`;
-      return `<tr data-batch-id="${safe(batch.id)}"><td><b>${safe(seededDisplay(batch.name))}</b><br><span class="muted">${safe(batch.id)}</span></td><td>${safe(seededDisplay(batch.context_name))}</td><td>${batch.input_count} ${copy("calls", "通")}</td><td><span class="pill ${status[0]} job-state">${copy(status[1], status[2])}${progress}</span>${progressBar}${checkpoint ? `<small class="batch-progress-copy">${safe(checkpoint)}</small>` : ""}</td><td>${suspect}</td><td>$${batch.cost.toFixed(2)} / $${batch.budget.toFixed(2)}</td><td>${new Date(batch.updated_at).toLocaleString()}</td><td><div class="batch-actions">${actions}</div></td></tr>`;
+      return `<tr data-batch-id="${safe(batch.id)}"><td><b>${safe(seededDisplay(batch.name))}</b><br><span class="muted">${safe(batch.id)}</span></td><td>${safe(seededDisplay(batch.context_name))}</td><td>${batch.input_count} ${copy("calls", "通")}</td><td><span class="pill ${status[0]} job-state">${copy(status[1], status[2])}${progress}</span>${progressBar}${liveOperations}${compactSummary ? `<small class="batch-progress-copy">${safe(compactSummary)}</small>` : ""}</td><td>${suspect}</td><td>$${batch.cost.toFixed(2)} / $${batch.budget.toFixed(2)}</td><td>${new Date(batch.updated_at).toLocaleString()}</td><td><div class="batch-actions">${actions}</div></td></tr>`;
     })
     .join("");
 }
@@ -744,6 +822,7 @@ function renderRun(batch) {
   const steps = page.querySelectorAll(".steps .step");
   const activeIndex = stageIndex(batch.stage);
   steps.forEach((step, index) => {
+    step.querySelector(".runtime-live-operations")?.remove();
     step.classList.toggle("done", batch.status === "data_ready" ? index === 0 : index < activeIndex);
     step.classList.toggle("current", batch.status !== "data_ready" && index === activeIndex);
     const detail = step.querySelector("span");
@@ -758,6 +837,10 @@ function renderRun(batch) {
         : "",
     ];
     detail.textContent = progressDetails[index] || copy("Not run", "尚未运行");
+    if (index === activeIndex) {
+      const live = liveOperationsBlock(batch);
+      if (live) step.insertAdjacentHTML("beforeend", live);
+    }
   });
   const metrics = page.querySelectorAll(".grid4 .metric");
   metrics[0].querySelector("strong").textContent = batch.denominator || "—";
@@ -1619,6 +1702,7 @@ async function refreshBootstrap({ quiet = false } = {}) {
   try {
     const payload = await json("/api/evaluation/bootstrap");
     runtime.bootstrap = payload;
+    announceOperationStateChanges(payload.batches);
     modeBanner(payload.fixture);
     renderSummary(payload.summary);
     renderBatches(payload.batches);
@@ -3998,6 +4082,8 @@ async function initialize() {
     const hasRunning = runtime.bootstrap?.batches.some((batch) => batch.status === "running");
     if (hasRunning) refreshBootstrap({ quiet: true });
   }, 2000);
+  runtime.elapsedPoll = window.setInterval(refreshVisibleElapsedTimes, 1000);
+  refreshVisibleElapsedTimes();
 }
 
 initialize();

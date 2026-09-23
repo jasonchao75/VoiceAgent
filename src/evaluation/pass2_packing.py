@@ -107,6 +107,12 @@ EVALUATION_SAFETY_MARGIN = 32_768
 FIXED_EVALUATION_USER_MESSAGE = (
     "Evaluate the evidence in the system prompt and return only the required JSON object."
 )
+MAX_STRUCTURED_RETRY_USER_MESSAGE = (
+    "The previous response violated the structured-response contract. Retry the same complete "
+    "input. Return every required item exactly once, preserve all required IDs, and output only "
+    "the required JSON object. The prior validation detail may contain up to 240 characters: "
+    + ("x" * 240)
+)
 _MESSAGE_PROTOCOL_OVERHEAD = 1_024
 
 
@@ -478,7 +484,7 @@ def pack_pass_one_units(
     fixed_input_tokens = (
         estimate_tokens(system_prompt)
         + estimate_tokens(shared_payload)
-        + estimate_tokens(FIXED_EVALUATION_USER_MESSAGE)
+        + estimate_tokens(MAX_STRUCTURED_RETRY_USER_MESSAGE)
         + _MESSAGE_PROTOCOL_OVERHEAD
     )
 
@@ -487,6 +493,7 @@ def pack_pass_one_units(
             final_request_input_tokens(
                 system_prompt,
                 build_pass_one_payload(placeholder_group_id, candidate, shared_payload),
+                user_message=MAX_STRUCTURED_RETRY_USER_MESSAGE,
             ),
             fixed_input_tokens + sum(unit.estimated_input_tokens for unit in candidate),
         )
@@ -654,6 +661,7 @@ def pack_pass_one_units(
                         build_pass_one_payload(
                             f"P1G{index:04d}-{digest[:12]}", members, shared_payload
                         ),
+                        user_message=MAX_STRUCTURED_RETRY_USER_MESSAGE,
                     ),
                     fixed_input_tokens + sum(unit.estimated_input_tokens for unit in members),
                 ),

@@ -287,7 +287,7 @@ def test_pass_one_packing_rejects_one_oversized_conversation() -> None:
 
 def test_pass_one_packing_finds_minimum_group_count_beyond_greedy() -> None:
     """Packing must prove the minimum group count, not stop at a greedy result."""
-    policy = ModelTokenPolicy(12_000, 10_000, 1_000)
+    policy = ModelTokenPolicy(12_500, 10_000, 1_000)
     sizes = (1_000, 1_000, 1_000, 1_500, 3_000, 3_500)
     units = [
         PassOneUnit(

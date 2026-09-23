@@ -447,7 +447,7 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 ### Requirement: Recoverable batch execution and cost stop
 
-所有外部调用 MUST 显式配置超时、限流、最多三次自动重试和幂等标识。批次 MUST 保存阶段检查点；预算达到批次硬上限时 MUST 停止创建新的外部调用，但保留已完成结果并允许调整后恢复。
+所有外部调用 MUST 显式配置按阶段和厂商区分的超时、限流、有界重试/拆分策略和幂等标识。批次 MUST 保存阶段检查点；预算达到批次硬上限时 MUST 停止创建新的外部调用，但保留已完成结果并允许调整后恢复。
 
 #### Scenario: Budget limit is reached
 
@@ -459,10 +459,25 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 - **WHEN** 用户对部分失败批次执行定向重试
 - **THEN** 系统只为失败且可重试的 provider/conversation job 创建新尝试，复用成功结果且不重复生成 Case 或 Benchmark
 
-#### Scenario: Retry a safely sized Pass 2 request group
+#### Scenario: Execute Qwen with stage-specific reasoning and timeout
+
+- **WHEN** 批次选择原生 Qwen3.8 执行第一轮或第二轮分析
+- **THEN** 第一轮 MUST 关闭 Thinking 并使用 180 秒请求超时；第二轮 MUST 显式使用 `reasoning_effort=medium` 并使用 300 秒请求超时
+
+#### Scenario: Reserve the corrective instruction before Pass 1 dispatch
+
+- **WHEN** 系统为第一轮请求组执行最终输入装箱
+- **THEN** 预检 MUST 预留最长纠正指令，保证首次请求成功进入发送队列后，不会仅因附加纠正指令而在重试时确定性超过 64K 输入上限
+
+#### Scenario: Split a failed Pass 1 request group
+
+- **WHEN** 第一轮请求组超时或返回结构失败
+- **THEN** 系统 MUST 将父组标记为已被子组取代，按完整 conversation 边界确定性拆分并仅派发未完成 conversation；单 conversation 叶子最多再尝试一次
+
+#### Scenario: Split a failed Pass 2 request group
 
 - **WHEN** 已通过最终消息硬上限预检的第二轮请求组超时、返回无效 JSON 或引用不存在的 Segment ID
-- **THEN** 系统保留成功 Case 检查点，仅对相同安全成员执行有界且可审计的纠正重试；不得把请求尺寸发现留到失败后递归拆分，也不得再次提交已耗尽自动尝试的同一失败条件
+- **THEN** 系统 MUST 保留成功 Case 检查点，将父组标记为已被子组取代，按完整 Case 边界确定性拆分并仅派发未完成 Case；单 Case 叶子最多再尝试一次，已完成 Case 不得重复提交
 
 #### Scenario: Report truthful retry progress
 
@@ -478,6 +493,30 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 - **WHEN** 任一疑点 Case 的第二轮结果仍为失败或处理中
 - **THEN** 系统不得创建新的额外 Good 平衡样本；疑点 Case 总数在重试期间保持稳定，并将既有或后续 Good 控制样本与疑点数分开统计
+
+### Requirement: Live external-request visibility
+
+运行中的评测 MUST 在进度区域逐条展示当前正在等待的外部请求及其已等待时长；服务端 MUST 提供脱敏的阶段、厂商、当前序号、总数、开始时间和最近心跳。前端 MUST 每秒刷新可见计时，但不得以本地计时伪造完成百分比，也不得让辅助技术每秒播报。暂停或部分失败的历史批次 MUST 只显示该阶段的成功数与失败数，技术尝试和请求组细节保留在任务详情。
+
+#### Scenario: Show every active request separately
+
+- **WHEN** 一个批次同时有多个 ASR 或 LLM 请求正在等待厂商返回
+- **THEN** 进度区域为每个请求显示一行“厂商/阶段 · 当前序号/总数 · 已等待 mm:ss”，计时每秒变化；请求完成后该行消失或被下一项替换
+
+#### Scenario: Keep durable progress authoritative
+
+- **WHEN** 前端仅因本地计时器经过一秒而更新活动请求时长
+- **THEN** Case、conversation、provider job 和 request group 的完成百分比及成功/失败数量保持由服务端检查点决定，不随本地计时增加
+
+#### Scenario: Detect a stale operation heartbeat
+
+- **WHEN** 活动请求的最近心跳超过服务端定义的健康窗口
+- **THEN** 页面 MUST 显示“状态同步中断”而不是继续把它呈现为正常等待
+
+#### Scenario: Summarize a non-running batch compactly
+
+- **WHEN** 批次处于暂停或部分失败
+- **THEN** 列表状态只显示 `N failed · M succeeded`；第一轮按 conversation、ASR 按完整通话 provider job、第二轮按 Case 计数，不显示 pending、request group 或 attempt 长串
 
 ### Requirement: Bilingual and overflow-safe evaluation UI
 

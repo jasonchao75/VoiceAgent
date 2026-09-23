@@ -40,9 +40,12 @@ from src.evaluation.executor import (
     _asr_error,
     _completion_limit_field,
     _gemini_thinking_config,
+    _llm_request_timeout,
+    _qwen_reasoning_effort,
     _render_prompt,
     _safe_execution_failure,
     _safe_structured_error,
+    _structured_error_retryable,
     _structured_response_format,
     _structured_retry_correction,
 )
@@ -82,6 +85,16 @@ def test_qwen_thinking_uses_prompt_json_contract_without_json_mode() -> None:
     assert _structured_response_format("deepseek", True) == {"type": "json_object"}
 
 
+def test_qwen_timeouts_and_reasoning_effort_follow_the_frozen_stage_policy() -> None:
+    """Pass 1 is bounded without thinking and Pass 2 uses medium reasoning."""
+    assert _llm_request_timeout("qwen", "pass_1") == 180
+    assert _llm_request_timeout("qwen", "pass_2") == 300
+    assert _llm_request_timeout("gemini", "pass_2") == 120
+    assert _qwen_reasoning_effort(thinking=False, stage="pass_1") is None
+    assert _qwen_reasoning_effort(thinking=True, stage="pass_2") == "medium"
+    assert _qwen_reasoning_effort(thinking=True, stage="other") == "high"
+
+
 def test_structured_retry_correction_is_content_free_and_actionable() -> None:
     """A schema retry should tell the model what to repair without echoing its response."""
     correction = _structured_retry_correction(ValueError("Pass 2 group returned no results array"))
@@ -113,6 +126,10 @@ def test_structured_retry_correction_is_content_free_and_actionable() -> None:
     )
     assert output_failure["category"] == "preflight_output_limit"
     assert output_failure["retryable"] is False
+    assert _structured_error_retryable("timeout") is True
+    assert _structured_error_retryable("schema_invalid_json") is True
+    assert _structured_error_retryable("authentication_failed") is False
+    assert _structured_error_retryable("preflight_input_limit") is False
 
 
 @pytest.mark.asyncio
@@ -188,7 +205,7 @@ async def test_pass1_retry_reuses_groups_and_skips_completed_membership(
     evaluation_store: EvaluationStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A retry should call only the failed frozen first-pass request group."""
+    """A completed group stays reused and an exhausted leaf is not redispatched."""
     batch = await evaluation_store.create_batch(
         EvaluationBatchCreate(
             name="Grouped retry",
@@ -282,20 +299,18 @@ async def test_pass1_retry_reuses_groups_and_skips_completed_membership(
 
     await runner._run_pass_one(batch["id"], conversations)
     assert calls.count("C1") == 1
-    assert calls.count("C2") == 3
+    assert calls.count("C2") == 2
 
     fail_c2 = False
     await runner._run_pass_one(batch["id"], conversations)
     assert calls.count("C1") == 1
-    assert calls.count("C2") == 4
+    assert calls.count("C2") == 2
     assert [attempt for conversation_id, attempt in attempts if conversation_id == "C2"] == [
         1,
         2,
-        3,
-        4,
     ]
     groups = await evaluation_store.pass1_group_rows(batch["id"])
-    assert {row["status"] for row in groups} == {"completed"}
+    assert {row["status"] for row in groups} == {"completed", "failed"}
 
 
 def test_focused_screening_accepts_only_unique_p1_candidates() -> None:
@@ -1314,6 +1329,110 @@ async def evaluation_store(tmp_path: Path) -> EvaluationStore:
     )
     await store.initialize()
     return store
+
+
+@pytest.mark.asyncio
+async def test_active_operation_projection_is_persisted_and_removed(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """The UI projection must survive polling without becoming durable history."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Visible request progress",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="visible-request-progress-001",
+        )
+    )
+    batch_id = str(batch["id"])
+
+    await evaluation_store.begin_active_operation(
+        batch_id,
+        "pass_1:group-1:attempt-1",
+        stage="pass_1",
+        provider="qwen",
+        ordinal=1,
+        total=4,
+    )
+    current = await evaluation_store.get_batch(batch_id)
+    assert current is not None
+    assert current["active_operations"] == [
+        {
+            "operation_id": "pass_1:group-1:attempt-1",
+            "stage": "pass_1",
+            "provider": "qwen",
+            "ordinal": 1,
+            "total": 4,
+            "started_at": current["active_operations"][0]["started_at"],
+            "heartbeat_at": current["active_operations"][0]["heartbeat_at"],
+        }
+    ]
+    assert (await evaluation_store.list_batches())[0]["active_operations"]
+
+    await evaluation_store.heartbeat_active_operation(
+        batch_id,
+        "pass_1:group-1:attempt-1",
+    )
+    await evaluation_store.finish_active_operation(
+        batch_id,
+        "pass_1:group-1:attempt-1",
+    )
+    finished = await evaluation_store.get_batch(batch_id)
+    assert finished is not None
+    assert finished["active_operations"] == []
+
+
+@pytest.mark.asyncio
+async def test_event_aligner_uses_the_active_operation_lifecycle(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Event Aligner waits must be visible and removed without changing progress."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Visible Event Aligner request",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="visible-event-aligner-001",
+        )
+    )
+    batch_id = str(batch["id"])
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    async def provider_wait() -> str:
+        started.set()
+        await release.wait()
+        return "done"
+
+    task = asyncio.create_task(
+        runner._with_active_operation(
+            provider_wait(),
+            batch_id=batch_id,
+            operation_id="event_alignment:EAG0001:1",
+            stage="event_alignment",
+            provider="qwen",
+            ordinal=1,
+            total=2,
+        )
+    )
+    await started.wait()
+    current = await evaluation_store.get_batch(batch_id)
+    assert current is not None
+    assert current["active_operations"][0]["stage"] == "event_alignment"
+    assert current["progress"] == batch["progress"]
+    assert "_with_active_operation" in inspect.getsource(EvaluationRunner._run_event_alignment)
+
+    release.set()
+    assert await task == "done"
+    finished = await evaluation_store.get_batch(batch_id)
+    assert finished is not None
+    assert finished["active_operations"] == []
+    assert finished["progress"] == batch["progress"]
 
 
 @pytest.mark.asyncio
@@ -4107,7 +4226,7 @@ async def test_pass2_retry_reuses_failed_frozen_group(
     evaluation_store: EvaluationStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Resuming Pass 2 must retry the original group instead of repacking its Cases."""
+    """An exhausted single-Case leaf stays frozen and is not redispatched."""
     batch = await evaluation_store.create_batch(
         EvaluationBatchCreate(
             name="Frozen group retry",
@@ -4222,7 +4341,7 @@ async def test_pass2_retry_reuses_failed_frozen_group(
     assert second[0]["group_id"] == first[0]["group_id"]
     assert second[0]["case_keys"] == first[0]["case_keys"]
     assert second[0]["status"] == "failed"
-    assert attempts == [1, 2, 3, 4, 5, 6]
+    assert attempts == [1, 2]
     first_context = cast(list[dict[str, object]], observed_contexts[0])[0]
     context_events = cast(list[dict[str, object]], first_context["events"])
     providers = cast(list[dict[str, object]], context_events[0]["providers"])
@@ -4341,15 +4460,15 @@ async def test_pass2_preflight_splits_one_large_conversation_by_case(
     groups = await evaluation_store.pass2_group_rows(batch["id"])
     assert len(groups) == 2
     assert all(len(row["case_keys"]) == 1 for row in groups)
-    assert observed_case_counts == [1, 1, 1, 1, 1, 1]
+    assert observed_case_counts == [1, 1, 1, 1]
 
 
 @pytest.mark.asyncio
-async def test_pass2_safe_group_failure_does_not_trigger_paid_recursive_split(
+async def test_pass2_schema_failure_splits_then_exhausts_single_case_leaves(
     evaluation_store: EvaluationStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A preflight-safe schema failure keeps stable membership without paid splitting."""
+    """A schema-failed parent is superseded and each single-Case leaf gets one retry."""
     batch = await evaluation_store.create_batch(
         EvaluationBatchCreate(
             name="Adaptive grouped retry",
@@ -4425,12 +4544,14 @@ async def test_pass2_safe_group_failure_does_not_trigger_paid_recursive_split(
     first_calls = list(calls)
     await runner._run_pass_two(batch["id"], batch, conversations, candidates, plan_key="suspects")
 
-    assert len(first_calls) == 3
-    assert len(calls) == 6
-    assert all(len(membership) == 2 for membership in calls)
+    assert len(first_calls) == 5
+    assert len(calls) == 5
+    assert len(calls[0]) == 2
+    assert all(len(membership) == 1 for membership in calls[1:])
     groups = await evaluation_store.pass2_group_rows(batch["id"])
-    assert len(groups) == 1
-    assert groups[0]["status"] == "failed"
+    assert len(groups) == 3
+    assert sum(row["status"] == "superseded" for row in groups) == 1
+    assert sum(row["status"] == "failed" for row in groups) == 2
     results = await evaluation_store.checkpoint_rows("evaluation_pass2_runs", batch["id"])
     assert len(results) == 2
     assert all(row["status"] == "failed" for row in results)
