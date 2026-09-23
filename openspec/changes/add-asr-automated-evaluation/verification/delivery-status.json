@@ -1,5 +1,5 @@
 {
-  "phase": "pd064_pd065_independent_pass",
+  "phase": "pd064_pd065_deployed_e65a_readback_pending",
   "product_acceptance": "pending",
   "local_acceptance_deployment": "pd030_image_rebuilt_and_running_healthy_at_127.0.0.1_8000_on_2026-09-19;_display_translation_route_present;_EV-20260918-2655_remains_awaiting_review",
   "production_paths": [
@@ -78,6 +78,14 @@
     "deployment_run": 35814003041,
     "public_health": "PASS",
     "production_behavior": "Production runs the verified full-call-turn projection release. The deployment did not start provider work or mutate EV-20260923-E65A: its updated_at remains 2026-09-23T02:26:50+00:00 with status=partially_failed, eight failed Pass 2 groups and thirty failed Cases. New LLM call-logic implementation was excluded."
+  },
+  "pd064_pd065_release": {
+    "status": "PASS_WITH_E65A_READBACK_PENDING",
+    "commit": "ebc695684dfe62a602304516a7dd68354c6581b7",
+    "ci_run": 35819386530,
+    "deployment_run": 35819576769,
+    "public_health": "PASS",
+    "production_behavior": "CI, production image build, exact-SHA deployment, container health and public status=ok all passed. The deployment workflow and application startup do not dispatch provider work for partially_failed batches. A post-deploy authenticated read of EV-20260923-E65A could not be completed because the existing website session expired after deployment; exact updated_at/group/Case preservation remains UV-032."
   },
   "external_calls": [
     {
@@ -1839,9 +1847,17 @@
   "unverified_items": [
     {
       "id": "UV-031",
-      "status": "open",
+      "status": "resolved",
       "summary": "PD-064/PD-065 implementation and production release are in progress after V1.18 User Gate 1 confirmation.",
       "reason": "PD-066 froze the V1.18 prototype and authorized implementation and deployment after Checkpoints A/B/C and independent verification. Production code, tests and release evidence are not yet complete.",
+      "resolution": "PD-064/PD-065 passed Engineering Checkpoints A/B/C and independent re-review, shipped in commit ebc695684dfe62a602304516a7dd68354c6581b7, passed CI run 35819386530 and deployment run 35819576769, and returned public health status=ok. Exact E65A post-deploy readback is split into UV-032 rather than hidden inside this resolved release item.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-032",
+      "status": "open",
+      "summary": "The post-deploy exact production readback of EV-20260923-E65A has not been completed.",
+      "reason": "The production website session expired after deployment and the protected Evaluation bootstrap returned HTTP 401. Static workflow/runtime tracing proves the release does not auto-dispatch partially_failed batches, and no agent action resumed or retried E65A, but its historical updated_at=2026-09-23T02:26:50+00:00, eight failed groups and thirty failed Cases were not independently re-read after deployment.",
       "disclosed_to_user": true
     },
     {

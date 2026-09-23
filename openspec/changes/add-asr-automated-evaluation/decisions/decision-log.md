@@ -23,7 +23,7 @@
 - Reason: 产品负责人已确认行为方案和高保真原型，并明确授权实现与上线。
 - Consequences: V1.17 降为历史基线；V1.18 的完整 SHA-256 成为唯一冻结校验值。正式 UI 必须复用现有生产路由和 DOM，不另造静态验收页。发布完成后仍由用户决定是否重试历史失败批次。
 - Updated artifacts: `prototypes/README.md`、`verification/gate-1-review.md`、proposal/design/spec/tasks、正式实现、测试、独立验收与发布证据。
-- Verification: Implementation, 271 backend tests, frontend build, focused desktop/narrow production-route checks and independent re-review pass; CI/deployment and public health verification remain pending.
+- Verification: Implementation, 271 backend tests, frontend build, focused desktop/narrow production-route checks, independent re-review, CI run 35819386530, deployment run 35819576769, exact deployed SHA and public health pass. Exact E65A post-deploy readback remains UV-032 because the protected website session expired.
 
 ### PD-065 — 运行中逐请求显示秒级等待，非运行状态只显示成功与失败
 
@@ -37,7 +37,7 @@
 - Reason: 秒级变化可区分“正在等待供应商”与“页面卡住”，逐请求计时又避免“最久等待”隐藏其他并发请求；非运行状态无需重复展示 Case、请求组、pending 和 attempts 的长串技术统计。
 - Consequences: 后端需为活动请求暴露安全的 operation ID、stage、provider、ordinal/total、started_at 和 heartbeat；前端每秒只更新显示耗时，并继续短轮询真实状态。心跳过期时显示状态同步异常，不得继续把请求呈现为健康运行。计时变化不进入屏幕阅读器逐秒播报；状态切换才通过 live region 通知。桌面、窄屏和最小移动视口不得横向溢出。
 - Updated artifacts: Delta Spec、`design.md`、`tasks.md`、`prototypes/`；V1.18 已由 PD-066 冻结，正式代码与测试进入实施。
-- Verification: User Gate 1 and Engineering Checkpoints A/B/C pass; production deployment remains pending.
+- Verification: User Gate 1, Engineering Checkpoints A/B/C and production deployment pass; exact E65A post-deploy readback remains UV-032.
 
 ### PD-064 — 恢复并实施 Qwen 分阶段超时、medium Thinking 与失败拆分
 
