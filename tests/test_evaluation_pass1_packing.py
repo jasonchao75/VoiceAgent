@@ -13,6 +13,8 @@ from src.evaluation.pass2_packing import (
     PassOneUnit,
     build_event_alignment_unit,
     build_pass_one_unit,
+    final_request_input_tokens,
+    input_limit,
     model_token_policy,
     pack_event_alignment_units,
     pack_pass_one_units,
@@ -63,6 +65,69 @@ def test_event_aligner_overflow_uses_minimum_whole_conversation_groups() -> None
     assert {item for group in groups for item in group.conversation_ids} == {
         unit.conversation_id for unit in units
     }
+
+
+def test_event_aligner_measures_the_single_final_wire_payload() -> None:
+    """Packing must measure the rendered System prompt plus a content-free User message."""
+    units = [_alignment_unit(f"C{index}", 7_000, target_count=2) for index in range(12)]
+    policy = ModelTokenPolicy(
+        context_limit=131_072,
+        max_output_tokens=32_768,
+        safety_margin=32_768,
+        max_input_tokens=65_536,
+    )
+    template = "Align this exact payload: {{request_group_id}} {{conversations}}"
+
+    groups = pack_event_alignment_units(
+        batch_id="EV-EA-WIRE",
+        units=units,
+        system_prompt=template,
+        policy=policy,
+    )
+
+    assert len(groups) > 1
+    for group in groups:
+        payload = {
+            "request_group_id": group.group_id,
+            "conversations": [unit.payload for unit in group.units],
+        }
+        assert group.estimated_input_tokens == final_request_input_tokens(template, payload)
+        assert group.estimated_input_tokens <= input_limit(policy)
+
+
+def test_event_aligner_splits_one_oversized_conversation_by_target_events() -> None:
+    """One large call remains recoverable by stable target-event subsets."""
+    payload = {
+        "conversation_id": "C-LARGE",
+        "conversation_history": [],
+        "target_events": [{"event_id": f"R{index}", "text": "x" * 18_000} for index in range(4)],
+        "full_call_asr": [{"provider": "soniox", "turns": []}],
+    }
+    unit = build_event_alignment_unit("C-LARGE", payload, 4, 3)
+    policy = ModelTokenPolicy(
+        context_limit=131_072,
+        max_output_tokens=32_768,
+        safety_margin=32_768,
+        max_input_tokens=65_536,
+    )
+
+    groups = pack_event_alignment_units(
+        batch_id="EV-EA-SUBSETS",
+        units=[unit],
+        system_prompt="{{request_group_id}} {{conversations}}",
+        policy=policy,
+    )
+
+    assert len(groups) > 1
+    assert {group.conversation_ids for group in groups} == {("C-LARGE",)}
+    event_ids = {
+        str(event["event_id"])
+        for group in groups
+        for child in group.units
+        for event in child.payload["target_events"]
+    }
+    assert event_ids == {"R0", "R1", "R2", "R3"}
+    assert all(group.estimated_input_tokens <= input_limit(policy) for group in groups)
 
 
 def _event_aligner_validation_input() -> dict[str, dict[str, object]]:

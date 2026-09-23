@@ -663,13 +663,20 @@ function activeOperationRows(batch) {
     const ordinal = Number(operation.ordinal || 1);
     const total = Number(operation.total || 1);
     const stage = String(operation.stage || "");
+    const started = Date.parse(operation.started_at || "");
+    const elapsedSeconds = Number.isFinite(started)
+      ? Math.max(0, Math.floor((now - started) / 1000))
+      : 0;
+    const elapsed = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:${String(elapsedSeconds % 60).padStart(2, "0")}`;
     const action = stale
       ? copy("Status sync interrupted", "状态同步中断")
       : stage === "evaluation_asr"
         ? copy(`Call ${ordinal}/${total}`, `对话 ${ordinal}/${total}`)
+        : stage === "event_alignment"
+          ? copy(`Alignment group ${ordinal}/${total} · Waiting for ${provider}`, `映射组 ${ordinal}/${total} · 等待 ${provider}`)
         : copy(`Group ${ordinal}/${total} · Waiting for ${provider}`, `请求组 ${ordinal}/${total} · 等待 ${provider}`);
     const asrPrefix = stage === "evaluation_asr" ? `${safe(provider)} · ` : "";
-    return `<div class="runtime-live-operation ${stale ? "stale" : ""}" data-operation-id="${safe(operation.operation_id)}"><i aria-hidden="true"></i><span>${asrPrefix}${safe(action)}</span><time class="runtime-live-elapsed" data-started-at="${safe(operation.started_at)}" aria-hidden="true">00:00</time></div>`;
+    return `<div class="runtime-live-operation ${stale ? "stale" : ""}" data-operation-id="${safe(operation.operation_id)}"><i aria-hidden="true"></i><span>${asrPrefix}${safe(action)}</span><time class="runtime-live-elapsed" data-started-at="${safe(operation.started_at)}" aria-hidden="true">${elapsed}</time></div>`;
   }).join("");
 }
 
@@ -795,9 +802,10 @@ function stageIndex(stage) {
     validating: 0,
     pass_1: 1,
     evaluation_asr: 2,
-    pass_2: 3,
-    manual_review: 4,
-    completed: 5,
+    event_alignment: 3,
+    pass_2: 4,
+    manual_review: 5,
+    completed: 6,
   }[stage] ?? 0;
 }
 
@@ -831,6 +839,7 @@ function renderRun(batch) {
       `${batch.input_count} ${copy("conversations", "通对话")} · ${batch.denominator} ${copy("customer events parsed", "条用户事件已解析")}`,
       executionProgressCopy(batch, "pass_1"),
       executionProgressCopy(batch, "evaluation_asr"),
+      executionProgressCopy(batch, "event_alignment"),
       executionProgressCopy(batch, "pass_2"),
       batch.review_total
         ? `${batch.review_completed}/${batch.review_total} ${copy("reviewed", "已复核")}`
@@ -928,7 +937,7 @@ function renderRun(batch) {
     if (cells.length >= 6) {
       const jobs = batch.snapshot?.candidate_conversation_count;
       cells[2].textContent = jobs ?? "—";
-      cells[3].textContent = ["pass_2", "manual_review", "completed"].includes(batch.stage)
+      cells[3].textContent = ["event_alignment", "pass_2", "manual_review", "completed"].includes(batch.stage)
         ? jobs ?? "—"
         : "—";
       cells[4].textContent = "—";
@@ -936,8 +945,8 @@ function renderRun(batch) {
       if (action) action.hidden = true;
     }
     const status = row.querySelector(".pill");
-    const asrStarted = ["evaluation_asr", "pass_2", "manual_review", "completed"].includes(batch.stage);
-    const asrDone = ["pass_2", "manual_review", "completed"].includes(batch.stage);
+    const asrStarted = ["evaluation_asr", "event_alignment", "pass_2", "manual_review", "completed"].includes(batch.stage);
+    const asrDone = ["event_alignment", "pass_2", "manual_review", "completed"].includes(batch.stage);
     status.className = `pill ${asrDone ? "good" : asrStarted ? "blue" : ""}`;
     status.textContent = asrDone
       ? copy("Completed", "已完成")
@@ -992,7 +1001,7 @@ async function refreshRunReport(batchId) {
         ? `${copy("Unique candidate events", "个唯一候选事件")} · ${duplicateCandidates} ${copy("duplicate rows removed", "条重复候选已去重")}`
         : copy("Unique persisted first-pass candidates", "已持久化的唯一第一轮候选");
     }
-    const secondPassDetail = document.querySelector("#page-run .steps .step:nth-child(4) span");
+    const secondPassDetail = document.querySelector("#page-run .steps .step:nth-child(5) span");
     if (secondPassDetail) {
       const incomplete = cases.filter((item) => item.decision === "Not completed").length;
       secondPassDetail.textContent = `${cases.length - incomplete}/${cases.length} ${copy("unique Cases completed", "个唯一样本已完成")}${incomplete ? ` · ${incomplete} ${copy("failed", "失败")}` : ""}${duplicateCandidates ? ` · ${duplicateCandidates} ${copy("duplicates removed", "条重复已去除")}` : ""}`;

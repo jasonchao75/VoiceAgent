@@ -62,7 +62,7 @@
 
 ## Confirmed Product Decisions
 
-- `PRD.html V1.17` 与 `prototypes/index.html V1.18`（SHA-256 `e88e8be8f79572d4118399e3030d227a181f504799a0e06e3421d1b5bc8922c0`）共同构成本 Change 的唯一当前需求基线；V1.17 及更早原型仅保留历史审计记录，旧 `PRD.md V0.1` 和旧评审页已删除。
+- `PRD.html V1.17` 与 `prototypes/index.html V1.19`（SHA-256 `17829744d355bc86da3625cdf5fc24b94a6a44db5e67551046e046abbd89649c`）共同构成本 Change 的唯一当前需求基线；更早原型仅保留历史审计记录，旧 `PRD.md V0.1` 和旧评审页已删除。
 - 输入保持真实离线数据结构：每通一个 Excel，而不是把多通对话合并到单个工作簿。
 - 疑似错误占比分子只包含第二轮 Bad 与需人工复核，不包含第二轮 Good。
 - Good Case 最终目标与 Bad Case 为 1:1；同一完整通话的 ASR 结果复用。

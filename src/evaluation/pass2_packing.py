@@ -83,6 +83,16 @@ class EventAlignmentUnit:
     provider_count: int
     estimated_input_tokens: int
 
+    @property
+    def membership_key(self) -> str:
+        """Return one stable identity, including a target-event subset when present."""
+        event_ids = sorted(
+            str(event.get("event_id") or "")
+            for event in self.payload.get("target_events", [])
+            if isinstance(event, dict)
+        )
+        return f"{self.conversation_id}:{','.join(event_ids)}"
+
 
 @dataclass(frozen=True)
 class EventAlignmentGroup:
@@ -320,28 +330,69 @@ def pack_event_alignment_units(
     policy: ModelTokenPolicy,
 ) -> list[EventAlignmentGroup]:
     """Prefer one batch request, otherwise use the fewest safe whole-call groups."""
-    prompt_tokens = estimate_tokens(system_prompt)
+
+    def identity(candidate: list[EventAlignmentUnit]) -> tuple[str, str]:
+        membership = json.dumps(
+            sorted(unit.membership_key for unit in candidate),
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+        digest = hashlib.sha256(f"{batch_id}:event-aligner:{membership}".encode()).hexdigest()
+        return f"EAG-{digest[:16]}", digest
+
+    def final_input(candidate: list[EventAlignmentUnit]) -> int:
+        group_id, _digest = identity(candidate)
+        payload = {
+            "request_group_id": group_id,
+            "conversations": [
+                unit.payload for unit in sorted(candidate, key=lambda item: item.conversation_id)
+            ],
+        }
+        return final_request_input_tokens(system_prompt, payload)
 
     def fits(candidate: list[EventAlignmentUnit]) -> bool:
-        # The frozen template embeds the payload and the provider also receives the
-        # same JSON as the user message, so reserve both copies before dispatch.
-        input_tokens = prompt_tokens + 2 * sum(unit.estimated_input_tokens for unit in candidate)
+        if len({unit.conversation_id for unit in candidate}) != len(candidate):
+            return False
+        input_tokens = final_input(candidate)
         output_tokens = event_alignment_output_reserve(candidate, policy)
         return (
             output_tokens <= policy.max_output_tokens
+            and input_tokens <= input_limit(policy)
             and input_tokens + output_tokens + policy.safety_margin <= policy.context_limit
         )
 
+    def split_oversized(unit: EventAlignmentUnit) -> list[EventAlignmentUnit]:
+        if fits([unit]):
+            return [unit]
+        target_events = [
+            event for event in unit.payload.get("target_events", []) if isinstance(event, dict)
+        ]
+        if len(target_events) <= 1:
+            raise ValueError(
+                f"Conversation target exceeds Event Aligner token limit: {unit.membership_key}"
+            )
+        midpoint = len(target_events) // 2
+        children: list[EventAlignmentUnit] = []
+        for subset in (target_events[:midpoint], target_events[midpoint:]):
+            payload = {**unit.payload, "target_events": subset}
+            children.extend(
+                split_oversized(
+                    build_event_alignment_unit(
+                        unit.conversation_id,
+                        payload,
+                        len(subset),
+                        unit.provider_count,
+                    )
+                )
+            )
+        return children
+
+    expanded = [child for unit in units for child in split_oversized(unit)]
     ordered = sorted(
-        units,
+        expanded,
         key=lambda unit: (unit.estimated_input_tokens, unit.conversation_id),
         reverse=True,
     )
-    for unit in ordered:
-        if not fits([unit]):
-            raise ValueError(
-                f"Conversation exceeds Event Aligner token limit: {unit.conversation_id}"
-            )
     if not ordered:
         return []
     if fits(ordered):
@@ -359,8 +410,7 @@ def pack_event_alignment_units(
                     placements,
                     key=lambda placement: (
                         policy.context_limit
-                        - prompt_tokens
-                        - sum(item.estimated_input_tokens for item in placement[1])
+                        - final_input(placement[1])
                         - event_alignment_output_reserve(placement[1], policy),
                         placement[0],
                     ),
@@ -370,8 +420,8 @@ def pack_event_alignment_units(
                 greedy.append([unit])
 
         best = [list(members) for members in greedy]
-        available_context = policy.context_limit - prompt_tokens - policy.safety_margin
-        total_input = 2 * sum(unit.estimated_input_tokens for unit in ordered)
+        available_context = input_limit(policy)
+        total_input = sum(unit.estimated_input_tokens for unit in ordered)
         total_visible_output = sum(
             768 + unit.target_event_count * max(2, unit.provider_count) * 320 for unit in ordered
         )
@@ -433,24 +483,22 @@ def pack_event_alignment_units(
     packed.sort(key=lambda members: members[0].conversation_id)
     result: list[EventAlignmentGroup] = []
     seen: set[str] = set()
-    for index, members in enumerate(packed, start=1):
-        conversation_ids = tuple(unit.conversation_id for unit in members)
-        if seen.intersection(conversation_ids):
-            raise ValueError("Event Aligner packing produced duplicate conversations")
-        seen.update(conversation_ids)
-        membership = json.dumps(conversation_ids, ensure_ascii=False, separators=(",", ":"))
-        digest = hashlib.sha256(f"{batch_id}:event-aligner:{membership}".encode()).hexdigest()
+    for members in packed:
+        membership_keys = {unit.membership_key for unit in members}
+        if seen.intersection(membership_keys):
+            raise ValueError("Event Aligner packing produced duplicate units")
+        seen.update(membership_keys)
+        group_id, digest = identity(members)
         result.append(
             EventAlignmentGroup(
-                group_id=f"EAG{index:04d}-{digest[:12]}",
+                group_id=group_id,
                 idempotency_key=digest,
                 units=tuple(members),
-                estimated_input_tokens=prompt_tokens
-                + 2 * sum(unit.estimated_input_tokens for unit in members),
+                estimated_input_tokens=final_input(members),
                 reserved_output_tokens=event_alignment_output_reserve(members, policy),
             )
         )
-    if seen != {unit.conversation_id for unit in units}:
+    if seen != {unit.membership_key for unit in expanded}:
         raise ValueError("Event Aligner packing omitted conversations")
     return result
 

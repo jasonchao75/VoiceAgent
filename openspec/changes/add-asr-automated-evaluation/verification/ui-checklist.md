@@ -8,7 +8,7 @@ Status: User Gate 1 and Engineering Checkpoints A/B/C passed; User Gate 2 accept
 |---|---|
 | Risk | High |
 | Latest PRD | `PRD.html` V1.17 |
-| Latest prototype | `prototypes/index.html` V1.18 |
+| Latest prototype | `prototypes/index.html` V1.19 |
 | Annotations | `prototypes/ui-annotations.md` |
 | State matrix | `prototypes/ui-state-matrix.md` |
 | Fixture source | `benchmarks/RiyadBankConversation/` plus non-secret derived fixture |
@@ -68,6 +68,9 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 - [x] Every active ASR/LLM request renders as one compact live row with provider, ordinal/total and its own one-second elapsed timer
 - [x] A stale request heartbeat changes to “status sync interrupted” instead of continuing to appear healthy
 - [x] Paused, budget-paused and partially-failed batch rows show only stage-level failed and succeeded counts
+- [x] Batch detail renders six ordered stages with Event Alignment at step 4; Qwen alignment activity is absent from Multi-ASR
+- [x] Polling re-render computes elapsed time from `started_at` immediately and never inserts a literal `00:00` frame for an older request
+- [x] Each provider's Multi-ASR live request uses provider-local ordinal/total while the durable stage summary remains cross-provider
 
 ## Engineering Checkpoint B — real integration and resilience
 
@@ -93,8 +96,9 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 - [x] English UI contains no Chinese residue; Chinese UI preserves original transcripts
 - [x] Keyboard, focus, accessible names and dialog/drawer behavior pass across desktop and narrow browser regressions
 - [x] The elapsed timer is hidden from assistive technology and does not create a per-second live-region announcement
+- [x] Event Alignment six-stage, 65-second elapsed, three-provider `/36` task totals and `scrollWidth <= clientWidth` pass at 1440×1000 and 1024×1000
 - [x] Every state-matrix row is mapped to the frozen baseline, the same production route/DOM, and named functional/accessibility evidence; representative V1.17 desktop/narrow captures are byte-identical to baseline
-- [x] Engineering Checkpoint C independent review returns PASS
+- [x] Engineering Checkpoint C independent review returns PASS for PD-069
 - [ ] Product gives User Gate 2 final acceptance
 
 ## Evidence table
@@ -115,6 +119,7 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 | Prompt protection and request preview | approved prototype V1.16 | browser-verified implementation | targeted | — | passed across two viewports | read-only default, explicit edit, variable slots, field mapping, complete dictionary entries, grouped Pass 2 `request_group_id`/`results[]`/`positioning_quality`, current draft values and dialog overflow | Current real batch supplies the frozen grouped result evidence | pending product approval |
 | Review / dialog / report / Benchmark / configuration | approved prototype | browser-verified implementation | targeted | — | 74/74 Evaluation browser cases passed across desktop and narrow projects, including explicit 390×844 overlay checks | names, keyboard dismissal, focus restoration, context fields, prompt editing, request previews, encrypted connection reload, model-catalog admission and decision states checked | Fixture and real local API tests use one production route/DOM | pending product approval |
 | Finish with current results | approved existing batch-action / confirmation-dialog pattern (PD-060) | production route and DOM at 1440×1000 and 1024×1000 | targeted | — | paused batch exposes the action and renders 17 preserved Pass 2 decisions plus explicit exclusion/no-provider copy | dialog has an accessible name and `scrollWidth <= clientWidth` in both projects | deterministic intercepted bootstrap; no production batch mutation or provider call | ready for independent review |
+| Event Alignment live stage | V1.19 / PD-067 / PD-069 | production route and DOM at 1440×1000 and 1024×1000 | targeted | — | six stages, Align at step 4, Qwen only under Align, immediate 01:05+ elapsed, three providers each show 36 tasks | timer excluded from live announcements; `scrollWidth <= clientWidth` in both projects | deterministic intercepted bootstrap; full shared browser suite retains unrelated UV-022 failures | ready for independent review |
 | Superseded Gate 3 simulation | approved Gate 2 shell | retained historical `actual-gate-3-*` screenshots | not applicable | — | withdrawn; simulated rows are no longer served by runtime APIs | not acceptance evidence | screenshots are historical only | rejected |
 | Real source import and audit | approved upload contract | `docs/reports/evaluation/riyadbank-source-audit-2026-09-16.md` | source contract | — | 56 Excel/MP3/WAV sets parsed; 0 blockers, 55 reference warnings, no result rows | empty/result-unavailable states checked | providers not run | ingestion ready |
 | Dataset upload and repair | approved upload contract | browser-verified 8000 deployment | targeted | — | complete ZIP, clean-dialog reset, blocked candidate, issue CSV, repair overlay, safe activation and invalid-archive rejection passed | visible file inputs, keyboard dropzone and desktop/narrow overflow checked | Missing/corrupt/unparseable source data still blocks; historical duration/timestamp defects warn only | upload accepted |

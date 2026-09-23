@@ -165,6 +165,24 @@
 - **WHEN** 全部命中 conversation 的 worksheet 事件、目标 R 和三家完整录音 turns 可在冻结模型的上下文与结构化输出预留内安全容纳
 - **THEN** 系统只发起一个 Event Aligner 请求；只有超限时才按完整 conversation 不可拆分生成最少请求组，并只重试失败组
 
+Event Aligner MUST 使用统一 128K 运行包络（最终输入不超过 64K、可见输出不超过 32K、保留 32K 安全余量），业务载荷只可出现在完成变量替换的 System Prompt 一次，User message 只发送固定无业务内容的执行指令；Thinking MUST 关闭，客户端超时 MUST 为 180 秒。
+
+#### Scenario: Split one oversized conversation by target-event subsets
+- **WHEN** 单个 conversation 的全部目标事件仍超过最终 64K 输入上限，但每个目标事件在保留完整历史和 ASR turns 后可单独容纳
+- **THEN** 系统在发送前按稳定目标事件子集拆组、重复必要的 conversation 证据，并在所有子组完成后按 event ID 合并为一份 conversation 映射；不得截断文本或通过付费失败探测大小
+
+#### Scenario: Recover a slow Event Aligner group without replaying the same payload
+- **WHEN** 一个包含多个 conversation 的 Event Aligner 请求达到 180 秒超时或返回不符合结构契约的结果
+- **THEN** 系统把父组标记为 superseded，按稳定 membership 二分为完整 conversation 子组并只发送子组；单 conversation 叶子最多额外尝试一次，已完成 conversation 在恢复运行时不得重发
+
+#### Scenario: Persist projected ASR evidence without lock amplification
+- **WHEN** Event Alignment 结束后系统为多个 Case/provider 生成 turn 投影结果或失败结果
+- **THEN** 系统在一个带 busy timeout 的事务中批量保存这些结果，不得为每条投影并发打开独立写事务
+
+### Requirement: Six-stage execution visibility
+
+批次详情 MUST 依次展示数据校验、第一轮分析、多 ASR 转写、Event Alignment、第二轮分析和人工复核六步。Event Aligner 的 Qwen 活动请求、进度和失败 MUST 只显示在 Event Alignment。活动请求首帧 MUST 由 `started_at` 计算当前耗时，轮询重绘不得短暂回到 `00:00`。多 ASR 的每一行 MUST 使用该 provider 内部的序号和总数；阶段总进度仍按全部 provider job 汇总。
+
 #### Scenario: Bind events only to real provider turns
 
 - **WHEN** Event Aligner 返回目标 R 与各 provider turn 的映射

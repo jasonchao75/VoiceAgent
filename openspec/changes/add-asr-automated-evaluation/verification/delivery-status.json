@@ -90,6 +90,15 @@
   "external_calls": [
     {
       "provider": "Alibaba Cloud DashScope native API / qwen3.8-max",
+      "data_scope": "One deduplicated Event Aligner group from EV-20260923-E65A containing only selected conversations' persisted history events, target events and the three providers' full-call ASR turns; no audio, credentials, unrelated conversations or other batch data",
+      "cost_ceiling": "USD 1 total",
+      "stop_condition": "Call one final-input<=64K group with Thinking disabled and a 180-second client timeout. Stop immediately on success. Only on timeout or structure failure may the same membership be split deterministically on complete-conversation boundaries into two child calls. Stop after both children, before exceeding USD 1, or immediately on authentication, rate-limit, endpoint or model-configuration error. Never mutate or resume the production batch.",
+      "authorization_decision_id": "PD-068",
+      "status": "Executed once on 2026-09-22. The fullest planned bounded group contained three conversations and ten target events, completed in 22.947 seconds, validated every conversation/event mapping, used 20,049 input, zero reasoning and 1,190 visible output tokens, and cost an estimated USD 0.021239. The authorized split fallback was not triggered. The production batch was not mutated.",
+      "evidence": "verification/qwen-event-aligner-bounded-probe-2026-09-22.md"
+    },
+    {
+      "provider": "Alibaba Cloud DashScope native API / qwen3.8-max",
       "data_scope": "Only the text evidence already sent by production Pass 2 for EV-20260923-E65A group G0008: its two Cases, candidate metadata, bounded full-call ASR context and event-level ASR results; no audio, credentials, unrelated groups or other batch data",
       "cost_ceiling": "USD 5 total",
       "stop_condition": "Call the original two-Case group once with reasoning_effort=medium, max_completion_tokens=32768 and a 300-second client timeout, without automatic retry. Stop immediately on success. Only on timeout, invalid response or structure failure may it split into the same two single-Case requests, one call each. Stop after both children, before exceeding USD 5, or immediately on authentication, rate-limit, endpoint or model-configuration error. Never mutate or resume the production batch.",
@@ -1842,6 +1851,56 @@
       "next_action": "Define and implement an onset-aware pure-user boundary derivation using the user WAV signal and neighboring speaker events, reject ambiguous clips before provider dispatch, and add this conversation as a regression fixture.",
       "resolution": "PD-048/PD-049 replace the invalid row-to-next-row interval with anchor-guided speech-island detection on the pure-user WAV, reuse the resulting exact source interval for provider input/playback/Benchmark, and add a separate once-per-conversation/provider full-call context checkpoint. Independent review exposed that a louder earlier utterance distorted the search-wide energy threshold and made real R6 fail; threshold calibration is now local to the anchor and equally close islands fail closed. Local-real inspection resolves R6 to 9.940-10.870s and R10 to 57.580-59.610s; 223 repository tests pass, including loud-earlier-speech and ambiguous-island regressions.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-183",
+      "status": "resolved",
+      "summary": "Qwen Event Aligner still uses the generic 120-second timeout and has no timeout-triggered group split.",
+      "impact": "The user-initiated retry of EV-20260923-E65A reached Event Aligner after ASR, but its single 36-conversation group carried an estimated 789,893 input tokens and reserved up to 101,888 output tokens, then timed out three times at 120 seconds. All 36 alignment rows failed, 239 Case-provider projections became unavailable, and the retry never reached Pass 2.",
+      "source": "Read-only production SQLite, service log and executor inspection on 2026-09-22 Pacific time. The failed EAG0001 group contains 36 conversations with estimated_input_tokens=789893, reserved_output_tokens=101888 and attempts=3/error=timeout. The earlier 22-conversation EAG0001 completed once with 548,511 estimated input tokens and 50,496 reserved output tokens. The packer admits the larger request because Qwen3.8 is modeled with a one-million-token context and optimizes for the fewest groups; it also reserves the payload twice because the rendered system prompt and user message both contain it. _llm_request_timeout grants Qwen 180 seconds only for pass_1 and 300 seconds only for pass_2, leaving event_alignment at 120 seconds despite disable_thinking=true. PD-068 then externally proved the proposed direction: the same 36-conversation work planned into seven <=64K groups, and the fullest 3-conversation/10-event group completed in 22.947 seconds with valid mappings, zero reasoning tokens and USD 0.021239 estimated cost.",
+      "next_action": "Stop optimizing Event Aligner only for the fewest context-valid groups: remove avoidable payload duplication, add a latency-aware per-group input/output ceiling, deterministically split large groups, and give the remaining bounded Qwen request an explicit timeout before retrying E65A.",
+      "resolution": "PD-069 applies the shared 64K final-input/32K output envelope to the exact deduplicated wire request, disables Thinking, uses 180 seconds, pre-splits an oversized single conversation by stable target-event subsets, supersedes and bisects timeout/schema-failed multi-conversation parents, bounds singleton leaves to one extra attempt, and merges durable subset results by event ID. Deterministic packing, timeout-policy and restart-safe checkpoint tests pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-184",
+      "status": "resolved",
+      "summary": "Mass Event Aligner fallout writes Case-provider failures concurrently and can lock SQLite, masking the real provider failure.",
+      "impact": "After the Event Aligner timeout, 239 projection failures were scheduled through one unbounded asyncio.gather. Independent SQLite connections contended and raised database is locked, so E65A ended with a generic OperationalError instead of the actionable alignment-timeout cause.",
+      "source": "Read-only production service log at 2026-09-23T05:48Z traces sqlite3.OperationalError: database is locked from _run_asr.project -> checkpoint_result while persisting evaluation_case_asr_runs.",
+      "next_action": "Serialize or batch projection checkpoint writes and set a bounded busy timeout/transaction strategy; preserve the upstream Event Aligner failure as the batch-level cause.",
+      "resolution": "Case/provider projections are now assembled without database writes and committed through checkpoint_case_asr_results_bulk in one BEGIN IMMEDIATE transaction with PRAGMA busy_timeout=5000. A 240-row regression passes without lock amplification.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-185",
+      "status": "resolved",
+      "summary": "A live-request elapsed timer can flash 00:00 after each polling render before the next one-second timer tick.",
+      "impact": "The displayed duration appears to reset for one frame even though the underlying started_at is stable, making a healthy wait look discontinuous.",
+      "source": "Frontend runtime inspection: activeOperationRows recreates every time element with literal 00:00, while refreshVisibleElapsedTimes runs only on the independent one-second interval.",
+      "next_action": "Render the elapsed value directly from started_at and refresh it immediately after every polling render, retaining the one-second interval for subsequent ticks.",
+      "resolution": "activeOperationRows now computes the initial MM:SS value from started_at before inserting the row; the one-second updater continues from the same durable timestamp. Desktop and narrow Chromium verify a 65-second request renders as 01:05+ without a 00:00 frame.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-186",
+      "status": "resolved",
+      "summary": "Each Multi-ASR live row shows the global cross-provider ordinal and total instead of that provider's local progress.",
+      "impact": "When 36 conversations are sent to each of three providers, Soniox, Speechmatics and ElevenLabs rows each display a denominator of 108 even though each provider owns 36 jobs; only the stage-level aggregate should use 108.",
+      "source": "Executor inspection: context_job_ordinals enumerates the provider-by-conversation Cartesian product and passes total=context_jobs to every provider operation.",
+      "next_action": "Persist provider-local ordinal/total for each active row while keeping the stage summary as the aggregate across providers.",
+      "resolution": "Full-call ASR operations now enumerate each provider's conversations from 1..N and pass total=N, while execution_status.evaluation_asr continues to aggregate all provider jobs. The six-stage browser regression verifies three providers each display 36 tasks.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-187",
+      "status": "resolved",
+      "summary": "Event Aligner Qwen requests are rendered inside the Multi-ASR stage instead of a distinct post-ASR alignment stage.",
+      "impact": "Operators reasonably interpret waiting qwen under Multi-ASR as an unexpected transcription request. Event Aligner is actually an LLM prerequisite between full-call ASR and Pass 2, but the top-level batch stage remains evaluation_asr and the five-card UI has no alignment card.",
+      "source": "Production screenshot and executor/UI inspection: _run_asr invokes _run_event_alignment while the batch stage is evaluation_asr; the active operation is tagged event_alignment but active rows are injected into the current top-level card.",
+      "next_action": "Expose Event Alignment as an explicit stage between Multi-ASR and Pass 2, or define it as a clearly named substage within the fourth card after product confirmation.",
+      "resolution": "PD-067/PD-069 add event_alignment as the fourth durable stage and render six cards. Qwen Align operations appear only under Event Alignment; Multi-ASR contains provider work only. Desktop and narrow Chromium regressions pass without horizontal overflow.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
@@ -1855,9 +1914,25 @@
     },
     {
       "id": "UV-032",
-      "status": "open",
+      "status": "resolved",
       "summary": "The post-deploy exact production readback of EV-20260923-E65A has not been completed.",
       "reason": "The production website session expired after deployment and the protected Evaluation bootstrap returned HTTP 401. Static workflow/runtime tracing proves the release does not auto-dispatch partially_failed batches, and no agent action resumed or retried E65A, but its historical updated_at=2026-09-23T02:26:50+00:00, eight failed groups and thirty failed Cases were not independently re-read after deployment.",
+      "resolution": "A read-only production SQLite and service-log inspection after the user-initiated retry confirmed the exact E65A state, checkpoint counts, timestamps and terminal stack trace. The new findings are tracked as KI-183 through KI-187.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-033",
+      "status": "resolved",
+      "summary": "No corrected Event Aligner retry has been executed after diagnosing E65A's 120-second timeout and SQLite lock.",
+      "reason": "This turn was intentionally read-only: no code was changed, no provider request was sent and no batch was retried. The proposed timeout/split, bounded persistence, timer, provider-local progress and stage-attribution fixes remain unimplemented and unverified.",
+      "resolution": "PD-068 executed one production-derived, deduplicated <=64K Event Aligner group against the frozen qwen3.8-max recipient. It completed in 22.947 seconds with zero reasoning tokens and validated all 3 conversations/10 target events for USD 0.021239. The integrated split/persistence/whole-batch path remains separately unverified until implementation.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-034",
+      "status": "open",
+      "summary": "The integrated PD-069 code path has not been used to retry production batch EV-20260923-E65A.",
+      "reason": "PD-069 intentionally uses deterministic local tests and the already-authorized PD-068 bounded external probe. Deployment authorization explicitly forbids automatically retrying or mutating E65A and forbids new provider calls. Production behavior must therefore be confirmed by a later user-initiated retry or new batch after deployment.",
       "disclosed_to_user": true
     },
     {

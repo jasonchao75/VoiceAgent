@@ -68,3 +68,9 @@ def test_running_batches_show_live_request_elapsed_time_without_verbose_history(
     assert 'role="status"' in PAGE
     assert 'aria-live="polite"' in PAGE
     assert 'id="finish-dialog-warning"' in PAGE
+    assert ">00:00</time>" not in RUNTIME
+    assert 'stage === "event_alignment"' in RUNTIME
+    assert "event_alignment: 3" in RUNTIME
+    assert "<b>4 Event Alignment</b>" in PAGE
+    assert "#page-run .steps .step:nth-child(5) span" in RUNTIME
+    assert "<b>6 人工复核</b>" in PAGE

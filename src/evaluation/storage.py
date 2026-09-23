@@ -2303,6 +2303,40 @@ class EvaluationStore:
             )
             await database.commit()
 
+    async def checkpoint_case_asr_results_bulk(self, rows: list[dict[str, Any]]) -> None:
+        """Persist projected Case/provider evidence in one lock-bounded transaction."""
+        if not rows:
+            return
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute("PRAGMA busy_timeout = 5000")
+            await database.execute("BEGIN IMMEDIATE")
+            await database.executemany(
+                """INSERT INTO evaluation_case_asr_runs
+                       (batch_id,provider,conversation_id,event_id,status,attempts,
+                        result_json,error,remote_job_id,updated_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)
+                   ON CONFLICT(batch_id,provider,conversation_id,event_id) DO UPDATE SET
+                       status=excluded.status,attempts=excluded.attempts,
+                       result_json=excluded.result_json,error=excluded.error,
+                       remote_job_id=excluded.remote_job_id,updated_at=excluded.updated_at""",
+                [
+                    (
+                        row["batch_id"],
+                        row["provider"],
+                        row["conversation_id"],
+                        row["event_id"],
+                        row["status"],
+                        int(row.get("attempts") or 0),
+                        _json(row.get("result")) if row.get("result") is not None else None,
+                        row.get("error"),
+                        row.get("remote_job_id"),
+                        _utcnow(),
+                    )
+                    for row in rows
+                ],
+            )
+            await database.commit()
+
     async def checkpoint_rows(self, table: str, batch_id: str) -> list[dict[str, Any]]:
         """Read persisted execution checkpoints for one batch."""
         if table not in {
@@ -2337,6 +2371,7 @@ class EvaluationStore:
         status: str,
         attempts: int,
         conversation_results: dict[str, dict[str, Any]] | None = None,
+        materialized_conversation_ids: list[str] | None = None,
         error: str | None = None,
     ) -> None:
         """Persist one Event Aligner group and all conversation mappings atomically."""
@@ -2363,34 +2398,33 @@ class EvaluationStore:
                     reserved_output_tokens,
                     status,
                     attempts,
-                    _json({"result_count": len(conversation_results or {})})
-                    if conversation_results is not None
-                    else None,
+                    _json(conversation_results) if conversation_results is not None else None,
                     error,
                     _utcnow(),
                 ),
             )
-            if status in {"completed", "failed"}:
-                for conversation_id in conversation_ids:
-                    result = (conversation_results or {}).get(conversation_id)
-                    await database.execute(
-                        """INSERT INTO evaluation_event_alignment_runs
-                               (batch_id,conversation_id,status,attempts,result_json,error,updated_at)
-                           VALUES(?,?,?,?,?,?,?)
-                           ON CONFLICT(batch_id,conversation_id) DO UPDATE SET
-                               status=excluded.status,attempts=excluded.attempts,
-                               result_json=excluded.result_json,error=excluded.error,
-                               updated_at=excluded.updated_at""",
-                        (
-                            batch_id,
-                            conversation_id,
-                            status,
-                            attempts,
-                            _json(result) if result is not None else None,
-                            error,
-                            _utcnow(),
-                        ),
-                    )
+            for conversation_id in materialized_conversation_ids or []:
+                result = (conversation_results or {}).get(conversation_id)
+                if result is None:
+                    raise ValueError("Materialized Event Aligner result is unavailable")
+                await database.execute(
+                    """INSERT INTO evaluation_event_alignment_runs
+                           (batch_id,conversation_id,status,attempts,result_json,error,updated_at)
+                       VALUES(?,?,?,?,?,?,?)
+                       ON CONFLICT(batch_id,conversation_id) DO UPDATE SET
+                           status=excluded.status,attempts=excluded.attempts,
+                           result_json=excluded.result_json,error=excluded.error,
+                           updated_at=excluded.updated_at""",
+                    (
+                        batch_id,
+                        conversation_id,
+                        "completed",
+                        attempts,
+                        _json(result),
+                        None,
+                        _utcnow(),
+                    ),
+                )
             await database.commit()
 
     async def event_alignment_group_rows(self, batch_id: str) -> list[dict[str, Any]]:
@@ -2633,6 +2667,7 @@ class EvaluationStore:
             "evaluation_pass1_runs": "pass_1",
             "evaluation_asr_runs": "evaluation_asr",
             "evaluation_case_asr_runs": "evaluation_asr",
+            "evaluation_event_alignment_runs": "event_alignment",
             "evaluation_pass2_runs": "pass_2",
         }
         if allowed.get(table) != stage:

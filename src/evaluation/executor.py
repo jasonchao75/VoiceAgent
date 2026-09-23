@@ -31,7 +31,6 @@ from src.evaluation.pass2_packing import (
     evaluation_token_policy,
     final_request_input_tokens,
     input_limit,
-    model_token_policy,
     pack_event_alignment_units,
     pack_pass_one_units,
     pack_units,
@@ -132,7 +131,9 @@ def _llm_request_timeout(provider: str, stage: str) -> float:
     """Return the frozen request timeout for one provider and evaluation stage."""
     if provider != "qwen":
         return 120.0
-    return 180.0 if stage == "pass_1" else 300.0 if stage == "pass_2" else 120.0
+    if stage in {"pass_1", "event_alignment"}:
+        return 180.0
+    return 300.0 if stage == "pass_2" else 120.0
 
 
 def _qwen_reasoning_effort(*, thinking: bool, stage: str) -> str | None:
@@ -362,6 +363,15 @@ def _structured_error_retryable(error: str | None) -> bool:
         "preflight_input_limit",
         "preflight_output_limit",
     }
+
+
+def _persisted_asr_error_retryable(error: str | None) -> bool:
+    """Honor the provider-safe retryability persisted with an ASR failure."""
+    try:
+        payload = json.loads(str(error or ""))
+    except json.JSONDecodeError:
+        return True
+    return not isinstance(payload, dict) or bool(payload.get("retryable", True))
 
 
 class EvaluationRunner:
@@ -748,6 +758,9 @@ class EvaluationRunner:
         }
         unavailable_case_keys = sorted(candidate_keys - evidence_case_keys)
         unavailable_conversation_ids = sorted({key[0] for key in unavailable_case_keys})
+        alignment_rows = await self.store.checkpoint_rows(
+            "evaluation_event_alignment_runs", batch_id
+        )
         eligible_candidates = [
             candidate
             for candidate in candidates
@@ -756,7 +769,13 @@ class EvaluationRunner:
         await self.store.set_batch_state(
             batch_id,
             status="partially_failed" if unavailable_conversation_ids else "running",
-            stage="evaluation_asr" if not eligible_candidates else "pass_2",
+            stage=(
+                "pass_2"
+                if eligible_candidates
+                else "event_alignment"
+                if alignment_rows
+                else "evaluation_asr"
+            ),
             progress=75,
             snapshot_updates={
                 "asr_unavailable_conversations": unavailable_conversation_ids,
@@ -2147,7 +2166,13 @@ class EvaluationRunner:
             )
         model_id = str(batch["snapshot"]["pass_1_model"])
         provider = await self._model_provider(model_id)
-        policy = model_token_policy(provider, model_id.split("::", 1)[-1])
+        policy = evaluation_token_policy(provider, model_id.split("::", 1)[-1])
+        completed_alignment_rows = {
+            str(row["conversation_id"])
+            for row in await self.store.checkpoint_rows("evaluation_event_alignment_runs", batch_id)
+            if row.get("status") == "completed"
+        }
+        units = [unit for unit in units if unit.conversation_id not in completed_alignment_rows]
         groups = pack_event_alignment_units(
             batch_id=batch_id,
             units=units,
@@ -2177,12 +2202,61 @@ class EvaluationRunner:
                 attempts=0,
             )
 
-        semaphore = asyncio.Semaphore(3)
+        await self.store.set_batch_state(
+            batch_id,
+            status="running",
+            stage="event_alignment",
+            progress=55,
+        )
+        await self.store.refresh_execution_progress(
+            batch_id,
+            table="evaluation_event_alignment_runs",
+            stage="event_alignment",
+            total=len(targets_by_conversation),
+            progress_start=55,
+            progress_end=65,
+        )
+        # Recursive children are awaited by their parent. Keep enough permits for
+        # every conversation leaf so a full parent wave cannot deadlock its children.
+        semaphore = asyncio.Semaphore(max(3, len(targets_by_conversation) * 2))
         group_ordinals = {group.group_id: index for index, group in enumerate(groups, start=1)}
 
+        def child_groups(group: Any) -> list[Any]:
+            ordered_units = sorted(group.units, key=lambda unit: unit.conversation_id)
+            if len(ordered_units) <= 1:
+                return []
+            midpoint = len(ordered_units) // 2
+            children: list[Any] = []
+            for members in (ordered_units[:midpoint], ordered_units[midpoint:]):
+                children.extend(
+                    pack_event_alignment_units(
+                        batch_id=batch_id,
+                        units=members,
+                        system_prompt=EVENT_ALIGNER_SYSTEM_PROMPT,
+                        policy=policy,
+                    )
+                )
+            return children
+
+        def can_split(exc: Exception) -> bool:
+            status_code = getattr(exc, "status_code", None)
+            return status_code not in {401, 403, 429} and isinstance(
+                exc,
+                (
+                    TimeoutError,
+                    asyncio.TimeoutError,
+                    httpx.TimeoutException,
+                    ValueError,
+                ),
+            )
+
         async def align_group(group: Any) -> None:
+            group_ordinals.setdefault(group.group_id, len(group_ordinals) + 1)
             prior = prior_groups.get(group.group_id)
             if prior is not None and prior.get("status") == "completed":
+                return
+            if prior is not None and prior.get("status") == "superseded":
+                await asyncio.gather(*(align_group(child) for child in child_groups(group)))
                 return
             prior_attempts = int(prior.get("attempts") or 0) if prior is not None else 0
             payload = {
@@ -2190,7 +2264,8 @@ class EvaluationRunner:
                 "conversations": [unit.payload for unit in group.units],
             }
             async with semaphore:
-                for local_attempt in range(1, 4):
+                maximum_attempts = 2 if len(group.units) == 1 else 1
+                for local_attempt in range(1, maximum_attempts - prior_attempts + 1):
                     attempt = prior_attempts + local_attempt
                     try:
                         result = await self._with_active_operation(
@@ -2204,6 +2279,9 @@ class EvaluationRunner:
                                 item_key=group.group_id,
                                 attempt=attempt,
                                 disable_thinking=True,
+                                system_only_payload=True,
+                                user_instruction=FIXED_EVALUATION_USER_MESSAGE,
+                                max_input_tokens=input_limit(policy),
                             ),
                             batch_id=batch_id,
                             operation_id=f"event_alignment:{group.group_id}:{attempt}",
@@ -2213,8 +2291,12 @@ class EvaluationRunner:
                             total=len(group_ordinals),
                         )
                         expected = {
-                            conversation_id: unit_payloads[conversation_id]
-                            for conversation_id in group.conversation_ids
+                            unit.conversation_id: {
+                                **unit.payload,
+                                "turn_lookup": unit_payloads[unit.conversation_id]["turn_lookup"],
+                                "providers": unit_payloads[unit.conversation_id]["providers"],
+                            }
+                            for unit in group.units
                         }
                         indexed = self._validate_event_alignment_group(
                             result,
@@ -2231,12 +2313,29 @@ class EvaluationRunner:
                             status="completed",
                             attempts=attempt,
                             conversation_results=indexed,
+                            materialized_conversation_ids=[
+                                unit.conversation_id
+                                for unit in group.units
+                                if len(unit.payload.get("target_events") or [])
+                                == len(targets_by_conversation[unit.conversation_id])
+                            ],
+                        )
+                        await self.store.refresh_execution_progress(
+                            batch_id,
+                            table="evaluation_event_alignment_runs",
+                            stage="event_alignment",
+                            total=len(targets_by_conversation),
+                            progress_start=55,
+                            progress_end=65,
                         )
                         return
                     except EvaluationBudgetReached:
                         return
                     except Exception as exc:
-                        terminal = local_attempt == 3
+                        children = child_groups(group) if can_split(exc) else []
+                        terminal = (
+                            not children and local_attempt == maximum_attempts - prior_attempts
+                        )
                         await self.store.checkpoint_event_alignment_group(
                             batch_id=batch_id,
                             group_id=group.group_id,
@@ -2244,14 +2343,100 @@ class EvaluationRunner:
                             conversation_ids=list(group.conversation_ids),
                             estimated_input_tokens=group.estimated_input_tokens,
                             reserved_output_tokens=group.reserved_output_tokens,
-                            status="failed" if terminal else "pending",
+                            status=(
+                                "superseded" if children else "failed" if terminal else "pending"
+                            ),
                             attempts=attempt,
                             error=_safe_structured_error(exc),
                         )
+                        if children:
+                            for child in children:
+                                child_prior = prior_groups.get(child.group_id)
+                                if child_prior is None:
+                                    await self.store.checkpoint_event_alignment_group(
+                                        batch_id=batch_id,
+                                        group_id=child.group_id,
+                                        idempotency_key=child.idempotency_key,
+                                        conversation_ids=list(child.conversation_ids),
+                                        estimated_input_tokens=child.estimated_input_tokens,
+                                        reserved_output_tokens=child.reserved_output_tokens,
+                                        status="pending",
+                                        attempts=0,
+                                    )
+                            await asyncio.gather(*(align_group(child) for child in children))
+                            return
                         if not terminal:
                             await asyncio.sleep(float(local_attempt))
 
         await asyncio.gather(*(align_group(group) for group in groups))
+        completed_groups = await self.store.event_alignment_group_rows(batch_id)
+        merged_results: dict[str, dict[str, Any]] = {}
+        merged_attempts: dict[str, int] = {}
+        for row in completed_groups:
+            group_result = row.get("result")
+            if row.get("status") != "completed" or not isinstance(group_result, dict):
+                continue
+            for conversation_id, result in group_result.items():
+                if not isinstance(result, dict):
+                    continue
+                merged = merged_results.setdefault(
+                    str(conversation_id),
+                    {
+                        "conversation_id": str(conversation_id),
+                        "speaker_roles": result.get("speaker_roles") or [],
+                        "events": [],
+                    },
+                )
+                merged["events"].extend(result.get("events") or [])
+                merged_attempts[str(conversation_id)] = max(
+                    merged_attempts.get(str(conversation_id), 0),
+                    int(row.get("attempts") or 0),
+                )
+        for conversation_id, target_ids in targets_by_conversation.items():
+            conversation_result = merged_results.get(conversation_id)
+            indexed_events = (
+                {
+                    str(event.get("event_id")): event
+                    for event in conversation_result.get("events") or []
+                    if isinstance(event, dict)
+                }
+                if conversation_result is not None
+                else {}
+            )
+            if set(indexed_events) == set(target_ids) and conversation_result is not None:
+                conversation_result["events"] = [
+                    indexed_events[event_id] for event_id in target_ids
+                ]
+                await self.store.checkpoint_result(
+                    "evaluation_event_alignment_runs",
+                    (batch_id, conversation_id),
+                    status="completed",
+                    attempts=merged_attempts.get(conversation_id, 1),
+                    result=conversation_result,
+                )
+                continue
+            relevant = [
+                row
+                for row in completed_groups
+                if conversation_id in row.get("conversation_ids", [])
+                and row.get("status") != "superseded"
+            ]
+            if relevant and all(row.get("status") in {"completed", "failed"} for row in relevant):
+                failure = next(
+                    (
+                        str(row.get("error") or "")
+                        for row in relevant
+                        if row.get("status") == "failed"
+                    ),
+                    "schema_contract: Event Aligner omitted one or more target events",
+                )
+                await self.store.checkpoint_result(
+                    "evaluation_event_alignment_runs",
+                    (batch_id, conversation_id),
+                    status="failed",
+                    attempts=max(int(row.get("attempts") or 0) for row in relevant),
+                    error=failure,
+                )
         rows = await self.store.checkpoint_rows("evaluation_event_alignment_runs", batch_id)
         mappings: dict[tuple[str, str], dict[str, Any]] = {}
         for row in rows:
@@ -2285,14 +2470,8 @@ class EvaluationRunner:
         }
         context_job_ordinals = {
             (provider, conversation_id): index
-            for index, (provider, conversation_id) in enumerate(
-                (
-                    (provider, conversation_id)
-                    for provider in batch["providers"]
-                    for conversation_id in conversation_ids
-                ),
-                start=1,
-            )
+            for provider in batch["providers"]
+            for index, conversation_id in enumerate(conversation_ids, start=1)
         }
         context_jobs = len(batch["providers"]) * len(conversation_ids)
         await self.store.refresh_execution_progress(
@@ -2308,6 +2487,10 @@ class EvaluationRunner:
             prior = existing_context.get((provider, conversation_id), {})
             if prior.get("status") == "completed" and _has_usable_diarized_timeline(
                 prior.get("result")
+            ):
+                return
+            if prior.get("status") == "failed" and not _persisted_asr_error_retryable(
+                prior.get("error")
             ):
                 return
             conversation = await self.store.get_conversation(conversation_id)
@@ -2361,7 +2544,7 @@ class EvaluationRunner:
                             stage="evaluation_asr",
                             provider=provider,
                             ordinal=context_job_ordinals[(provider, conversation_id)],
-                            total=context_jobs,
+                            total=len(conversation_ids),
                         )
                         result["scope"] = "full_call_context"
                         result["diarization_contract"] = "speaker_timestamps_v1"
@@ -2469,18 +2652,21 @@ class EvaluationRunner:
             for conversation_id in conversation_ids
         }
 
-        async def project(provider: str, conversation_id: str, event_id: str) -> None:
+        async def project(
+            provider: str, conversation_id: str, event_id: str
+        ) -> dict[str, Any] | None:
             """Persist one mapped full-call turn without another provider dispatch."""
             clip_error = clip_errors.get((conversation_id, event_id))
             if clip_error is not None:
-                await self.store.checkpoint_result(
-                    "evaluation_case_asr_runs",
-                    (batch_id, provider, conversation_id, event_id),
-                    status="failed",
-                    attempts=0,
-                    error=_asr_error(provider, clip_error),
-                )
-                return
+                return {
+                    "batch_id": batch_id,
+                    "provider": provider,
+                    "conversation_id": conversation_id,
+                    "event_id": event_id,
+                    "status": "failed",
+                    "attempts": 0,
+                    "error": _asr_error(provider, clip_error),
+                }
             _path, clip_trace = prepared_clips[(conversation_id, event_id)]
             event_mapping = event_mappings[(conversation_id, event_id)]
             provider_mapping = next(
@@ -2492,31 +2678,33 @@ class EvaluationRunner:
                 None,
             )
             if not provider_mapping or provider_mapping.get("status") != "mapped":
-                await self.store.checkpoint_result(
-                    "evaluation_case_asr_runs",
-                    (batch_id, provider, conversation_id, event_id),
-                    status="failed",
-                    attempts=0,
-                    error=_asr_error(
+                return {
+                    "batch_id": batch_id,
+                    "provider": provider,
+                    "conversation_id": conversation_id,
+                    "event_id": event_id,
+                    "status": "failed",
+                    "attempts": 0,
+                    "error": _asr_error(
                         provider,
                         ValueError("Event Aligner did not map this provider to the target event"),
                     ),
-                )
-                return
+                }
             turn_id = str(provider_mapping.get("turn_id") or "")
             turn = turn_lookups.get(conversation_id, {}).get(turn_id)
             if turn is None or str(turn.get("provider") or "") != provider:
-                await self.store.checkpoint_result(
-                    "evaluation_case_asr_runs",
-                    (batch_id, provider, conversation_id, event_id),
-                    status="failed",
-                    attempts=0,
-                    error=_asr_error(
+                return {
+                    "batch_id": batch_id,
+                    "provider": provider,
+                    "conversation_id": conversation_id,
+                    "event_id": event_id,
+                    "status": "failed",
+                    "attempts": 0,
+                    "error": _asr_error(
                         provider,
                         ValueError("Mapped full-call provider turn is unavailable"),
                     ),
-                )
-                return
+                }
             prior = existing.get((provider, conversation_id, event_id), {})
             prior_result = prior.get("result") or {}
             if (
@@ -2525,7 +2713,7 @@ class EvaluationRunner:
                 and str(prior_result.get("source_turn_id") or "") == turn_id
                 and prior_result.get("source_clip") == clip_trace
             ):
-                return
+                return None
             result = {
                 "event_id": event_id,
                 "scope": "full_call_turn_projection",
@@ -2543,14 +2731,16 @@ class EvaluationRunner:
                 ],
                 "source_clip": clip_trace,
             }
-            await self.store.checkpoint_result(
-                "evaluation_case_asr_runs",
-                (batch_id, provider, conversation_id, event_id),
-                status="completed",
-                attempts=0,
-                result=result,
-                remote_job_id=None,
-            )
+            return {
+                "batch_id": batch_id,
+                "provider": provider,
+                "conversation_id": conversation_id,
+                "event_id": event_id,
+                "status": "completed",
+                "attempts": 0,
+                "result": result,
+                "remote_job_id": None,
+            }
 
         await self.store.record_telemetry(
             batch_id=batch_id,
@@ -2559,12 +2749,15 @@ class EvaluationRunner:
             outcome="observed",
             queue_depth=context_jobs,
         )
-        await asyncio.gather(
+        projection_rows = await asyncio.gather(
             *(
                 project(provider, conversation_id, event_id)
                 for provider in batch["providers"]
                 for conversation_id, event_id in case_keys
             )
+        )
+        await self.store.checkpoint_case_asr_results_bulk(
+            [row for row in projection_rows if row is not None]
         )
         await self.store.refresh_execution_progress(
             batch_id,

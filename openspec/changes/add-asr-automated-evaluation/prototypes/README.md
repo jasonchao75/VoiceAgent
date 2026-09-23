@@ -3,10 +3,10 @@
 ## 最新版本
 
 - 原型：`index.html`
-- 版本：V1.18（2026-09-22，增加逐请求等待计时与非运行批次精简摘要）
+- 版本：V1.19（2026-09-22，六步流程与独立 Event Alignment）
 - 状态：Gate 1 已确认并冻结，作为唯一当前 UI baseline
-- 基线 SHA-256：`e88e8be8f79572d4118399e3030d227a181f504799a0e06e3421d1b5bc8922c0`
-- 确认人/日期：Product owner / 2026-09-22（PD-066；V1.17 历史基线见 PD-026）
+- 基线 SHA-256：`17829744d355bc86da3625cdf5fc24b94a6a44db5e67551046e046abbd89649c`
+- 确认人/日期：Product owner / 2026-09-22（PD-067、PD-069；V1.18 历史基线见 PD-066）
 - 需求基线：同目录 `../PRD.html` V1.17 与本 Change Delta Specs
 - 数据：业务结果仍为固定演示数据；file 原型不调用真实 ASR、LLM 或音频接口，正式页面的“实测模型”复用现有 LLM 诊断接口
 - 历史原型：无；本目录只保留当前最新版
@@ -50,6 +50,7 @@
 35. 已有初步报告的暂停/部分失败批次在现有操作区增加“使用现有结果结束”，复用既有危险操作确认弹窗模式；文案明确保留成功结果、排除未完成项、生成不可变部分报告且不调用外部资源，不新增页面结构或修改冻结视觉基线（PD-060）。
 36. 运行中的进度区域只展示当前正在等待的外部请求；每个并发请求独占一行，显示阶段/厂商、序号/总数和每秒变化的已等待时间。百分比和完成数仍由服务端检查点决定，计时不推动进度；心跳过期显示“状态同步中断”（PD-065）。
 37. 暂停或部分失败的批次列表只显示 `N failed · M succeeded`；第一轮按 conversation、ASR 按完整通话 provider job、第二轮按 Case 计数，请求组与尝试明细只留在任务详情（PD-065）。
+38. 批次详情采用六步：数据校验、第一轮分析、多 ASR 转写、Event Alignment、第二轮分析、人工复核。Align 的 Qwen 等待只显示在第 4 步；计时首帧直接显示当前请求实际耗时，多 ASR 活动行按每家 provider 自己的任务总数展示（PD-067、PD-069）。
 
 ## 需求到页面区域映射
 
@@ -57,7 +58,7 @@
 |---|---|---|
 | Version-frozen evaluation batch | 评测批次 → 新建评测；`#new-run-dialog`；失败/停止批次删除确认 | 已确认并冻结 |
 | Per-conversation package contract | 新建评测的数据上传与校验区域 | 已确认并改为逐通 Excel fixture |
-| First-pass / conversation ASR / second-pass | `#page-run` 五阶段、资源和候选结果 | 已确认 |
+| First-pass / conversation ASR / Event Alignment / second-pass | `#page-run` 六阶段、资源和候选结果 | 已确认（V1.19 / PD-067、PD-069） |
 | Explicit manual Good or Bad review | `#page-review` 对照、候选与 Good/Bad/听不清 | 已确认 |
 | Evaluation metrics / reports | 批次入口 → `#page-report` | 已确认 |
 | Benchmark ingestion, single deletion and download | `#page-library`、`#sample-dialog`、删除确认弹窗 | 已确认；删除复用冻结按钮与弹窗模式 |

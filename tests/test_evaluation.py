@@ -59,7 +59,10 @@ from src.evaluation.models import (
     PromptTemplateWrite,
 )
 from src.evaluation.pass2_packing import (
+    EventAlignmentGroup,
+    EventAlignmentUnit,
     ModelTokenPolicy,
+    build_event_alignment_unit,
     build_pass_one_unit,
     estimate_tokens,
     pass_one_output_reserve,
@@ -88,11 +91,37 @@ def test_qwen_thinking_uses_prompt_json_contract_without_json_mode() -> None:
 def test_qwen_timeouts_and_reasoning_effort_follow_the_frozen_stage_policy() -> None:
     """Pass 1 is bounded without thinking and Pass 2 uses medium reasoning."""
     assert _llm_request_timeout("qwen", "pass_1") == 180
+    assert _llm_request_timeout("qwen", "event_alignment") == 180
     assert _llm_request_timeout("qwen", "pass_2") == 300
     assert _llm_request_timeout("gemini", "pass_2") == 120
     assert _qwen_reasoning_effort(thinking=False, stage="pass_1") is None
     assert _qwen_reasoning_effort(thinking=True, stage="pass_2") == "medium"
     assert _qwen_reasoning_effort(thinking=True, stage="other") == "high"
+
+
+@pytest.mark.asyncio
+async def test_case_asr_projection_bulk_checkpoint_uses_one_transaction(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Large projection fan-out must persist without competing SQLite writers."""
+    rows = [
+        {
+            "batch_id": "EV-BULK",
+            "provider": f"provider-{index % 3}",
+            "conversation_id": f"conversation-{index // 6}",
+            "event_id": f"R{index}",
+            "status": "completed",
+            "attempts": 0,
+            "result": {"text": f"turn-{index}"},
+        }
+        for index in range(240)
+    ]
+
+    await evaluation_store.checkpoint_case_asr_results_bulk(rows)
+
+    persisted = await evaluation_store.checkpoint_rows("evaluation_case_asr_runs", "EV-BULK")
+    assert len(persisted) == 240
+    assert {row["status"] for row in persisted} == {"completed"}
 
 
 def test_structured_retry_correction_is_content_free_and_actionable() -> None:
@@ -4555,6 +4584,273 @@ async def test_pass2_schema_failure_splits_then_exhausts_single_case_leaves(
     results = await evaluation_store.checkpoint_rows("evaluation_pass2_runs", batch["id"])
     assert len(results) == 2
     assert all(row["status"] == "failed" for row in results)
+
+
+@pytest.mark.parametrize("failure_mode", ["timeout", "schema", "timeout_leaf_failure"])
+@pytest.mark.asyncio
+async def test_event_alignment_split_is_restart_safe(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+    failure_mode: str,
+) -> None:
+    """A failed parent splits once, persists leaves, and is fully reused after restart."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name=f"Restart-safe Event Alignment {failure_mode}",
+            asr_providers=["soniox", "speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key=f"event-alignment-restart-{failure_mode}",
+        )
+    )
+    source = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert source is not None
+    target = next(item for item in source["events"] if item["speaker"] == "customer")
+    event_id = str(target["event_id"])
+    conversations = {
+        conversation_id: {**json.loads(json.dumps(source)), "conversation_id": conversation_id}
+        for conversation_id in ("C-ALIGN-1", "C-ALIGN-2")
+    }
+    original_get_conversation = evaluation_store.get_conversation
+
+    async def get_conversation(conversation_id: str) -> dict[str, object] | None:
+        if conversation_id in conversations:
+            return conversations[conversation_id]
+        return await original_get_conversation(conversation_id)
+
+    contexts = {
+        conversation_id: [
+            {
+                "provider": provider,
+                "segments": [
+                    {
+                        "segment_id": f"{conversation_id}:{provider}:0",
+                        "start": 0.0,
+                        "end": 0.8,
+                        "speaker": "S1",
+                        "text": "robot prompt",
+                    },
+                    {
+                        "segment_id": f"{conversation_id}:{provider}:1",
+                        "start": 0.8,
+                        "end": 1.8,
+                        "speaker": "S2",
+                        "text": str(target["text"]),
+                    },
+                ],
+            }
+            for provider in ("soniox", "speechmatics")
+        ]
+        for conversation_id in conversations
+    }
+    calls: list[tuple[str, ...]] = []
+
+    async def provider(_model_id: str) -> str:
+        return "deepseek"
+
+    async def align_request(*args: object, **_kwargs: object) -> dict[str, object]:
+        payload = cast(dict[str, object], args[2])
+        request_group_id = str(payload["request_group_id"])
+        grouped = cast(list[dict[str, object]], payload["conversations"])
+        membership = tuple(str(item["conversation_id"]) for item in grouped)
+        calls.append(membership)
+        if len(grouped) > 1:
+            if failure_mode.startswith("timeout"):
+                raise TimeoutError("test-only timeout")
+            return {"request_group_id": "wrong-group", "results": []}
+        if failure_mode == "timeout_leaf_failure":
+            raise TimeoutError("test-only leaf timeout")
+        results = []
+        for item in grouped:
+            conversation_id = str(item["conversation_id"])
+            target_events = cast(list[dict[str, object]], item["target_events"])
+            results.append(
+                {
+                    "conversation_id": conversation_id,
+                    "speaker_roles": [
+                        {
+                            "provider": provider_name,
+                            "customer_speaker": "S2",
+                            "robot_speakers": ["S1"],
+                        }
+                        for provider_name in ("soniox", "speechmatics")
+                    ],
+                    "events": [
+                        {
+                            "event_id": str(event["event_id"]),
+                            "providers": [
+                                {
+                                    "provider": provider_name,
+                                    "status": "mapped",
+                                    "turn_id": (f"{conversation_id}:{provider_name}:turn:1"),
+                                }
+                                for provider_name in ("soniox", "speechmatics")
+                            ],
+                        }
+                        for event in target_events
+                    ],
+                }
+            )
+        return {"request_group_id": request_group_id, "results": results}
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(evaluation_store, "get_conversation", get_conversation)
+    monkeypatch.setattr(runner, "_model_provider", provider)
+    monkeypatch.setattr(runner, "_llm_json", align_request)
+    case_keys = [(conversation_id, event_id) for conversation_id in conversations]
+
+    first = await runner._run_event_alignment(batch["id"], batch, case_keys, contexts)
+    first_call_count = len(calls)
+    second = await runner._run_event_alignment(batch["id"], batch, case_keys, contexts)
+
+    groups = await evaluation_store.event_alignment_group_rows(batch["id"])
+    assert sum(row["status"] == "superseded" for row in groups) == 1
+    rows = await evaluation_store.checkpoint_rows("evaluation_event_alignment_runs", batch["id"])
+    assert len(calls[0]) == 2
+    assert all(len(membership) == 1 for membership in calls[1:])
+    if failure_mode == "timeout_leaf_failure":
+        assert first == second == {}
+        assert first_call_count == len(calls) == 5
+        assert sum(row["status"] == "failed" for row in groups) == 2
+        assert len(rows) == 2
+        assert all(row["status"] == "failed" for row in rows)
+    else:
+        assert set(first) == set(second) == set(case_keys)
+        assert first_call_count == len(calls) == 3
+        assert sum(row["status"] == "completed" for row in groups) == 2
+        assert len(rows) == 2
+        assert all(row["status"] == "completed" for row in rows)
+
+
+@pytest.mark.asyncio
+async def test_event_alignment_target_subsets_merge_once_and_resume_without_dispatch(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Preplanned target subsets merge into one durable conversation result."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Event Alignment target subsets",
+            asr_providers=["soniox", "speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="event-alignment-target-subsets",
+        )
+    )
+    conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert conversation is not None
+    targets = [item for item in conversation["events"] if item["speaker"] == "customer"][:2]
+    assert len(targets) == 2
+    event_ids = [str(item["event_id"]) for item in targets]
+    context = [
+        {
+            "provider": provider,
+            "segments": [
+                {"start": 0.0, "end": 0.5, "speaker": "S1", "text": "robot one"},
+                {"start": 0.5, "end": 1.2, "speaker": "S2", "text": str(targets[0]["text"])},
+                {"start": 1.2, "end": 1.7, "speaker": "S1", "text": "robot two"},
+                {"start": 1.7, "end": 2.4, "speaker": "S2", "text": str(targets[1]["text"])},
+            ],
+        }
+        for provider in ("soniox", "speechmatics")
+    ]
+    calls: list[str] = []
+
+    async def provider(_model_id: str) -> str:
+        return "deepseek"
+
+    def subset_packer(**kwargs: object) -> list[EventAlignmentGroup]:
+        units = cast(list[object], kwargs["units"])
+        if not units:
+            return []
+        source_unit = cast(EventAlignmentUnit, units[0])
+        source_payload = cast(dict[str, object], source_unit.payload)
+        groups = []
+        for index, target_event in enumerate(
+            cast(list[dict[str, object]], source_payload["target_events"])
+        ):
+            payload = {**source_payload, "target_events": [target_event]}
+            unit = build_event_alignment_unit(
+                _VALID_CONVERSATION_ID,
+                payload,
+                target_event_count=1,
+                provider_count=2,
+            )
+            digest = hashlib.sha256(
+                f"{batch['id']}:{target_event['event_id']}".encode()
+            ).hexdigest()
+            groups.append(
+                EventAlignmentGroup(
+                    group_id=f"EAG-subset-{index}",
+                    idempotency_key=digest,
+                    units=(unit,),
+                    estimated_input_tokens=unit.estimated_input_tokens,
+                    reserved_output_tokens=4096,
+                )
+            )
+        return groups
+
+    async def align_request(*args: object, **_kwargs: object) -> dict[str, object]:
+        payload = cast(dict[str, object], args[2])
+        request_group_id = str(payload["request_group_id"])
+        unit = cast(list[dict[str, object]], payload["conversations"])[0]
+        target_event = cast(list[dict[str, object]], unit["target_events"])[0]
+        event_id = str(target_event["event_id"])
+        calls.append(event_id)
+        turn_index = 1 if event_id == event_ids[0] else 3
+        return {
+            "request_group_id": request_group_id,
+            "results": [
+                {
+                    "conversation_id": _VALID_CONVERSATION_ID,
+                    "speaker_roles": [
+                        {
+                            "provider": provider_name,
+                            "customer_speaker": "S2",
+                            "robot_speakers": ["S1"],
+                        }
+                        for provider_name in ("soniox", "speechmatics")
+                    ],
+                    "events": [
+                        {
+                            "event_id": event_id,
+                            "providers": [
+                                {
+                                    "provider": provider_name,
+                                    "status": "mapped",
+                                    "turn_id": (
+                                        f"{_VALID_CONVERSATION_ID}:{provider_name}:turn:{turn_index}"
+                                    ),
+                                }
+                                for provider_name in ("soniox", "speechmatics")
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(runner, "_model_provider", provider)
+    monkeypatch.setattr(runner, "_llm_json", align_request)
+    monkeypatch.setattr("src.evaluation.executor.pack_event_alignment_units", subset_packer)
+    case_keys = [(_VALID_CONVERSATION_ID, event_id) for event_id in event_ids]
+    contexts = {_VALID_CONVERSATION_ID: context}
+
+    first = await runner._run_event_alignment(batch["id"], batch, case_keys, contexts)
+    first_calls = list(calls)
+    second = await runner._run_event_alignment(batch["id"], batch, case_keys, contexts)
+
+    assert sorted(calls) == sorted(first_calls) == sorted(event_ids)
+    assert set(first) == set(second) == set(case_keys)
+    persisted = await evaluation_store.checkpoint_rows(
+        "evaluation_event_alignment_runs", batch["id"]
+    )
+    assert len(persisted) == 1
+    merged_events = persisted[0]["result"]["events"]
+    assert [item["event_id"] for item in merged_events] == event_ids
 
 
 @pytest.mark.asyncio

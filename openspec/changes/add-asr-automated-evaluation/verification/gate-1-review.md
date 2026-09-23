@@ -1,16 +1,18 @@
 # Gate 1 One-page Review — ASR Automated Evaluation
 
-Status: approved; V1.18 Gate 1 amendment frozen
+Status: approved; V1.19 Gate 1 amendment frozen
 Date: 2026-09-22
-Approver: Product owner (confirmed in current Codex task under PD-066)
+Approver: Product owner (confirmed in current Codex task under PD-066, PD-067, and PD-069)
 Historical prototype checksum prefix: `1c5313…` (superseded and unrecoverable; not a frozen baseline). The unique frozen baseline is declared in `prototypes/README.md` under PD-019.
 
-## V1.18 confirmed amendment
+## V1.19 confirmed amendment
 
 - Running progress shows only current external requests, one row per concurrent request, with provider/stage, ordinal/total and a per-request elapsed timer that changes every second.
 - Durable backend checkpoints remain authoritative; the timer never advances the percentage, and a stale heartbeat becomes “status sync interrupted.”
 - Paused and partially failed batch rows show only `N failed · M succeeded`; request-group and attempt details remain in task detail/logs.
-- Frozen baseline SHA-256: `e88e8be8f79572d4118399e3030d227a181f504799a0e06e3421d1b5bc8922c0`.
+- The run page has six stages: Multi-ASR is stage 3, Event Alignment is an explicit stage 4, and Pass 2 is stage 5.
+- Event Alignment uses bounded requests, deterministic timeout/schema splitting, durable restart reuse, and one continuously advancing elapsed timer per active request.
+- Frozen baseline SHA-256: `17829744d355bc86da3625cdf5fc24b94a6a44db5e67551046e046abbd89649c`.
 
 ## Outcome
 
@@ -46,5 +48,5 @@ Historical prototype checksum prefix: `1c5313…` (superseded and unrecoverable;
 ## Gate decision
 
 - [x] 产品确认原 V1.17 行为契约和验收锚点
-- [x] 产品确认 V1.18 原型作为新的唯一 UI baseline
-- [x] V1.18 Gate 1 amendment 已通过，允许实现本次正式页面改动
+- [x] 产品确认 V1.19 原型作为新的唯一 UI baseline
+- [x] V1.19 Gate 1 amendment 已通过，允许实现本次正式页面改动

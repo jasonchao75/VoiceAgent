@@ -2,7 +2,7 @@
 
 ## 0. User Gate 1 — specification and baseline
 
-- [x] 0.1 Confirm `PRD.html V1.17` plus `prototypes/index.html V1.18` (SHA-256 `e88e8be8f79572d4118399e3030d227a181f504799a0e06e3421d1b5bc8922c0`) as the current requirement baseline under PD-066
+- [x] 0.1 Confirm `PRD.html V1.17` plus `prototypes/index.html V1.19` (SHA-256 `17829744d355bc86da3625cdf5fc24b94a6a44db5e67551046e046abbd89649c`) as the current requirement baseline under PD-067/PD-069
 - [x] 0.2 Confirm per-conversation Excel input, suspected-rate formula, unclear exclusion, Good:Bad 1:1 sampling and no confidence threshold
 - [x] 0.3 Remove obsolete PRD artifacts and retain one latest PRD and one latest prototype
 - [x] 0.4 Draft proposal, three capability Delta Specs, design, tasks and UI verification materials
@@ -216,7 +216,13 @@
 - [x] 12.76 Persist and expose safe active-operation stage/provider/ordinal/total/started-at/heartbeat fields; classify stale heartbeats separately from healthy waiting (KI-155)
 - [x] 12.77 Render one compact live row per active request with a local one-second elapsed timer, durable backend progress, accessible state-change announcements, and compact failed/succeeded summaries for paused/partial batches (PD-065)
 - [x] 12.78 Add backend/frontend regressions for Qwen request shape, timeouts, recursive splitting, restart idempotency, retryability, concurrent live rows, stale heartbeat, compact summaries and desktop/narrow overflow without paid calls
-- [ ] 12.79 Complete Engineering Checkpoints A/B/C, Change gate, independent verification, deployment and production health/provenance checks without automatically retrying E65A
+- [x] 12.79 Complete Engineering Checkpoints A/B/C, Change gate, independent verification, deployment and production health/provenance checks without automatically retrying E65A
+- [x] 12.80 Apply the shared 64K/32K final-wire envelope to Event Alignment, remove payload duplication, disable Thinking and use the verified 180-second timeout (PD-068, KI-183)
+- [x] 12.81 Supersede and deterministically bisect timed-out/schema-invalid Event Alignment parents, bound singleton retry, and reuse completed conversation mappings (PD-069, KI-183)
+- [x] 12.82 Persist all Case/provider turn projections in one busy-timeout transaction and prevent SQLite lock amplification from masking the real Align outcome (PD-069, KI-184)
+- [x] 12.83 Add the independent Event Alignment fourth step, immediate elapsed rendering and provider-local ASR request totals to the prototype and formal UI (PD-067, KI-185, KI-186, KI-187)
+- [x] 12.84 Add regressions for final-wire size, split/restart behavior, bulk persistence, six-stage rendering, elapsed continuity and provider-local totals; run scoped/full checks and independent verification
+- [ ] 12.85 Deploy the independently verified release, confirm CI/CD, public health and deployed SHA, and verify E65A remained unchanged with no automatic provider dispatch (PD-069)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

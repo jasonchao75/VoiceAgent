@@ -1151,6 +1151,84 @@ test("exposes every persisted batch lifecycle state and its next action", async 
   await expect(page.locator('tr[data-batch-id="EV-PARTIAL"] .job-state')).toContainText("Final · partial");
 });
 
+test("shows Event Alignment as step four with continuous elapsed time", async ({ page }) => {
+  const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
+  const now = Date.now();
+  bootstrap.batches = [{
+    id: "EV-ALIGN-LIVE",
+    name: "Live alignment",
+    context_name: "Riyad Bank branch routing v4",
+    status: "running",
+    stage: "event_alignment",
+    progress: 61,
+    input_count: 36,
+    denominator: 560,
+    excluded_count: 0,
+    suspected_numerator: 30,
+    cost: 0.86,
+    budget: 10,
+    providers: ["soniox", "speechmatics", "elevenlabs"],
+    updated_at: new Date(now).toISOString(),
+    version: 4,
+    report_type: null,
+    review_total: 0,
+    review_completed: 0,
+    active_operations: [{
+      operation_id: "event_alignment:EAG-live:1",
+      stage: "event_alignment",
+      provider: "qwen",
+      ordinal: 2,
+      total: 7,
+      started_at: new Date(now - 65_000).toISOString(),
+      heartbeat_at: new Date(now).toISOString(),
+    }],
+    snapshot: {
+      candidate_conversation_count: 36,
+      execution_status: {
+        pass_1: { completed: 82, failed: 0, pending: 0, finished: 82, total: 82 },
+        evaluation_asr: { completed: 108, failed: 0, pending: 0, finished: 108, total: 108 },
+        event_alignment: { completed: 12, failed: 0, pending: 24, finished: 12, total: 36 },
+        pass_2: { completed: 0, failed: 0, pending: 30, finished: 0, total: 30 },
+      },
+    },
+  }];
+  await page.route("**/api/evaluation/bootstrap", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(bootstrap) });
+  });
+  await page.route("**/api/evaluation/batches/EV-ALIGN-LIVE/report", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        report_type: "preliminary",
+        payload: {
+          candidate_count: 2,
+          cases: [
+            { conversation_id: "C1", event_id: "E1", decision: "Good Case" },
+            { conversation_id: "C2", event_id: "E2", decision: "Bad Case" },
+          ],
+        },
+      }),
+    });
+  });
+  await page.goto("/evaluation.html");
+  await page.locator('tr[data-batch-id="EV-ALIGN-LIVE"] .runtime-open-batch').click();
+
+  const steps = page.locator("#page-run > .steps > .step");
+  await expect(steps).toHaveCount(6);
+  await expect(steps.nth(3)).toContainText("4 Event Alignment");
+  await expect(steps.nth(3)).toContainText("Alignment group 2/7 · Waiting for qwen");
+  await expect(steps.nth(3).locator("time")).toHaveText(/01:0[5-9]/);
+  await expect(steps.nth(4)).toContainText("2/2 unique Cases completed");
+  await expect(steps.nth(2)).not.toContainText("qwen");
+  const providerRows = page.locator("#page-run > article.card").first().locator("tbody tr");
+  await expect(providerRows).toHaveCount(3);
+  await expect(providerRows.nth(0).locator("td").nth(2)).toHaveText("36");
+  await expect(providerRows.nth(1).locator("td").nth(2)).toHaveText("36");
+  await expect(providerRows.nth(2).locator("td").nth(2)).toHaveText("36");
+  const overflow = await page.locator("#page-run").evaluate((node) => node.scrollWidth - node.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+});
+
 test("confirms finishing an incomplete batch with current results", async ({ page }) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   bootstrap.batches = [{

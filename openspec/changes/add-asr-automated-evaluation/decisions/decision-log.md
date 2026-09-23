@@ -4,7 +4,7 @@
 
 ## Status
 
-- Recorded decisions: 53 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 65 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-22
@@ -937,3 +937,41 @@
 - Consequences: 每个命中 conversation/provider 增加一次完整录音 ASR 调用、成本和可恢复检查点；完整上下文与事件候选必须独立计费、独立失败、独立展示来源。完整上下文失败不允许用其文本填充事件候选；事件切片失败仍按 PD-048 fail closed。
 - Updated artifacts: Q-015、Delta Spec、`design.md`、`tasks.md`、执行器、存储、成本与回归测试。
 - Verification: Mock 回归证明每通/provider 完整录音至多调用一次、同通多个 Case 复用上下文、每个 Case/provider 单独调用相同纯用户切片、第二轮同时接收完整上下文与事件证据且候选来源不混淆；真实付费调用仍需逐次授权。
+
+### PD-067 — Event Alignment 作为独立第 4 步
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: Event Aligner 的 Qwen 请求应继续归入多 ASR、合并到第二轮，还是成为独立阶段
+- Decision owner: Product owner
+- Source thread/message: 当前任务 user message，在 Agent 提出六步与合并卡片两个方案后明确按六步继续讨论 Align 设计
+- Confirmation quote: “那你要怎么改呢？除了改成六步之外，Align这部分要怎么改”
+- Decision: 批次流程扩为六步：1 数据校验、2 第一轮分析、3 多 ASR 转写、4 Event Alignment、5 第二轮分析、6 人工复核。Event Aligner 的 Qwen 请求、进度和失败不得再显示在多 ASR 阶段。
+- Reason: Event Alignment 是完整通话 ASR 与 Pass 2 之间的独立 LLM 映射职责；单独展示才能准确表达当前等待、失败位置和恢复范围。
+- Consequences: Delta Spec、设计、原型、阶段枚举、进度投影、历史批次兼容和 UI 回归都需同步更新；Align 内部的限包、拆分、失败隔离和恢复机制在本决定基础上继续细化。
+- Updated artifacts: `decisions/open-questions.md`、`decision-log.md`、`verification/delivery-status.json`；其余实现材料待方案确认后更新。
+- Verification: 六张阶段卡必须在桌面与窄屏可读；Event Alignment 运行时只在第 4 步显示逐请求耗时，完成后才进入 Pass 2；历史批次仍可正确映射旧阶段数据。
+
+### PD-068 — 授权 E65A 小包 Event Aligner external-real 探针
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: 在无法仅靠静态证据确定去重、限包和超时拆分方案是否能让真实 Qwen Event Aligner 稳定完成时，是否发送一个受限真实分组验证
+- Decision owner: Product owner
+- Source thread/message: 当前任务；Agent 明确数据接收方、最多调用次数、费用上限和停止条件后，产品负责人选择方案 A
+- Confirmation quote: “你可以按照你的这个思路，我授权你调用Qwen尝试一下看看行不行，因为我也不确定你这个方式是不是行的。”；“A”
+- Decision: 使用 `EV-20260923-E65A` 已持久化的历史事件、目标事件和三家完整通话 ASR turn，构建一个业务载荷只出现一次、最终输入不超过 64K 的真实 Event Aligner 分组，发送到该批次冻结的 Alibaba DashScope `qwen3.8-max`。Thinking 关闭、客户端超时 180 秒；首次成功立即停止。仅当超时或结构失败时，按完整 conversation 稳定拆成两个子组并各调用一次。不得发送音频、Key、其他批次或无关对话，不得恢复、改写或更新生产批次。
+- Reason: 线上失败组达到约 79 万保守输入 Token，静态分析可以证明分组缺陷，但仍需一个最小 external-real 证据验证小包、去重、非 Thinking 请求能否在目标时限内返回合法映射。
+- Consequences: 最多 3 次真实 Qwen 调用，总供应商费用上限 USD 1；成功、两个子组完成、预计下一次调用会触顶，或出现鉴权、限流、端点/模型配置错误时立即停止。本授权仅覆盖该只读探针，不授权重跑整批、实现或发布。
+- Updated artifacts: `decisions/open-questions.md`、`decision-log.md`、`verification/delivery-status.json` 和 external-real 证据文件。
+- Verification: External-real PASS。36 通 eligible conversation 被规划为 7 个不超过 64K 的组，无单通超限；选取最接近上限的 3 通/10 事件组（最终输入估算 65,294、输出预留 11,904）调用一次，在 22.947 秒内返回，Thinking Token 为 0，3 通/10 事件全部通过现有 Schema、turn ID 与归属校验。实际 usage 为 20,049 input / 1,190 visible output，估算费用 USD 0.021239；首次成功后未触发拆分，生产批次状态、阶段、版本、更新时间和成本均未变化。证据：`verification/qwen-event-aligner-bounded-probe-2026-09-22.md`。
+
+### PD-069 — 实现、验证并发布 Event Alignment 修复
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: 已验证的 Event Aligner 限包方案是否进入实现、测试和生产发布
+- Source thread/message: 当前任务 user message
+- Confirmation quote: “那就按已验证方案进入实现、测试并上线吧”
+- Decision: 实现并发布 PD-067/PD-068 已验证方案：六步进度独立展示 Event Alignment；Align 使用统一 64K 最终输入/32K 输出包络、业务载荷只出现一次、Thinking 关闭、180 秒超时；超时或结构失败时父组标记 superseded 并按完整 conversation 稳定二分，单 conversation 叶子最多再尝试一次；成功 conversation 立即持久化并在恢复时复用。ASR 投影采用单事务批量落库并启用 SQLite busy timeout，避免并发写锁掩盖根因。活动请求首帧直接显示实际已等待时长，ASR 行使用 provider 内部序号/总数。发布不得自动重试或改写 `EV-20260923-E65A`，不得产生新的供应商调用。
+- Consequences: 更新 Delta Spec、设计、任务、V1.19 原型与正式页面；完成定向/全量测试、Change gate、独立验收、CI/CD、生产健康与部署 SHA 核对后才可声明上线。
