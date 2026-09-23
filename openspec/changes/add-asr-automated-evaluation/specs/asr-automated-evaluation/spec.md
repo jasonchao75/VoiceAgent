@@ -141,24 +141,24 @@
 - **WHEN** 第一轮至少有成功结果但没有任何疑点或额外 Good 候选需要重转录
 - **THEN** 系统生成零候选初步报告并正常结束批次，不创建评测 ASR 或第二轮任务
 
-### Requirement: User-event ASR retranscription
+### Requirement: Full-call ASR evidence and user-event clipping
 
-第一轮识别出需要评估的目标用户事件后，系统 MUST 先为每个命中 conversation/provider 至多提交一次显式启用 speaker diarization 的完整通话转写，并保存逐词/逐段的文本、开始/结束时间、匿名 speaker 标签和可稳定引用的 turn ID。系统 MUST 使用独立 Event Aligner，把完整有序 worksheet 事件及全部目标 R 映射到各 provider 已存在的 turn ID；模型不得生成时间戳或不存在的 ID。Event Aligner MUST 按模型已验证上下文限制动态装箱：整批安全可容纳时只发起一个请求，超限时才按完整 conversation 不可拆分生成最少请求组；失败仅重试失败组。程序 MUST 校验请求组、conversation/event/provider/turn ID、单调事件顺序、用户 speaker 角色和至少两家 provider 对同一用户发言的映射，并以获接纳 turns 的时间区间并集定位目标句子。Excel `time (s)` MUST 完全退出定位计算，只可作为原始审计字段保留。并集映射到已验证共用时间轴的 `user_record/{conversation_id}.wav` 后，该用户轨只可校验信号和向外补齐语音边缘，MUST NOT 向内缩短 provider 并集，也不得使用全局能量/VAD 选择另一事件。最终单句纯用户音频才分别提交给每家启用的评测 ASR；第二轮可读取完整上下文，但正式候选、Good/Bad 对比和人工复核候选 MUST 只使用事件级纯用户重转录结果。
+第一轮识别出需要评估的目标用户事件后，系统 MUST 为每个命中 conversation/provider 至多提交一次显式启用 speaker diarization 的完整通话转写，并保存逐词/逐段的文本、开始/结束时间、匿名 speaker 标签和可稳定引用的 turn ID。系统 MUST 使用独立 Event Aligner，把完整有序 worksheet 事件及全部目标 R 映射到各 provider 已存在的 turn ID；模型不得生成时间戳或不存在的 ID。Event Aligner MUST 按模型已验证上下文限制动态装箱：整批安全可容纳时只发起一个请求，超限时才按完整 conversation 不可拆分生成最少请求组；失败仅重试失败组。程序 MUST 校验请求组、conversation/event/provider/turn ID、单调事件顺序、用户 speaker 角色和至少两家 provider 对同一用户发言的映射，并以获接纳 turns 的时间区间并集定位目标句子。Excel `time (s)` MUST 完全退出定位计算，只可作为原始审计字段保留。每个获接纳 provider turn 的文本 MUST 直接作为该 Case 的正式 ASR 候选。并集映射到已验证共用时间轴的 `user_record/{conversation_id}.wav` 后，该用户轨只可校验信号和向外补齐语音边缘，MUST NOT 向内缩短 provider 并集，也不得使用全局能量/VAD 选择另一事件。生成的纯用户音频 MUST 只用于回听、人工复核和 Benchmark，MUST NOT 再提交给任何评测 ASR。Multi-ASR 任务数、调用费用和 provider 失败数 MUST 只统计完整通话 provider job，不得把本地切片或派生 Case 证据计作外部任务。
 
-#### Scenario: Transcribe one target user event
+#### Scenario: Prepare one target user event
 
 - **WHEN** 第一轮将一个有效用户事件识别为疑点 Case 或额外 Good Case
-- **THEN** 系统为该 Case 生成稳定的纯用户音频切片，并为每个启用的评测 ASR 至多创建一个可恢复、可计费的事件级转录任务
+- **THEN** 系统为该 Case 生成稳定的纯用户音频切片，并把 Event Aligner 选中的各 provider 完整录音 turn 文本保存为派生 Case 证据，不创建事件级 provider 转录任务
 
 #### Scenario: One conversation contains multiple cases
 
 - **WHEN** 同一 conversation ID 包含多个需要第二轮判断的目标用户事件
-- **THEN** 系统分别裁切每个事件并独立重转录，不得使用相邻机器人事件或其他用户事件的 ASR 文本填充当前 Case
+- **THEN** 系统分别裁切每个事件，并仅投影各事件自己映射到的 provider turn 文本，不得使用相邻机器人事件或其他用户事件的 ASR 文本填充当前 Case
 
 #### Scenario: Reuse one full-call ASR context
 
 - **WHEN** 同一 conversation 包含一个或多个目标用户事件
-- **THEN** 系统为每家启用的评测 ASR 至多提交一次完整通话录音并跨该 conversation 的所有 Case 复用上下文结果，同时继续为每个 Case 独立提交纯用户单句切片
+- **THEN** 系统为每家启用的评测 ASR 至多提交一次完整通话录音并跨该 conversation 的所有 Case 复用结果，只在本地为每个 Case 生成纯用户单句切片
 
 #### Scenario: Pack Event Aligner requests dynamically
 
@@ -178,7 +178,7 @@
 #### Scenario: Reject an unreliable user-event clip
 
 - **WHEN** 少于两家完整录音 ASR 产生可用 speaker 时间表、Event Aligner 映射缺失/歧义/不合法、获选 turns 形成明显跨事件宽区间、用户轨校验失败，或无法生成非空单句切片
-- **THEN** 对应事件级 ASR 任务明确失败且不产生候选文本，不得回退到 Excel 时间、单家猜测或完整通话转写片段
+- **THEN** 对应 Case 准备明确失败且不产生派生候选文本，不得回退到 Excel 时间、单家猜测或未被 Event Aligner 选中的完整通话转写片段
 
 #### Scenario: Receive an asynchronous callback twice
 
@@ -199,21 +199,21 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 - **WHEN** 某通对话的全部评测 ASR 均无法产生可用结果
 - **THEN** 该对话暂停进入第二轮并显示可操作错误，不生成默认 Good/Bad 结论
 
-#### Scenario: Report preserves successful event-level ASR evidence
+#### Scenario: Report preserves mapped full-call ASR evidence
 
 - **WHEN** 某个 Case 至少一家评测 ASR 已成功，无论第二轮是否为每家结果生成引用片段
-- **THEN** 报告 Case 明细均直接展示每家已落库的事件级 ASR 转写；第二轮引用只能缩小或补充证据定位，不得决定原始 ASR 转写是否可见
+- **THEN** 报告 Case 明细均直接展示每家已落库的目标 turn 文本；第二轮引用只能缩小或补充证据定位，不得决定原始 ASR 候选是否可见
 
 #### Scenario: Inspect a safe ASR failure diagnostic
 
-- **WHEN** 完整录音或事件切片 ASR 在自动重试后失败，且批次存在可查看的部分结果
+- **WHEN** 完整录音 ASR 在自动重试后失败，或 Case 映射/裁片失败，且批次存在可查看的部分结果
 - **THEN** 现有批次错误区、部分结果提示或 provider 单元格显示 provider、任务范围、尝试次数、是否可重试、受控分类和可操作原因；不得显示供应商原始响应、客户文本、源文件路径或凭证
 
 ### Requirement: Evidence-based second-pass decision
 
 第二轮 LLM MUST 将历史转写和每家评测 ASR 都视为证据而非真值，并结合完整对话、语义、实体、数字、否定、语种、说话人和事件边界，为每个被评估用户事件输出 `Good Case`、`Bad Case` 或 `需人工复核`。
 
-第二轮 MUST 启用所选模型的 Thinking 能力，并使用与第一轮相同的 128K 运行包络和最终消息预检。可见结构化 JSON MUST 先按 Case 数量在生成上限内预留，Thinking MUST 只使用剩余额度；二者合计不得超过所选模型与公共 32K 上限中的较小者。每个 Case MUST 保留所属 conversation 的完整历史文本、事件级重转录和必要配置证据；完整录音 ASR 上下文 MUST 只包含 Event Aligner 为该 Case 选中的 provider turns，以及同一 provider 中紧邻的前一条和后一条 turn（存在时），不得把无关的完整录音 turns 投影到请求中。系统 MUST 先按 conversation 装箱；单通仍超过 64K 输入硬上限时，MUST 在发送前按稳定 Case 子集拆组并为各子组重复必要的完整历史，不得截断历史文本。单个 Case 经限定证据后仍超过输入或生成上限时 MUST 在外部调用前以专用 preflight 分类明确失败。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
+第二轮 MUST 启用所选模型的 Thinking 能力，并使用与第一轮相同的 128K 运行包络和最终消息预检。可见结构化 JSON MUST 先按 Case 数量在生成上限内预留，Thinking MUST 只使用剩余额度；二者合计不得超过所选模型与公共 32K 上限中的较小者。每个 Case MUST 保留所属 conversation 的完整历史文本、Event Aligner 映射出的目标 provider turn 文本和必要配置证据；完整录音 ASR 上下文 MUST 只包含同一 provider 中紧邻目标 turn 的前一条和后一条 turn（存在时），不得重复目标候选或把无关的完整录音 turns 投影到请求中。系统 MUST 先按 conversation 装箱；单通仍超过 64K 输入硬上限时，MUST 在发送前按稳定 Case 子集拆组并为各子组重复必要的完整历史，不得截断历史文本。单个 Case 经限定证据后仍超过输入或生成上限时 MUST 在外部调用前以专用 preflight 分类明确失败。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
 
 每个请求组 MUST 携带稳定 `request_group_id`。第二轮结构化输出 MUST 原样返回该 ID，并以顶层 `results[]` 为组内每个输入 Case 恰好返回一个结果；每个结果 MUST 包含匹配的 conversation/issue/event ID 和 `positioning_quality`。组 ID 不匹配、Case 遗漏、重复或越界 MUST 使整个组失败并按相同冻结成员重试，不得保存部分结论。
 
@@ -234,7 +234,7 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 #### Scenario: Reject one oversized second-pass case before dispatch
 
-- **WHEN** 一个 Case 在保留完整历史、事件级重转录、Event Aligner 目标 turns 和直接相邻 turns 后仍超过最终输入硬上限
+- **WHEN** 一个 Case 在保留完整历史、Event Aligner 目标 turn 候选和直接相邻 turns 后仍超过最终输入硬上限
 - **THEN** 系统在供应商调用前记录明确尺寸失败，不得截断证据、扩大输出上限或通过付费递归请求发现该失败
 
 #### Scenario: Reject a mismatched grouped response
@@ -251,12 +251,12 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 #### Scenario: Second-pass groups remain failed
 
 - **WHEN** 任一第二轮请求组在自动重试后仍失败
-- **THEN** 批次保持可重试的部分失败状态，不得冻结或展示为正常完成的初步/最终报告；已成功的 Pass 1、事件级 ASR 和第二轮分组结果继续独立保存且不得被空值覆盖，页面提供明确标记为“部分结果、非完整报告”的只读入口
+- **THEN** 批次保持可重试的部分失败状态，不得冻结或展示为正常完成的初步/最终报告；已成功的 Pass 1、映射的完整录音目标 turn Case 证据和第二轮分组结果继续独立保存且不得被空值覆盖，页面提供明确标记为“部分结果、非完整报告”的只读入口
 
 #### Scenario: Inspect successful work after a batch failure
 
 - **WHEN** 批次在任一阶段进入失败或部分失败，且至少一个检查点已经成功持久化
-- **THEN** 部分结果页按实际完成阶段展示成功 Pass 1 数量与候选、每家事件级 ASR 转写、已完成第二轮结论、成本台账、失败阶段和可操作错误；尚未执行的区域显示“未运行”而不是空结果，且重试后继续复用既有成功检查点
+- **THEN** 部分结果页按实际完成阶段展示成功 Pass 1 数量与候选、每家映射的完整录音目标 turn Case 证据、已完成第二轮结论、成本台账、失败阶段和可操作错误；尚未执行的区域显示“未运行”而不是空结果，且重试后继续复用既有成功检查点
 
 自动 Good/Bad 准入 MUST 同时满足：输出 Schema 合法、决定值合法、建议标注文本非空、证据可定位，并且至少一家评测 ASR 成功。系统 MUST NOT 使用 LLM confidence 数值或供应商简单多数票替代这些规则。
 
@@ -303,12 +303,12 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 ### Requirement: Unified playback interval
 
-系统 MUST 使用目标用户事件在纯用户 WAV 上的稳定切片作为统一回听区间。事件级 ASR 返回的 Segment ID 和时间戳相对于该切片，仅作为默认折叠的技术证据；人工播放器和 Benchmark 剪辑 MUST 使用同一纯用户事件切片，不得增加会跨入相邻事件的上下文余量。
+系统 MUST 使用目标用户事件在纯用户 WAV 上的稳定切片作为统一回听区间。正式 ASR 候选的 turn ID 和时间戳来自完整录音的 Event Aligner 映射，仅作为默认折叠的技术证据；人工播放器和 Benchmark 剪辑 MUST 使用同一纯用户事件切片，不得增加会跨入相邻事件的上下文余量。
 
 #### Scenario: Vendor segment boundaries differ
 
-- **WHEN** 多家 ASR 对同一纯用户事件切片返回不同的切句边界
-- **THEN** 系统保留各家事件级候选文本和片段证据，但三家共用同一源切片回听，不根据供应商边界扩大音频范围
+- **WHEN** 多家完整录音 ASR 对同一目标事件返回不同的 turn 边界
+- **THEN** 系统保留各家映射 turn 的候选文本和时间证据，但所有 provider 共用同一纯用户源切片回听，不再次提交该切片转写
 
 #### Scenario: Precise alignment is unavailable
 

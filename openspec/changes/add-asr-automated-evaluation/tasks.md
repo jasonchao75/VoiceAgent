@@ -206,6 +206,11 @@
 - [x] 12.66 Add a version-checked, idempotent no-provider command that freezes paused/partially-failed batches with a preliminary report as `final_partial`/`completed_partial`, preserving successes and excluding incomplete work (PD-060, KI-173)
 - [x] 12.67 Add the “Use current results” batch action and confirmation copy by reusing the frozen dialog pattern, with API/UI regressions for preservation, exclusion, no provider dispatch and invalid states (PD-060)
 - [x] 12.68 Complete independent verification and deploy PD-060 while preserving production data and without operating 7D19 or making paid provider calls
+- [x] 12.69 Replace event-level pure-user ASR dispatch with deterministic Case evidence projected from Event Aligner-selected full-call provider turns (PD-061)
+- [x] 12.70 Keep one stable pure-user WAV per Case for playback/review/Benchmark only, and make Multi-ASR progress/cost count only full-call conversation/provider jobs (PD-061)
+- [x] 12.71 Update reports, failure diagnostics and regressions so mapped full-call turn text remains visible without creating event-level provider calls (PD-061)
+- [x] 12.72 Run scoped/full checks, Change gate and independent verification without making a paid external call or mutating production batches (PD-061)
+- [ ] 12.73 Commit and deploy PD-061 before any new LLM call-logic implementation, then verify CI, production health, deployed SHA and preservation of E65A without a provider dispatch (PD-063)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

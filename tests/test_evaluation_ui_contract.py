@@ -24,11 +24,18 @@ def test_predefined_qwen38_is_registered_before_batch_execution() -> None:
 
 
 def test_partial_results_render_safe_asr_failure_diagnostics() -> None:
-    """Existing partial-result regions must expose the safe ASR failure contract."""
+    """Provider jobs and local Case preparation must have separate diagnostics."""
     assert 'copy("ASR failures", "ASR 失败")' in RUNTIME
-    assert 'failure.scope === "full_call_context"' in RUNTIME
+    assert 'copy("full call", "完整录音")' in RUNTIME
+    assert 'copy("Case preparation failures", "Case 准备失败")' in RUNTIME
     assert "failure.retryable" in RUNTIME
     assert "item.evaluation_asr_failures?.[provider]" in RUNTIME
+
+
+def test_report_never_hides_long_mapped_turn_candidates_as_legacy_context() -> None:
+    """A long target turn remains visible because it is formal PD-061 evidence."""
+    assert "Full-call transcript retained as legacy evidence" not in RUNTIME
+    assert "整通转写已作为历史证据保留" not in RUNTIME
 
 
 def test_paused_or_partial_batches_can_finish_with_current_results() -> None:

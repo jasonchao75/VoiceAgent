@@ -835,7 +835,7 @@ class EvaluationStore:
         approved = {"pass_1": PASS_ONE_SYSTEM_PROMPT, "pass_2": PASS_TWO_SYSTEM_PROMPT}
         policy_markers = {
             "pass_1": "唯一质检目标是检测线上 ASR",
-            "pass_2": "每家只包含 Event Aligner 选中的目标 turn",
+            "pass_2": "纯用户切片只用于回听和 Benchmark，未被再次转录",
         }
         for template_key, slots in required_slots.items():
             row = await (
@@ -2544,12 +2544,10 @@ class EvaluationStore:
             if stage == "evaluation_asr":
                 rows = await (
                     await database.execute(
-                        """SELECT status, COUNT(*) AS count FROM (
-                               SELECT status FROM evaluation_asr_runs WHERE batch_id=?
-                               UNION ALL
-                               SELECT status FROM evaluation_case_asr_runs WHERE batch_id=?
-                           ) GROUP BY status""",
-                        (batch_id, batch_id),
+                        """SELECT status, COUNT(*) AS count
+                           FROM evaluation_asr_runs
+                           WHERE batch_id=? GROUP BY status""",
+                        (batch_id,),
                     )
                 ).fetchall()
             else:
@@ -3185,7 +3183,7 @@ class EvaluationStore:
         decision: dict[str, Any],
         evidence_rows: list[dict[str, Any]],
     ) -> tuple[float, float, str, bool]:
-        """Resolve the exact source interval used for pure-user Case retranscription."""
+        """Resolve the pure-user interval retained for playback and Benchmark."""
         duration = float((conversation.get("user_audio") or {}).get("duration_s") or 0)
         event_id = str(decision.get("event_id") or "")
         if duration <= 0:
@@ -3243,10 +3241,15 @@ class EvaluationStore:
             _safe_asr_failure(row, "full_call_context")
             for row in context_asr_rows
             if row["status"] == "failed"
-        ] + [_safe_asr_failure(row, "event_clip") for row in asr_rows if row["status"] == "failed"]
+        ]
+        case_preparation_failures = [
+            _safe_asr_failure(row, "case_preparation")
+            for row in asr_rows
+            if row["status"] == "failed"
+        ]
         asr_failures_by_case: dict[tuple[str, str], dict[str, dict[str, Any]]] = {}
-        for failure in asr_failures:
-            if failure["scope"] != "event_clip" or failure["event_id"] is None:
+        for failure in case_preparation_failures:
+            if failure["event_id"] is None:
                 continue
             case_key = (str(failure["conversation_id"]), str(failure["event_id"]))
             asr_failures_by_case.setdefault(case_key, {})[str(failure["provider"])] = failure
@@ -3423,6 +3426,7 @@ class EvaluationStore:
                 for name, count in sorted(tag_counts.items(), key=lambda item: (-item[1], item[0]))
             ],
             "asr_failures": asr_failures,
+            "case_preparation_failures": case_preparation_failures,
             "cases": cases,
             "frozen_snapshot": batch["snapshot"],
         }

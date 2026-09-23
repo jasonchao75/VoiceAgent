@@ -647,8 +647,8 @@ def test_full_call_diarization_consensus_ignores_excel_time() -> None:
     assert first["consensus_providers"] == ["soniox", "speechmatics"]
 
 
-def test_pass2_full_call_context_keeps_only_target_and_direct_neighbors() -> None:
-    """Pass 2 must not receive unrelated turns from a long full-call transcript."""
+def test_pass2_full_call_context_keeps_only_direct_neighbors() -> None:
+    """Pass 2 context must omit both unrelated turns and the formal target candidate."""
     conversation_id = "C-BOUNDED"
     provider_result = {
         "provider": "soniox",
@@ -683,7 +683,6 @@ def test_pass2_full_call_context_keeps_only_target_and_direct_neighbors() -> Non
     turns = bounded[0]["turns"]
     assert [turn["turn_id"] for turn in turns] == [
         f"{conversation_id}:soniox:turn:2",
-        f"{conversation_id}:soniox:turn:3",
         f"{conversation_id}:soniox:turn:4",
     ]
     assert all("turn-0" not in turn["text"] and "turn-6" not in turn["text"] for turn in turns)
@@ -2713,17 +2712,19 @@ async def test_execution_checkpoints_materialize_real_manual_review(
             "category": "provider_job_failed",
             "retryable": True,
             "message": "Provider ASR job failed before producing a usable result.",
-        },
+        }
+    ]
+    assert partial["payload"]["case_preparation_failures"] == [
         {
             "provider": "soniox",
-            "scope": "event_clip",
+            "scope": "case_preparation",
             "conversation_id": _VALID_CONVERSATION_ID,
             "event_id": str(incomplete_event["event_id"]),
             "attempts": 3,
             "category": "timeout",
             "retryable": True,
             "message": "Provider request timed out. Retry the failed ASR work.",
-        },
+        }
     ]
     assert "secret upstream body" not in json.dumps(partial)
     assert "customer transcript must not leak" not in json.dumps(partial)
@@ -3794,11 +3795,11 @@ async def test_single_provider_success_continues_and_preserves_failed_evidence(
 
 
 @pytest.mark.asyncio
-async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
+async def test_asr_job_is_full_call_scoped_and_case_evidence_is_projected(
     evaluation_store: EvaluationStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Every Case gets one provider job and a resumed worker reuses both results."""
+    """Many Cases reuse one provider job and persist mapped turns without redispatch."""
     batch = await evaluation_store.create_batch(
         EvaluationBatchCreate(
             name="Reuse ASR job",
@@ -3822,27 +3823,19 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
     ) -> tuple[dict[str, object], str]:
         nonlocal calls
         calls += 1
+        assert event_id is None
         segments = [
             {
-                "segment_id": f"{conversation_id}:elevenlabs:0",
-                "start": 0.0,
-                "end": 0.4,
-                "speaker": "S1" if event_id is None else None,
-                "text": "agent" if event_id is None else "evidence",
+                "segment_id": f"{conversation_id}:elevenlabs:{index}",
+                "start": float(index),
+                "end": float(index) + 0.4,
+                "speaker": "S1" if index % 2 == 0 else "S2",
+                "text": f"turn-{index}",
             }
+            for index in range(4)
         ]
-        if event_id is None:
-            segments.append(
-                {
-                    "segment_id": f"{conversation_id}:elevenlabs:1",
-                    "start": 0.5,
-                    "end": 1.0,
-                    "speaker": "S2",
-                    "text": "customer",
-                }
-            )
         return {
-            "text": "agent customer" if event_id is None else "evidence",
+            "text": " ".join(str(segment["text"]) for segment in segments),
             "segments": segments,
         }, ("remote-job-1")
 
@@ -3854,9 +3847,15 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
             (_VALID_CONVERSATION_ID, event_id): {
                 "conversation_id": _VALID_CONVERSATION_ID,
                 "event_id": event_id,
-                "providers": [],
+                "providers": [
+                    {
+                        "provider": "elevenlabs",
+                        "status": "mapped",
+                        "turn_id": f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:{index * 2 + 1}",
+                    }
+                ],
             }
-            for event_id in customer_event_ids
+            for index, event_id in enumerate(customer_event_ids)
         }
 
     monkeypatch.setattr(runner, "_run_event_alignment", map_events)
@@ -3886,13 +3885,29 @@ async def test_asr_job_is_user_event_scoped_and_reused_after_retry(
     await runner._run_asr(batch["id"], batch, candidates)
     await runner._run_asr(batch["id"], batch, candidates)
 
-    assert calls == 3
+    assert calls == 1
     context_rows = await evaluation_store.checkpoint_rows("evaluation_asr_runs", batch["id"])
     assert len(context_rows) == 1
     assert context_rows[0]["result"]["scope"] == "full_call_context"
     rows = await evaluation_store.checkpoint_rows("evaluation_case_asr_runs", batch["id"])
     assert len(rows) == 2
-    assert all(row["remote_job_id"] == "remote-job-1" for row in rows)
+    assert all(row["attempts"] == 0 for row in rows)
+    assert all(row["remote_job_id"] is None for row in rows)
+    assert [row["result"]["text"] for row in rows] == ["turn-1", "turn-3"]
+    assert all(row["result"]["scope"] == "full_call_turn_projection" for row in rows)
+    ledger = await evaluation_store.cost_summary(batch["id"])
+    assert len(ledger["asr"]) == 1
+    assert ledger["asr"][0]["calls"] == 1
+    assert ledger["asr"][0]["stage"] == "evaluation_asr_context"
+    refreshed = await evaluation_store.get_batch(batch["id"])
+    assert refreshed is not None
+    assert refreshed["snapshot"]["execution_status"]["evaluation_asr"] == {
+        "completed": 1,
+        "failed": 0,
+        "finished": 1,
+        "pending": 0,
+        "total": 1,
+    }
 
 
 @pytest.mark.asyncio
@@ -3975,7 +3990,13 @@ async def test_run_asr_replaces_legacy_non_diarized_context_checkpoint(
             (_VALID_CONVERSATION_ID, event_id): {
                 "conversation_id": _VALID_CONVERSATION_ID,
                 "event_id": event_id,
-                "providers": [],
+                "providers": [
+                    {
+                        "provider": "elevenlabs",
+                        "status": "mapped",
+                        "turn_id": f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1",
+                    }
+                ],
             }
         }
 
@@ -3987,11 +4008,16 @@ async def test_run_asr_replaces_legacy_non_diarized_context_checkpoint(
         [{"conversation_id": _VALID_CONVERSATION_ID, "event_id": event_id}],
     )
 
-    assert calls == [(2, None), (1, event_id)]
+    assert calls == [(2, None)]
     context_rows = await evaluation_store.checkpoint_rows("evaluation_asr_runs", str(batch["id"]))
     assert context_rows[0]["remote_job_id"] == "replacement-job"
     assert context_rows[0]["attempts"] == 2
     assert context_rows[0]["result"]["diarization_contract"] == "speaker_timestamps_v1"
+    case_rows = await evaluation_store.checkpoint_rows(
+        "evaluation_case_asr_runs", str(batch["id"])
+    )
+    assert case_rows[0]["result"]["text"] == "customer"
+    assert case_rows[0]["remote_job_id"] is None
 
 
 @pytest.mark.asyncio
@@ -4203,7 +4229,12 @@ async def test_pass2_retry_reuses_failed_frozen_group(
     context_events = cast(list[dict[str, object]], first_context["events"])
     providers = cast(list[dict[str, object]], context_events[0]["providers"])
     assert providers[0]["target_turn_id"] == (f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1")
-    assert len(cast(list[object], providers[0]["turns"])) == 3
+    assert len(cast(list[object], providers[0]["turns"])) == 2
+    assert all(
+        cast(dict[str, object], turn)["turn_id"]
+        != f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1"
+        for turn in cast(list[object], providers[0]["turns"])
+    )
 
 
 @pytest.mark.asyncio

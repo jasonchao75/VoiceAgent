@@ -421,3 +421,34 @@ The earlier specification conflict is closed: verified `qwen3.8-*` models enable
 - `UV-023`: no external-real request was sent to `prem.dashscope.aliyuncs.com` or `qwen3.8-max` in this review.
 - `UV-022`: the current source was not exercised through the dual-viewport browser suite; static UI contracts and the production build passed.
 - Existing unrelated/open warnings remain recorded in `delivery-status.json`; none is newly hidden by this PASS.
+
+---
+
+# Independent Review — PD-061 full-call turn projection
+
+- Status: **PASS**
+- Date: 2026-09-22
+- Scope: PD-061 and Tasks 12.69–12.72 verification portion only
+- Reviewer boundary: independent verification only; no implementation fix, paid provider call, deployment, push, production mutation, or historical-batch retry/rewrite was performed.
+
+## Decision
+
+PD-061 passes static, deterministic and local independent verification. The executor now dispatches ASR only for the complete `record` once per selected conversation/provider. After Event Aligner validates real target turn IDs, the mapped turn text is persisted as zero-attempt, no-remote-job Case evidence; the stable `user_record` WAV is retained only as playback/review/Benchmark audio. Progress, queue depth, ASR ledger calls and provider-failure totals read only full-call jobs. Local alignment/clip failures are exposed separately as Case-preparation failures.
+
+Pass 2 receives the mapped target turn as its formal `asr_results` candidate. Its bounded full-call context contains only the direct previous/next turns for that provider, so the target is not duplicated. Reports read the projected target text directly, including candidates longer than 240 characters after KI-180, without depending on Pass 2 quotations. The PD-061 decision, proposal, design, active Delta Spec, Prompt fixture, prototype trace and implementation now describe the same data flow; the stale failure-scenario wording found during review was recorded as KI-181 and resolved before this verdict.
+
+## Reproducible evidence
+
+- PD-061 focused Evaluation, packing and UI-contract suites: **145 passed**.
+- Full repository suite: **267 passed**, with the two already-disclosed dependency deprecation warnings.
+- Scoped Ruff and Mypy for `src/evaluation` and the affected tests: **PASS**.
+- Frontend production build and `git diff --check`: **PASS**.
+- Change gate: **PASS with warnings** (`0 errors`; remaining warnings are disclosed in `delivery-status.json`).
+- Dispatch/idempotency trace: two Cases in one conversation produce one full-call call, two projected Case rows with `attempts=0` and `remote_job_id=null`, one ASR ledger call, and one Multi-ASR progress total.
+- Pass 2 trace: the mapped target turn ID appears in formal Case evidence while direct-neighbor context explicitly excludes that target ID.
+- Report/failure trace: full-call failures remain in `asr_failures`; mapping and clipping failures use the separate `case_preparation_failures` collection; long mapped candidate text uses the normal safe renderer.
+
+## Remaining boundary
+
+- `UV-030` remains open: no newly created production batch has yet exercised PD-061 against live ASR/LLM providers or demonstrated the reduced task total externally. Historical `EV-20260923-E65A` remains immutable.
+- This PASS does not cover the separately open Qwen Pass 2 timeout/cost-accounting work, retryability filtering, Pass 1 corrective-retry packing, or running-group heartbeat defects.

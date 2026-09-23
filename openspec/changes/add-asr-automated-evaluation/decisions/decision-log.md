@@ -4,12 +4,54 @@
 
 ## Status
 
-- Recorded decisions: 47 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 50 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS (independent verification); User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-22
 
 ## Decisions
+
+### PD-063 — 先发布完整录音 turn 投影，再开发新的 LLM 调用逻辑
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: PD-061 独立验收通过后，是否先发布到生产，并与另一任务计划中的 LLM 调用逻辑改动隔离
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人明确要求顺序发布
+- Confirmation quote: “可以，发布到线上吧……先把你这次的发布发到线上。后面我让它再改，等你发到线上之后再改新的”
+- Decision: 先提交并发布已独立验收通过的 PD-061。发布范围可包含已经完成、但不改变运行逻辑的 Qwen 诊断记录；不得包含新的 LLM 调用逻辑实现。共享工作区中的另一任务必须暂停代码、OpenSpec、提交与发布，直到本次生产部署完成且产品负责人另行恢复。
+- Reason: PD-061 与后续 Qwen/LLM 超时、Thinking 和拆组策略会触及同一执行器及 Change 文件；顺序发布可以建立清晰生产基线，避免共享工作区交叉提交和无法归因的线上行为。
+- Consequences: 本次发布不得自动重跑或改写 E65A，不得触发付费 ASR/LLM；发布后需核对 CI、部署、生产健康和生产提交 SHA。后续 LLM 逻辑由另一任务在收到明确恢复通知后继续。
+- Updated artifacts: `decision-log.md`、`tasks.md`、`verification/delivery-status.json`、提交与发布证据。
+- Verification: Pending CI and production deployment.
+
+### PD-062 — 修复前以最小 Qwen Pass 2 原组和按 Case 拆分验证超时根因
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: Q-017；`EV-20260923-E65A` 的 Qwen3.8-Max Pass 2 是否主要因默认 `xhigh` 思考强度超时，以及 Pass 1/Pass 2 是否需要在超时后拆分
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人要求修复前先验证未验证项，并在 Agent 明确数据、接收方、调用次数、停止条件后确认费用上限
+- Confirmation quote: “确认。但是修复前，你需要先验证尚未验证的问题。我授权你可以调用外部接口”；“确认上述调用范围，USD 5 上限。”
+- Decision: 在修改生产逻辑前，仅重放 `EV-20260923-E65A` 最小失败组 `G0008` 的两个 Case 文本证据至 `dashscope.aliyuncs.com/api/v1` 的 `qwen3.8-max`。第一次保持原组、显式设置 `reasoning_effort=medium`、`max_completion_tokens=32768`、300 秒客户端超时且不自动重试；若原组成功立即停止。仅当原组发生 timeout、无效响应或结构失败时，才按 Case 拆成两个单 Case 请求，各调用一次并停止。不得回写、恢复或改变生产批次，不发送音频、凭证或其他批次数据。
+- Reason: 先用原始最小失败证据区分默认高思考强度、120 秒等待上限和组大小的影响，再据真实结果确定修复参数与超时拆组策略，避免直接重试整批或凭推断改行为。
+- Consequences: 最多三次 Qwen 调用，总供应商费用上限 USD 5；原组成功、两子组完成、预计下一次调用会超过上限，或出现鉴权、限流、端点/模型配置错误时立即停止。授权仅覆盖本次只读诊断，不授权实现、发布或重跑整批。
+- Updated artifacts: `decisions/open-questions.md`、`decisions/decision-log.md`、`verification/delivery-status.json` 和本次外部验证证据。
+- Verification: External-real execution completed on 2026-09-22. The original two-Case group returned HTTP 200 in 223.373 seconds with 20,529 input, 5,199 reasoning and 5,713 visible output tokens; both Cases passed the production schema/ID checks. One call cost an estimated USD 0.031441, so no split fallback was triggered. Evidence: `verification/qwen-g0008-medium-diagnostic-2026-09-22.md`.
+
+### PD-061 — 完整录音 ASR 片段作为正式候选，纯用户切片只用于回听与 Benchmark
+
+- Status: Confirmed
+- Date: 2026-09-22
+- Source question: `EV-20260923-E65A` 为什么在 22 通命中 conversation 上生成 174 个 Multi-ASR 任务，以及纯用户单句切片是否应再次转录
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人先纠正目标数据流，随后明确要求修改
+- Confirmation quote: “不应该是用完整的上下文录音里面的那个文本片段直接对比就好了吗？只是把36个片段的user_record切出来就好了”；“对的。改一下吧。”
+- Decision: 每家启用的评测 ASR 只对每个命中 conversation 的完整 `record` 提交一次带说话人时间轴的转写。Event Aligner 把目标事件映射到各 provider 的真实 turn 后，系统直接使用这些 turn 的文本作为该 Case 的正式 ASR 候选和 Pass 2 证据。`user_record` 仍按 provider turn 区间并集生成稳定纯用户 WAV，但只用于回听、人工复核和 Benchmark 音频，不再提交任何评测 ASR。Multi-ASR 外部任务总数只统计 conversation/provider 完整录音任务，不把本地音频切片或派生 Case 证据计作 provider job。
+- Reason: 纯用户单句片段脱离完整上下文，再次转录仍可能产生新的识别错误；完整录音 ASR 已经在上下文中完成识别，其目标 turn 文本更符合评测证据目的。重复提交切片会额外增加调用、费用和失败点。
+- Consequences: PD-035、PD-048、PD-049、PD-053、PD-056、PD-058 中要求事件级纯用户重转录作为正式候选的部分被本决定取代；完整录音转写、Event Aligner、provider turn 区间并集和用户轨只扩不缩规则继续有效。既有批次、费用和报告保持历史事实，不自动改写或重跑；新逻辑只作用于新建或明确按新版本恢复的工作。
+- Updated artifacts: `proposal.md`、Delta Spec、`design.md`、`tasks.md`、`prototypes/README.md`、实现、回归测试与独立验收。
+- Verification: Independent review PASS；145 项定向回归、267 项全库测试、Scoped Ruff/Mypy、前端生产构建、diff check 与 Change gate 全部通过。未调用付费外部服务，未修改或重跑 E65A；新生产批次真实运行仍由 `UV-030` 跟踪。
 
 ### PD-060 — 暂停或部分失败批次使用现有结果结束并发布
 

@@ -2108,7 +2108,7 @@ class EvaluationRunner:
     async def _run_asr(
         self, batch_id: str, batch: dict[str, Any], candidates: list[dict[str, Any]]
     ) -> None:
-        """Transcribe full-call context once and pure-user audio for every target event."""
+        """Transcribe each full call once and project mapped turns into Case evidence."""
         case_keys = sorted(
             {(str(item["conversation_id"]), str(item["event_id"])) for item in candidates}
         )
@@ -2127,7 +2127,6 @@ class EvaluationRunner:
             for provider in batch["providers"]
         }
         context_jobs = len(batch["providers"]) * len(conversation_ids)
-        total_jobs = len(batch["providers"]) * len(case_keys)
         await self.store.refresh_execution_progress(
             batch_id,
             table="evaluation_asr_runs",
@@ -2246,14 +2245,6 @@ class EvaluationRunner:
                 for conversation_id in conversation_ids
             )
         )
-        await self.store.refresh_execution_progress(
-            batch_id,
-            table="evaluation_case_asr_runs",
-            stage="evaluation_asr",
-            total=total_jobs,
-            progress_start=55,
-            progress_end=75,
-        )
         context_rows = await self.store.checkpoint_rows("evaluation_asr_runs", batch_id)
         context_by_conversation: dict[str, list[dict[str, Any]]] = {}
         for row in context_rows:
@@ -2294,9 +2285,16 @@ class EvaluationRunner:
             except (FileNotFoundError, LookupError, OSError, RuntimeError, ValueError) as exc:
                 clip_errors[(conversation_id, event_id)] = exc
 
-        async def transcribe(provider: str, conversation_id: str, event_id: str) -> None:
-            if existing.get((provider, conversation_id, event_id), {}).get("status") == "completed":
-                return
+        turn_lookups = {
+            conversation_id: build_turn_catalog(
+                conversation_id,
+                context_by_conversation.get(conversation_id, []),
+            )[1]
+            for conversation_id in conversation_ids
+        }
+
+        async def project(provider: str, conversation_id: str, event_id: str) -> None:
+            """Persist one mapped full-call turn without another provider dispatch."""
             clip_error = clip_errors.get((conversation_id, event_id))
             if clip_error is not None:
                 await self.store.checkpoint_result(
@@ -2306,126 +2304,99 @@ class EvaluationRunner:
                     attempts=0,
                     error=_asr_error(provider, clip_error),
                 )
-                await self.store.refresh_execution_progress(
-                    batch_id,
-                    table="evaluation_case_asr_runs",
-                    stage="evaluation_asr",
-                    total=total_jobs,
-                    progress_start=55,
-                    progress_end=75,
+                return
+            _path, clip_trace = prepared_clips[(conversation_id, event_id)]
+            event_mapping = event_mappings[(conversation_id, event_id)]
+            provider_mapping = next(
+                (
+                    row
+                    for row in event_mapping.get("providers") or []
+                    if isinstance(row, dict) and str(row.get("provider") or "") == provider
+                ),
+                None,
+            )
+            if not provider_mapping or provider_mapping.get("status") != "mapped":
+                await self.store.checkpoint_result(
+                    "evaluation_case_asr_runs",
+                    (batch_id, provider, conversation_id, event_id),
+                    status="failed",
+                    attempts=0,
+                    error=_asr_error(
+                        provider,
+                        ValueError("Event Aligner did not map this provider to the target event"),
+                    ),
                 )
                 return
-            path, clip_trace = prepared_clips[(conversation_id, event_id)]
-            duration = float(clip_trace["end_s"]) - float(clip_trace["start_s"])
-            rate = self._frozen_asr_rate(batch, provider)
-            async with semaphore, provider_semaphores[provider]:
-                for attempt in range(1, 4):
-                    started_at = time.perf_counter()
-                    reserve_key = (
-                        f"reserve:{batch_id}:asr:{provider}:{conversation_id}:{event_id}:{attempt}"
-                    )
-                    try:
-                        if not await self.store.reserve_budget(
-                            idempotency_key=reserve_key,
-                            batch_id=batch_id,
-                            estimated_usd=(duration / 3600) * rate,
-                        ):
-                            raise EvaluationBudgetReached(
-                                "Batch budget reached before the next ASR call"
-                            )
-                        result, remote_id = await self._transcribe(
-                            batch_id,
-                            provider,
-                            path,
-                            conversation_id,
-                            attempt,
-                            event_id=event_id,
-                        )
-                        result["event_id"] = event_id
-                        result["source_clip"] = clip_trace
-                        await self.store.record_cost_entry(
-                            idempotency_key=(
-                                f"{batch_id}:asr:{provider}:{conversation_id}:{event_id}"
-                            ),
-                            batch_id=batch_id,
-                            category="asr",
-                            provider=provider,
-                            stage="evaluation_asr",
-                            audio_seconds=duration,
-                            estimated_cost=(duration / 3600) * rate,
-                            reservation_key=reserve_key,
-                        )
-                        await self.store.checkpoint_result(
-                            "evaluation_case_asr_runs",
-                            (batch_id, provider, conversation_id, event_id),
-                            status="completed",
-                            attempts=attempt,
-                            result=result,
-                            remote_job_id=remote_id,
-                        )
-                        await self.store.refresh_execution_progress(
-                            batch_id,
-                            table="evaluation_case_asr_runs",
-                            stage="evaluation_asr",
-                            total=total_jobs,
-                            progress_start=55,
-                            progress_end=75,
-                        )
-                        await self.store.record_telemetry(
-                            batch_id=batch_id,
-                            stage="evaluation_asr",
-                            event="provider_job",
-                            provider=provider,
-                            outcome="completed",
-                            attempt=attempt,
-                            latency_ms=(time.perf_counter() - started_at) * 1000,
-                        )
-                        return
-                    except EvaluationBudgetReached:
-                        return
-                    except Exception as exc:
-                        await self.store.release_budget(reserve_key)
-                        await self.store.record_telemetry(
-                            batch_id=batch_id,
-                            stage="evaluation_asr",
-                            event="provider_job",
-                            provider=provider,
-                            outcome="failed",
-                            attempt=attempt,
-                            latency_ms=(time.perf_counter() - started_at) * 1000,
-                        )
-                        if attempt == 3:
-                            await self.store.checkpoint_result(
-                                "evaluation_case_asr_runs",
-                                (batch_id, provider, conversation_id, event_id),
-                                status="failed",
-                                attempts=attempt,
-                                error=_asr_error(provider, exc),
-                            )
-                            await self.store.refresh_execution_progress(
-                                batch_id,
-                                table="evaluation_case_asr_runs",
-                                stage="evaluation_asr",
-                                total=total_jobs,
-                                progress_start=55,
-                                progress_end=75,
-                            )
-                        else:
-                            await asyncio.sleep(float(attempt * 2))
+            turn_id = str(provider_mapping.get("turn_id") or "")
+            turn = turn_lookups.get(conversation_id, {}).get(turn_id)
+            if turn is None or str(turn.get("provider") or "") != provider:
+                await self.store.checkpoint_result(
+                    "evaluation_case_asr_runs",
+                    (batch_id, provider, conversation_id, event_id),
+                    status="failed",
+                    attempts=0,
+                    error=_asr_error(
+                        provider,
+                        ValueError("Mapped full-call provider turn is unavailable"),
+                    ),
+                )
+                return
+            prior = existing.get((provider, conversation_id, event_id), {})
+            prior_result = prior.get("result") or {}
+            if (
+                prior.get("status") == "completed"
+                and prior_result.get("scope") == "full_call_turn_projection"
+                and str(prior_result.get("source_turn_id") or "") == turn_id
+                and prior_result.get("source_clip") == clip_trace
+            ):
+                return
+            result = {
+                "event_id": event_id,
+                "scope": "full_call_turn_projection",
+                "source_turn_id": turn_id,
+                "source_job_scope": "full_call_context",
+                "text": str(turn.get("text") or ""),
+                "segments": [
+                    {
+                        "segment_id": turn_id,
+                        "start": float(turn["start_s"]),
+                        "end": float(turn["end_s"]),
+                        "speaker": str(turn.get("speaker") or ""),
+                        "text": str(turn.get("text") or ""),
+                    }
+                ],
+                "source_clip": clip_trace,
+            }
+            await self.store.checkpoint_result(
+                "evaluation_case_asr_runs",
+                (batch_id, provider, conversation_id, event_id),
+                status="completed",
+                attempts=0,
+                result=result,
+                remote_job_id=None,
+            )
 
         await self.store.record_telemetry(
             batch_id=batch_id,
             stage="evaluation_asr",
             event="queue_depth",
             outcome="observed",
-            queue_depth=context_jobs + total_jobs,
+            queue_depth=context_jobs,
         )
         await asyncio.gather(
             *(
-                transcribe(provider, conversation_id, event_id)
+                project(provider, conversation_id, event_id)
                 for provider in batch["providers"]
                 for conversation_id, event_id in case_keys
             )
+        )
+        await self.store.refresh_execution_progress(
+            batch_id,
+            table="evaluation_asr_runs",
+            stage="evaluation_asr",
+            total=context_jobs,
+            progress_start=55,
+            progress_end=75,
         )
 
     @staticmethod
@@ -2736,7 +2707,7 @@ class EvaluationRunner:
         provider_results: list[dict[str, Any]],
         event_mapping: dict[str, Any] | None,
     ) -> list[dict[str, Any]]:
-        """Keep only each mapped provider turn and its direct neighbors."""
+        """Keep direct neighbors while the mapped target is the formal candidate."""
         if not event_mapping:
             return []
         providers, _lookup = build_turn_catalog(conversation_id, provider_results)
@@ -2760,13 +2731,16 @@ class EvaluationRunner:
             )
             if target_index is None:
                 continue
-            start = max(0, target_index - 1)
-            end = min(len(turns), target_index + 2)
+            neighbors = [
+                turns[index]
+                for index in (target_index - 1, target_index + 1)
+                if 0 <= index < len(turns)
+            ]
             bounded.append(
                 {
                     "provider": provider,
                     "target_turn_id": target_turn_id,
-                    "turns": turns[start:end],
+                    "turns": neighbors,
                 }
             )
         return bounded

@@ -5,8 +5,8 @@
 ## Status
 
 - Open questions affecting current delivery: 0
-- Last reviewed: 2026-09-21
+- Last reviewed: 2026-09-22
 
 ## Questions
 
-无。
+无。Qwen 两轮超时与失败拆分策略已按 PD-063 明确排除出本次发布，留待后续独立 LLM 调用逻辑任务重新提出并决策。

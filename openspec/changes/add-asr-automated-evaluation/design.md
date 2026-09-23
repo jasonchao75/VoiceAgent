@@ -3,7 +3,7 @@
 ## Goals
 
 - 将已验证的离线“历史文本筛选 → 多 ASR 交叉转写 → LLM 证据判断 → 人工回听”流程变成可恢复、可审计的线上批次任务。
-- 以用户 event 的纯用户音频切片为外部 ASR 调用单位、以同一 event 为 Case 和人工复核单位，从输入源头排除相邻机器人声音。
+- 以命中 conversation 的完整录音作为外部 ASR 调用单位，以 Event Aligner 映射出的 provider turn 文本作为 Case 证据；纯用户 event 切片只作为回听与 Benchmark 音频。
 - 在没有预设 Ground Truth 的条件下，只自动接纳证据充分的 Good/Bad，把无法形成可靠标注的 Case 交给人工。
 - 将最终样本沉淀为 Good:Bad 目标 1:1、可追溯且可下载的 Benchmark Library。
 - 保持评测资源与生产流式 ASR 完全隔离，并为成本、失败恢复、敏感数据和长期留存提供工程保障。
@@ -20,7 +20,7 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 |---|---|---|
 | Import | 安全解包、校验、生成不可变输入清单 | 不调用外部模型，不猜测缺失关联 |
 | Batch orchestrator | 状态机、检查点、预算、重试、任务依赖 | 不在请求线程执行长任务 |
-| Evaluation ASR | 每命中 conversation/provider 一次完整通话上下文转写；每目标 user event/provider 一次纯用户单句转写 | 不接管生产流式 ASR 配置，完整上下文不得充当事件候选 |
+| Evaluation ASR | 每命中 conversation/provider 一次完整通话转写，并从已映射 provider turn 投影事件候选 | 不接管生产流式 ASR 配置，不再次转录纯用户单句切片 |
 | Pass 1 | 从历史对话筛疑点并建立额外 Good 候选池 | 不产生 Ground Truth |
 | Pass 2 | 基于多源证据判定 Good/Bad/人工复核 | 不用多数票或 confidence 阈值替代证据规则 |
 | Review | 人工明确 Good/Bad/听不清 | 不把未提交草稿当作结论 |
@@ -86,8 +86,8 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | `ScenarioTag` / `ScenarioTagVersion` | stable tag ID; bilingual name/description, type, status, version, deleted_at; versions append-only |
 | `ReferenceDictionary` / `ReferenceDictionaryVersion` | stable dictionary key; name, purpose, generic schema, entries, status and append-only versions; context links reference exact versions |
 | `ProposedScenarioTag` | report_id + proposal_key unique; type, name_en/name_zh, description_en/description_zh, related case IDs, status |
-| `ProviderJob` | batch_id + conversation_id + event_id + provider unique; source clip trace, provider job ID, attempt, status, cost, error |
-| `ASRSegment` | event-level provider job + stable local segment ID; clip-relative start/end, speaker, language, text |
+| `ProviderJob` | batch_id + conversation_id + provider unique; full-call provider job ID, attempt, status, cost and error |
+| `ASRSegment` | full-call provider job + stable turn/segment ID; source-relative start/end, speaker, language and text |
 | `LLMRun` | pass, prompt/model snapshot, input hash, output, schema status, token/cost metadata |
 | `ReviewResult` | case_id unique current result plus append-only revisions; Good/Bad/unclear, label, reviewer, time |
 | `EvaluationReport` | batch_id + version unique; preliminary/final, coverage, immutable payload, generated_at |
@@ -125,7 +125,7 @@ All valid pass events in conversations containing at least one candidate form th
 
 ### Evaluation ASR fan-out
 
-After Pass 1 identifies target user events, each selected provider produces one diarized full-call timeline for every candidate-bearing conversation. Consecutive segments from the same anonymous speaker are persisted as stable turns. A dedicated Event Aligner then maps all target R events to existing provider turn IDs. Conversation units are dynamically packed against the frozen Pass 1 model's verified context limit: the whole batch uses one request when safe, otherwise the minimum safe groups are formed without splitting a conversation. Deterministic validation rejects invented IDs, wrong ownership, non-monotonic mappings, non-user turns and fewer than two provider mappings. Accepted provider turn intervals are unioned, validated on `user_record`, and may be expanded to cover user signal but never contracted inside the union. Excel `time (s)` is retained only for audit and never enters alignment. Pass 2 consumes only event-level retranscriptions; full-call ASR output is never used as a review candidate.
+After Pass 1 identifies target user events, each selected provider produces one diarized full-call timeline for every candidate-bearing conversation. Consecutive segments from the same anonymous speaker are persisted as stable turns. A dedicated Event Aligner then maps all target R events to existing provider turn IDs. Conversation units are dynamically packed against the frozen Pass 1 model's verified context limit: the whole batch uses one request when safe, otherwise the minimum safe groups are formed without splitting a conversation. Deterministic validation rejects invented IDs, wrong ownership, non-monotonic mappings, non-user turns and fewer than two provider mappings. Accepted provider turn intervals are unioned, validated on `user_record`, and may be expanded to cover user signal but never contracted inside the union. Excel `time (s)` is retained only for audit and never enters alignment. Pass 2 consumes the mapped full-call provider turn text directly; the generated pure-user WAV is playback and Benchmark evidence, not a second ASR input.
 
 Provider responses are normalized but raw safe response payloads may be retained access-controlled for troubleshooting. Local segment IDs use full conversation ID and provider identity; UI only exposes them inside technical evidence.
 
@@ -133,9 +133,9 @@ Failed ASR checkpoints expose only a safe diagnostic contract: provider, full-ca
 
 ### Pass 2 and automatic admission
 
-Pass 2 evaluates each first-pass candidate and only the additional Good candidates needed to satisfy the balance target. It receives the complete historical conversation, the same frozen context/dictionary/strategy/tag envelope, event-level retranscriptions, and a bounded full-call provider-turn window around each target. The application accepts an automatic Good/Bad only when:
+Pass 2 evaluates each first-pass candidate and only the additional Good candidates needed to satisfy the balance target. It receives the complete historical conversation, the same frozen context/dictionary/strategy/tag envelope, mapped target provider-turn texts, and a bounded full-call provider-turn window around each target. The application accepts an automatic Good/Bad only when:
 
-Pass 2 uses the selected model's Thinking mode and the same 65,536-input / 32,768-generation / 32,768-safety envelope as Pass 1. The 32,768 generation budget is shared: the planner first reserves the visible JSON required by the Case count, then gives only the remaining allowance to Thinking. It never adds a full reasoning reserve on top of the visible-output reserve. A Case unit contains the complete historical conversation text, the event-level retranscriptions, and only the full-call provider turns selected by Event Aligner for that target event plus the immediately preceding and following turn from the same provider when present. Unrelated full-call turns are excluded from Pass 2; they remain stored as read-only evidence. The planner first packs by conversation, then deterministically partitions an oversized conversation by stable Case subsets while repeating its necessary complete history. If one Case still exceeds the final-input or generation cap after this evidence selection, it fails before any provider call with a dedicated preflight category. Progress records unique Cases and external request groups separately. Each group has a stable `request_group_id`; the model must echo it and return one `results[]` element per Case, including `positioning_quality`. A mismatched group ID or incomplete/duplicate Case set rejects the whole response. A retry reuses the same frozen small-group membership and idempotency key so Cases cannot be omitted or duplicated; request size is never discovered through paid recursive retries.
+Pass 2 uses the selected model's Thinking mode and the same 65,536-input / 32,768-generation / 32,768-safety envelope as Pass 1. The 32,768 generation budget is shared: the planner first reserves the visible JSON required by the Case count, then gives only the remaining allowance to Thinking. It never adds a full reasoning reserve on top of the visible-output reserve. A Case unit contains the complete historical conversation text, the mapped full-call target turn texts as formal provider candidates, and only the immediately preceding and following turn from the same provider as bounded context when present. Unrelated full-call turns are excluded from Pass 2; they remain stored as read-only evidence. The planner first packs by conversation, then deterministically partitions an oversized conversation by stable Case subsets while repeating its necessary complete history. If one Case still exceeds the final-input or generation cap after this evidence selection, it fails before any provider call with a dedicated preflight category. Progress records unique Cases and external request groups separately. Each group has a stable `request_group_id`; the model must echo it and return one `results[]` element per Case, including `positioning_quality`. A mismatched group ID or incomplete/duplicate Case set rejects the whole response. A retry reuses the same frozen small-group membership and idempotency key so Cases cannot be omitted or duplicated; request size is never discovered through paid recursive retries.
 
 1. the response validates against the frozen schema;
 2. decision is Good or Bad;
@@ -173,9 +173,9 @@ Because provider transcription is conversation-scoped and these events come only
 - Validate group identity, conversation/event/provider ownership, existing turn IDs, monotonic event order, customer speaker role and at least two providers mapped to the same user utterance. Invalid or insufficient mapping fails only the affected event and records an actionable reason.
 - Derive the source interval from the union of accepted provider turns (`min(start)`, `max(end)`), not their intersection. Use the verified shared `record`/`user_record` timeline to validate signal and expand to nearby user activity when needed; never shrink inside the provider union. Noise/energy detection must never choose a different event or replace missing Event Aligner evidence.
 - Do not impose a fixed ten-second limit from the earlier example. If the selected turns create an implausibly broad or cross-event interval, fail explicitly rather than truncate and risk dropping speech.
-- Write one stable user-event WAV and reuse it across the selected providers, review player and Benchmark materialization.
+- Write one stable user-event WAV and reuse it across the review player and Benchmark materialization; never submit it to an ASR provider.
 - Treat provider segment timestamps as clip-relative technical evidence; never expand the source interval from provider boundaries or LLM references.
-- Fail the event-level ASR resource explicitly when the shared timeline or interval is invalid; never fall back to mixed full-call text.
+- Fail the affected Case evidence explicitly when the shared timeline or interval is invalid; never invent a candidate or fall back to Excel time.
 - Only use an MP3-derived range on WAV after import verified the common timeline. Never infer user/robot from stereo channels; the RiyadBank fixture has identical channel content and requires provider diarization plus historical roles.
 
 ## Review behavior
@@ -190,10 +190,10 @@ The page keeps one unresolved user event active. Historical production transcrip
 
 ## Metrics and reports
 
-Successful event-level ASR transcripts are first-class report evidence. Report
-materialization reads them directly from `evaluation_case_asr_runs`; Pass 2
-`vendor_evidence` may replace the displayed text with a narrower quoted span but
-must never be the only path by which a successful provider result becomes visible.
+Mapped full-call provider turn texts are first-class report evidence. Report
+materialization reads the persisted Case projection derived from immutable full-call
+turns; Pass 2 `vendor_evidence` may replace the displayed text with a narrower quoted
+span but must never be the only path by which a successful provider result becomes visible.
 If any Pass 2 request group remains failed, the automated stage stays retryable and
 does not freeze a normal preliminary report. A later successful retry appends a new
 immutable preliminary version rather than overwriting an earlier retained version.

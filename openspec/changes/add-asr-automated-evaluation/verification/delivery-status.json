@@ -21,8 +21,8 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call. PD-060 authorizes publishing the independently verified finish-with-current-results capability while preserving production data, leaving 7D19 untouched, and making no paid provider call.",
-  "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call. PD-060 authorizes publishing the independently verified finish-with-current-results capability while preserving production data, leaving 7D19 untouched, and making no paid provider call. PD-063 authorizes publishing PD-061 before any new LLM call-logic implementation, preserving E65A and making no paid provider call.",
+  "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification. PD-062 grants one pre-fix Qwen3.8-Max Pass 2 diagnostic for EV-20260923-E65A group G0008, limited to the original two-Case request plus at most two single-Case fallbacks and USD 5 total.",
   "independent_release_review": {
     "status": "PASS",
     "reviewed_at": "2026-09-21",
@@ -72,6 +72,15 @@
   },
   "external_calls": [
     {
+      "provider": "Alibaba Cloud DashScope native API / qwen3.8-max",
+      "data_scope": "Only the text evidence already sent by production Pass 2 for EV-20260923-E65A group G0008: its two Cases, candidate metadata, bounded full-call ASR context and event-level ASR results; no audio, credentials, unrelated groups or other batch data",
+      "cost_ceiling": "USD 5 total",
+      "stop_condition": "Call the original two-Case group once with reasoning_effort=medium, max_completion_tokens=32768 and a 300-second client timeout, without automatic retry. Stop immediately on success. Only on timeout, invalid response or structure failure may it split into the same two single-Case requests, one call each. Stop after both children, before exceeding USD 5, or immediately on authentication, rate-limit, endpoint or model-configuration error. Never mutate or resume the production batch.",
+      "authorization_decision_id": "PD-062",
+      "status": "Executed once on 2026-09-22. The original two-Case group completed with HTTP 200 in 223.373 seconds, passed the production schema/ID checks, used 20,529 input, 5,199 reasoning and 5,713 visible output tokens, and cost an estimated USD 0.031441. The authorized split fallback was not triggered. The production batch was not mutated.",
+      "evidence": "verification/qwen-g0008-medium-diagnostic-2026-09-22.md"
+    },
+    {
       "provider": "DeepSeek / deepseek-flash",
       "data_scope": "Actual: 53 of 56 conversations with candidates, 159 three-provider ASR results, 120 unique candidates; authorized scope was all 56 conversations",
       "cost_ceiling": "Not established before call; control failure. Estimated call cost at the configured static rate: USD 0.317332; actual isolated charge unavailable",
@@ -108,6 +117,72 @@
     }
   ],
   "known_issues": [
+    {
+      "id": "KI-181",
+      "status": "resolved",
+      "summary": "Two PD-061 second-pass failure scenarios still describe persisted mapped-turn evidence as event-level ASR transcription.",
+      "impact": "The active Delta Spec can be read as retaining the superseded pure-user retranscription contract in partial results, leaving the source of truth internally inconsistent even though the implementation no longer dispatches event clips.",
+      "source": "Independent PD-061 review on 2026-09-22 found the stale wording in specs/asr-automated-evaluation/spec.md under 'Second-pass groups remain failed' and 'Inspect successful work after a batch failure'.",
+      "next_action": "Replace the two stale references with mapped full-call target-turn Case evidence while preserving the partial-result and checkpoint-reuse behavior.",
+      "resolution": "Both scenarios now name mapped full-call target-turn Case evidence and retain the same partial-result/checkpoint-reuse behavior.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-180",
+      "status": "resolved",
+      "summary": "The report UI hides ASR evidence longer than 240 characters behind a legacy full-call placeholder, which can conceal a valid mapped target turn under PD-061.",
+      "impact": "A long but correctly mapped user turn would be persisted and used by Pass 2 yet not shown to the reviewer, violating the requirement that formal provider candidates remain directly visible.",
+      "source": "PD-061 implementation review on 2026-09-22 found the length-based legacy fallback in frontend/src/evaluation-runtime.js.",
+      "next_action": "Remove the legacy length heuristic and render every non-empty mapped target-turn candidate through the normal safe comparison renderer; add a static UI contract regression.",
+      "resolution": "Removed the 240-character legacy-context heuristic. Every non-empty mapped target-turn candidate now uses the normal safe comparison renderer, and a UI contract regression prevents the placeholder from returning.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-179",
+      "status": "resolved",
+      "summary": "The current runtime retranscribes every pure-user event clip with every ASR provider even though the full-call provider turns already contain the context-aware candidate text.",
+      "impact": "EV-20260923-E65A created 108 avoidable event-level provider jobs in addition to 66 full-call jobs. The extra path adds cost and failures, and its context-free transcripts can disagree with the better-contextualized full-call result.",
+      "source": "Product-owner diagnosis and confirmation in the current Codex task on 2026-09-22; EV-20260923-E65A persisted 36 target events across 22 conversations and displayed 174 Multi-ASR jobs.",
+      "next_action": "Implement PD-061: project mapped full-call turn text as Case evidence, keep pure-user clips only for playback/review/Benchmark, and count only full-call provider dispatches as Multi-ASR jobs.",
+      "resolution": "The executor now dispatches only one full-call ASR job per conversation/provider, projects the Event Aligner-selected turn into persisted Case evidence with zero attempts and no remote job ID, and retains the pure-user WAV only for playback/review/Benchmark. Multi-ASR progress, cost and provider-failure totals read only full-call jobs; local Case preparation failures are reported separately. The target/full-context payload no longer duplicates the selected turn. Verified by 266 repository tests, scoped Ruff/Mypy and the frontend production build without an external provider call.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-178",
+      "status": "open",
+      "summary": "The native Qwen3.8 Pass 2 path enables Thinking without selecting a reasoning effort, so qwen3.8-max uses the provider's xhigh default; explicit medium still needs more than the fixed 120-second timeout for a real two-Case group.",
+      "impact": "The authorized G0008 replay completed correctly at medium in 223.373 seconds, so lowering reasoning effort alone would still time out in production. The current path needs both an explicit effort and a Qwen-specific timeout/recovery policy; otherwise valid in-window requests continue to be reported as failures.",
+      "source": "Source inspection plus PD-062 external-real evidence on 2026-09-22. G0008 exactly matched the frozen 60,894 request estimate, returned HTTP 200 with both Cases valid, and used 20,529 input, 5,199 reasoning and 5,713 visible output tokens. Evidence: verification/qwen-g0008-medium-diagnostic-2026-09-22.md.",
+      "next_action": "Confirm the product-level Qwen timeout and split policy, then implement explicit medium plus the chosen timeout and deterministic timeout/structure-triggered split recovery.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-177",
+      "status": "open",
+      "summary": "Timed-out LLM requests release their local budget reservation and create no usage ledger entry even though the provider may have processed and billed them.",
+      "impact": "E65A shows no Pass 2 LLM ledger rows after 24 requests reached the 120-second timeout, so the displayed batch cost remains USD 0.55 and may understate the supplier invoice. The application cannot reconcile canceled client waits with provider-side usage or enforce a truthful retry budget.",
+      "source": "Read-only production SQLite and executor inspection on 2026-09-22: all 24 Pass 2 attempts have timeout telemetry, no Pass 2 cost-ledger entry exists, and _llm_json releases the reservation whenever no response usage is received. Provider-side billing remains unverified.",
+      "next_action": "Before broad retry, constrain the external-real probe by an explicit call count and supplier-price ceiling; then add provider request IDs or a reconciliation path so timeout billing is represented separately from confirmed zero usage.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-176",
+      "status": "open",
+      "summary": "The running batch detail can keep showing zero Pass 2 request groups after durable groups and failures already exist.",
+      "impact": "For EV-20260923-E65A the UI continued to show 0 request groups succeeded, failed and pending while production SQLite already contained eight groups, including terminal failures. Operators can misdiagnose an active provider-timeout/retry sequence as a planner or queue stall.",
+      "source": "Read-only production browser and SQLite inspection on 2026-09-22 Pacific time. The task page showed 0/0/0 request groups while the batch snapshot contained pass_2_request_status total=8, failed=4, pending=4 and attempts=20; a later check reached failed=6, pending=2 without the open page refreshing.",
+      "next_action": "Poll or push running-batch progress, reconcile the visible task state from the latest durable batch snapshot, and add a browser regression that observes request-group counters advance without leaving the task page.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-175",
+      "status": "open",
+      "summary": "EV-20260923-E65A Qwen3.8-Max Pass 2 groups all hit the fixed 120-second request timeout and exhaust the three-attempt policy without producing a decision.",
+      "impact": "Thirty eligible suspect Cases are split across eight groups, but no group has succeeded. At the latest read-only check six groups and 23 Cases were terminally failed while two groups remained on their final queued/running attempt; the batch stays at Pass 2 75% until the remaining attempts settle, then is expected to become partially_failed.",
+      "source": "Read-only production SQLite and source inspection on 2026-09-22 Pacific time. Every recorded Pass 2 failure category is timeout against provider=qwen; per-dispatch latency is approximately 120 seconds, while larger telemetry durations include time waiting behind the two-request semaphore. The native DashScope client timeout is fixed at 120 seconds.",
+      "next_action": "Do not retry this batch unchanged. PD-062 proves the smallest original group succeeds at medium in 223.373 seconds, so confirm and implement a Qwen-specific timeout above that observation plus deterministic split recovery, while preserving cost and idempotency controls.",
+      "disclosed_to_user": true
+    },
     {
       "id": "KI-174",
       "status": "resolved",
@@ -1738,6 +1813,20 @@
   ],
   "unverified_items": [
     {
+      "id": "UV-031",
+      "status": "excluded",
+      "summary": "Qwen Pass 1/Pass 2 timeout, reasoning-effort and failure-splitting policy is intentionally excluded from the PD-061 production release.",
+      "reason": "PD-063 confirms sequential delivery: publish the independently verified ASR turn-projection change first, then let the separate LLM call-logic task re-open the product options after this deployment. No LLM runtime behavior is changed by this release.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-030",
+      "status": "open",
+      "summary": "The PD-061 full-call-turn projection path has deterministic local coverage but has not yet been exercised by a newly created production batch.",
+      "reason": "This implementation turn intentionally made no paid ASR/LLM call and did not mutate EV-20260923-E65A. Historical batches remain immutable, so only a future new batch can verify live provider behavior and the reduced Multi-ASR task count.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "UV-029",
       "status": "open",
       "summary": "Historical ASR checkpoints that stored only a generic exception name cannot expose a more specific past failure reason without a new attempt.",
@@ -1910,9 +1999,10 @@
     },
     {
       "id": "UV-018",
-      "status": "open",
+      "status": "resolved",
       "summary": "The corrected Qwen Thinking request has not yet been proven in a later external-real Pass 2 run against the paid endpoint.",
       "reason": "The implementation is covered by deterministic request-shape tests and local report recovery. EV-20260920-566C and its failed groups were deleted through the user-authorized transactional path, so they are no longer retryable; no replacement paid external request was made during this independent verification.",
+      "resolution": "PD-062 reconstructed the exact frozen E65A G0008 Pass 2 request and sent it once to the paid native qwen3.8-max endpoint with Thinking and reasoning_effort=medium. It returned HTTP 200 in 223.373 seconds, both Cases passed production validation, provider usage was captured, and the estimated charge was USD 0.031441. This proves the native Thinking request works externally while also proving the existing 120-second timeout is insufficient.",
       "disclosed_to_user": true
     },
     {
@@ -1926,7 +2016,7 @@
       "id": "UV-021",
       "status": "open",
       "summary": "The corrected grouped Pass 1 and Thinking-aware Pass 2 retry path has not yet been revalidated against Gemini 3.8 Flash or Qwen 3.8 Max in production.",
-      "reason": "This turn used read-only production evidence plus deterministic local tests and made no new paid provider call. EV-20260921-A6B5 remains a failed pre-fix production batch until the fix is deployed and the user explicitly retries it or starts a new run.",
+      "reason": "PD-062 externally proved that the exact Qwen G0008 parent request succeeds at medium in 223.373 seconds, but the integrated application retry/split path is not implemented or exercised, the authorized child fallback was not triggered because the parent succeeded, and Gemini remains untested in a later real batch.",
       "disclosed_to_user": true
     },
     {
@@ -1949,6 +2039,13 @@
       "summary": "The new full-call ASR context plus speech-aligned event-candidate flow has not yet been executed against Soniox, Speechmatics and ElevenLabs in a paid external-real batch.",
       "reason": "Local-real R6/R10 audio boundaries and deterministic provider mocks are green, but no new customer audio was sent externally in this turn. A paid batch requires separate scoped authorization or a user-initiated run after deployment.",
       "resolution": "The user-initiated production batch EV-20260922-6AA1 executed current full-call and event-level ASR work across Soniox, Speechmatics and ElevenLabs. Read-only diagnosis of R6, R7 and R13 confirms the external-real path and records its newly exposed defects as KI-162 through KI-164.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-025",
+      "status": "open",
+      "summary": "The timeout/structure-triggered Pass 2 child split remains externally unverified because the authorized G0008 parent completed successfully.",
+      "reason": "PD-062 allowed two single-Case fallbacks only if the original request timed out or returned invalid/incomplete structure. The parent returned a valid two-Case result in 223.373 seconds, so the stop rule correctly prevented the two extra paid calls. The split behavior must be verified deterministically during implementation and can only receive a later external-real check if a naturally splittable failure occurs under a separately authorized run.",
       "disclosed_to_user": true
     },
     {
