@@ -222,7 +222,7 @@
 - [x] 12.82 Persist all Case/provider turn projections in one busy-timeout transaction and prevent SQLite lock amplification from masking the real Align outcome (PD-069, KI-184)
 - [x] 12.83 Add the independent Event Alignment fourth step, immediate elapsed rendering and provider-local ASR request totals to the prototype and formal UI (PD-067, KI-185, KI-186, KI-187)
 - [x] 12.84 Add regressions for final-wire size, split/restart behavior, bulk persistence, six-stage rendering, elapsed continuity and provider-local totals; run scoped/full checks and independent verification
-- [ ] 12.85 Deploy the independently verified release, confirm CI/CD, public health and deployed SHA, and verify E65A remained unchanged with no automatic provider dispatch (PD-069)
+- [x] 12.85 Deploy the independently verified release, confirm CI/CD, public health and deployed SHA, and verify E65A remained unchanged with no automatic provider dispatch (PD-069)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

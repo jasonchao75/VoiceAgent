@@ -975,3 +975,4 @@
 - Confirmation quote: “那就按已验证方案进入实现、测试并上线吧”
 - Decision: 实现并发布 PD-067/PD-068 已验证方案：六步进度独立展示 Event Alignment；Align 使用统一 64K 最终输入/32K 输出包络、业务载荷只出现一次、Thinking 关闭、180 秒超时；超时或结构失败时父组标记 superseded 并按完整 conversation 稳定二分，单 conversation 叶子最多再尝试一次；成功 conversation 立即持久化并在恢复时复用。ASR 投影采用单事务批量落库并启用 SQLite busy timeout，避免并发写锁掩盖根因。活动请求首帧直接显示实际已等待时长，ASR 行使用 provider 内部序号/总数。发布不得自动重试或改写 `EV-20260923-E65A`，不得产生新的供应商调用。
 - Consequences: 更新 Delta Spec、设计、任务、V1.19 原型与正式页面；完成定向/全量测试、Change gate、独立验收、CI/CD、生产健康与部署 SHA 核对后才可声明上线。
+- Verification: 独立验收 PASS；131 项定向与 278 项全量测试、Ruff、Mypy、前端构建及双视口正式路由检查通过。提交 `6f40a1ad3ac05f48f18d3d14f284d68da229fea1` 通过 CI `35831058133` 与生产部署 `35831260997`，容器 Healthy、公开 `/health` 返回 `status=ok`。部署后只读核对 E65A 仍为 `partially_failed`，更新时间停留在部署前的 `2026-09-23T05:49:14+00:00`，8 个 Pass 2 失败组与 30 个失败 Case 未被自动重试；本次发布未产生供应商调用。
