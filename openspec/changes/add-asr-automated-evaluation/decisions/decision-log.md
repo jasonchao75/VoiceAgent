@@ -4,12 +4,40 @@
 
 ## Status
 
-- Recorded decisions: 72 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 74 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-23
 
 ## Decisions
+
+### PD-078 — 发布 Pass 2、Turn 异常与复核双语修复到生产
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: KI-200–KI-204 修复完成并独立验收通过后，是否提交到 `main` 并触发生产发布
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；Agent 披露本地验证通过、生产尚未生效并请求发布授权
+- Confirmation quote: “发布到生产”
+- Decision: 只提交并发布本轮已独立验收的 Pass 2 canonical 终态、历史 Turn wrong-merge 证据门槛/状态保留及 Manual Review 双语修复和对应规格/测试/验收记录。推送到 `git@github.com:jasonchao75/VoiceAgent.git` 的 `main`，触发既有生产工作流并验证 CI、部署、公开健康与部署 SHA。
+- Reason: 产品负责人要求上述已验证修复在线上生效。
+- Consequences: 发布保留现有生产 Evaluation 数据，不清空历史、不自动重试 `EV-20260923-E65A`、不发起 ASR/LLM 付费调用。用户后续手动重试才会使用新规则。
+- Updated artifacts: `decision-log.md`、`tasks.md`、`verification/delivery-status.json`、发布提交与 CI/CD 证据。
+- Verification: 发布前全量测试、双视口 UI、构建、Change gate 与独立验收均 PASS；发布后需核对远端提交、CI/CD、生产健康、实际部署 SHA 与 E65A 未被自动操作。
+
+### PD-077 — 修复 Pass 2 历史失败误判与 Turn 异常过量候选
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: 生产重试成功替换旧 Pass 2 失败后批次仍被判为 `partially_failed`，且历史 Turn 异常队列因未分配语音岛过量膨胀
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人要求先验证两项发现，成立后直接修复
+- Confirmation quote: “你先验证一下你的发现对不对。如果对，那就修复一下这两个问题：错误判定Partially——failed问题和Turn异常的问题”
+- Decision: Pass 2 的终态只按本轮当前 canonical Case 集合及其最新检查点判定；已被新分组替代的历史失败组、已不属于当前 Case 集合的旧失败行只保留诊断，不得继续迫使批次进入 `partially_failed`。历史 Turn 的 `wrong_merge` 候选不得由“存在未分配语音岛”直接推导；原始语音岛继续作为不可变底层音频证据，但同一个 provider customer turn 跨越的多个岛视为同一口语 Turn 的停顿片段。只有相邻机器人 turn 或至少两家 provider 的独立 customer-turn 边界支持该岛为另一轮发言时，才创建 `wrong_merge` 人工复核候选。
+- Reason: 生产 E65A 证明替代组已连续成功，但旧失败行仍参与终态统计；同批 137 个 Turn 异常中 119 个 `wrong_merge` 来自“所有 orphan island 均报错”的实现捷径，不能证明历史标注真的错误。
+- Consequences: 修复不得删除原始失败/语音岛证据；Pass 2 仍对当前未完成 Case 如实部分失败。Turn 异常队列需在重新对齐时移除尚未人工确认且不再满足证据门槛的旧候选，已确认/已驳回记录保持不可变。不得触发新的外部付费调用。
+- Updated artifacts: Delta Spec、`design.md`、`tasks.md`、执行器、Turn 异常持久化与回归测试。
+- Verification: 使用 E65A 派生的确定性反例验证旧实现可复现两项误判；修复后需通过定向/全量测试、Change gate 和独立验收。
 
 ### PD-076 — 确认并冻结 V1.20 规格与原型基线
 

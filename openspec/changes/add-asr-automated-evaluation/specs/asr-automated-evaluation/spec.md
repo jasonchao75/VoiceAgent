@@ -147,6 +147,8 @@
 
 系统 MUST 以 worksheet/event 顺序为硬约束，将有序历史用户事件与有序语音岛做确定性单调序列匹配；MUST 支持多个相邻历史事件合并到一个语音岛，并为合并 Case 保留全部 source event ID。文本归一化 MUST 保留原文，同时生成至少 Unicode/大小写/标点规范形式、逐位数字序列和数值形式；例如 `223` 与 `two two three` 可通过共同数字序列形成辅助证据。归一化文本、相邻机器人轮次和跨 provider 一致性只可排序已满足事件/语音岛顺序的合法候选，MUST NOT 切分、移动或扩大已冻结的音频边界。
 
+原始语音岛 MUST 作为不可变底层音频证据保留，但语音岛与口语 Turn 不得被假设为一对一。同一个 provider customer turn 跨越的多个岛 MUST 视为同一口语 Turn 的停顿片段，不得仅因其中一个岛未被 Case 使用就生成 `wrong_merge`。只有相邻机器人 turn，或至少两家 provider 都把该岛与已分配岛识别为不同 customer turn 时，系统才可创建 `wrong_merge` 待复核候选；证据不足时保持为同 Turn 片段且不占用人工复核队列。
+
 完整录音 provider turn MUST 按与已冻结 Case 区间的时间重叠投影为候选文本。只有存在唯一且满足冻结证据策略的映射时，系统才可标记 `deterministic_aligned`。事件/语音岛数量不一致、多个合法路径同分、粗粒度 provider turn 横跨多个岛或 provider 证据冲突时，受影响 Case MUST 标记 `ambiguous` 并进入受控 LLM 辅助；不得直接声称成功。
 
 辅助 LLM MUST 使用批次冻结的资源/模型，并且只接收受影响 Case 的真实 event ID、audio-island ID、provider turn ID、原始/归一化文本及必要相邻上下文。模型只能从输入候选 ID 中选择并说明依据，MUST NOT 生成时间戳、新 ID、改变语音岛边界或打破事件顺序。程序 MUST 在使用结果前校验请求/Case 身份、完整候选集合、真实 ID、conversation/provider 归属、单调顺序、冻结边界和跨 provider 证据；结构无效、遗漏、冲突或仍不唯一时，该 Case MUST 进入人工复核。
@@ -187,6 +189,16 @@
 
 - **WHEN** 多个相邻历史用户事件被唯一映射到同一个语音岛
 - **THEN** 系统创建一个稳定合并 Case、保留有序 source event ID 列表，并记录一个历史 Turn 标注异常组及其受影响 Turn 行数
+
+#### Scenario: Keep pauses inside one spoken Turn out of anomaly review
+
+- **WHEN** 一个 provider customer turn 跨越多个 RMS 语音岛，且没有相邻机器人 turn 或两家 provider 的独立 customer-turn 边界证明它们是不同发言轮次
+- **THEN** 系统保留全部原始语音岛作为音频证据，但把它们视为同一口语 Turn 的停顿片段，不生成 `wrong_merge` 待复核候选
+
+#### Scenario: Detect a real extra spoken Turn
+
+- **WHEN** 一个未分配语音岛与最近 Case 之间存在相邻机器人 turn，或至少两家 provider 均以不同 customer turn ID 覆盖这两个岛
+- **THEN** 系统可生成 `wrong_merge` 待复核候选，并同时保存已分配岛、额外岛和支持独立 Turn 的 provider 证据
 
 #### Scenario: Persist projected ASR evidence per Case
 - **WHEN** 同一 conversation 的一个 Case 已唯一对齐，而 sibling Case 仍歧义或失败
@@ -539,6 +551,11 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 - **WHEN** 已通过最终消息硬上限预检的第二轮请求组超时、返回无效 JSON 或引用不存在的 Segment ID
 - **THEN** 系统 MUST 保留成功 Case 检查点，将父组标记为已被子组取代，按完整 Case 边界确定性拆分并仅派发未完成 Case；单 Case 叶子最多再尝试一次，已完成 Case 不得重复提交
+
+#### Scenario: Ignore superseded Pass 2 failures at terminal reconciliation
+
+- **WHEN** 当前 canonical Case 集合均已完成，但历史请求组或已被新 Case 映射替代的旧检查点仍保留失败状态
+- **THEN** 系统按当前 canonical Case 集合的最新检查点进入报告或人工复核阶段；历史失败只保留为诊断，不得把批次重新判为 `partially_failed` 或再次派发
 
 #### Scenario: Reuse a historical Pass 2 group by idempotency key
 

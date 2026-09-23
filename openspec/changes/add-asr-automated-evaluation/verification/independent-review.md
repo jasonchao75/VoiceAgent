@@ -1,65 +1,56 @@
-# Independent Review — V1.20 audio-first recovery
+# Independent Review — retry terminal state, Turn reconciliation, and review localization
 
 - Date: 2026-09-23
 - Reviewer: independent Change verifier
 - Result: **PASS**
-- Scope: tasks 12.87–12.93; PD-070–PD-076; audio-first alignment, ambiguity-only LLM fallback, Pass 2 restart identity, legacy Align isolation, historical Turn review/reporting, and global Benchmark uniqueness
+- Scope: tasks 12.94–12.96; KI-200–KI-204; Pass 2 canonical terminal reconciliation, historical Turn wrong-merge evidence/lifecycle, and bilingual Manual Review queue labels/counts
 
 ## Verdict
 
-V1.20 passes independent Engineering Checkpoint C. The implementation matches the frozen Delta Spec and prototype for the reviewed scope, the prior B1/B2 findings are closed, and the newly found overlapping historical-Turn metric defect (KI-199) was corrected and regression-tested during this re-review. Task 12.92 may be closed and the release may proceed through its separately authorized deployment controls.
+The increment passes independent verification. Pass 2 terminal state now depends only on the current canonical Case membership; historical failed checkpoints remain diagnostic while missing or failed current Cases still block completion. Historical Turn reconciliation suppresses pause fragments without independent-Turn evidence, preserves reproduced deferred state and revisions, supersedes disappeared open candidates, and leaves confirmed/rejected decisions untouched. The formal Manual Review route renders the ASR Case and historical Turn tabs plus the Turn queue title correctly in English and Chinese while retaining live counts.
 
-This PASS is not evidence of production deployment or a paid-provider run. It does not authorize retrying `EV-20260923-E65A`; no production data was changed and no external provider was called.
+Two defects found during the first review pass were recorded as KI-203/KI-204, corrected by the implementation agent, and independently re-tested before this PASS. No production data was changed, no paid provider was called, and `EV-20260923-E65A` was not retried.
 
 ## Requirement trace
 
-### PD-070 / PD-072 — audio-first Case alignment and bounded LLM assistance
+### Pass 2 canonical terminal state
 
-- Pure-user audio islands are frozen before text ranking. Historical timestamps are excluded (`historical_time_used=false`), event order is the hard monotonic constraint, and text cannot move waveform boundaries.
-- Numeric normalization maps forms such as `223` and `two two three` to the same digit sequence. Adjacent robot context and cross-provider text consistency are implemented as auditable legal-path ranking components.
-- Many adjacent historical events may map to one island/Case while preserving every source/target event ID.
-- Strong provider digit, inferred-role, and semantic conflicts keep a Case ambiguous. After an LLM selection, the runner rebuilds the Case through the deterministic path and rejects any selection that still has a deterministic conflict.
-- Alignment is persisted per Case, so an ambiguous event does not discard valid sibling Cases.
+- The runner freezes `pass_2_canonical_case_keys` before dispatch and updates it when balanced Good Cases are added.
+- `_current_pass2_failures` reports a current Case when its latest per-Case checkpoint is missing or not completed, so an active current failure still yields `partially_failed`.
+- Historical failed Case/group rows outside the current canonical set do not affect terminal state, materialization, balancing, or reporting.
+- The deterministic regression proves both sides: historical `R1=failed` is ignored when only `R2` is canonical, while `R1` blocks when it remains canonical.
 
-### Pass 2 identity and legacy Event Alignment
+### Historical Turn wrong-merge and lifecycle
 
-- Pass 2 retry reconciliation reuses the persisted canonical group ID for the same idempotency key and exact membership, even when its ordinal changes; membership drift is rejected.
-- The current audio-first ASR path does not replay legacy Event Alignment. A retained failed singleton checkpoint remains historical diagnostics while valid Cases are rebuilt and continue independently.
+- A same-provider customer turn spanning the assigned and orphan RMS islands suppresses `wrong_merge`.
+- A candidate is allowed only with an intervening robot boundary or distinct customer-turn IDs from at least two providers; raw islands remain evidence and historical timestamps/text do not decide the boundary.
+- Reproduced pending/deferred candidates are updated in place. The regression proves deferred version 2 survives replay with its revision intact.
+- A disappeared open candidate transitions to `superseded` with an appended system revision and is excluded from report quality metrics; a later reproduction can reactivate it. Confirmed/rejected rows are outside reconciliation and remain immutable.
 
-### PD-071 / PD-074 — historical Turn quality
+### Manual Review localization
 
-- Detection covers over-split, wrong-merge, and order-anomaly groups and persists all source Turns, suggested Case/island mappings, provider evidence, and exact-island audio URLs.
-- Formal review supports confirm, reject, and defer in a queue separate from ASR review. The report includes confirmed-only group count, deduplicated affected Turn rows, review coverage/pending count, group detail, and audio playback without changing ASR rates, the source workbook, or Benchmark ingestion.
-- KI-199 is closed: affected rows are the union of `(conversation_id, source_event_id)` across confirmed groups. The overlapping wrong-merge/order-anomaly regression confirms two groups covering the same two source Turns report `2` rows, not `3`.
-- The formal production route/DOM displays source Turns, suggested Case mapping, provider evidence, per-island playback, and the report drill-down. Desktop and narrow Chromium checks pass without document/panel horizontal overflow.
-
-### PD-073 / PD-075 — global Benchmark identity
-
-- Migration installs global `(conversation_id, event_id)` uniqueness only after archiving legacy duplicates and their revisions/trace evidence.
-- Identical cross-batch AI/manual candidates reuse the canonical Benchmark ID. Conflicting later candidates are discarded before sample, revision, review-task, count, or export creation.
+- ASR Case and historical Turn tab labels use bilingual label nodes separate from their live count nodes.
+- The Turn queue title also separates localized label and dynamic count, and historical Turn content is refreshed after a language change.
+- The production `/evaluation.html` DOM passed the exact English-to-Chinese label/title/count assertions at both desktop and narrow Chromium viewports.
+- The frozen prototype remains unchanged at SHA-256 `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62`; retained V1.20 desktop/narrow review and report screenshots remain the visual baseline evidence.
 
 ## Reproducible evidence
 
 | Check | Result |
 |---|---|
-| Frozen prototype SHA-256 | PASS: `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62` |
-| `python3 scripts/quality/verify_change.py add-asr-automated-evaluation` | PASS: 0 errors, 20 disclosed warnings; 3 unchecked tasks include the independent-verification task itself and pre-existing out-of-scope work |
-| `.venv/bin/pytest -q` | PASS: 292 tests; 2 pre-existing dependency deprecation warnings |
-| `.venv/bin/pytest -q tests/test_evaluation.py tests/test_evaluation_ui_contract.py` | PASS: 127 tests |
-| V1.20 Turn review/report Playwright checks | PASS: 4 tests across desktop and narrow Chromium |
-| `.venv/bin/ruff format --check ...` and `.venv/bin/ruff check ...` (Evaluation scope) | PASS |
-| Scoped Mypy with current Python 3.13 environment | PASS: 5 affected Evaluation source files |
-| Default-target Mypy (`python_version=3.11`) in the current Python 3.13 venv | Environment-limited: NumPy's installed stub uses Python 3.12 type-statement syntax; project analysis does not start. CI remains the Python 3.11 authority. |
-| `npm run build` | PASS: production bundle built successfully |
+| Focused Pass 2 / Turn lifecycle tests | PASS: 4 tests |
+| Full repository test suite | PASS: 294 tests; 2 pre-existing dependency deprecation warnings |
+| Manual Review localization Playwright check | PASS: 2 tests, desktop and narrow Chromium |
+| Frontend production build | PASS |
+| Scoped Ruff format/check | PASS |
+| Scoped Mypy with the installed Python 3.13 environment | PASS: 2 changed Evaluation source files |
+| Change gate | PASS: 0 errors, 20 disclosed warnings; the 2 unchecked tasks are pre-existing tasks 12.3a and 12.64 outside this increment |
 | `git diff --check` | PASS |
 
-The Playwright rerun used an isolated local data directory and the formal `/evaluation.html` route. Its temporary data was removed after the run. Backend tests independently cover exact-island clip generation; browser fixtures verify the production DOM and exact audio URLs without making provider calls.
+## Evidence boundary
 
-## Evidence boundary and residual items
+- **Static:** Delta Spec, design, decisions, tasks, delivery status, implementation, migration-compatible storage schema, frozen prototype, and retained UI screenshots.
+- **Deterministic/local-real:** SQLite persistence and revision behavior, 294 repository tests, production frontend build, and formal-route desktop/narrow Chromium interaction.
+- **External-real:** not performed. Existing open delivery warnings remain disclosed and do not invalidate this scoped increment; production retry/deployment requires its own authorization and verification.
 
-- **Static:** frozen PRD/prototype, Delta Spec, design, tasks, decision records, migrations, implementation, and delivery status.
-- **Deterministic/mock:** 292 repository tests, including audio boundary, numeric normalization, context/consistency ranking, deterministic LLM rejection, Pass 2 restart identity, legacy isolation, Turn anomaly/metric behavior, and Benchmark migration/ingestion.
-- **Local-real:** SQLite migrations/transactions, frontend production build, formal-route desktop/narrow Chromium rendering and interaction.
-- **External-real:** none for V1.20. Deployment, production migration, and post-deploy verification remain pending under UV-035; E65A was not retried.
-
-No blocking finding remains in the reviewed V1.20 scope.
+No blocking finding remains in tasks 12.94–12.96.

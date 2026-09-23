@@ -68,6 +68,24 @@ test("keeps the production transcript and current proposal adjacent for review",
   await expect(comparison.getByText("two two one", { exact: true })).toBeVisible();
 });
 
+test("localizes both Manual Review queue tabs", async ({ page }) => {
+  await openEvaluation(page, "review");
+  await expect(page.getByRole("tab", { name: /ASR Case review/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Historical Turn review/ })).toBeVisible();
+  await expect(page.locator("#page-review .review-tabs")).not.toContainText("复核");
+  await page.getByRole("tab", { name: /Historical Turn review/ }).click();
+  await expect(page.locator("#page-review [data-review-panel='turn'] h2")).toHaveText(
+    "Pending Turn issue groups 0",
+  );
+
+  await page.getByRole("tab", { name: "中文" }).click();
+  await expect(page.getByRole("tab", { name: /ASR Case 复核/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Turn 异常复核/ })).toBeVisible();
+  await expect(page.locator("#page-review [data-review-panel='turn'] h2")).toHaveText(
+    "Turn 异常待处理 0",
+  );
+});
+
 test("uses per-conversation Excel uploads and keeps the dialog overflow-safe", async ({ page }) => {
   await openEvaluation(page);
   await page.locator("#new-run").click();

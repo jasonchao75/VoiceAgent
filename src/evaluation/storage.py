@@ -2851,6 +2851,47 @@ class EvaluationStore:
             suggested = suggested_evidence([event_id], island_id) if island_id is not None else None
             return [suggested] if suggested is not None else []
 
+        def supports_independent_turn(assigned_island_id: str, orphan_island_id: str) -> bool:
+            """Require acoustic turn evidence before proposing a historical wrong merge."""
+            assigned_rows = {
+                str(row.get("provider")): row
+                for row in all_island_evidence.get(assigned_island_id, [])
+                if row.get("provider") and str(row.get("inferred_role")) in {"customer", "unknown"}
+            }
+            orphan_rows = {
+                str(row.get("provider")): row
+                for row in all_island_evidence.get(orphan_island_id, [])
+                if row.get("provider") and str(row.get("inferred_role")) in {"customer", "unknown"}
+            }
+            shared_providers = sorted(set(assigned_rows) & set(orphan_rows))
+            if any(
+                str(assigned_rows[provider].get("turn_id"))
+                == str(orphan_rows[provider].get("turn_id"))
+                for provider in shared_providers
+            ):
+                return False
+            assigned_ordinal = island_ordinal.get(assigned_island_id, 0)
+            orphan_ordinal = island_ordinal.get(orphan_island_id, 0)
+            orphan_after = orphan_ordinal > assigned_ordinal
+            robot_boundary = any(
+                bool(
+                    (assigned_rows[provider].get("adjacent_context") or {}).get("following")
+                    or (orphan_rows[provider].get("adjacent_context") or {}).get("previous")
+                )
+                if orphan_after
+                else bool(
+                    (orphan_rows[provider].get("adjacent_context") or {}).get("following")
+                    or (assigned_rows[provider].get("adjacent_context") or {}).get("previous")
+                )
+                for provider in shared_providers
+            )
+            distinct_customer_turns = sum(
+                str(assigned_rows[provider].get("turn_id"))
+                != str(orphan_rows[provider].get("turn_id"))
+                for provider in shared_providers
+            )
+            return robot_boundary or distinct_customer_turns >= 2
+
         for case in cases:
             source_ids = [str(value) for value in case.get("source_event_ids", [])]
             if len(source_ids) > 1:
@@ -2912,9 +2953,13 @@ class EvaluationStore:
                     island_ordinal.get(str(item["island_id"]), 0) - orphan_ordinal
                 ),
             )
+            assigned_island_id = str(nearest_assignment["island_id"])
+            orphan_island_id = str(island["island_id"])
+            if not supports_independent_turn(assigned_island_id, orphan_island_id):
+                continue
             source_ids = [str(nearest_assignment["event_id"])]
             existing_evidence = evidence_for_event(source_ids[0])
-            orphan_evidence = suggested_evidence(source_ids, str(island["island_id"]))
+            orphan_evidence = suggested_evidence(source_ids, orphan_island_id)
             if orphan_evidence is None:
                 continue
             combined_evidence = [*existing_evidence, orphan_evidence]
@@ -2927,9 +2972,66 @@ class EvaluationStore:
 
         now = _utcnow()
         async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
             await database.execute("PRAGMA foreign_keys = ON")
             await database.execute("PRAGMA busy_timeout = 5000")
             await database.execute("BEGIN IMMEDIATE")
+            candidate_issue_ids = {
+                "HTI-"
+                + uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    f"{batch_id}:{conversation_id}:{'|'.join(source_key)}",
+                )
+                .hex[:20]
+                .upper()
+                for source_key in candidates
+            }
+            existing_rows = await (
+                await database.execute(
+                    """SELECT issue_group_id,status,version
+                       FROM evaluation_historical_turn_issues
+                       WHERE batch_id=? AND conversation_id=?
+                         AND status IN ('pending','deferred','superseded')""",
+                    (batch_id, conversation_id),
+                )
+            ).fetchall()
+            for row in existing_rows:
+                issue_group_id = str(row["issue_group_id"])
+                status = str(row["status"])
+                if issue_group_id in candidate_issue_ids and status != "superseded":
+                    continue
+                if issue_group_id not in candidate_issue_ids and status == "superseded":
+                    continue
+                next_status = "pending" if issue_group_id in candidate_issue_ids else "superseded"
+                next_version = int(row["version"]) + 1
+                await database.execute(
+                    """UPDATE evaluation_historical_turn_issues
+                       SET status=?,decision=?,reviewer=?,reviewed_at=?,version=?,updated_at=?
+                       WHERE issue_group_id=?""",
+                    (
+                        next_status,
+                        None if next_status == "pending" else "superseded",
+                        None if next_status == "pending" else "system_reconciliation",
+                        None if next_status == "pending" else now,
+                        next_version,
+                        now,
+                        issue_group_id,
+                    ),
+                )
+                await database.execute(
+                    """INSERT INTO evaluation_historical_turn_issue_revisions
+                       (id,issue_group_id,version,status,decision,reviewer,changed_at)
+                       VALUES (?,?,?,?,?,?,?)""",
+                    (
+                        f"{issue_group_id}:v{next_version}",
+                        issue_group_id,
+                        next_version,
+                        next_status,
+                        "reactivated" if next_status == "pending" else "superseded",
+                        "system_reconciliation",
+                        now,
+                    ),
+                )
             for source_key, candidate in candidates.items():
                 issue_group_id = (
                     "HTI-"
@@ -3387,9 +3489,22 @@ class EvaluationStore:
 
     async def materialize_pass2_results(self, batch_id: str) -> tuple[int, int]:
         """Project completed Pass 2 decisions into review and Benchmark records."""
+        batch = await self.get_batch(batch_id)
         pass_one_rows = await self.checkpoint_rows("evaluation_pass1_runs", batch_id)
         asr_rows = await self.checkpoint_rows("evaluation_case_asr_runs", batch_id)
         pass_two_rows = await self.checkpoint_rows("evaluation_pass2_runs", batch_id)
+        canonical_values = ((batch or {}).get("snapshot") or {}).get("pass_2_canonical_case_keys")
+        if isinstance(canonical_values, list):
+            canonical_keys = {
+                (str(item[0]), str(item[1]))
+                for item in canonical_values
+                if isinstance(item, list) and len(item) == 2
+            }
+            pass_two_rows = [
+                row
+                for row in pass_two_rows
+                if (str(row["conversation_id"]), str(row["event_id"])) in canonical_keys
+            ]
         priorities: dict[tuple[str, str], str] = {}
         for row in pass_one_rows:
             for issue in (row.get("result") or {}).get("issues", []):
@@ -4079,6 +4194,18 @@ class EvaluationStore:
                     tag_aliases[str(alias).strip()] = tag_key
         pass_one = await self.checkpoint_rows("evaluation_pass1_runs", batch_id)
         pass_two = await self.checkpoint_rows("evaluation_pass2_runs", batch_id)
+        canonical_values = batch["snapshot"].get("pass_2_canonical_case_keys")
+        if isinstance(canonical_values, list):
+            canonical_keys = {
+                (str(item[0]), str(item[1]))
+                for item in canonical_values
+                if isinstance(item, list) and len(item) == 2
+            }
+            pass_two = [
+                row
+                for row in pass_two
+                if (str(row["conversation_id"]), str(row["event_id"])) in canonical_keys
+            ]
         context_asr_rows = await self.checkpoint_rows("evaluation_asr_runs", batch_id)
         asr_rows = await self.checkpoint_rows("evaluation_case_asr_runs", batch_id)
         asr_failures = [
@@ -5803,7 +5930,7 @@ class EvaluationStore:
                 raise LookupError("Historical Turn issue group not found")
             if int(row["version"]) != request.expected_version:
                 raise RuntimeError("Historical Turn issue changed; refresh before submitting")
-            if str(row["status"]) in {"confirmed", "rejected"}:
+            if str(row["status"]) not in {"pending", "deferred"}:
                 raise ValueError("Historical Turn issue review is already complete")
             status = {
                 "confirm": "confirmed",
@@ -5904,7 +6031,7 @@ class EvaluationStore:
         rows = [
             row
             for row in await self.list_historical_turn_issues("all")
-            if str(row["batch_id"]) == batch_id
+            if str(row["batch_id"]) == batch_id and row["status"] != "superseded"
         ]
         completed = [row for row in rows if row["status"] in {"confirmed", "rejected"}]
         confirmed = [row for row in rows if row["status"] == "confirmed"]

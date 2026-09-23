@@ -106,6 +106,17 @@ def _reconcile_pass2_groups(
     return canonical_groups, new_groups
 
 
+def _current_pass2_failures(
+    rows: list[dict[str, Any]],
+    canonical_case_keys: set[tuple[str, str]],
+) -> list[tuple[str, str]]:
+    """Return failed or missing checkpoints only for current Case membership."""
+    status_by_key = {
+        (str(row["conversation_id"]), str(row["event_id"])): str(row["status"]) for row in rows
+    }
+    return sorted(key for key in canonical_case_keys if status_by_key.get(key) != "completed")
+
+
 def _audio_media_type(path: Path) -> str:
     """Return the supported upload media type for an evaluation audio file."""
     return "audio/wav" if path.suffix.casefold() == ".wav" else "audio/mpeg"
@@ -832,6 +843,16 @@ class EvaluationRunner:
         )
         if not eligible_candidates:
             return
+        canonical_pass2_keys = set(candidate_keys & evidence_case_keys)
+        await self.store.set_batch_state(
+            batch_id,
+            status="running",
+            stage="pass_2",
+            progress=75,
+            snapshot_updates={
+                "pass_2_canonical_case_keys": sorted(canonical_pass2_keys),
+            },
+        )
         await self._run_pass_two(
             batch_id,
             batch,
@@ -879,6 +900,7 @@ class EvaluationRunner:
                 str((row.get("result") or {}).get("decision"))
                 for row in pass_two_rows
                 if row.get("status") == "completed"
+                and (str(row["conversation_id"]), str(row["event_id"])) in canonical_pass2_keys
             ]
             missing_good = max(0, decisions.count("Bad Case") - decisions.count("Good Case"))
             if missing_good == 0:
@@ -900,6 +922,9 @@ class EvaluationRunner:
             ]
             if not selected:
                 continue
+            canonical_pass2_keys.update(
+                (str(item["conversation_id"]), str(item["event_id"])) for item in selected
+            )
             await self._run_pass_two(
                 batch_id,
                 batch,
@@ -913,6 +938,7 @@ class EvaluationRunner:
             str((row.get("result") or {}).get("decision"))
             for row in pass_two
             if row.get("status") == "completed"
+            and (str(row["conversation_id"]), str(row["event_id"])) in canonical_pass2_keys
         ]
         final_bad = final_decisions.count("Bad Case")
         final_good = final_decisions.count("Good Case")
@@ -928,14 +954,25 @@ class EvaluationRunner:
                     "good_count": final_good,
                     "bad_count": final_bad,
                     "shortage": max(0, final_bad - final_good),
-                }
+                },
+                "pass_2_canonical_case_keys": sorted(canonical_pass2_keys),
             },
         )
-        failed = sum(1 for row in pass_two if row["status"] == "failed")
-        failed_groups = sum(
-            1 for row in await self.store.pass2_group_rows(batch_id) if row["status"] == "failed"
-        )
-        if failed or failed_groups:
+        failed_case_keys = _current_pass2_failures(pass_two, canonical_pass2_keys)
+        failed = len(failed_case_keys)
+        if failed:
+            failed_case_key_set = set(failed_case_keys)
+            failed_groups = len(
+                {
+                    str(row["group_id"])
+                    for row in await self.store.pass2_group_rows(batch_id)
+                    if row["status"] == "failed"
+                    and any(
+                        tuple(str(value) for value in key) in failed_case_key_set
+                        for key in row["case_keys"]
+                    )
+                }
+            )
             review_count, benchmark_count = await self.store.materialize_pass2_results(batch_id)
             await self.store.set_batch_state(
                 batch_id,

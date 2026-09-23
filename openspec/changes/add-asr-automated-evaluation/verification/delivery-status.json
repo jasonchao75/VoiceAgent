@@ -2027,14 +2027,87 @@
       "next_action": "Retain the overlapping wrong-merge/order regression in the release suite.",
       "resolution": "historical_turn_quality now takes the union of (conversation ID, source event ID) pairs across confirmed groups. A regression confirms two overlapping confirmed groups report two unique affected Turn rows rather than the previous summed value of three.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-200",
+      "status": "resolved",
+      "summary": "A successful Pass 2 retry cannot clear the batch failure state because terminal aggregation counts every historical failed group row.",
+      "impact": "Replacement groups can complete and materialize valid decisions, but the batch returns to partially_failed because the eight original failed groups remain status=failed. Repeated user retries therefore create more paid replacement requests without making the terminal state reachable.",
+      "source": "Read-only production inspection of EV-20260923-E65A on 2026-09-23 showed successful replacement groups followed by partially_failed at 11:51 UTC, then another user retry at 11:52 UTC. executor.py finalization counts every pass2_group_rows row whose status is failed, without excluding replaced historical groups or reconciling current Case coverage.",
+      "next_action": "Make terminal Pass 2 status derive from current canonical Case coverage and active retry lineage, retire or exclude replaced failed groups, and add a repeated-production-retry regression before another E65A retry.",
+      "resolution": "The runner now freezes the current canonical Case keys before Pass 2, filters balancing/final decisions/materialization/reporting to that membership, and derives terminal failure only from missing or failed current Case checkpoints. Historical group failures remain diagnostic and cannot independently force partially_failed. Deterministic regression and the full suite pass without a provider call.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-201",
+      "status": "resolved",
+      "summary": "Historical Turn wrong-merge detection treats every unassigned audio island as a review candidate without proving that it is an independent spoken Turn.",
+      "impact": "Natural within-Turn pauses or RMS fragmentation create orphan islands that are attached to the nearest historical event and surfaced as wrong_merge. E65A currently shows 137 groups covering 140 unique Turns; 119 groups are wrong_merge, making the review queue impractically large and dominated by likely false positives.",
+      "source": "Read-only E65A inspection on 2026-09-23 found 448 RMS islands, 123 persisted Cases and 137 Turn issue groups: 119 wrong_merge, 16 order_anomaly and 2 over_split. checkpoint_historical_turn_issues labels every orphan island by its nearest assignment; detect_audio_islands splits speech after only 250 ms of inactivity and does not first establish a robot boundary or provider-supported independent customer Turn.",
+      "next_action": "Separate speech fragments from semantic Turns: consolidate islands using audio/provider/robot-boundary evidence, require independent-Turn evidence before wrong_merge, and regenerate review candidates with regression coverage for pauses inside one Turn versus genuine multiple customer Turns.",
+      "resolution": "Wrong-merge generation now suppresses islands crossed by the same provider customer turn and requires either robot-boundary evidence or distinct customer turn IDs from at least two providers. Candidate refresh preserves reviewed evidence and marks disappeared open candidates superseded. Pause-fragment, real-extra-turn and review-state regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-202",
+      "status": "resolved",
+      "summary": "The Manual Review queue tabs remain partly Chinese after switching the formal page to English.",
+      "impact": "English-mode users still see ASR Case 复核 and Turn 异常复核, and the empty Turn queue heading/subtitle also remain Chinese.",
+      "source": "Product owner report on 2026-09-23 and direct inspection of frontend/evaluation.html showed that these static labels have no data-en/data-zh localization contract.",
+      "next_action": "Add bilingual labels without removing the live queue counts, and add a UI-contract regression for both review modes.",
+      "resolution": "The two Manual Review tabs and Turn queue heading/subtitle now have explicit English/Chinese labels. Localized labels and live counts use separate DOM nodes, and desktop plus narrow Chromium prove both language states retain their counts.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-203",
+      "status": "resolved",
+      "summary": "The initial Turn-candidate refresh deletes reproduced deferred issues and their append-only review revisions.",
+      "impact": "A user choice to review later is reset to pending during alignment replay, and the revision is lost through foreign-key cascade instead of remaining auditable.",
+      "source": "Independent verification on 2026-09-23 traced the unconditional pending/deferred DELETE in checkpoint_historical_turn_issues against the V1.20 persistence contract.",
+      "next_action": "Preserve reproduced candidates and their version, mark only disappeared open candidates superseded with an appended system revision, and add defer/replay/supersede coverage.",
+      "resolution": "Candidate reconciliation now leaves reproduced pending/deferred rows in place, appends an auditable superseded transition only for disappeared open candidates, can reactivate a later-reproduced superseded candidate, and never mutates confirmed/rejected rows. The regression proves deferred version 2 survives replay and becomes superseded version 3 with both revisions retained.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-204",
+      "status": "resolved",
+      "summary": "The live Turn queue title is not re-rendered when the language changes after bootstrap data has replaced its bilingual DOM node.",
+      "impact": "Tabs change language but the populated queue can keep an English Pending Turn issue groups title in Chinese mode.",
+      "source": "Independent verification on 2026-09-23 traced renderHistoricalTurnIssues textContent replacement and the language callback, which re-rendered ASR reviews but not historical Turn issues.",
+      "next_action": "Re-render historical Turn issues on every language change and extend the desktop/narrow browser regression to assert the dynamic queue heading.",
+      "resolution": "The Turn queue title now keeps the localized label and dynamic count in separate nodes, and the language callback refreshes historical Turn content. Desktop and narrow Chromium both pass English-to-Chinese tab/title/count assertions.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
     {
-      "id": "UV-035",
+      "id": "UV-038",
       "status": "open",
+      "summary": "The independently verified KI-200–KI-204 repair has not yet completed production CI/CD and post-deployment readback.",
+      "reason": "PD-078 authorizes the release, but the commit has not yet been pushed and the production SHA, public health, preserved Evaluation data and unchanged E65A execution state have not yet been verified.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-037",
+      "status": "open",
+      "summary": "The repository's default Python 3.11 Mypy target cannot parse the installed Python 3.13 NumPy stubs in this local environment.",
+      "reason": "The default Mypy run stops in numpy/__init__.pyi before project checking because the local virtualenv contains Python 3.13-only type syntax while pyproject.toml targets Python 3.11. The two changed source files pass Mypy when checked with the installed runtime target (3.13); the authoritative Python 3.11 check remains for CI.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-035",
+      "status": "resolved",
       "summary": "The PD-070/PD-071/PD-072/PD-073/PD-074/PD-075 V1.20 baseline passed User Gate 1 under PD-076 but has no runtime verification.",
-      "reason": "The product owner authorized development through deployment. Runtime, storage migration, formal UI and deterministic regressions are implemented; 292 repository tests, 127 focused backend/UI-contract tests, 42 Evaluation UI regressions and 4 updated Turn review/report desktop/narrow checks pass. Independent V1.20 re-review returned PASS with no remaining blocker. Deployment, production migration and post-deploy verification remain pending; E65A was not retried and no paid provider call was made.",
+      "reason": "The product owner authorized development through deployment. Runtime, storage migration, formal UI and deterministic regressions are implemented; 292 repository tests, 127 focused backend/UI-contract tests, 42 Evaluation UI regressions and 4 updated Turn review/report desktop/narrow checks pass. Independent V1.20 re-review returned PASS with no remaining blocker.",
+      "resolution": "Commit 23cdeb3bc4c892f235371d7b6c1f8083df2e0af9 passed CI run 35851781752 and production deployment run 35852004221. The public health endpoint returned status=ok. Read-only production inspection confirmed the global Benchmark unique index, zero duplicate conversation/event groups, four archived later duplicates, and no active E65A operation. E65A and its ASR/Align/Pass 2/cost timestamps all predate deployment, proving the release did not retry it or dispatch a provider call.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-036",
+      "status": "resolved",
+      "summary": "The independently verified V1.20 release commit has not been pushed because the external safety gate requires explicit approval of the exact GitHub remote and payload.",
+      "reason": "Commit 23cdeb3 contains 33 scoped Evaluation implementation, specification, test and UI-evidence files. The first attempted push was rejected before any data left the workspace because authorization to transmit this exact payload and trigger the production workflow was not considered explicit enough.",
+      "resolution": "The product owner explicitly authorized the exact commit, remote, branch and production trigger. The push then succeeded and the resulting CI and production deployment runs completed successfully.",
       "disclosed_to_user": true
     },
     {

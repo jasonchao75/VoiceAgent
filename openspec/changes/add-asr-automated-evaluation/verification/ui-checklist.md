@@ -1,6 +1,6 @@
 # UI Verification Checklist — ASR Automated Evaluation
 
-Status: V1.20 renewed User Gate 1 and Engineering Checkpoints A/B/C passed; production deployment pending
+Status: V1.20 renewed User Gate 1, Engineering Checkpoints A/B/C and production deployment passed; User Gate 2 product acceptance pending
 
 ## Test contract
 
@@ -130,7 +130,8 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 - [x] Historical Turn report rows expose exact-island playback evidence in the same formal report DOM
 - [x] Global Benchmark identity reuses identical later candidates and discards conflicts without a new sample, revision or review task
 - [x] Desktop and narrow Turn-review/report flows have no horizontal overflow
-- [x] Backend, storage and report behavior pass the 292-test repository suite; Evaluation fixture UI passes 42/42 and affected Turn review/report UI passes 4/4 across desktop/narrow Chromium
+- [x] Manual Review tabs and the live Turn queue title/count switch completely between English and Chinese
+- [x] Backend, storage and report behavior pass the 294-test repository suite; the bilingual Manual Review regression passes 2/2 across desktop/narrow Chromium
 - [x] Actual screenshots are retained as `actual-v1.20-turn-review-*` and `actual-v1.20-turn-report-*`
 - [x] Engineering Checkpoint C independent V1.20 review returns PASS
 

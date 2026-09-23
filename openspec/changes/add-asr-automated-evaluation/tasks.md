@@ -232,6 +232,9 @@
 - [x] 12.91 Migrate legacy LLM Event Alignment checkpoints under the confirmed Q-019 policy: preserve the exhausted singleton structure failure as historical diagnostics, exclude it from direct retry eligibility, rebuild Case/provider evidence through the new deterministic audio-first path, and allow at most the newly defined controlled LLM fallback only when the rebuilt Case remains ambiguous; prove the legacy failure cannot block valid sibling Cases or Pass 2 (KI-194)
 - [x] 12.92 Complete Engineering Checkpoints A/B/C, Change gate and independent verification for the combined recovery; do not retry E65A or make a paid provider call without a new explicit authorization
 - [x] 12.93 Migrate Benchmark identity from batch-scoped `(batch_id, conversation_id, event_id)` to global `(conversation_id, event_id)`, deduplicate existing rows without losing revisions or trace evidence, make identical AI/manual ingestion return the canonical Benchmark ID, discard later conflicting candidates without creating a sample/revision/review task or changing counts/exports, and add cross-batch, retry and conflict regressions (PD-073, PD-075, KI-196)
+- [x] 12.94 Reconcile Pass 2 terminal state from current canonical Case coverage and retry lineage so successfully replaced historical failures cannot force an endless partially-failed/retry loop; add an E65A-derived repeated-retry regression (KI-200)
+- [x] 12.95 Rework historical Turn wrong-merge candidates so RMS fragments inside one spoken Turn are consolidated and an orphan island requires independent-Turn evidence such as a robot boundary or cross-provider support; regenerate the review queue and add pause-versus-real-Turn regressions (KI-201)
+- [x] 12.96 Localize the Manual Review ASR Case and historical Turn queue tabs/headings in English and Chinese without replacing their live counts; add a UI-contract regression (KI-202)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 
@@ -243,3 +246,4 @@
 - [x] 13.6 Publish the independently verified audio-alignment/full-context and single-Benchmark deletion release, preserve production Evaluation data, and verify CI/CD, health and deployed commit (PD-051)
 - [x] 13.7 Publish the independently verified adaptive Pass 2 retry and truthful-progress release, preserve production Evaluation data and failed checkpoints, and verify CI/CD plus public health without triggering a paid batch retry (PD-052)
 - [x] 13.8 Publish KI-161 after the PD-053 release completes, then backfill EV-20260921-BA92's completed decisions without external calls and verify 18 reviews, 20 Benchmarks, 6 retained failures and no frozen report (PD-055)
+- [ ] 13.9 Publish the independently verified KI-200–KI-204 repair, preserve production Evaluation data, verify CI/CD/public health/deployed SHA, and confirm E65A was not automatically retried (PD-078)

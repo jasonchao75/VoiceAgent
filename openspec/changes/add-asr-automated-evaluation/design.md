@@ -131,6 +131,8 @@ All valid pass events in conversations containing at least one candidate form th
 
 After Pass 1 identifies target user events, each selected provider produces one diarized full-call timeline for every candidate-bearing conversation. Consecutive segments from the same anonymous speaker are persisted as stable turns. The audio-and-evidence alignment stage first freezes `user_record` speech islands, then maps ordered historical events and provider turns onto those immutable islands. Deterministic sequence matching handles the normal path; only ambiguous Cases receive a bounded request to the batch-frozen alignment LLM. Every accepted mapping references existing IDs and passes deterministic ownership, monotonic-order, frozen-boundary and cross-provider checks. Excel `time (s)` remains audit-only. Pass 2 consumes the projected full-call provider turn text directly; the generated Case WAV is playback and Benchmark evidence, not a second ASR input.
 
+Raw RMS islands remain immutable evidence, but are not semantic Turns. Historical `wrong_merge` candidates are emitted only when an orphan island has independent-Turn support: an intervening robot turn in provider context or distinct customer turn IDs from at least two providers. If a provider customer turn spans both the assigned and orphan islands, those islands are consolidated as pause-separated fragments of one spoken Turn for anomaly classification; no text similarity or historical timestamp may override that rule. Re-alignment deletes only pending/deferred candidates that are no longer reproduced, while preserving confirmed/rejected review revisions.
+
 Provider responses are normalized but raw safe response payloads may be retained access-controlled for troubleshooting. Local segment IDs use full conversation ID and provider identity; UI only exposes them inside technical evidence.
 
 Failed ASR checkpoints expose only a safe diagnostic contract: provider, full-call or event-clip scope, attempt count, retryability, controlled category and an actionable allowlisted reason. Provider raw bodies, customer transcript, source paths and credentials remain excluded. The partial-result note and existing provider cells consume this contract without adding a new page area.
@@ -148,6 +150,8 @@ Pass 2 uses the selected model's Thinking mode and the same 65,536-input / 32,76
 5. at least one evaluation ASR result is successful.
 
 Prompt 不输出 confidence，系统也不保存或使用 confidence 阈值。A failed rule routes the Case to manual review rather than inventing a default.
+
+Pass 2 terminal reconciliation is scoped to the current run's canonical Case keys. Per-Case latest checkpoints decide completeness; superseded parent groups and failed Case rows from earlier alignment membership remain audit diagnostics only. Group history must never independently force `partially_failed` after all current canonical Cases have completed.
 
 上线默认数据来自 Change 内的四份可审计 fixture：`fixtures/riyadbank-evaluation-context-v1.md`、`fixtures/riyadbank-reference-dictionary-v1.csv`、`fixtures/riyadbank-pass-1-system-prompt-v1.md` 和 `fixtures/riyadbank-pass-2-system-prompt-v2.md`。V1 第二轮 Prompt 仅作历史审计，V2 是 PD-025 确认的分组输出契约。配置迁移使用稳定 seed key 幂等追加缺失契约版本；历史版本保留，生效模板缺少 `request_group_id`、`results[]` 或 `positioning_quality` 时升级到 V2，后续管理员编辑始终另存新版本。
 

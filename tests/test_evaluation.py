@@ -45,6 +45,7 @@ from src.evaluation.executor import (
     EvaluationRunner,
     _asr_error,
     _completion_limit_field,
+    _current_pass2_failures,
     _gemini_thinking_config,
     _llm_request_timeout,
     _qwen_reasoning_effort,
@@ -870,6 +871,17 @@ def test_audio_first_merges_adjacent_historical_turns_into_one_case() -> None:
     assert cases[0]["alignment_status"] == "deterministic_aligned"
 
 
+def test_pass2_terminal_reconciliation_ignores_historical_failures() -> None:
+    """Only the current canonical Case membership may keep a retry partially failed."""
+    rows = [
+        {"conversation_id": "C-1", "event_id": "R1", "status": "failed"},
+        {"conversation_id": "C-1", "event_id": "R2", "status": "completed"},
+    ]
+
+    assert _current_pass2_failures(rows, {("C-1", "R2")}) == []
+    assert _current_pass2_failures(rows, {("C-1", "R1"), ("C-1", "R2")}) == [("C-1", "R1")]
+
+
 def test_audio_first_adjacent_robot_context_ranks_legal_island() -> None:
     """Robot context may rank legal paths but must not move waveform boundaries."""
     events = [
@@ -1372,6 +1384,132 @@ async def test_historical_turn_issue_detects_wrong_merge_and_order_anomaly(
     ]
     assert all(clip is not None and clip.is_file() for clip in clips)
     assert len({clip.name for clip in clips if clip is not None}) == 2
+
+
+@pytest.mark.asyncio
+async def test_historical_turn_issue_ignores_pause_fragments_in_one_provider_turn(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """An orphan RMS island inside the same spoken Turn is not a wrong merge."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Historical Turn pause fragments",
+            asr_providers=["elevenlabs", "speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="historical-turn-pause-fragments-001",
+        )
+    )
+    islands = [
+        {
+            "island_id": f"C-turn-pause:island:{index}",
+            "ordinal": index,
+            "start_s": start,
+            "end_s": end,
+            "detector_version": "test",
+            "parameters": {},
+            "features": {},
+        }
+        for index, (start, end) in enumerate(((1.0, 1.8), (2.4, 3.2)))
+    ]
+    events = [
+        {"event_id": "R1", "speaker": "customer", "text": "account number"},
+        {"event_id": "R2", "speaker": "robot", "text": "thank you"},
+    ]
+    split_providers = [
+        {
+            "provider": provider,
+            "segments": [
+                {"start": 1.0, "end": 1.8, "speaker": "B", "text": "account"},
+                {"start": 1.9, "end": 2.3, "speaker": "A", "text": "thank you"},
+                {"start": 2.4, "end": 3.2, "speaker": "B", "text": "number"},
+            ],
+        }
+        for provider in ("elevenlabs", "speechmatics")
+    ]
+    split_cases = build_audio_first_cases(
+        "C-turn-pause",
+        events,
+        ["R1"],
+        islands,
+        split_providers,
+    )
+    await evaluation_store.checkpoint_historical_turn_issues(
+        str(batch["id"]),
+        "C-turn-pause",
+        events,
+        islands,
+        split_cases,
+    )
+    before = await evaluation_store.list_historical_turn_issues("pending")
+    assert any("wrong_merge" in issue["issue_types"] for issue in before)
+    issue_id = str(before[0]["issue_group_id"])
+    await evaluation_store.submit_historical_turn_review(
+        issue_id,
+        HistoricalTurnReviewSubmit(
+            decision="defer",
+            expected_version=1,
+            idempotency_key="historical-turn-pause-defer-001",
+        ),
+    )
+    await evaluation_store.checkpoint_historical_turn_issues(
+        str(batch["id"]),
+        "C-turn-pause",
+        events,
+        islands,
+        split_cases,
+    )
+    reproduced = await evaluation_store.list_historical_turn_issues("open")
+    assert reproduced[0]["status"] == "deferred"
+    assert reproduced[0]["version"] == 2
+
+    providers = [
+        {
+            "provider": provider,
+            "segments": [
+                {
+                    "start": 1.0,
+                    "end": 3.2,
+                    "speaker": "B",
+                    "text": "account number",
+                }
+            ],
+        }
+        for provider in ("elevenlabs", "speechmatics")
+    ]
+    cases = build_audio_first_cases(
+        "C-turn-pause",
+        events,
+        ["R1"],
+        islands,
+        providers,
+    )
+    for case in cases:
+        await evaluation_store.checkpoint_evaluation_case(str(batch["id"]), case)
+    await evaluation_store.checkpoint_historical_turn_issues(
+        str(batch["id"]),
+        "C-turn-pause",
+        events,
+        islands,
+        cases,
+    )
+
+    issues = await evaluation_store.list_historical_turn_issues("pending")
+    assert not any("wrong_merge" in issue["issue_types"] for issue in issues)
+    audit_rows = await evaluation_store.list_historical_turn_issues("all")
+    superseded = next(issue for issue in audit_rows if issue["issue_group_id"] == issue_id)
+    assert superseded["status"] == "superseded"
+    assert superseded["version"] == 3
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        revisions = await (
+            await database.execute(
+                """SELECT version,status FROM evaluation_historical_turn_issue_revisions
+                   WHERE issue_group_id=? ORDER BY version""",
+                (issue_id,),
+            )
+        ).fetchall()
+    assert revisions == [(2, "deferred"), (3, "superseded")]
 
 
 def test_full_call_diarization_consensus_rejects_non_overlapping_intervals() -> None:

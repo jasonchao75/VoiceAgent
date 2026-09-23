@@ -2842,7 +2842,7 @@ function renderHistoricalTurnIssues(allIssues = []) {
   const panel = document.querySelector("#page-review [data-review-panel='turn']");
   const queue = panel.querySelector(".queue");
   queue.querySelectorAll(".queue-item, .runtime-empty").forEach((item) => item.remove());
-  queue.querySelector("h2").textContent = `${copy("Pending Turn issue groups", "Turn 异常待处理")} ${issues.length}`;
+  queue.querySelector(".turn-queue-count").textContent = issues.length;
   if (!issues.length) {
     queue.insertAdjacentHTML(
       "beforeend",
@@ -4216,6 +4216,7 @@ function installEvents() {
           renderEvaluationConfiguration();
           if (runtime.datasetAudit) fixtureReady(runtime.datasetAudit);
         }
+        renderHistoricalTurnIssues(runtime.bootstrap?.historical_turn_issues || []);
         if (runtime.currentReport) renderReport(runtime.currentReport);
         if (runtime.drawerConversation) {
           renderRuntimeConversationDrawer();
