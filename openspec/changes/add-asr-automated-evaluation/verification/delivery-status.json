@@ -118,6 +118,16 @@
   ],
   "known_issues": [
     {
+      "id": "KI-182",
+      "status": "resolved",
+      "summary": "The first PD-061 release CI run failed because two new test assertions did not match repository Ruff formatting.",
+      "impact": "CI run 35813671485 stopped before frontend build and image build, so the commit was not deployed to production.",
+      "source": "GitHub Actions VoiceAgent CI run 35813671485, backend-check step on 2026-09-22.",
+      "next_action": "Apply the repository formatter to tests/test_evaluation.py, rerun the full local verification and Change gate, then push a bounded correction commit.",
+      "resolution": "Ruff reformatted the two assertions. The exact CI backend sequence now passes locally: Ruff format/check, Mypy across src, and all 267 tests; the correction is ready for a new CI run.",
+      "disclosed_to_user": true
+    },
+    {
       "id": "KI-181",
       "status": "resolved",
       "summary": "Two PD-061 second-pass failure scenarios still describe persisted mapped-turn evidence as event-level ASR transcription.",

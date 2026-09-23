@@ -4013,9 +4013,7 @@ async def test_run_asr_replaces_legacy_non_diarized_context_checkpoint(
     assert context_rows[0]["remote_job_id"] == "replacement-job"
     assert context_rows[0]["attempts"] == 2
     assert context_rows[0]["result"]["diarization_contract"] == "speaker_timestamps_v1"
-    case_rows = await evaluation_store.checkpoint_rows(
-        "evaluation_case_asr_runs", str(batch["id"])
-    )
+    case_rows = await evaluation_store.checkpoint_rows("evaluation_case_asr_runs", str(batch["id"]))
     assert case_rows[0]["result"]["text"] == "customer"
     assert case_rows[0]["remote_job_id"] is None
 
@@ -4231,8 +4229,7 @@ async def test_pass2_retry_reuses_failed_frozen_group(
     assert providers[0]["target_turn_id"] == (f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1")
     assert len(cast(list[object], providers[0]["turns"])) == 2
     assert all(
-        cast(dict[str, object], turn)["turn_id"]
-        != f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1"
+        cast(dict[str, object], turn)["turn_id"] != f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1"
         for turn in cast(list[object], providers[0]["turns"])
     )
 
