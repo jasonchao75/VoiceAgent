@@ -99,6 +99,15 @@ class EvaluationReviewSubmit(BaseModel):
         return self
 
 
+class HistoricalTurnReviewSubmit(BaseModel):
+    """Submit a group-level decision for one suspected historical Turn issue."""
+
+    model_config = ConfigDict(extra="forbid")
+    decision: Literal["confirm", "reject", "defer"]
+    expected_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
 class EvaluationReviewComplete(BaseModel):
     """End manual review early and freeze a partial final report."""
 

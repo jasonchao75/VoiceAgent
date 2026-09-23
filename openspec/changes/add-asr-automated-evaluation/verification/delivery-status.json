@@ -1909,9 +1909,134 @@
       "next_action": "Expose Event Alignment as an explicit stage between Multi-ASR and Pass 2, or define it as a clearly named substage within the fourth card after product confirmation.",
       "resolution": "PD-067/PD-069 add event_alignment as the fourth durable stage and render six cards. Qwen Align operations appear only under Event Alignment; Multi-ASR contains provider work only. Desktop and narrow Chromium regressions pass without horizontal overflow.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-188",
+      "status": "open",
+      "summary": "The monthly-batch summary shows only the currently active source package, and historical batches do not freeze a dataset identity.",
+      "impact": "The retained 56-conversation and active 82-conversation packages total 138 source conversations, but the card displays 82 because it reads only the active audit. Historical batch rows and the 56 source files still exist, so they were not deleted. However, activating the 82-conversation package replaced the shared source index; a paused or retryable 56-conversation batch can therefore resolve source conversations through the current 82-conversation dataset instead of its original package, and historical source-detail links are not reliably batch-scoped.",
+      "source": "Read-only production inspection on 2026-09-23 found immutable upload directories containing 56 and 82 workbooks, four retained 56-conversation batch rows, active dataset 0801-0831.zip with 82 conversations, and a shared source index containing only 82 rows. Code inspection shows import_dataset_upload calls _sync_source_data, which deletes and replaces evaluation_source_conversations, summary reads fixture_status for only the active package, and create_batch stores source counts/name but no dataset_id used for subsequent source resolution.",
+      "next_action": "Define the card as retained unique source inventory (138 for the current two packages), persist a dataset registry, freeze dataset_id on every batch, scope conversation/event lookup and retries to that dataset, and migrate existing 56/82 batches to their retained package before allowing old-batch retries.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-189",
+      "status": "open",
+      "summary": "The dashboard's suspected-error ratio silently uses an older finalized batch while adjacent cards use current global or active-source data.",
+      "impact": "The active 82-conversation source and running E65A batch both have 560 customer events, but the dashboard shows 4/249 from finalized batch EV-20260922-64A8 without naming that batch. The 249 denominator is internally valid for 64A8 because only customer events from its Pass 1-completed conversations were included, but presenting it next to the current 82-conversation source makes it look like the current dataset lost 311 events.",
+      "source": "Read-only production inspection on 2026-09-23 found active source count 82/560 and E65A denominator 560, while 64A8 froze source_user_event_count=381 and later finalized with denominator=249, suspected_numerator=4. Code inspection shows summary selects the latest eligible finalized formal report for the ratio, while the first card reads the currently active source audit; the UI does not expose the selected report ID or coverage exclusion.",
+      "next_action": "Choose one dashboard scope and make it explicit. Recommended: show the current running batch when present with its stage label, otherwise the latest finalized batch, and always display the batch ID plus excluded-event count; do not combine an unattributed historical ratio with current-source inventory.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-190",
+      "status": "resolved",
+      "summary": "A post-PD-069 E65A retry reaches Pass 2 but aborts while registering a regrouped request whose idempotency key already belongs to an older group ID.",
+      "impact": "EV-20260923-E65A is partially_failed at Pass 2 progress 75 even though the bounded Event Aligner ran on the deployed PD-069 commit and many Pass 2 groups completed. Retrying again without a code correction can hit the same database uniqueness error instead of resuming the remaining Cases.",
+      "source": "Read-only production inspection on 2026-09-23 verified deployed commit 6f40a1ad3ac05f48f18d3d14f284d68da229fea1. The latest traceback at 2026-09-23T08:05:46+00:00 is sqlite3.IntegrityError: UNIQUE constraint failed: evaluation_pass2_groups.batch_id, evaluation_pass2_groups.idempotency_key from checkpoint_pass2_group. Code inspection shows _run_pass_two indexes prior groups only by group_id, while the database also uniquely constrains batch_id plus idempotency_key; a retry whose ordinal-derived group_id changes but exact request membership does not therefore attempts a conflicting insert.",
+      "next_action": "Resolve prior Pass 2 groups by idempotency key as well as group ID, reuse the canonical persisted group when exact membership matches, reject only true membership drift, and add a production-derived regression covering retry after partial Event Alignment availability changes. Do not ask the user to retry E65A again until this correction is independently verified and deployed.",
+      "resolution": "Pass 2 now reconciles planned groups against the persisted idempotency key, reuses the canonical group ID only when exact Case membership matches, and rejects true group-ID or membership drift. The E65A-derived ordinal-change retry regression passes.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-191",
+      "status": "resolved",
+      "summary": "Event Alignment materialization is conversation-atomic, so one missing target mapping can discard valid sibling event mappings and make their Case audio appear unavailable.",
+      "impact": "For E65A conversation 1030000000070676, R28 received valid mappings from all three providers and its independently finalized Benchmark clip is a valid 4.55-second 8 kHz mono PCM WAV, but the current evaluation_case_asr_runs rows for R28 still have no clip path and report event_alignment_failed. R30 genuinely lacks two-provider consensus, yet its failure causes the conversation-level alignment checkpoint to remain failed and prevents R28's valid mapping from being returned to clip preparation.",
+      "source": "Read-only production SQLite and audio inspection on 2026-09-23. Source history places R28 at 134.151s, R29 at 136.799s and R30 at 136.588s, so R30 is out of order. ElevenLabs and Soniox merge customer speech from approximately 133.6-137.1s into one turn; only Speechmatics exposes a later S3 customer segment around 137.33-137.77s. The completed bounded Align result maps R28 through all three providers but marks R30 fewer_than_two_providers. _run_event_alignment only checkpoints and returns a conversation when the merged event-ID set exactly equals the current target set, so partial valid mappings are not materialized.",
+      "next_action": "Replace conversation-atomic materialization with audio-island Case materialization under PD-070. Persist valid Cases independently, merge multiple adjacent source events when they map to one speech island while retaining all source event IDs, and allow valid sibling Cases to continue. Add regressions for both the two-island R28/R30 pattern and a true many-events-to-one-island pattern.",
+      "resolution": "Audio-first Case materialization is persisted independently per frozen speech island. Adjacent historical events assigned to one island are retained as source_event_ids on one Case, and an ambiguous or failed Case no longer rolls back valid siblings or blocks their Pass 2 evidence.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-192",
+      "status": "resolved",
+      "summary": "Case audio positioning is text/ASR-turn-first even though the pure-user waveform provides the more reliable event boundary signal.",
+      "impact": "A wrong or merged LLM turn mapping becomes the authoritative clip interval. The waveform stage may only validate and expand that interval, so it cannot split two distinct user utterances or correct a text-driven boundary. This can merge adjacent Cases, make a valid short Case unavailable, contaminate playback/Benchmark audio, and propagate the wrong evidence into Pass 2 across the whole evaluation set rather than one exceptional Case.",
+      "source": "Production-derived audio-only inspection for 1030000000070676 found two distinct user-track activity islands at 133.60-136.70s and 137.36-137.72s without reading transcript text. The current R28 Benchmark interval is 133.42-137.97s and therefore merges both islands. Code inspection confirms prepare_case_asr_clip first derives an interval from LLM-selected full-call ASR turns; _validate_and_refine_user_interval then explicitly refuses to contract the provider union and can only validate or expand it.",
+      "next_action": "Implement PD-070 as a full audio-first positioning redesign: derive stable speech islands from user_record, monotonically assign them to ordered customer events using timestamps only as soft anchors, merge adjacent events assigned to one island into one traceable Case, persist success/failure per Case, and project full-call provider turn text afterward by temporal overlap without allowing text to move audio boundaries. Define composite Case identity, minimum-duration, interval-gap and migration contracts before coding and cover the complete dataset with deterministic boundary regressions. Keep KI-190's independent Pass 2 idempotency-key recovery correction in the same delivery scope.",
+      "resolution": "The runtime now freezes pure-user waveform islands first, uses historical event order as the hard constraint, excludes historical timestamps, normalizes number/spelling forms only to rank legal paths, and projects provider turns after the boundary is frozen. Boundary determinism and 223/two two three regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-193",
+      "status": "resolved",
+      "summary": "Evaluation reports do not expose historical Turn annotation errors as a distinct data-quality metric and evidence list.",
+      "impact": "Audio-first evaluation can discover over-split, wrongly merged or misordered historical Turns, but the current runtime has no separate review queue, confirmed count, affected-row count or drill-down. Operators therefore cannot validate the source-data conclusion and may misread an automatic candidate as an ASR vendor error.",
+      "source": "Product-owner requirements PD-071 and PD-074 on 2026-09-23. Current report schemas and frontend Case tables expose ASR decisions, evidence, labels and exclusions but no historical-turn anomaly review, metric or affected-event trace.",
+      "next_action": "After renewed V1.20 User Gate 1, implement the dedicated Turn anomaly review queue and immutable confirm/reject decision, then freeze confirmed historical_turn_error_group_count, affected_historical_turn_count and Turn review coverage; add group-first details, source IDs, audio evidence, partial/preliminary/final report behavior and export coverage while keeping the data-quality metrics independent from ASR error rates and Benchmark ingestion.",
+      "resolution": "A separate Turn anomaly queue now supports audio playback, confirm, reject and deferred-open review. Immutable reports include only confirmed group count, affected Turn-row count, review coverage and group-first evidence; these values remain separate from ASR rates and Benchmark ingestion. Desktop and narrow regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-194",
+      "status": "resolved",
+      "summary": "One persisted Event Alignment singleton exhausted its bounded retry with a structure error and is not yet covered by the confirmed controlled-LLM migration contract.",
+      "impact": "Retiring the all-conversation LLM Event Aligner does not by itself define what happens to legacy failed Align checkpoints. A retry could remain blocked by the old singleton failure or accidentally dispatch the retired request shape unless migration first rebuilds audio-first evidence and allows the controlled LLM only for a newly detected ambiguous Case.",
+      "source": "Production-derived E65A inspection discussed with the product owner on 2026-09-23 found one Event Alignment group already reduced to a single conversation but still exhausted by invalid structured output. The current PD-069 implementation persists exhausted singleton leaves; the initial PD-070 task list did not name this historical checkpoint migration separately.",
+      "next_action": "Under the confirmed Q-019 policy, keep the failed singleton row as immutable historical diagnostics, exclude it from direct retry eligibility, rebuild the affected conversation's Case/provider evidence through the deterministic audio-first path, and permit only the newly defined controlled LLM fallback if the rebuilt Case remains ambiguous. Add regressions proving the legacy failure cannot block valid sibling Cases or Pass 2 and cannot silently replay the retired request shape.",
+      "resolution": "The audio-first path never invokes the legacy Event Aligner. Failed singleton rows remain unchanged for diagnostics while new per-Case evidence is rebuilt; a regression proves the retired request cannot replay and does not block two valid sibling Cases. Controlled LLM assistance is invoked only for newly ambiguous audio-first assignments.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-195",
+      "status": "resolved",
+      "summary": "The initial no-LLM audio-first proposal incorrectly implied that time overlap alone can bind unreliable historical events to audio Cases.",
+      "impact": "Historical event timestamps are unreliable. When event and speech-island counts differ, or text forms such as '223' and 'two two three' are not normalized, order plus time overlap may admit multiple legal mappings. Claiming success would silently attach the wrong historical event to a valid audio boundary and contaminate Pass 2 and the report.",
+      "source": "Product-owner challenge on 2026-09-23: the historical timestamp may not place the historical text at the same audio time as the ASR turn, so the previous example did not prove deterministic alignment. Review of Q-019 confirmed Option A named time overlap but did not define historical-event-to-island disambiguation or the non-unique fallback.",
+      "next_action": "PD-076 froze the V1.20 controlled Option C baseline. Under a subsequent explicit development instruction, implement waveform-first alignment, ambiguity-only batch-frozen LLM assistance and deterministic validation, then complete Checkpoints A/B/C before any release claim.",
+      "resolution": "Option C is implemented: waveform islands and monotonic order define the legal space, text/normalized digits rank but cannot move boundaries, and only non-unique or low-evidence cases can call the batch-frozen LLM. Returned IDs, order, provider ownership and frozen boundaries are deterministically validated.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-196",
+      "status": "resolved",
+      "summary": "Benchmark uniqueness is batch-scoped, so the same conversation ID and event ID can be stored again by a later batch.",
+      "impact": "Repeated evaluation of the same source event can create multiple Library rows, inflate Benchmark totals and Good/Bad distributions, duplicate exported audio, and leave competing labels for one original event.",
+      "source": "Code review on 2026-09-23: evaluation_benchmarks declares UNIQUE(batch_id, conversation_id, event_id). Both automatic materialization and manual review use INSERT OR IGNORE, so duplicates are suppressed only inside one batch; a different batch ID bypasses the constraint. The existing Benchmark Delta Spec and design also documented the same batch-scoped identity.",
+      "next_action": "Implement PD-073/PD-075 after renewed Gate 1: migrate to a global conversation/event business key, preserve existing canonical samples and their trace evidence, make identical ingestion return the canonical ID, discard later conflicting candidates without a sample/revision/review task, safely reconcile existing duplicates, and add cross-batch plus conflict regressions.",
+      "resolution": "Storage initialization archives later duplicate rows with their revisions, retains the oldest canonical row, and enforces a global conversation/event unique index. Identical later ingestion reuses the canonical ID with trace evidence; conflicting candidates are audit-logged and discarded without changing counts, revisions or exports.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-197",
+      "status": "resolved",
+      "summary": "The V1.20 audio-first legal-path ranker does not yet use adjacent robot-turn context or explicit cross-provider consistency, and LLM-assisted selections lack the required semantic-conflict check.",
+      "impact": "When event/island counts differ and customer text is weak or tied, the runtime can route a resolvable assignment to LLM/manual review or accept a provider selection whose IDs and ownership are valid but whose texts conflict semantically.",
+      "source": "Independent V1.20 review on 2026-09-23 traced _event_island_score and _resolve_ambiguous_audio_cases against the frozen PD-070 contract.",
+      "next_action": "Retain the new ranking evidence and deterministic post-LLM rejection regressions in the release suite.",
+      "resolution": "Legal-path ranking now persists customer text, digit normalization, adjacent robot context and cross-provider consistency components without moving frozen islands. Strong role, digit or semantic provider conflicts keep a Case ambiguous; the same checks run after an LLM selection, and regressions prove context changes the legal-path choice while conflicting provider digits cannot be overridden.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-198",
+      "status": "resolved",
+      "summary": "Historical Turn anomaly detection and review evidence are incomplete for the V1.20 contract.",
+      "impact": "Only many-events-to-one-island over-split groups are created. Wrong-merge/order candidates are not classified, and the review UI omits the suggested Case mapping and provider evidence required to make an informed confirmation.",
+      "source": "Independent V1.20 review on 2026-09-23 traced checkpoint_evaluation_case, list_historical_turn_issues and the Turn review renderer against PD-071/PD-074.",
+      "next_action": "Retain all three anomaly classes, exact-island playback and desktop/narrow evidence in the release suite.",
+      "resolution": "The completed conversation checkpoint now groups over-split, wrong-merge and evidence-backed order candidates, persists every suggested Case/island and provider turn, protects completed reviews from retry mutation, and exposes exact-island audio through the review API. The formal review and report DOM render the mapping, provider evidence and playback; backend and desktop/narrow regressions pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-199",
+      "status": "resolved",
+      "summary": "The confirmed historical Turn row metric double-counts a source Turn when overlapping anomaly groups are both confirmed.",
+      "impact": "A source Turn can belong to both a wrong-merge and an order-anomaly group. Summing each group's affected count inflates the report even though the frozen contract requires unique affected source Turn rows.",
+      "source": "Independent V1.20 re-review on 2026-09-23 traced historical_turn_quality against the PD-071 report contract and found that it sums affected_turn_count instead of taking the union of confirmed source event IDs.",
+      "next_action": "Retain the overlapping wrong-merge/order regression in the release suite.",
+      "resolution": "historical_turn_quality now takes the union of (conversation ID, source event ID) pairs across confirmed groups. A regression confirms two overlapping confirmed groups report two unique affected Turn rows rather than the previous summed value of three.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
+    {
+      "id": "UV-035",
+      "status": "open",
+      "summary": "The PD-070/PD-071/PD-072/PD-073/PD-074/PD-075 V1.20 baseline passed User Gate 1 under PD-076 but has no runtime verification.",
+      "reason": "The product owner authorized development through deployment. Runtime, storage migration, formal UI and deterministic regressions are implemented; 292 repository tests, 127 focused backend/UI-contract tests, 42 Evaluation UI regressions and 4 updated Turn review/report desktop/narrow checks pass. Independent V1.20 re-review returned PASS with no remaining blocker. Deployment, production migration and post-deploy verification remain pending; E65A was not retried and no paid provider call was made.",
+      "disclosed_to_user": true
+    },
     {
       "id": "UV-031",
       "status": "resolved",
@@ -1938,9 +2063,10 @@
     },
     {
       "id": "UV-034",
-      "status": "open",
+      "status": "resolved",
       "summary": "The integrated PD-069 code path has not been used to retry production batch EV-20260923-E65A.",
       "reason": "PD-069 intentionally uses deterministic local tests and the already-authorized PD-068 bounded external probe. Deployment authorization explicitly forbids automatically retrying or mutating E65A and forbids new provider calls. Production behavior must therefore be confirmed by a later user-initiated retry or new batch after deployment.",
+      "resolution": "The product owner initiated E65A retries after production was running PD-069 commit 6f40a1ad3ac05f48f18d3d14f284d68da229fea1. Read-only production evidence shows Event Alignment used bounded groups at or below the 64K envelope, completed many parents directly, superseded schema-failed parents and executed child splits. The batch advanced to Pass 2, proving the integrated path ran; the later Pass 2 idempotency-key collision is tracked separately as KI-190.",
       "disclosed_to_user": true
     },
     {

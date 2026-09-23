@@ -4,12 +4,110 @@
 
 ## Status
 
-- Recorded decisions: 65 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 72 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
-- Last reviewed: 2026-09-22
+- Last reviewed: 2026-09-23
 
 ## Decisions
+
+### PD-076 — 确认并冻结 V1.20 规格与原型基线
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: 产品负责人查看已定位到“人工复核 → Turn 异常复核”的更新原型后，是否确认该流程与 V1.20 候选基线
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；Agent 明确请求“请查看当前新打开的页面并确认流程”后，产品负责人回复确认
+- Confirmation quote: “可以。”
+- Decision: 确认 V1.20 的 audio-first 音频与证据对齐、仅歧义 Case 使用受控 LLM、历史 Turn 异常分组复核、报告双指标与覆盖率、Pass 2 历史幂等修复、Benchmark 全库去重及冲突候选直接丢弃等已记录行为；确认 `prototypes/index.html` 为新的唯一视觉基线。User Gate 1 通过，正式实现可在后续明确开发指令下开始。
+- Reason: 产品负责人已完成逐项方案确认，并在直接打开更新后的 Turn 异常复核页面后确认该流程可用。
+- Consequences: V1.19 降为历史基线，V1.20 的 SHA-256 成为本 Change 唯一当前冻结校验值；正式 UI 必须复用生产路由、组件和 DOM，并依次完成 Engineering Checkpoint A/B/C。此次确认不等于授权生产重试、付费调用、部署或 User Gate 2 最终验收。
+- Updated artifacts: `decision-log.md`、`proposal.md`、`tasks.md`、`prototypes/README.md`、UI 注释/状态矩阵、Gate 1 记录、UI checklist 与 `verification/delivery-status.json`。
+- Verification: User Gate 1 已完成；正式代码、迁移、持久化、双视口回归、独立验收和生产行为仍未实现或验证。
+
+### PD-075 — 跨批次 Benchmark 冲突直接丢弃新结果
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: Q-020；同一 conversation/event 已有正式 Benchmark，但后续批次产生不同 Good/Bad、标注文本或音频证据时如何处理
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人通过 Response Annotation 明确否决人工冲突复核和自动修订
+- Confirmation quote: “不同批次结果冲突时，不新增、不自动覆盖，直接放弃新生成的那个”
+- Decision: 当正式 Benchmark Library 已存在同一 `(conversation_id, event_id)` 样本，而后续批次生成的 Good/Bad、最终标注文本或音频证据与当前样本冲突时，系统直接丢弃新生成的 Benchmark 候选：不得新增样本、不得覆盖当前值、不得追加修订，也不得创建人工冲突复核任务。现有 Benchmark 及其既有追溯保持不变，新批次的 Benchmark 新增数不得包含该候选。
+- Reason: 同一原始事件只保留一个正式 Benchmark；后续批次的冲突输出不应改变既有真值，也不值得引入额外人工处理流程。
+- Consequences: Q-020 关闭。全局唯一键在写入前拦截冲突候选；相同结果仍幂等返回原 Benchmark ID，冲突结果返回明确的“重复冲突已放弃”处理状态但不保存其标注或音频为正式样本/修订。实现与回归必须证明跨批次冲突不会改变样本数、当前值、修订历史、导出内容或创建复核任务。
+- Updated artifacts: `open-questions.md`、`decision-log.md`、Benchmark Delta Spec、`design.md`、`tasks.md`、原型说明、Gate 1 材料与 `verification/delivery-status.json`。
+- Verification: 产品规则已确认并写入规格；全局唯一迁移、冲突丢弃路径和历史重复数据处理尚未实现或验证。
+
+### PD-074 — 历史 Turn 异常必须人工复核后进入报告结论
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: 原型中的历史 Turn 标注异常是否需要人工审核，以及复核入口如何呈现
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人先询问复核要求，随后明确要求补画复核入口指导开发
+- Confirmation quote: “这个Turn异常需要复核的，你最好也画一个出来。方便指导后续开发，也能和我对齐”
+- Decision: Audio-first 流程发现的历史 Turn 异常先作为待复核候选进入现有“人工复核”产品区域，但必须与 ASR Good/Bad 音频复核分栏展示。复核任务按异常组处理，展示 conversation、全部 source Turn、系统建议的 Case 映射、语音岛音频、历史文本顺序和 provider 证据。复核人员明确选择“确认 Turn 异常”或“不是 Turn 异常”；未提交或暂无法判断时保持待复核。只有人工确认的异常组和受影响 Turn 行进入报告的确定结论，驳回项不计数，待复核项单独披露覆盖率。复核不得回写源工作簿，也不得直接创建 Benchmark。
+- Reason: 音频与证据对齐可以高召回发现历史切分、合并或顺序问题，但这些属于源数据质量结论，必须由人工试听并核对证据后确认，不能由系统自动定性。
+- Consequences: V1.20 候选需增加 ASR Case / Turn 异常两个复核入口、Turn 异常组队列、证据区和确认/驳回动作；报告显示已确认组数、受影响 Turn 行数和 Turn 复核覆盖率。Delta Spec、设计、任务、状态矩阵与 UI checklist 同步，续订 User Gate 1 后才进入正式实现。
+- Updated artifacts: `decision-log.md`、`proposal.md`、Delta Spec、`design.md`、`tasks.md`、V1.20 候选原型和 UI 验收材料。
+- Verification: 仅完成规格与原型候选；正式页面、持久化、报告计算、权限与回归测试尚未实现或验证。
+
+### PD-073 — Benchmark 以 conversation ID + event ID 全库去重
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: Benchmark 是否已经按 conversation ID + event ID 去重
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人发现现有唯一键可能允许跨批次重复入库
+- Confirmation quote: “Benchmark你存的时候，对话ID+事件相同的，你不能存啊，现在是不是没去重？”
+- Decision: 正式 Benchmark Library 中，同一 `(conversation_id, event_id)` 全库只能对应一个 Benchmark 样本，批次 ID 不得参与决定样本是否重复。重试、恢复、重复 webhook、人工复核和后续批次再次命中该事件时都不得创建第二条样本。
+- Reason: 同一原始对话事件代表同一个评测对象；批次只是发现和证据来源，不应把同一对象复制成多个 Benchmark 样本并污染数量、比例和导出。
+- Consequences: 数据库需增加全局唯一约束并迁移既有数据；自动和人工入库都必须先按 conversation/event 查找已有样本。完全相同的重复结果幂等返回原 Benchmark ID；不同结果按 PD-075 直接丢弃新候选，不新增、不覆盖、不修订且不进入人工冲突复核。
+- Updated artifacts: `decisions/open-questions.md`、`decision-log.md`、Benchmark Delta Spec、`design.md`、`tasks.md`、`verification/delivery-status.json`。
+- Verification: 代码审阅确认现有约束是 `(batch_id, conversation_id, event_id)`，因此只保证批次内去重；全局去重、历史数据迁移和冲突路径尚未实现或验证。
+
+### PD-072 — Audio-first 确定性对齐，歧义 Case 才使用 LLM 辅助
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: Q-019；历史时间戳不可信时，是否完全移除 LLM Event Aligner，还是只在 ASR Turn 与历史事件无法唯一对应时保留受控辅助
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人逐项挑战时间重叠假设、确认 LLM 仅用于歧义 Case，并最终确认完整七项范围
+- Confirmation quote: “那你是不是要在发现ASR Turn和历史文本记录的case对不上的时候，用LLM辅助来判断下？”；“采用方案 C，并按以上 7 项更新规格和原型”
+- Decision: 批次第 4 步改为“音频与证据对齐”。系统先从 `user_record` 生成并冻结语音岛，以 worksheet/event 顺序为硬约束执行确定性单调序列匹配；历史时间戳不参与强约束。数字、拼写、大小写和标点归一化生成原文、数字序列和数值等可比较形式，例如 `223` 与 `two two three` 可通过 `2|2|3` 形成辅助证据。相邻机器人轮次和多 provider 文本一致性只用于在不改变音频边界的合法候选之间排序。只有仍无法唯一绑定历史 event、语音岛与 provider turn 的歧义 Case，才使用批次冻结的辅助 LLM；该 LLM 只能从输入中真实存在的 event ID、audio-island ID 和 provider turn ID 中选择并说明依据，不能生成时间戳、新 ID、改变音频边界或打破顺序。输出必须继续通过确定性的 ID、单调性、音频边界和跨 provider 证据校验；仍冲突、遗漏或结构无效则进入人工复核，不得伪装为成功。
+- Reason: 纯时间重叠无法把不可信历史时间戳绑定到真实音频；完全移除语义辅助会让数字表达差异、粗粒度 provider turn 和事件/语音岛数量不一致的 Case 大量进入人工。受控方案 C 保留 audio-first 真相源，同时只让 LLM 处理确定性规则无法唯一裁决的小范围歧义。
+- Consequences: 旧的“所有目标 conversation 批量调用 LLM Event Aligner”被替换；常规对齐不产生 LLM 请求，只有歧义 Case 产生受预算、幂等、超时和结构校验约束的辅助请求。第 4 步保留六阶段位置但改名；活动行必须区分本地确定性对齐与正在等待的辅助 LLM。历史失败 Align checkpoint 只保留诊断，不得直接重放；按新流程重建后仍歧义时才允许新的受控请求。Pass 2 历史组必须按幂等键和精确成员复用。报告单列历史 Turn 标注异常组数和受影响 Turn 行数。
+- Updated artifacts: `decisions/open-questions.md`、`decision-log.md`、`proposal.md`、Delta Specs、`design.md`、`tasks.md`、V1.20 候选原型与 UI 验收材料。
+- Verification: 本决定仅冻结产品范围；正式实现、确定性覆盖率、LLM 触发率、成本、生产恢复和 E65A 重试均尚未验证。User Gate 1 仍需产品负责人查看并确认 V1.20 候选原型。
+
+### PD-070 — Case 音频边界以纯用户音轨为主，文本只作辅助证据
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: `1030000000070676` 的 R28/R30 为什么在切分后显示音频不可用，以及事件边界应以文本映射还是音频信号为准
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人纠正单 Case 恢复思路并要求通盘调整定位标准
+- Confirmation quote: “应该以音频切分的标准为主来判断，不应该以文本来为标准，文本现在切错的概率比语音高，语音反而很少切错。你不能只恢复一个case，要通盘考虑，是哪里有问题”；“我理解如果一个语音岛对应多个事件，那么需要把多个事件合并。”；“历史对话记录的时间戳不准，你要记得这件事”
+- Decision: Case 音频定位与切分必须以 `user_record` 的实际语音活动、静音边界和事件顺序为主。历史对话记录的时间戳明确属于不可信数据，只能作为可丢弃的宽松提示，不能作为 Case 边界、事件归属或失败判定依据；历史事件首先按工作簿/事件序列做单调分配。完整录音 ASR 时间戳来自实际录音时间轴，可用于把 provider turn 投影到已经冻结的语音岛，但它仍只是证据，不能移动音频边界；文本语义同样只能用于质量判断。不得先用历史时间戳或文本/LLM turn 映射决定音频边界，再让波形只能被动验证或扩张。当一个语音岛对应多个相邻事件时，将这些事件合并为一个 Case，并保留全部原始 event ID 供展示、审计和结果追溯；不得再按文本强行切开。有效定位结果必须按 Case 独立持久化；同一 conversation 的其他 Case 失败不得使已可靠定位的 Case 变为音频不可用。
+- Reason: 线上 `1030000000070676` 的纯用户 WAV 在不读取文本时清楚呈现 133.60–136.70 秒与 137.36–137.72 秒两个语音岛，而现有 ASR-turn 并集把 R28 裁成 133.42–137.97 秒并吞入 R30；文本映射与整通原子落库共同制造了错误边界和级联不可用。
+- Consequences: 事件定位流程需改为 audio-first：先从纯用户音轨生成稳定语音岛，再以历史事件序列做单调分配；历史时间戳不得参与强约束、不得否决顺序映射。随后才按实际录音时间轴的重叠关系投影各 provider 完整通话 turn 文本。文本和 provider 时间戳不得移动已确认的音频边界。多事件命中同一语音岛时生成一个可追溯的合并 Case；其他仍无法唯一分配的范围只隔离受影响事件，并保留同通其他 Case。具体合并 Case 标识、最小时长、间隔阈值和旧检查点迁移必须在实现前补入 Delta Spec、design、tasks 与回归矩阵。
+- Updated artifacts: `decisions/decision-log.md`、`verification/delivery-status.json`；实现材料待方案细化与 User Gate 1 修订后更新。
+- Verification: 只读生产波形检查验证 8 kHz 单声道 `user_record` 在 132–141 秒窗口内存在 133.60–136.70 秒与 137.36–137.72 秒两个独立活动区间；当前代码仍为 text/turn-first，尚未实现本决定。
+
+### PD-071 — 评测报告单列历史 Turn 标注错误
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: Audio-first 合并事件后，历史 Turn 标注错误是否只作为内部 Align 错误，还是进入评测报告
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人通过 Response Annotation 明确要求作为独立报告信息
+- Confirmation quote: “另外，要单独标记出来，有几个turn被标记错了。”；“在评测报告页面上，你要单独列出来，有几个turn被历史标记错了。这也是有价值的信息”；“使用A和C的组合，组数+Turn行数都要有”
+- Decision: 初步报告、最终报告、部分最终报告和部分结果页都必须单独展示历史 Turn 标注错误指标，不得把它混入 ASR Bad Case、人工确认错误率或普通 Align 技术错误。报告汇总同时展示异常组数与受影响历史 Turn 行数；一个语音岛对应 3 个历史事件时记为 `1 组 / 3 Turn`。详情按异常组展开到受影响 conversation、原始 event ID、audio-first 合并 Case、错误类型和可回听音频证据。历史标注事实保持不可变，系统只记录评测发现，不回写源工作簿。
+- Reason: 历史 Turn 的过度拆分、错误合并或顺序标注问题本身是评测数据质量结论，能解释 ASR/Align 异常并支持后续数据治理。
+- Consequences: 报告 Schema 必须分别冻结 `historical_turn_error_group_count` 与 `affected_historical_turn_count`，详情组保留稳定 group ID 和完整 source event ID 集合；两者不得互相替代，也不得改变现有疑似 ASR 错误率分子/分母。Delta Spec、设计、正式原型、状态矩阵、导出与回归测试必须同步，并重新执行 User Gate 1。
+- Updated artifacts: `decisions/open-questions.md`、`decisions/decision-log.md`、`verification/delivery-status.json`；其余实现材料在 audio-first Event Alignment 职责确认后同步。
+- Verification: 需求已确认，统计口径、原型和实现尚未冻结或验证。
 
 ### PD-066 — 冻结 V1.18 并在独立验收后发布
 

@@ -2,7 +2,7 @@
 
 ## 0. User Gate 1 — specification and baseline
 
-- [x] 0.1 Confirm `PRD.html V1.17` plus `prototypes/index.html V1.19` (SHA-256 `17829744d355bc86da3625cdf5fc24b94a6a44db5e67551046e046abbd89649c`) as the current requirement baseline under PD-067/PD-069
+- [x] 0.1 Confirm `PRD.html V1.17` plus `prototypes/index.html V1.20` (SHA-256 `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62`) as the current requirement baseline under PD-076; V1.19 is superseded historical evidence
 - [x] 0.2 Confirm per-conversation Excel input, suspected-rate formula, unclear exclusion, Good:Bad 1:1 sampling and no confidence threshold
 - [x] 0.3 Remove obsolete PRD artifacts and retain one latest PRD and one latest prototype
 - [x] 0.4 Draft proposal, three capability Delta Specs, design, tasks and UI verification materials
@@ -223,6 +223,15 @@
 - [x] 12.83 Add the independent Event Alignment fourth step, immediate elapsed rendering and provider-local ASR request totals to the prototype and formal UI (PD-067, KI-185, KI-186, KI-187)
 - [x] 12.84 Add regressions for final-wire size, split/restart behavior, bulk persistence, six-stage rendering, elapsed continuity and provider-local totals; run scoped/full checks and independent verification
 - [x] 12.85 Deploy the independently verified release, confirm CI/CD, public health and deployed SHA, and verify E65A remained unchanged with no automatic provider dispatch (PD-069)
+- [x] 12.86 Amend Delta Specs, design, report schema and state matrix for PD-070/PD-071/PD-072, and prepare the V1.20 candidate prototype after Q-019 closes
+- [x] 12.86a Obtain renewed User Gate 1 confirmation for the V1.20 candidate before any formal UI or runtime implementation (PD-076)
+- [x] 12.87 Replace text-first Case positioning with deterministic pure-user audio islands and a monotonic sequence matcher: exclude historical timestamps from hard constraints; use event order as the hard constraint; use number/spelling normalization, adjacent robot-turn context and cross-provider text consistency only to rank legal assignments; merge traceable many-events-to-one-Case mappings; route non-unique/low-evidence mappings to manual review; keep text unable to move frozen audio boundaries (PD-070, KI-191, KI-192, KI-195, KI-197)
+- [x] 12.88 Persist audio alignment per Case so one unresolved event cannot discard valid sibling Cases; classify and retain historical Turn annotation groups with all source event IDs (PD-070, PD-071, KI-191)
+- [x] 12.89 Reuse canonical historical Pass 2 groups by idempotency key when retry ordinals change, reject only true membership drift, and add an E65A-derived restart regression (KI-190)
+- [x] 12.90 Add a separate historical Turn anomaly review queue and group-level confirm/reject persistence, then report only confirmed issue groups and unique affected Turn rows alongside review coverage, group-first drill-down, playback evidence, partial/final report behavior and export coverage (PD-071, PD-074, KI-193, KI-198, KI-199)
+- [x] 12.91 Migrate legacy LLM Event Alignment checkpoints under the confirmed Q-019 policy: preserve the exhausted singleton structure failure as historical diagnostics, exclude it from direct retry eligibility, rebuild Case/provider evidence through the new deterministic audio-first path, and allow at most the newly defined controlled LLM fallback only when the rebuilt Case remains ambiguous; prove the legacy failure cannot block valid sibling Cases or Pass 2 (KI-194)
+- [x] 12.92 Complete Engineering Checkpoints A/B/C, Change gate and independent verification for the combined recovery; do not retry E65A or make a paid provider call without a new explicit authorization
+- [x] 12.93 Migrate Benchmark identity from batch-scoped `(batch_id, conversation_id, event_id)` to global `(conversation_id, event_id)`, deduplicate existing rows without losing revisions or trace evidence, make identical AI/manual ingestion return the canonical Benchmark ID, discard later conflicting candidates without creating a sample/revision/review task or changing counts/exports, and add cross-batch, retry and conflict regressions (PD-073, PD-075, KI-196)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

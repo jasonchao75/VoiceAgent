@@ -143,60 +143,73 @@
 
 ### Requirement: Full-call ASR evidence and user-event clipping
 
-第一轮识别出需要评估的目标用户事件后，系统 MUST 为每个命中 conversation/provider 至多提交一次显式启用 speaker diarization 的完整通话转写，并保存逐词/逐段的文本、开始/结束时间、匿名 speaker 标签和可稳定引用的 turn ID。系统 MUST 使用独立 Event Aligner，把完整有序 worksheet 事件及全部目标 R 映射到各 provider 已存在的 turn ID；模型不得生成时间戳或不存在的 ID。Event Aligner MUST 按模型已验证上下文限制动态装箱：整批安全可容纳时只发起一个请求，超限时才按完整 conversation 不可拆分生成最少请求组；失败仅重试失败组。程序 MUST 校验请求组、conversation/event/provider/turn ID、单调事件顺序、用户 speaker 角色和至少两家 provider 对同一用户发言的映射，并以获接纳 turns 的时间区间并集定位目标句子。Excel `time (s)` MUST 完全退出定位计算，只可作为原始审计字段保留。每个获接纳 provider turn 的文本 MUST 直接作为该 Case 的正式 ASR 候选。并集映射到已验证共用时间轴的 `user_record/{conversation_id}.wav` 后，该用户轨只可校验信号和向外补齐语音边缘，MUST NOT 向内缩短 provider 并集，也不得使用全局能量/VAD 选择另一事件。生成的纯用户音频 MUST 只用于回听、人工复核和 Benchmark，MUST NOT 再提交给任何评测 ASR。Multi-ASR 任务数、调用费用和 provider 失败数 MUST 只统计完整通话 provider job，不得把本地切片或派生 Case 证据计作外部任务。
+第一轮识别出需要评估的目标用户事件后，系统 MUST 为每个命中 conversation/provider 至多提交一次显式启用 speaker diarization 的完整通话转写，并保存逐词/逐段文本、开始/结束时间、匿名 speaker 标签和稳定 turn ID。系统 MUST 先从 `user_record/{conversation_id}.wav` 的实际语音活动与静音边界生成有序语音岛，并在读取历史文本或 provider turn 之前冻结每个岛的 start/end、检测器版本和生效参数。历史 `time (s)` MUST 只保留为审计字段，不得参与强约束、边界、排序、tie-break、裁片或自动失败决定。
+
+系统 MUST 以 worksheet/event 顺序为硬约束，将有序历史用户事件与有序语音岛做确定性单调序列匹配；MUST 支持多个相邻历史事件合并到一个语音岛，并为合并 Case 保留全部 source event ID。文本归一化 MUST 保留原文，同时生成至少 Unicode/大小写/标点规范形式、逐位数字序列和数值形式；例如 `223` 与 `two two three` 可通过共同数字序列形成辅助证据。归一化文本、相邻机器人轮次和跨 provider 一致性只可排序已满足事件/语音岛顺序的合法候选，MUST NOT 切分、移动或扩大已冻结的音频边界。
+
+完整录音 provider turn MUST 按与已冻结 Case 区间的时间重叠投影为候选文本。只有存在唯一且满足冻结证据策略的映射时，系统才可标记 `deterministic_aligned`。事件/语音岛数量不一致、多个合法路径同分、粗粒度 provider turn 横跨多个岛或 provider 证据冲突时，受影响 Case MUST 标记 `ambiguous` 并进入受控 LLM 辅助；不得直接声称成功。
+
+辅助 LLM MUST 使用批次冻结的资源/模型，并且只接收受影响 Case 的真实 event ID、audio-island ID、provider turn ID、原始/归一化文本及必要相邻上下文。模型只能从输入候选 ID 中选择并说明依据，MUST NOT 生成时间戳、新 ID、改变语音岛边界或打破事件顺序。程序 MUST 在使用结果前校验请求/Case 身份、完整候选集合、真实 ID、conversation/provider 归属、单调顺序、冻结边界和跨 provider 证据；结构无效、遗漏、冲突或仍不唯一时，该 Case MUST 进入人工复核。
+
+每个 Case 及其 provider turn 投影 MUST 独立持久化；一个 Case 的歧义或失败 MUST NOT 使同 conversation 的有效 sibling Case 变为音频不可用。生成的纯用户音频 MUST 只用于回听、人工复核和 Benchmark，MUST NOT 再提交给任何评测 ASR。Multi-ASR 任务数、调用费用和 provider 失败数 MUST 只统计完整通话 provider job；本地切片、确定性匹配和派生 Case 证据不得计作外部任务，只有实际触发的歧义 LLM 辅助请求计入 LLM 成本。
 
 #### Scenario: Prepare one target user event
 
 - **WHEN** 第一轮将一个有效用户事件识别为疑点 Case 或额外 Good Case
-- **THEN** 系统为该 Case 生成稳定的纯用户音频切片，并把 Event Aligner 选中的各 provider 完整录音 turn 文本保存为派生 Case 证据，不创建事件级 provider 转录任务
+- **THEN** 系统先冻结对应语音岛边界，再保存确定性或经校验 LLM 辅助选中的 provider turn 文本；不创建事件级 provider 转录任务
 
 #### Scenario: One conversation contains multiple cases
 
 - **WHEN** 同一 conversation ID 包含多个需要第二轮判断的目标用户事件
-- **THEN** 系统分别裁切每个事件，并仅投影各事件自己映射到的 provider turn 文本，不得使用相邻机器人事件或其他用户事件的 ASR 文本填充当前 Case
+- **THEN** 系统按语音岛分别生成 Case；多个相邻事件落在同一岛时合并为一个 Case 并保留全部 event ID，不得按历史时间戳或文本强行拆开
 
 #### Scenario: Reuse one full-call ASR context
 
 - **WHEN** 同一 conversation 包含一个或多个目标用户事件
 - **THEN** 系统为每家启用的评测 ASR 至多提交一次完整通话录音并跨该 conversation 的所有 Case 复用结果，只在本地为每个 Case 生成纯用户单句切片
 
-#### Scenario: Pack Event Aligner requests dynamically
+#### Scenario: Normalize different written forms without moving audio
 
-- **WHEN** 全部命中 conversation 的 worksheet 事件、目标 R 和三家完整录音 turns 可在冻结模型的上下文与结构化输出预留内安全容纳
-- **THEN** 系统只发起一个 Event Aligner 请求；只有超限时才按完整 conversation 不可拆分生成最少请求组，并只重试失败组
+- **WHEN** 历史文本为 `223`，某家 ASR turn 为 `two two three`，且二者属于同一合法顺序候选
+- **THEN** 系统保留两份原文并生成共同的逐位数字序列用于候选排序；该文本证据不得创建、切分或移动语音岛边界
 
-Event Aligner MUST 使用统一 128K 运行包络（最终输入不超过 64K、可见输出不超过 32K、保留 32K 安全余量），业务载荷只可出现在完成变量替换的 System Prompt 一次，User message 只发送固定无业务内容的执行指令；Thinking MUST 关闭，客户端超时 MUST 为 180 秒。
+#### Scenario: Use the LLM only for one ambiguous Case
 
-#### Scenario: Split one oversized conversation by target-event subsets
-- **WHEN** 单个 conversation 的全部目标事件仍超过最终 64K 输入上限，但每个目标事件在保留完整历史和 ASR turns 后可单独容纳
-- **THEN** 系统在发送前按稳定目标事件子集拆组、重复必要的 conversation 证据，并在所有子组完成后按 event ID 合并为一份 conversation 映射；不得截断文本或通过付费失败探测大小
+- **WHEN** 确定性单调匹配和文本归一化后，一个 Case 仍有多个合法 event/island/turn 组合
+- **THEN** 系统只把该 Case 的受限候选集合发送给批次冻结的辅助 LLM；其他已唯一对齐 Case 不产生 LLM 请求且不得被重算
 
-#### Scenario: Recover a slow Event Aligner group without replaying the same payload
-- **WHEN** 一个包含多个 conversation 的 Event Aligner 请求达到 180 秒超时或返回不符合结构契约的结果
-- **THEN** 系统把父组标记为 superseded，按稳定 membership 二分为完整 conversation 子组并只发送子组；单 conversation 叶子最多额外尝试一次，已完成 conversation 在恢复运行时不得重发
+#### Scenario: Reject an unverified LLM-assisted mapping
 
-#### Scenario: Persist projected ASR evidence without lock amplification
-- **WHEN** Event Alignment 结束后系统为多个 Case/provider 生成 turn 投影结果或失败结果
-- **THEN** 系统在一个带 busy timeout 的事务中批量保存这些结果，不得为每条投影并发打开独立写事务
+- **WHEN** 辅助 LLM 返回不存在的 ID、时间戳、跨序映射、遗漏候选、修改边界、结构无效或与跨 provider 证据冲突
+- **THEN** 系统拒绝该结果并把对应 Case 标记为需人工复核；不得使用模型解释替代确定性校验
+
+#### Scenario: Merge historical turns into one audio Case
+
+- **WHEN** 多个相邻历史用户事件被唯一映射到同一个语音岛
+- **THEN** 系统创建一个稳定合并 Case、保留有序 source event ID 列表，并记录一个历史 Turn 标注异常组及其受影响 Turn 行数
+
+#### Scenario: Persist projected ASR evidence per Case
+- **WHEN** 同一 conversation 的一个 Case 已唯一对齐，而 sibling Case 仍歧义或失败
+- **THEN** 系统以稳定 Case 事务保存已完成 Case 及其 provider 投影；不得因 sibling 未完成而丢弃或回滚该结果
 
 ### Requirement: Six-stage execution visibility
 
-批次详情 MUST 依次展示数据校验、第一轮分析、多 ASR 转写、Event Alignment、第二轮分析和人工复核六步。Event Aligner 的 Qwen 活动请求、进度和失败 MUST 只显示在 Event Alignment。活动请求首帧 MUST 由 `started_at` 计算当前耗时，轮询重绘不得短暂回到 `00:00`。多 ASR 的每一行 MUST 使用该 provider 内部的序号和总数；阶段总进度仍按全部 provider job 汇总。
+批次详情 MUST 依次展示数据校验、第一轮分析、多 ASR 转写、音频与证据对齐、第二轮分析和人工复核六步。第 4 步 MUST 区分本地确定性对齐数量、歧义 Case 数和辅助 LLM 请求；只有实际触发的辅助请求显示批次冻结的真实 provider/model、请求序号和等待时间，不得固定显示 Qwen。活动请求首帧 MUST 由 `started_at` 计算当前耗时，轮询重绘不得短暂回到 `00:00`。多 ASR 的每一行 MUST 使用该 provider 内部的序号和总数；阶段总进度仍按全部 provider job 汇总。
 
-#### Scenario: Bind events only to real provider turns
+#### Scenario: Bind evidence only to real provider turns
 
-- **WHEN** Event Aligner 返回目标 R 与各 provider turn 的映射
+- **WHEN** 确定性或 LLM 辅助对齐返回目标 Case 与各 provider turn 的映射
 - **THEN** 每个映射 MUST 引用请求输入中真实存在且属于对应 conversation/provider 的 turn ID；程序回查真实时间戳，拒绝虚构 ID、越权 ID、事件遗漏/重复、非单调顺序或非用户角色
 
-#### Scenario: Align a target event without Excel time
+#### Scenario: Freeze a target Case without historical time
 
-- **WHEN** Event Aligner 将同一目标用户事件映射到两家或以上完整录音 ASR 的真实用户 turns
-- **THEN** 系统使用所有获接纳 turn 时间区间的并集在纯用户 WAV 上校验并裁片，可向外补齐语音边缘但不得向内缩短并集，且修改 Excel `time (s)` 不得改变生成的区间
+- **WHEN** 系统在纯用户 WAV 上检测到语音岛并将历史事件序列唯一分配到该岛
+- **THEN** 语音岛 start/end 成为 Case 冻结边界；修改历史 `time (s)`、provider turn 边界或文本不得改变该区间
 
 #### Scenario: Reject an unreliable user-event clip
 
-- **WHEN** 少于两家完整录音 ASR 产生可用 speaker 时间表、Event Aligner 映射缺失/歧义/不合法、获选 turns 形成明显跨事件宽区间、用户轨校验失败，或无法生成非空单句切片
-- **THEN** 对应 Case 准备明确失败且不产生派生候选文本，不得回退到 Excel 时间、单家猜测或未被 Event Aligner 选中的完整通话转写片段
+- **WHEN** 语音岛为空/无效，或确定性与辅助 LLM 后事件归属仍歧义/不合法
+- **THEN** 只把对应 Case 标记为定位失败或需人工复核，不得回退到历史时间、扩大到完整录音、使用单家猜测或影响已完成 sibling Case
 
 #### Scenario: Receive an asynchronous callback twice
 
@@ -231,7 +244,7 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 第二轮 LLM MUST 将历史转写和每家评测 ASR 都视为证据而非真值，并结合完整对话、语义、实体、数字、否定、语种、说话人和事件边界，为每个被评估用户事件输出 `Good Case`、`Bad Case` 或 `需人工复核`。
 
-第二轮 MUST 启用所选模型的 Thinking 能力，并使用与第一轮相同的 128K 运行包络和最终消息预检。可见结构化 JSON MUST 先按 Case 数量在生成上限内预留，Thinking MUST 只使用剩余额度；二者合计不得超过所选模型与公共 32K 上限中的较小者。每个 Case MUST 保留所属 conversation 的完整历史文本、Event Aligner 映射出的目标 provider turn 文本和必要配置证据；完整录音 ASR 上下文 MUST 只包含同一 provider 中紧邻目标 turn 的前一条和后一条 turn（存在时），不得重复目标候选或把无关的完整录音 turns 投影到请求中。系统 MUST 先按 conversation 装箱；单通仍超过 64K 输入硬上限时，MUST 在发送前按稳定 Case 子集拆组并为各子组重复必要的完整历史，不得截断历史文本。单个 Case 经限定证据后仍超过输入或生成上限时 MUST 在外部调用前以专用 preflight 分类明确失败。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
+第二轮 MUST 启用所选模型的 Thinking 能力，并使用与第一轮相同的 128K 运行包络和最终消息预检。可见结构化 JSON MUST 先按 Case 数量在生成上限内预留，Thinking MUST 只使用剩余额度；二者合计不得超过所选模型与公共 32K 上限中的较小者。每个 Case MUST 保留所属 conversation 的完整历史文本、音频与证据对齐阶段投影出的目标 provider turn 文本、全部 source event ID 和必要配置证据；完整录音 ASR 上下文 MUST 只包含同一 provider 中紧邻目标 turn 的前一条和后一条 turn（存在时），不得重复目标候选或把无关的完整录音 turns 投影到请求中。系统 MUST 先按 conversation 装箱；单通仍超过 64K 输入硬上限时，MUST 在发送前按稳定 Case 子集拆组并为各子组重复必要的完整历史，不得截断历史文本。单个 Case 经限定证据后仍超过输入或生成上限时 MUST 在外部调用前以专用 preflight 分类明确失败。系统 MUST 分别记录唯一 Case 数和外部请求组数，失败重试不得导致 Case 漏失、重复判断或重复计费。
 
 每个请求组 MUST 携带稳定 `request_group_id`。第二轮结构化输出 MUST 原样返回该 ID，并以顶层 `results[]` 为组内每个输入 Case 恰好返回一个结果；每个结果 MUST 包含匹配的 conversation/issue/event ID 和 `positioning_quality`。组 ID 不匹配、Case 遗漏、重复或越界 MUST 使整个组失败并按相同冻结成员重试，不得保存部分结论。
 
@@ -252,7 +265,7 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 #### Scenario: Reject one oversized second-pass case before dispatch
 
-- **WHEN** 一个 Case 在保留完整历史、Event Aligner 目标 turn 候选和直接相邻 turns 后仍超过最终输入硬上限
+- **WHEN** 一个 Case 在保留完整历史、音频与证据对齐阶段的目标 turn 候选和直接相邻 turns 后仍超过最终输入硬上限
 - **THEN** 系统在供应商调用前记录明确尺寸失败，不得截断证据、扩大输出上限或通过付费递归请求发现该失败
 
 #### Scenario: Reject a mismatched grouped response
@@ -321,7 +334,7 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 ### Requirement: Unified playback interval
 
-系统 MUST 使用目标用户事件在纯用户 WAV 上的稳定切片作为统一回听区间。正式 ASR 候选的 turn ID 和时间戳来自完整录音的 Event Aligner 映射，仅作为默认折叠的技术证据；人工播放器和 Benchmark 剪辑 MUST 使用同一纯用户事件切片，不得增加会跨入相邻事件的上下文余量。
+系统 MUST 使用纯用户 WAV 上已冻结的 Case 语音岛作为统一回听区间。正式 ASR 候选的 turn ID 和时间戳来自完整录音的确定性或经校验 LLM 辅助投影，仅作为默认折叠的技术证据；人工播放器和 Benchmark 剪辑 MUST 使用同一 Case 音频切片，不得增加会跨入相邻语音岛的上下文余量。
 
 #### Scenario: Vendor segment boundaries differ
 
@@ -399,11 +412,36 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 - 疑似错误用户句子占比 = 第二轮 `Bad Case + 需人工复核` 数量 ÷ 成功完成第一轮分析的有效用户句子总数；
 - 人工确认错误占比 = 人工复核判为 Bad 的数量 ÷ 同一批次有效用户句子总数；
 - 复核完成率 = 已提交 Good、Bad 或听不清的人工任务数 ÷ 应人工复核任务总数。
+- 历史 Turn 标注错误组数 = 人工明确确认的稳定异常组数量；
+- 受影响历史 Turn 行数 = 已确认异常组覆盖的去重 source event/Turn 行数量；
+- 历史 Turn 复核覆盖率 = 已确认或已驳回的异常组数量 ÷ 系统发现的全部待复核异常组数量。
+
+历史 Turn 指标 MUST 作为独立数据质量信息展示，不得进入疑似 ASR 错误率或人工确认错误率的分子/分母。每个候选异常组 MUST 保留 conversation、全部 source event ID、建议对应 Case、错误类型和可回听音频证据，并进入独立的 Turn 异常人工复核。只有明确选择“确认 Turn 异常”的组可进入异常组数和受影响 Turn 行数；“不是 Turn 异常”不计数，未提交或暂无法判断保持待复核并单独披露。系统 MUST NOT 回写源工作簿，也 MUST NOT 因 Turn 复核直接创建 Benchmark。
+
+#### Scenario: Review a historical Turn anomaly group
+
+- **WHEN** 用户从人工复核区域打开一个系统发现的历史 Turn 异常组
+- **THEN** 页面展示完整 conversation ID、全部 source Turn、建议 Case 映射、每个冻结语音岛的音频、历史顺序/文本及 provider 证据，并要求明确选择“确认 Turn 异常”或“不是 Turn 异常”
+
+#### Scenario: Confirm a historical Turn anomaly
+
+- **WHEN** 复核人员确认该组确实存在过度切分、错误合并或顺序异常
+- **THEN** 系统保存不可变复核记录，将该组及去重 Turn 行计入报告指标，但不修改源工作簿或创建 Benchmark
+
+#### Scenario: Reject or defer a historical Turn anomaly
+
+- **WHEN** 复核人员选择“不是 Turn 异常”或暂不提交
+- **THEN** 驳回组不进入异常指标；未提交组保持待复核，报告单独展示待复核数与覆盖率，不得把候选当作确定结论
 
 #### Scenario: Calculate a fixed 20/6/4 formula fixture
 
 - **WHEN** 自动化测试使用固定 mock 输入：20 个 Bad、6 个 Good、4 个需人工复核和 441 个有效用户句子
 - **THEN** 疑似错误分子为 24 而不是 30，页面显示 `24 / 441`、百分比和被排除事件明细
+
+#### Scenario: Count one merged historical-turn issue
+
+- **WHEN** 一个语音岛对应 3 个相邻历史 Turn 并合并为一个 Case
+- **THEN** 系统先生成 `1 组 / 3 行 Turn` 的待复核候选；只有人工确认后报告才将其计为 `1 个已确认异常组 / 3 行 Turn`，且不改变任何 ASR 错误率
 
 ### Requirement: Immutable preliminary and final reports
 
@@ -423,6 +461,11 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 - **WHEN** 所有人工任务提交完成
 - **THEN** 系统生成最终报告版本，包含疑似/人工确认占比、复核覆盖、语言/场景分布、标签建议、证据和批次观察
+
+#### Scenario: Preserve historical-turn metrics across report states
+
+- **WHEN** 页面生成初步报告、最终报告、部分最终报告或部分结果投影
+- **THEN** 所有状态使用同一冻结口径展示已确认历史 Turn 异常组数、受影响 Turn 行数、Turn 复核覆盖率和 group-first 明细；待复核候选必须单独披露，已冻结报告不得被后续重算覆盖
 
 #### Scenario: Report production ASR observations
 
@@ -496,6 +539,11 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 
 - **WHEN** 已通过最终消息硬上限预检的第二轮请求组超时、返回无效 JSON 或引用不存在的 Segment ID
 - **THEN** 系统 MUST 保留成功 Case 检查点，将父组标记为已被子组取代，按完整 Case 边界确定性拆分并仅派发未完成 Case；单 Case 叶子最多再尝试一次，已完成 Case 不得重复提交
+
+#### Scenario: Reuse a historical Pass 2 group by idempotency key
+
+- **WHEN** 对齐恢复改变了 retry ordinal 或派生 group ID，但新计划的精确 Case membership 与输入快照产生已存在的 `(batch_id, idempotency_key)`
+- **THEN** 系统复用该 key 对应的 canonical persisted group ID 和成功/失败检查点，不得插入冲突行或重复派发；只有同 key membership 漂移才记录确定性冲突并停止发送
 
 #### Scenario: Report truthful retry progress
 

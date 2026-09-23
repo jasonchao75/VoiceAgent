@@ -1,4 +1,9 @@
+import path from "node:path";
 import { expect, test } from "@playwright/test";
+
+const evaluationEvidenceDir = path.resolve(
+  "../openspec/changes/add-asr-automated-evaluation/verification",
+);
 
 async function openRuntime(page, pageName = "") {
   const suffix = pageName ? `?page=${pageName}` : "";
@@ -40,7 +45,7 @@ test("keeps historical timeline defects as reference-only warnings", async ({ pa
     /No evaluation results|暂无评测结果/,
   );
   await expect(page.locator("#page-batches tbody tr[data-batch-id]")).toHaveCount(0);
-  await expect(page.locator(".review-count")).toBeHidden();
+  await expect(page.locator('.nav[data-page="review"] .review-count')).toBeHidden();
 
   await page.locator("#new-run").click();
   const dialog = page.locator("#new-run-dialog");
@@ -483,7 +488,7 @@ test("does not expose simulated report, review, or Benchmark results", async ({ 
   await expect(page.locator("#page-batches tbody tr[data-batch-id]")).toHaveCount(0);
 
   await page.locator('[data-page="review"]').click();
-  await expect(page.locator("#page-review .runtime-empty")).toContainText(
+  await expect(page.locator('#page-review [data-review-panel="asr"] .runtime-empty')).toContainText(
     /No review cases remain|没有待复核/,
   );
   await expect(page.locator("#page-review .review")).toBeHidden();
@@ -644,7 +649,111 @@ test("keeps English manual-review UI free of Chinese while preserving source tex
   await expect(review.locator(".evidence-grid .evidence").nth(2)).toContainText("原始来源文本");
 });
 
-test("renders a persisted report into the frozen report structure", async ({ page }) => {
+test("reviews historical Turn issues in a separate audio-first queue", async ({ page }, testInfo) => {
+  const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
+  bootstrap.reviews = [];
+  bootstrap.historical_turn_issues = [{
+    issue_group_id: "HTI-R28-R30",
+    batch_id: "EV-TURN-REVIEW",
+    conversation_id: "1030000000070676",
+    source_event_ids: ["R28", "R30"],
+    resulting_case_ids: ["CASE-I014", "CASE-I015"],
+    issue_type: "order_anomaly",
+    issue_types: ["order_anomaly"],
+    affected_turn_count: 2,
+    status: "pending",
+    version: 1,
+    audio_url: "/api/evaluation/historical-turn-issues/HTI-R28-R30/audio",
+    audio_evidence: {
+      islands: [
+        {
+          case_id: "CASE-I014",
+          audio_island_id: "1030000000070676:island:7",
+          start_s: 42,
+          end_s: 44,
+          audio_url: "/api/evaluation/historical-turn-issues/HTI-R28-R30/audio?audio_island_id=island-7",
+          providers: [{
+            provider: "soniox",
+            turn_id: "soniox-turn-28",
+            text: "two two three",
+            inferred_role: "customer",
+            overlap_s: 1.7,
+          }],
+        },
+        {
+          case_id: "CASE-I015",
+          audio_island_id: "1030000000070676:island:8",
+          start_s: 45,
+          end_s: 46,
+          audio_url: "/api/evaluation/historical-turn-issues/HTI-R28-R30/audio?audio_island_id=island-8",
+          providers: [{
+            provider: "speechmatics",
+            turn_id: "speechmatics-turn-30",
+            text: "two two three",
+            inferred_role: "customer",
+            overlap_s: 0.8,
+          }],
+        },
+      ],
+    },
+    source_turns: [
+      { event_id: "R28", source_row: 28, speaker: "customer", text: "two" },
+      { event_id: "R30", source_row: 30, speaker: "customer", text: "three" },
+    ],
+  }];
+  let submitted = null;
+  await page.route("**/api/evaluation/bootstrap", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(bootstrap) });
+  });
+  await page.route("**/api/evaluation/historical-turn-issues/HTI-R28-R30/decision", async (route) => {
+    submitted = route.request().postDataJSON();
+    bootstrap.historical_turn_issues = [];
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        issue_group_id: "HTI-R28-R30",
+        status: "confirmed",
+        decision: "confirm",
+        version: 2,
+      }),
+    });
+  });
+
+  await page.goto("/evaluation.html?page=review");
+  await page.locator('[data-review-mode="turn"]').click();
+  const panel = page.locator('[data-review-panel="turn"]');
+  await expect(panel).toBeVisible();
+  await expect(panel).toContainText("1030000000070676");
+  await expect(panel).toContainText("R28 · row 28");
+  await expect(panel).toContainText("R30 · row 30");
+  await expect(panel).toContainText("CASE-I014");
+  await expect(panel).toContainText("CASE-I015");
+  await expect(panel).toContainText("soniox-turn-28");
+  await expect(panel).toContainText("speechmatics-turn-30");
+  await expect(panel.locator("audio")).toHaveCount(2);
+  await expect(panel.locator("audio").first()).toHaveAttribute(
+    "src",
+    "/api/evaluation/historical-turn-issues/HTI-R28-R30/audio?audio_island_id=island-7",
+  );
+  await expect(panel.locator('[data-turn-decision="confirm"]')).toBeVisible();
+  expect(await panel.evaluate((node) => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth))
+    .toBeLessThanOrEqual(1);
+  await page.screenshot({
+    path: path.join(
+      evaluationEvidenceDir,
+      `actual-v1.20-turn-review-${testInfo.project.name}.png`,
+    ),
+    animations: "disabled",
+  });
+
+  await panel.locator('[data-turn-decision="confirm"]').click();
+  await expect(panel.locator(".runtime-empty")).toBeVisible();
+  expect(submitted.decision).toBe("confirm");
+  expect(submitted.expected_version).toBe(1);
+});
+
+test("renders a persisted report into the frozen report structure", async ({ page }, testInfo) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   bootstrap.batches = [{
     id: "EV-REPORT-RUNTIME",
@@ -692,6 +801,29 @@ test("renders a persisted report into the frozen report structure", async ({ pag
       suspected_rate: 0.26,
       review_total: 0,
       review_completed: 0,
+      historical_turn_quality: {
+        confirmed_group_count: 1,
+        affected_turn_row_count: 2,
+        review_total: 2,
+        review_completed: 1,
+        review_pending: 1,
+        review_coverage: 50,
+        groups: [{
+          conversation_id: "1030000000070676",
+          source_event_ids: ["R28", "R30"],
+          resulting_case_ids: ["CASE-R28-R30"],
+          issue_type: "over_split",
+          issue_types: ["over_split"],
+          affected_turn_count: 2,
+          audio_evidence: {
+            islands: [{
+              case_id: "CASE-R28-R30",
+              audio_island_id: "1030000000070676:island:7",
+              audio_url: "/api/evaluation/historical-turn-issues/HTI-R28-R30/audio?audio_island_id=island-7",
+            }],
+          },
+        }],
+      },
       tag_distribution: [{ name: "服务诉求", count: 1 }],
       language_distribution: [{ name: "ar", count: 1 }],
       proposed_tags: [{
@@ -789,6 +921,23 @@ test("renders a persisted report into the frozen report structure", async ({ pag
   await expect(page.getByText("Proposed tag details", { exact: true })).toBeVisible();
   await expect(page.getByText("Production ASR recognition analysis", { exact: true })).toBeVisible();
   await expect(page.getByText("All suspicious cases in this batch", { exact: true })).toBeVisible();
+  const turnQuality = page.locator("#historical-turn-quality");
+  await expect(turnQuality.locator(".turn-quality-summary")).toContainText("1 group · 2 Turn rows");
+  await expect(turnQuality).toContainText("50%");
+  await expect(turnQuality).toContainText("1030000000070676");
+  await expect(turnQuality).toContainText("R28 · R30");
+  await expect(turnQuality).toContainText("Historical over-split");
+  await expect(turnQuality.locator(".turn-report-audio")).toHaveCount(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth))
+    .toBeLessThanOrEqual(1);
+  await page.screenshot({
+    path: path.join(
+      evaluationEvidenceDir,
+      `actual-v1.20-turn-report-${testInfo.project.name}.png`,
+    ),
+    animations: "disabled",
+    fullPage: true,
+  });
   await expect(page.locator("#batch-case-details tbody tr")).toHaveCount(1);
   await expect(page.locator("#batch-case-details")).toContainText("1030000000091506 · R18");
   await expect(page.locator("#batch-case-details .runtime-report-audio")).toBeVisible();
@@ -1151,7 +1300,7 @@ test("exposes every persisted batch lifecycle state and its next action", async 
   await expect(page.locator('tr[data-batch-id="EV-PARTIAL"] .job-state')).toContainText("Final · partial");
 });
 
-test("shows Event Alignment as step four with continuous elapsed time", async ({ page }) => {
+test("shows audio-evidence alignment as step four with continuous elapsed time", async ({ page }) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   const now = Date.now();
   bootstrap.batches = [{
@@ -1215,8 +1364,8 @@ test("shows Event Alignment as step four with continuous elapsed time", async ({
 
   const steps = page.locator("#page-run > .steps > .step");
   await expect(steps).toHaveCount(6);
-  await expect(steps.nth(3)).toContainText("4 Event Alignment");
-  await expect(steps.nth(3)).toContainText("Alignment group 2/7 · Waiting for qwen");
+  await expect(steps.nth(3)).toContainText("4 音频与证据对齐");
+  await expect(steps.nth(3)).toContainText("Evidence group 2/7 · Waiting for qwen");
   await expect(steps.nth(3).locator("time")).toHaveText(/01:0[5-9]/);
   await expect(steps.nth(4)).toContainText("2/2 unique Cases completed");
   await expect(steps.nth(2)).not.toContainText("qwen");

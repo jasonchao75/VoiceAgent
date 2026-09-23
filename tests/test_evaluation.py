@@ -26,7 +26,13 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from src.bots.crypto import BotKeyCipher
-from src.evaluation.alignment import align_customer_event, align_customer_event_from_mapping
+from src.evaluation.alignment import (
+    align_customer_event,
+    align_customer_event_from_mapping,
+    build_audio_first_cases,
+    detect_audio_islands,
+    normalize_alignment_text,
+)
 from src.evaluation.asr_contract import ASRError, ASRResult
 from src.evaluation.connections import ASRConnectionError
 from src.evaluation.connections import test_asr_connection as run_asr_connection_test
@@ -42,6 +48,7 @@ from src.evaluation.executor import (
     _gemini_thinking_config,
     _llm_request_timeout,
     _qwen_reasoning_effort,
+    _reconcile_pass2_groups,
     _render_prompt,
     _safe_execution_failure,
     _safe_structured_error,
@@ -55,13 +62,16 @@ from src.evaluation.models import (
     EvaluationBatchCreate,
     EvaluationContextWrite,
     EvaluationReviewSubmit,
+    HistoricalTurnReviewSubmit,
     PromptTemplateRestore,
     PromptTemplateWrite,
 )
 from src.evaluation.pass2_packing import (
+    ConversationUnit,
     EventAlignmentGroup,
     EventAlignmentUnit,
     ModelTokenPolicy,
+    PassTwoGroup,
     build_event_alignment_unit,
     build_pass_one_unit,
     estimate_tokens,
@@ -792,6 +802,576 @@ def test_full_call_diarization_consensus_requires_two_providers() -> None:
     duplicate = _full_call_alignment_results()[0]
     with pytest.raises(ValueError, match="Fewer than two"):
         align_customer_event(events, "R2", [duplicate, duplicate])
+
+
+def test_audio_first_normalization_matches_spelled_digits() -> None:
+    """Numeric evidence should match without replacing either raw transcript."""
+    numeric = normalize_alignment_text("223")
+    spelled = normalize_alignment_text("two two three")
+
+    assert numeric["raw"] == "223"
+    assert spelled["raw"] == "two two three"
+    assert numeric["digit_sequence"] == spelled["digit_sequence"] == "2|2|3"
+    assert numeric["numeric_value"] == spelled["numeric_value"] == 223
+
+
+def test_audio_first_merges_adjacent_historical_turns_into_one_case() -> None:
+    """Two historical rows on one speech island must become one traceable Case."""
+    islands = [
+        {
+            "island_id": "1030000000070676:island:0",
+            "ordinal": 0,
+            "start_s": 4.0,
+            "end_s": 5.5,
+            "detector_version": "rms-silence-v1",
+            "parameters": {},
+            "features": {},
+        }
+    ]
+    events = [
+        {"event_id": "R28", "speaker": "customer", "text": "223", "time_s": 999.0},
+        {
+            "event_id": "R30",
+            "speaker": "customer",
+            "text": "two two three",
+            "time_s": 1.0,
+        },
+    ]
+    providers = [
+        {
+            "provider": provider,
+            "segments": [
+                {
+                    "segment_id": f"{provider}-1",
+                    "start": 4.1,
+                    "end": 5.3,
+                    "speaker": "customer",
+                    "text": "two two three",
+                }
+            ],
+        }
+        for provider in ("elevenlabs", "speechmatics")
+    ]
+
+    cases = build_audio_first_cases(
+        "1030000000070676",
+        events,
+        ["R28", "R30"],
+        islands,
+        providers,
+    )
+
+    assert len(cases) == 1
+    assert cases[0]["source_event_ids"] == ["R28", "R30"]
+    assert cases[0]["target_event_ids"] == ["R28", "R30"]
+    assert cases[0]["start_s"] == 4.0
+    assert cases[0]["end_s"] == 5.5
+    assert cases[0]["historical_time_used"] is False
+    assert cases[0]["alignment_status"] == "deterministic_aligned"
+
+
+def test_audio_first_adjacent_robot_context_ranks_legal_island() -> None:
+    """Robot context may rank legal paths but must not move waveform boundaries."""
+    events = [
+        {"event_id": "R1", "speaker": "robot", "text": "Enter the branch code"},
+        {"event_id": "R2", "speaker": "customer", "text": "yes"},
+        {"event_id": "R3", "speaker": "robot", "text": "Thank you"},
+    ]
+    islands = [
+        {
+            "island_id": f"C-context:island:{index}",
+            "ordinal": index,
+            "start_s": start,
+            "end_s": start + 0.6,
+            "detector_version": "test",
+            "parameters": {},
+            "features": {},
+        }
+        for index, start in enumerate((0.6, 4.1))
+    ]
+    providers = []
+    for provider in ("elevenlabs", "speechmatics"):
+        providers.append(
+            {
+                "provider": provider,
+                "segments": [
+                    {"start": 0.0, "end": 0.5, "speaker": "A", "text": "Wrong prompt"},
+                    {"start": 0.6, "end": 1.2, "speaker": "B", "text": "yes"},
+                    {"start": 1.3, "end": 1.8, "speaker": "A", "text": "Wrong response"},
+                    {
+                        "start": 3.5,
+                        "end": 4.0,
+                        "speaker": "A",
+                        "text": "Enter the branch code",
+                    },
+                    {"start": 4.1, "end": 4.7, "speaker": "B", "text": "yes"},
+                    {"start": 4.8, "end": 5.3, "speaker": "A", "text": "Thank you"},
+                ],
+            }
+        )
+
+    cases = build_audio_first_cases("C-context", events, ["R2"], islands, providers)
+
+    assert cases[0]["audio_island_id"] == "C-context:island:1"
+    assert cases[0]["alignment_status"] == "deterministic_aligned"
+    assert cases[0]["start_s"] == 4.1
+    assert cases[0]["ranking_evidence"][0]["adjacent_robot_context"] > 0.9
+
+
+def test_audio_first_cross_provider_digit_conflict_stays_ambiguous() -> None:
+    """A frozen island cannot be accepted when provider digit evidence conflicts."""
+    islands = [
+        {
+            "island_id": "C-conflict:island:0",
+            "ordinal": 0,
+            "start_s": 1.0,
+            "end_s": 2.0,
+            "detector_version": "test",
+            "parameters": {},
+            "features": {},
+        }
+    ]
+    events = [{"event_id": "R2", "speaker": "customer", "text": "223"}]
+    providers = [
+        {
+            "provider": "elevenlabs",
+            "segments": [{"start": 1.0, "end": 2.0, "speaker": "B", "text": "two two three"}],
+        },
+        {
+            "provider": "speechmatics",
+            "segments": [{"start": 1.0, "end": 2.0, "speaker": "B", "text": "two zero seven"}],
+        },
+    ]
+
+    cases = build_audio_first_cases("C-conflict", events, ["R2"], islands, providers)
+
+    assert cases[0]["alignment_status"] == "ambiguous"
+    assert "provider_digit_conflict" in cases[0]["ambiguity_reasons"]
+
+
+def test_audio_first_rejects_provider_turn_inferred_as_robot() -> None:
+    """A provider-owned ID is insufficient when its inferred role is robot."""
+    events = [
+        {"event_id": "R1", "speaker": "robot", "text": "Welcome"},
+        {"event_id": "R2", "speaker": "customer", "text": "yes"},
+        {"event_id": "R3", "speaker": "robot", "text": "Thank you"},
+    ]
+    islands = [
+        {
+            "island_id": "C-role-conflict:island:0",
+            "ordinal": 0,
+            "start_s": 0.1,
+            "end_s": 0.8,
+            "detector_version": "test",
+            "parameters": {},
+            "features": {},
+        }
+    ]
+    providers = [
+        {
+            "provider": provider,
+            "segments": [
+                {"start": 0.0, "end": 1.0, "speaker": "A", "text": "Welcome"},
+                {"start": 1.1, "end": 2.0, "speaker": "B", "text": "yes"},
+                {"start": 2.1, "end": 3.0, "speaker": "A", "text": "Thank you"},
+            ],
+        }
+        for provider in ("elevenlabs", "speechmatics")
+    ]
+
+    cases = build_audio_first_cases(
+        "C-role-conflict",
+        events,
+        ["R2"],
+        islands,
+        providers,
+    )
+
+    assert cases[0]["alignment_status"] == "ambiguous"
+    assert "provider_turn_role_conflict" in cases[0]["ambiguity_reasons"]
+
+
+def test_audio_island_boundaries_ignore_historical_text_and_time(tmp_path: Path) -> None:
+    """Frozen island boundaries come only from the pure-user waveform."""
+    sample_rate = 8_000
+    samples = np.zeros(sample_rate * 4, dtype=np.float32)
+    timeline = np.arange(sample_rate, dtype=np.float32) / sample_rate
+    samples[sample_rate : sample_rate * 2] = 0.2 * np.sin(2 * np.pi * 220 * timeline)
+    source = tmp_path / "pure-user.wav"
+    sf.write(source, samples, sample_rate, subtype="PCM_16")
+
+    first = detect_audio_islands(source, "C-audio-first")
+    second = detect_audio_islands(source, "C-audio-first")
+
+    assert first == second
+    assert len(first) == 1
+    assert first[0]["start_s"] == pytest.approx(0.92, abs=0.03)
+    assert first[0]["end_s"] == pytest.approx(2.12, abs=0.03)
+
+
+@pytest.mark.asyncio
+async def test_ambiguous_audio_case_uses_validated_llm_choice_only(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The fallback may select real IDs but cannot create or move an audio island."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Ambiguous audio alignment",
+            asr_providers=["elevenlabs", "speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="ambiguous-audio-alignment-001",
+        )
+    )
+    conversation = {
+        "conversation_id": "C-ambiguous",
+        "events": [{"event_id": "R1", "speaker": "customer", "text": "223", "time_s": 999.0}],
+    }
+    islands = [
+        {
+            "island_id": f"C-ambiguous:island:{index}",
+            "ordinal": index,
+            "start_s": start,
+            "end_s": start + 1.0,
+            "detector_version": "rms-silence-v1",
+            "parameters": {},
+            "features": {},
+        }
+        for index, start in enumerate((1.0, 4.0))
+    ]
+    providers = [
+        {
+            "provider": provider,
+            "segments": [
+                {
+                    "segment_id": f"{provider}-0",
+                    "start": 1.0,
+                    "end": 2.0,
+                    "speaker": "S1",
+                    "text": "two two three",
+                },
+                {
+                    "segment_id": f"{provider}-1",
+                    "start": 4.0,
+                    "end": 5.0,
+                    "speaker": "S1",
+                    "text": "two two three",
+                },
+            ],
+        }
+        for provider in ("elevenlabs", "speechmatics")
+    ]
+    cases = build_audio_first_cases(
+        "C-ambiguous",
+        cast(list[dict[str, object]], conversation["events"]),
+        ["R1"],
+        islands,
+        providers,
+    )
+    assert cases[0]["alignment_status"] == "ambiguous"
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+
+    async def model_provider(_model_id: str) -> str:
+        return "deepseek"
+
+    async def llm_json(*_args: object, **_kwargs: object) -> dict[str, object]:
+        payload = cast(dict[str, object], _args[2])
+        return {
+            "request_id": payload["request_id"],
+            "assignment_id": "assignment-1",
+            "provider_turns": [
+                {
+                    "island_id": "C-ambiguous:island:1",
+                    "provider": provider,
+                    "turn_id": f"C-ambiguous:{provider}:turn:1",
+                }
+                for provider in ("elevenlabs", "speechmatics")
+            ],
+        }
+
+    monkeypatch.setattr(runner, "_model_provider", model_provider)
+    monkeypatch.setattr(runner, "_llm_json", llm_json)
+
+    resolved, used = await runner._resolve_ambiguous_audio_cases(
+        batch_id=str(batch["id"]),
+        batch=batch,
+        conversation=conversation,
+        target_event_ids=["R1"],
+        islands=islands,
+        provider_results=providers,
+        cases=cases,
+    )
+
+    assert used is True
+    assert resolved[0]["alignment_status"] == "llm_assisted_aligned"
+    assert resolved[0]["alignment_method"] == "llm_assisted_audio_first_v1"
+    assert resolved[0]["audio_island_id"] == "C-ambiguous:island:1"
+    assert (resolved[0]["start_s"], resolved[0]["end_s"]) == (4.0, 5.0)
+
+
+@pytest.mark.asyncio
+async def test_llm_cannot_override_cross_provider_digit_conflict(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A syntactically valid LLM choice still fails deterministic provider checks."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Conflicting provider alignment",
+            asr_providers=["elevenlabs", "speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="conflicting-provider-alignment-001",
+        )
+    )
+    conversation = {
+        "conversation_id": "C-provider-conflict",
+        "events": [{"event_id": "R1", "speaker": "customer", "text": "223"}],
+    }
+    islands = [
+        {
+            "island_id": "C-provider-conflict:island:0",
+            "ordinal": 0,
+            "start_s": 1.0,
+            "end_s": 2.0,
+            "detector_version": "test",
+            "parameters": {},
+            "features": {},
+        }
+    ]
+    providers = [
+        {
+            "provider": provider,
+            "segments": [
+                {
+                    "start": 1.0,
+                    "end": 2.0,
+                    "speaker": "B",
+                    "text": text,
+                }
+            ],
+        }
+        for provider, text in (
+            ("elevenlabs", "two two three"),
+            ("speechmatics", "two zero seven"),
+        )
+    ]
+    cases = build_audio_first_cases(
+        "C-provider-conflict",
+        cast(list[dict[str, object]], conversation["events"]),
+        ["R1"],
+        islands,
+        providers,
+    )
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+
+    async def model_provider(_model_id: str) -> str:
+        return "deepseek"
+
+    async def llm_json(*_args: object, **_kwargs: object) -> dict[str, object]:
+        payload = cast(dict[str, object], _args[2])
+        return {
+            "request_id": payload["request_id"],
+            "assignment_id": "assignment-0",
+            "provider_turns": [
+                {
+                    "island_id": "C-provider-conflict:island:0",
+                    "provider": provider,
+                    "turn_id": f"C-provider-conflict:{provider}:turn:0",
+                }
+                for provider in ("elevenlabs", "speechmatics")
+            ],
+        }
+
+    monkeypatch.setattr(runner, "_model_provider", model_provider)
+    monkeypatch.setattr(runner, "_llm_json", llm_json)
+
+    resolved, used = await runner._resolve_ambiguous_audio_cases(
+        batch_id=str(batch["id"]),
+        batch=batch,
+        conversation=conversation,
+        target_event_ids=["R1"],
+        islands=islands,
+        provider_results=providers,
+        cases=cases,
+    )
+
+    assert used is True
+    assert resolved[0]["alignment_status"] == "ambiguous"
+    assert "provider_digit_conflict" in resolved[0]["ambiguity_reasons"]
+
+
+@pytest.mark.asyncio
+async def test_historical_turn_issue_has_separate_review_and_report_metrics(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Only confirmed Turn groups contribute group and affected-row report counts."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Historical Turn review",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="historical-turn-review-001",
+        )
+    )
+    await evaluation_store.checkpoint_evaluation_case(
+        str(batch["id"]),
+        {
+            "case_id": "CASE-R28-R30",
+            "conversation_id": "1030000000070676",
+            "primary_event_id": "R28",
+            "target_event_ids": ["R28", "R30"],
+            "source_event_ids": ["R28", "R30"],
+            "audio_island_id": "1030000000070676:island:7",
+            "start_s": 42.0,
+            "end_s": 44.0,
+            "boundary_rule": "pure_user_audio_island_v1",
+            "alignment_method": "monotonic_audio_first_v1",
+            "alignment_status": "deterministic_aligned",
+            "ambiguity_reasons": [],
+            "historical_time_used": False,
+            "historical_text_forms": [],
+            "island": {},
+            "providers": [],
+        },
+    )
+
+    pending = await evaluation_store.list_historical_turn_issues("pending")
+    assert len(pending) == 1
+    assert pending[0]["affected_turn_count"] == 2
+    issue_id = str(pending[0]["issue_group_id"])
+    deferred = await evaluation_store.submit_historical_turn_review(
+        issue_id,
+        HistoricalTurnReviewSubmit(
+            decision="defer",
+            expected_version=1,
+            idempotency_key="historical-turn-defer-001",
+        ),
+    )
+    assert deferred["status"] == "deferred"
+    open_issues = await evaluation_store.list_historical_turn_issues("open")
+    assert [item["issue_group_id"] for item in open_issues] == [issue_id]
+    confirmed = await evaluation_store.submit_historical_turn_review(
+        issue_id,
+        HistoricalTurnReviewSubmit(
+            decision="confirm",
+            expected_version=2,
+            idempotency_key="historical-turn-confirm-001",
+        ),
+    )
+    assert confirmed["status"] == "confirmed"
+    quality = await evaluation_store.historical_turn_quality(str(batch["id"]))
+    assert quality["confirmed_group_count"] == 1
+    assert quality["affected_turn_row_count"] == 2
+    assert quality["review_coverage"] == 100
+    report = await evaluation_store.freeze_preliminary_report(str(batch["id"]))
+    assert report["payload"]["historical_turn_quality"]["confirmed_group_count"] == 1
+    assert report["payload"]["historical_turn_quality"]["affected_turn_row_count"] == 2
+
+
+@pytest.mark.asyncio
+async def test_historical_turn_issue_detects_wrong_merge_and_order_anomaly(
+    evaluation_store: EvaluationStore,
+    tmp_path: Path,
+) -> None:
+    """The review queue retains every suggested island and provider evidence type."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Historical Turn anomaly types",
+            asr_providers=["elevenlabs", "speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="historical-turn-anomaly-types-001",
+        )
+    )
+    islands = [
+        {
+            "island_id": f"C-turn-types:island:{index}",
+            "ordinal": index,
+            "start_s": start,
+            "end_s": start + 0.8,
+            "detector_version": "test",
+            "parameters": {},
+            "features": {},
+        }
+        for index, start in enumerate((1.0, 4.0, 7.0))
+    ]
+    events = [
+        {"event_id": "R1", "speaker": "customer", "text": "alpha"},
+        {"event_id": "R2", "speaker": "customer", "text": "beta"},
+    ]
+    providers = [
+        {
+            "provider": provider,
+            "segments": [
+                {"start": 1.0, "end": 1.8, "speaker": "B", "text": "beta"},
+                {"start": 4.0, "end": 4.8, "speaker": "B", "text": "alpha"},
+                {"start": 7.0, "end": 7.8, "speaker": "B", "text": "alpha"},
+            ],
+        }
+        for provider in ("elevenlabs", "speechmatics")
+    ]
+    cases = build_audio_first_cases(
+        "C-turn-types",
+        events,
+        ["R1", "R2"],
+        islands,
+        providers,
+    )
+    for case in cases:
+        await evaluation_store.checkpoint_evaluation_case(str(batch["id"]), case)
+    await evaluation_store.checkpoint_historical_turn_issues(
+        str(batch["id"]),
+        "C-turn-types",
+        events,
+        islands,
+        cases,
+    )
+
+    issues = await evaluation_store.list_historical_turn_issues("pending")
+    issue_types = {value for issue in issues for value in issue["issue_types"]}
+    assert {"wrong_merge", "order_anomaly"} <= issue_types
+    wrong_merge = next(issue for issue in issues if "wrong_merge" in issue["issue_types"])
+    order_anomaly = next(issue for issue in issues if "order_anomaly" in issue["issue_types"])
+    assert len(wrong_merge["audio_evidence"]["islands"]) == 2
+    assert all("audio_url" in item for item in wrong_merge["audio_evidence"]["islands"])
+    assert any(item["providers"] for item in wrong_merge["audio_evidence"]["islands"])
+    for index, issue in enumerate((wrong_merge, order_anomaly), start=1):
+        await evaluation_store.submit_historical_turn_review(
+            str(issue["issue_group_id"]),
+            HistoricalTurnReviewSubmit(
+                decision="confirm",
+                expected_version=1,
+                idempotency_key=f"historical-turn-overlap-confirm-{index}",
+            ),
+        )
+    quality = await evaluation_store.historical_turn_quality(str(batch["id"]))
+    assert quality["confirmed_group_count"] == 2
+    assert quality["affected_turn_row_count"] == 2
+    evaluation_store.dataset_root = tmp_path / "turn-audio-dataset"
+    user_audio_dir = evaluation_store.dataset_root / "user_record"
+    user_audio_dir.mkdir(parents=True, exist_ok=True)
+    sf.write(
+        user_audio_dir / "C-turn-types.wav",
+        np.zeros(8_000 * 10, dtype=np.float32),
+        8_000,
+        subtype="PCM_16",
+    )
+    clips = [
+        await evaluation_store.historical_turn_issue_audio_path(
+            str(wrong_merge["issue_group_id"]),
+            str(evidence["audio_island_id"]),
+        )
+        for evidence in wrong_merge["audio_evidence"]["islands"]
+    ]
+    assert all(clip is not None and clip.is_file() for clip in clips)
+    assert len({clip.name for clip in clips if clip is not None}) == 2
 
 
 def test_full_call_diarization_consensus_rejects_non_overlapping_intervals() -> None:
@@ -3222,6 +3802,163 @@ async def test_unclear_review_is_excluded_from_benchmark(
 
 
 @pytest.mark.asyncio
+async def test_benchmark_global_key_reuses_identical_and_discards_conflict(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Cross-batch retries reuse one sample while conflicting results are discarded."""
+    base = {
+        "conversation_id": _VALID_CONVERSATION_ID,
+        "event_id": "R-global-unique",
+        "case_type": "good",
+        "source": "ai",
+        "language": "en",
+        "scenario_tag": "numbers",
+        "label": "two two three",
+        "audio_start_s": 12.0,
+        "audio_end_s": 13.5,
+        "origin": "suspect_candidate",
+        "positioning_quality": "exact",
+    }
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        first, first_id = await evaluation_store._ingest_benchmark_candidate(
+            database,
+            {
+                **base,
+                "id": "BM-FIRST",
+                "batch_id": "EV-FIRST",
+                "created_at": "2026-09-23T01:00:00+00:00",
+            },
+        )
+        await evaluation_store._append_benchmark_revision(database, first_id)
+        repeated, repeated_id = await evaluation_store._ingest_benchmark_candidate(
+            database,
+            {
+                **base,
+                "id": "BM-REPEATED",
+                "batch_id": "EV-SECOND",
+                "source": "manual",
+                "created_at": "2026-09-23T02:00:00+00:00",
+            },
+        )
+        conflict, conflict_id = await evaluation_store._ingest_benchmark_candidate(
+            database,
+            {
+                **base,
+                "id": "BM-CONFLICT",
+                "batch_id": "EV-THIRD",
+                "case_type": "bad",
+                "label": "two two eight",
+                "created_at": "2026-09-23T03:00:00+00:00",
+            },
+        )
+        await database.commit()
+        database.row_factory = aiosqlite.Row
+        rows = await (await database.execute("SELECT * FROM evaluation_benchmarks")).fetchall()
+        revisions = await (
+            await database.execute("SELECT * FROM evaluation_benchmark_revisions")
+        ).fetchall()
+        audits = await (
+            await database.execute(
+                "SELECT action FROM evaluation_audit WHERE object_id='BM-FIRST' ORDER BY action"
+            )
+        ).fetchall()
+
+    assert (first, first_id) == ("created", "BM-FIRST")
+    assert (repeated, repeated_id) == ("reused", "BM-FIRST")
+    assert (conflict, conflict_id) == ("discarded_conflict", "BM-FIRST")
+    assert len(rows) == 1
+    assert rows[0]["label"] == "two two three"
+    assert len(revisions) == 1
+    trace = json.loads(str(rows[0]["trace_json"]))
+    assert [item["batch_id"] for item in trace["ingestion_evidence"]] == [
+        "EV-FIRST",
+        "EV-SECOND",
+    ]
+    assert [row["action"] for row in audits] == [
+        "benchmark.duplicate_conflict_discarded",
+        "benchmark.duplicate_reused",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_benchmark_global_key_migration_archives_later_duplicates(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Migration keeps legacy evidence outside the formal Library before deduplication."""
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        await database.execute("DROP INDEX evaluation_benchmarks_conversation_event_unique")
+        for benchmark_id, batch_id, label, created_at in (
+            ("BM-LEGACY-1", "EV-OLD", "223", "2026-09-20T00:00:00+00:00"),
+            ("BM-LEGACY-2", "EV-NEW", "two two three", "2026-09-21T00:00:00+00:00"),
+        ):
+            await database.execute(
+                """INSERT INTO evaluation_benchmarks (
+                       id,batch_id,conversation_id,event_id,case_type,source,language,
+                       scenario_tag,label,audio_start_s,audio_end_s,origin,
+                       positioning_quality,clip_status,trace_json,revision,created_at
+                   ) VALUES (?,?,?,?,?,'ai','en','numbers',?,?,?,'suspect_candidate',
+                             'exact','failed','{}',1,?)""",
+                (
+                    benchmark_id,
+                    batch_id,
+                    _VALID_CONVERSATION_ID,
+                    "R-legacy-duplicate",
+                    "good",
+                    label,
+                    10.0,
+                    11.0,
+                    created_at,
+                ),
+            )
+            await database.execute(
+                """INSERT INTO evaluation_benchmark_revisions
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (
+                    f"{benchmark_id}:v1",
+                    benchmark_id,
+                    1,
+                    label,
+                    "en",
+                    "numbers",
+                    "ai",
+                    created_at,
+                ),
+            )
+        await database.commit()
+
+    await evaluation_store.initialize()
+
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        database.row_factory = aiosqlite.Row
+        formal = await (
+            await database.execute(
+                """SELECT id,label FROM evaluation_benchmarks
+                   WHERE conversation_id=? AND event_id='R-legacy-duplicate'""",
+                (_VALID_CONVERSATION_ID,),
+            )
+        ).fetchall()
+        archived = await (
+            await database.execute(
+                """SELECT * FROM evaluation_benchmark_duplicate_archive
+                   WHERE duplicate_id='BM-LEGACY-2'"""
+            )
+        ).fetchone()
+        indexes = await (
+            await database.execute("PRAGMA index_list(evaluation_benchmarks)")
+        ).fetchall()
+
+    assert [dict(row) for row in formal] == [{"id": "BM-LEGACY-1", "label": "223"}]
+    assert archived is not None
+    assert archived["canonical_id"] == "BM-LEGACY-1"
+    assert json.loads(str(archived["benchmark_json"]))["label"] == "two two three"
+    assert json.loads(str(archived["revisions_json"]))[0]["benchmark_id"] == "BM-LEGACY-2"
+    assert any(
+        row["name"] == "evaluation_benchmarks_conversation_event_unique" and bool(row["unique"])
+        for row in indexes
+    )
+
+
+@pytest.mark.asyncio
 async def test_execution_progress_uses_real_checkpoint_counts(
     evaluation_store: EvaluationStore,
 ) -> None:
@@ -3958,6 +4695,13 @@ async def test_asr_job_is_full_call_scoped_and_case_evidence_is_projected(
             idempotency_key="reuse-asr-job-001",
         )
     )
+    await evaluation_store.checkpoint_result(
+        "evaluation_event_alignment_runs",
+        (str(batch["id"]), _VALID_CONVERSATION_ID),
+        status="failed",
+        attempts=2,
+        error="Legacy singleton structure failure",
+    )
     calls = 0
 
     async def transcribe(
@@ -3990,23 +4734,10 @@ async def test_asr_job_is_full_call_scoped_and_case_evidence_is_projected(
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     monkeypatch.setattr(runner, "_transcribe", transcribe)
 
-    async def map_events(*_args: object) -> dict[tuple[str, str], dict[str, object]]:
-        return {
-            (_VALID_CONVERSATION_ID, event_id): {
-                "conversation_id": _VALID_CONVERSATION_ID,
-                "event_id": event_id,
-                "providers": [
-                    {
-                        "provider": "elevenlabs",
-                        "status": "mapped",
-                        "turn_id": f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:{index * 2 + 1}",
-                    }
-                ],
-            }
-            for index, event_id in enumerate(customer_event_ids)
-        }
+    async def legacy_aligner_must_not_run(*_args: object) -> object:
+        raise AssertionError("Legacy Event Alignment must not be retried")
 
-    monkeypatch.setattr(runner, "_run_event_alignment", map_events)
+    monkeypatch.setattr(runner, "_run_event_alignment", legacy_aligner_must_not_run)
     source = evaluation_store.conversation_user_audio_path(_VALID_CONVERSATION_ID)
     assert source is not None
 
@@ -4030,6 +4761,47 @@ async def test_asr_job_is_full_call_scoped_and_case_evidence_is_projected(
         for event_id in customer_event_ids
     ]
 
+    def audio_first_cases(*_args: object, **_kwargs: object) -> list[dict[str, object]]:
+        return [
+            {
+                "case_id": f"CASE-{index}",
+                "conversation_id": _VALID_CONVERSATION_ID,
+                "primary_event_id": event_id,
+                "target_event_ids": [event_id],
+                "source_event_ids": [event_id],
+                "audio_island_id": f"{_VALID_CONVERSATION_ID}:island:{index}",
+                "start_s": float(index),
+                "end_s": float(index) + 1.0,
+                "boundary_rule": "pure_user_audio_island_v1",
+                "alignment_method": "monotonic_audio_first_v1",
+                "alignment_status": "deterministic_aligned",
+                "ambiguity_reasons": [],
+                "historical_time_used": False,
+                "historical_text_forms": [],
+                "island": {},
+                "providers": [
+                    {
+                        "provider": "elevenlabs",
+                        "turn_id": f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:{index * 2 + 1}",
+                    }
+                ],
+            }
+            for index, event_id in enumerate(customer_event_ids)
+        ]
+
+    async def prepare_audio_first_clip(
+        _batch_id: str,
+        _case: dict[str, object],
+    ) -> tuple[Path, dict[str, object]]:
+        return source, {"start_s": 0.0, "end_s": 1.0}
+
+    monkeypatch.setattr("src.evaluation.executor.build_audio_first_cases", audio_first_cases)
+    monkeypatch.setattr(
+        evaluation_store,
+        "prepare_audio_first_case_clip",
+        prepare_audio_first_clip,
+    )
+
     await runner._run_asr(batch["id"], batch, candidates)
     await runner._run_asr(batch["id"], batch, candidates)
 
@@ -4043,6 +4815,12 @@ async def test_asr_job_is_full_call_scoped_and_case_evidence_is_projected(
     assert all(row["remote_job_id"] is None for row in rows)
     assert [row["result"]["text"] for row in rows] == ["turn-1", "turn-3"]
     assert all(row["result"]["scope"] == "full_call_turn_projection" for row in rows)
+    legacy_rows = await evaluation_store.checkpoint_rows(
+        "evaluation_event_alignment_runs", batch["id"]
+    )
+    assert legacy_rows[0]["status"] == "failed"
+    assert legacy_rows[0]["attempts"] == 2
+    assert len(await evaluation_store.evaluation_case_rows(str(batch["id"]))) == 2
     ledger = await evaluation_store.cost_summary(batch["id"])
     assert len(ledger["asr"]) == 1
     assert ledger["asr"][0]["calls"] == 1
@@ -4150,6 +4928,46 @@ async def test_run_asr_replaces_legacy_non_diarized_context_checkpoint(
 
     monkeypatch.setattr(runner, "_run_event_alignment", map_event)
 
+    def audio_first_case(*_args: object, **_kwargs: object) -> list[dict[str, object]]:
+        return [
+            {
+                "case_id": "CASE-refresh-legacy",
+                "conversation_id": _VALID_CONVERSATION_ID,
+                "primary_event_id": event_id,
+                "target_event_ids": [event_id],
+                "source_event_ids": [event_id],
+                "audio_island_id": f"{_VALID_CONVERSATION_ID}:island:0",
+                "start_s": 0.0,
+                "end_s": 1.0,
+                "boundary_rule": "pure_user_audio_island_v1",
+                "alignment_method": "monotonic_audio_first_v1",
+                "alignment_status": "deterministic_aligned",
+                "ambiguity_reasons": [],
+                "historical_time_used": False,
+                "historical_text_forms": [],
+                "island": {},
+                "providers": [
+                    {
+                        "provider": "elevenlabs",
+                        "turn_id": f"{_VALID_CONVERSATION_ID}:elevenlabs:turn:1",
+                    }
+                ],
+            }
+        ]
+
+    async def prepare_audio_first_clip(
+        _batch_id: str,
+        _case: dict[str, object],
+    ) -> tuple[Path, dict[str, object]]:
+        return source, {"start_s": 0.0, "end_s": 1.0}
+
+    monkeypatch.setattr("src.evaluation.executor.build_audio_first_cases", audio_first_case)
+    monkeypatch.setattr(
+        evaluation_store,
+        "prepare_audio_first_case_clip",
+        prepare_audio_first_clip,
+    )
+
     await runner._run_asr(
         str(batch["id"]),
         batch,
@@ -4248,6 +5066,36 @@ async def test_pass2_group_checkpoint_freezes_membership(
     assert rows[0]["conversation_ids"] == ["C1", "C2"]
     assert rows[0]["case_keys"] == [["C1", "R1"], ["C2", "R3"]]
     assert rows[0]["status"] == "failed"
+
+
+def test_pass2_retry_reuses_canonical_group_id_when_ordinal_changes() -> None:
+    """A retry must not replace a persisted group ID when only its ordinal changed."""
+    unit = ConversationUnit(
+        conversation_id="1030000000070676",
+        payload={"candidate_cases": [{"event_id": "R28"}]},
+        case_keys=(("1030000000070676", "R28"),),
+        estimated_input_tokens=120,
+        reserved_output_tokens=80,
+    )
+    planned = PassTwoGroup(
+        group_id="G0007-new-ordinal",
+        idempotency_key="stable-membership-key",
+        units=(unit,),
+        estimated_input_tokens=120,
+        reserved_output_tokens=80,
+    )
+    persisted = {
+        "group_id": "G0008-original-ordinal",
+        "idempotency_key": "stable-membership-key",
+        "case_keys": [["1030000000070676", "R28"]],
+    }
+
+    canonical, new_groups = _reconcile_pass2_groups([planned], [persisted])
+
+    assert canonical[0].group_id == "G0008-original-ordinal"
+    assert canonical[0].idempotency_key == planned.idempotency_key
+    assert canonical[0].case_keys == planned.case_keys
+    assert new_groups == []
 
 
 @pytest.mark.asyncio

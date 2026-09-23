@@ -51,7 +51,7 @@ test("matches the frozen batch overview and regression fixture", async ({ page }
 
 test("keeps the production transcript and current proposal adjacent for review", async ({ page }) => {
   await openEvaluation(page, "review");
-  await expect(page.getByRole("heading", { name: "Manual audio review", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Human review", exact: true })).toBeVisible();
 
   const comparison = page.locator("#page-review .review-comparison");
   await expect(comparison.getByText("Production transcript", { exact: true })).toBeVisible();

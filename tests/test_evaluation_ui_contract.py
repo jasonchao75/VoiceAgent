@@ -71,6 +71,25 @@ def test_running_batches_show_live_request_elapsed_time_without_verbose_history(
     assert ">00:00</time>" not in RUNTIME
     assert 'stage === "event_alignment"' in RUNTIME
     assert "event_alignment: 3" in RUNTIME
-    assert "<b>4 Event Alignment</b>" in PAGE
+    assert "<b>4 音频与证据对齐</b>" in PAGE
     assert "#page-run .steps .step:nth-child(5) span" in RUNTIME
     assert "<b>6 人工复核</b>" in PAGE
+
+
+def test_historical_turn_review_has_a_separate_queue_and_report_section() -> None:
+    """Historical Turn issues must stay separate from ASR review and error rates."""
+    assert 'data-review-mode="turn"' in PAGE
+    assert 'data-review-panel="turn"' in PAGE
+    assert 'id="historical-turn-quality"' in PAGE
+    assert "function renderHistoricalTurnIssues(allIssues = [])" in RUNTIME
+    assert "/api/evaluation/historical-turn-issues/" in RUNTIME
+    assert 'copy("Confirm Turn issue", "确认 Turn 异常")' in RUNTIME
+    assert 'copy("Not a Turn issue", "不是 Turn 异常")' in RUNTIME
+    assert 'copy("Historical wrong merge", "历史 Turn 错并")' in RUNTIME
+    assert 'copy("Historical order anomaly", "历史 Turn 错序")' in RUNTIME
+    assert (
+        'copy("Suggested Case mapping and audio evidence", "建议 Case 映射与音频证据")' in RUNTIME
+    )
+    assert 'class="turn-report-audio"' in RUNTIME
+    assert "turnQuality.confirmed_group_count" in RUNTIME
+    assert "turnQuality.affected_turn_row_count" in RUNTIME

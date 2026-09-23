@@ -1,6 +1,6 @@
 # UI Verification Checklist — ASR Automated Evaluation
 
-Status: User Gate 1 and Engineering Checkpoints A/B/C passed; User Gate 2 acceptance is pending
+Status: V1.20 renewed User Gate 1 and Engineering Checkpoints A/B/C passed; production deployment pending
 
 ## Test contract
 
@@ -8,7 +8,8 @@ Status: User Gate 1 and Engineering Checkpoints A/B/C passed; User Gate 2 accept
 |---|---|
 | Risk | High |
 | Latest PRD | `PRD.html` V1.17 |
-| Latest prototype | `prototypes/index.html` V1.19 |
+| Latest candidate | None; V1.20 is frozen |
+| Frozen baseline | `prototypes/index.html` V1.20 / SHA-256 `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62` |
 | Annotations | `prototypes/ui-annotations.md` |
 | State matrix | `prototypes/ui-state-matrix.md` |
 | Fixture source | `benchmarks/RiyadBankConversation/` plus non-secret derived fixture |
@@ -30,6 +31,19 @@ Status: User Gate 1 and Engineering Checkpoints A/B/C passed; User Gate 2 accept
 - [x] Prototype upload fixture is corrected from single workbook to per-conversation workbooks
 - [x] Approved prototype checksum and reviewer/date are recorded
 - [x] Baseline screenshots are captured and protected from ordinary test overwrite
+
+## V1.20 renewed User Gate 1 — audio-first Option C
+
+- [x] Product confirms the seven-item PD-072 scope and chooses controlled Option C
+- [x] Delta Spec, design, tasks, report schema, state matrix and candidate prototype are updated consistently
+- [x] Product confirms global Benchmark conversation/event uniqueness and direct discard of later conflicting candidates, with no conflict-review UI
+- [x] Candidate keeps R28/R30 as two waveform islands; the separate many-events-to-one-island row demonstrates Case merging
+- [x] Product confirms Stage 4 “音频与证据对齐” and the ambiguity-only LLM presentation
+- [x] Product confirms the report’s separate historical Turn issue-group count and affected-row count
+- [x] Product confirms the dedicated Turn anomaly review tab, group-level evidence, confirm/reject/defer actions and confirmed-only report counting
+- [x] Product confirms the V1.20 candidate as the new unique visual baseline before implementation (PD-076)
+
+The completed checks below include historical V1.19 evidence. V1.20-specific runtime evidence is recorded separately before the evidence table.
 
 ## Engineering Checkpoint A — production UI with fixtures
 
@@ -101,6 +115,25 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 - [x] Engineering Checkpoint C independent review returns PASS for PD-069
 - [ ] Product gives User Gate 2 final acceptance
 
+## V1.20 Engineering Checkpoints A/B — audio-first recovery
+
+- [x] Formal Stage 4 is labeled “音频与证据对齐”; the retired Event Aligner is not presented as the current product flow
+- [x] Pure-user waveform islands freeze Case boundaries before text comparison; historical timestamps are never a hard constraint
+- [x] `223` and `two two three` normalize to the same digit evidence without changing the audio boundary
+- [x] Adjacent historical events mapped to one island persist as one Case with all source event IDs
+- [x] Ambiguous assignments alone invoke the frozen-model LLM, whose IDs, order, provider ownership and boundary preservation are validated
+- [x] Legacy failed Event Alignment checkpoints remain diagnostic-only and cannot replay or block rebuilt sibling Cases
+- [x] Pass 2 retries reuse the canonical persisted group for unchanged idempotent membership
+- [x] Turn anomaly review is a separate queue with exact-island playback, confirm/reject/defer, no source-workbook writeback and no Benchmark creation
+- [x] Turn anomaly candidates distinguish over-split, wrong-merge and order anomalies and expose every suggested Case/island plus provider evidence
+- [x] Reports render confirmed Turn issue groups, affected Turn-row count, review coverage and group-first evidence independently from ASR rates
+- [x] Historical Turn report rows expose exact-island playback evidence in the same formal report DOM
+- [x] Global Benchmark identity reuses identical later candidates and discards conflicts without a new sample, revision or review task
+- [x] Desktop and narrow Turn-review/report flows have no horizontal overflow
+- [x] Backend, storage and report behavior pass the 292-test repository suite; Evaluation fixture UI passes 42/42 and affected Turn review/report UI passes 4/4 across desktop/narrow Chromium
+- [x] Actual screenshots are retained as `actual-v1.20-turn-review-*` and `actual-v1.20-turn-report-*`
+- [x] Engineering Checkpoint C independent V1.20 review returns PASS
+
 ## Evidence table
 
 | Scenario | Baseline | Actual | Diff | Ratio | Functional | Accessibility | Known deviation | Decision |
@@ -120,6 +153,8 @@ The historical `actual-gate-2-*` filenames are retained as evidence names. They 
 | Review / dialog / report / Benchmark / configuration | approved prototype | browser-verified implementation | targeted | — | 74/74 Evaluation browser cases passed across desktop and narrow projects, including explicit 390×844 overlay checks | names, keyboard dismissal, focus restoration, context fields, prompt editing, request previews, encrypted connection reload, model-catalog admission and decision states checked | Fixture and real local API tests use one production route/DOM | pending product approval |
 | Finish with current results | approved existing batch-action / confirmation-dialog pattern (PD-060) | production route and DOM at 1440×1000 and 1024×1000 | targeted | — | paused batch exposes the action and renders 17 preserved Pass 2 decisions plus explicit exclusion/no-provider copy | dialog has an accessible name and `scrollWidth <= clientWidth` in both projects | deterministic intercepted bootstrap; no production batch mutation or provider call | ready for independent review |
 | Event Alignment live stage | V1.19 / PD-067 / PD-069 | production route and DOM at 1440×1000 and 1024×1000 | targeted | — | six stages, Align at step 4, Qwen only under Align, immediate 01:05+ elapsed, three providers each show 36 tasks; report loading updates Pass 2 only | timer excluded from live announcements; `scrollWidth <= clientWidth` in both projects | deterministic intercepted bootstrap; full shared browser suite retains unrelated UV-022 failures | independently verified and deployed |
+| V1.20 Turn anomaly review | V1.20 / PD-070–PD-076 | `actual-v1.20-turn-review-desktop-chromium.png`, `actual-v1.20-turn-review-narrow-chromium.png` | targeted | — | separate queue, all three anomaly types, suggested Case/island mapping, provider evidence, exact-island audio, confirm/reject/defer and deferred-open persistence pass | named tabs/actions and document/panel overflow assertions pass | deterministic API fixture plus local-real clip extraction; no paid provider call | independent PASS |
+| V1.20 historical Turn report | V1.20 / PD-071 / PD-074 | `actual-v1.20-turn-report-desktop-chromium.png`, `actual-v1.20-turn-report-narrow-chromium.png` | targeted | — | confirmed group count, globally deduplicated affected Turn rows, coverage, group-first evidence and exact-island playback pass | document overflow assertion passes in both projects | immutable deterministic report fixture | independent PASS |
 | Superseded Gate 3 simulation | approved Gate 2 shell | retained historical `actual-gate-3-*` screenshots | not applicable | — | withdrawn; simulated rows are no longer served by runtime APIs | not acceptance evidence | screenshots are historical only | rejected |
 | Real source import and audit | approved upload contract | `docs/reports/evaluation/riyadbank-source-audit-2026-09-16.md` | source contract | — | 56 Excel/MP3/WAV sets parsed; 0 blockers, 55 reference warnings, no result rows | empty/result-unavailable states checked | providers not run | ingestion ready |
 | Dataset upload and repair | approved upload contract | browser-verified 8000 deployment | targeted | — | complete ZIP, clean-dialog reset, blocked candidate, issue CSV, repair overlay, safe activation and invalid-archive rejection passed | visible file inputs, keyboard dropzone and desktop/narrow overflow checked | Missing/corrupt/unparseable source data still blocks; historical duration/timestamp defects warn only | upload accepted |

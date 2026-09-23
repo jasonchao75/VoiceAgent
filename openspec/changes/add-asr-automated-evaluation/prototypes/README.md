@@ -2,21 +2,21 @@
 
 ## 最新版本
 
-- 原型：`index.html`
-- 版本：V1.19（2026-09-22，六步流程与独立 Event Alignment）
-- 状态：Gate 1 已确认并冻结，作为唯一当前 UI baseline
-- 基线 SHA-256：`17829744d355bc86da3625cdf5fc24b94a6a44db5e67551046e046abbd89649c`
-- 确认人/日期：Product owner / 2026-09-22（PD-067、PD-069；V1.18 历史基线见 PD-066）
+- 当前冻结原型：`index.html`
+- 版本：V1.20（2026-09-23，audio-first + 受控方案 C + 历史 Turn 分组复核与双指标）
+- 状态：User Gate 1 已通过；允许在后续明确开发指令下进入 Engineering Checkpoint A/B/C
+- 当前唯一冻结基线 SHA-256：`a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62`
+- 冻结确认人/日期：Product owner / 2026-09-23（PD-076；确认原话“可以。”）
 - 需求基线：同目录 `../PRD.html` V1.17 与本 Change Delta Specs
 - 数据：业务结果仍为固定演示数据；file 原型不调用真实 ASR、LLM 或音频接口，正式页面的“实测模型”复用现有 LLM 诊断接口
-- 历史原型：无；本目录只保留当前最新版
+- 历史原型：`v1.19-frozen.html` 已被 PD-076 取代，仅用于历史追溯；旧校验值只保留前缀 `17829744…` 供定位，不得用于当前验收
 
 ## 已确认产品口径
 
 1. 输入只支持逐通文件：`conversation_history/{conversation_id}.xlsx`、`record/{conversation_id}.mp3`、`user_record/{conversation_id}.wav`。
 2. 第一轮从历史对话筛疑点，并从同一疑点对话建立额外 Good 候选池；完整对话不可拆分，整批能安全容纳时一次请求，超限时动态 Token 拆组（PD-045，不改变冻结视觉结构或基线文件）。
 3. 疑点复判为 Good 和额外抽样都是 Good 来源；最终 Good:Bad 目标为 1:1。
-4. 同一通完整录音每家评测 ASR 只转写一次；Event Aligner 命中的 provider turn 文本直接作为 Case 候选。纯用户 WAV 只裁片用于试听、人工复核和 Benchmark，不再增加 ASR 转写任务（PD-061）。
+4. 同一通完整录音每家评测 ASR 只转写一次；纯用户 WAV 先检测并冻结语音岛，确定性或经校验的 LLM 辅助投影 provider turn 文本作为 Case 候选。纯用户切片只用于试听、人工复核和 Benchmark，不再增加 ASR 转写任务（PD-061、PD-070、PD-072）。
 5. 第二轮页面使用“疑似 ASR 错误 / 大概率正确 / 需人工复核”，不暴露离线内部枚举。
 6. 疑似错误占比分子为“第二轮 Bad + 需人工复核”，不包含第二轮 Good。
 7. 人工复核以目标用户句子为最小单位，历史转写和当前建议标注必须就近展示。
@@ -50,7 +50,13 @@
 35. 已有初步报告的暂停/部分失败批次在现有操作区增加“使用现有结果结束”，复用既有危险操作确认弹窗模式；文案明确保留成功结果、排除未完成项、生成不可变部分报告且不调用外部资源，不新增页面结构或修改冻结视觉基线（PD-060）。
 36. 运行中的进度区域只展示当前正在等待的外部请求；每个并发请求独占一行，显示阶段/厂商、序号/总数和每秒变化的已等待时间。百分比和完成数仍由服务端检查点决定，计时不推动进度；心跳过期显示“状态同步中断”（PD-065）。
 37. 暂停或部分失败的批次列表只显示 `N failed · M succeeded`；第一轮按 conversation、ASR 按完整通话 provider job、第二轮按 Case 计数，请求组与尝试明细只留在任务详情（PD-065）。
-38. 批次详情采用六步：数据校验、第一轮分析、多 ASR 转写、Event Alignment、第二轮分析、人工复核。Align 的 Qwen 等待只显示在第 4 步；计时首帧直接显示当前请求实际耗时，多 ASR 活动行按每家 provider 自己的任务总数展示（PD-067、PD-069）。
+38. 批次详情继续采用六步，但第 4 步改名为“音频与证据对齐”。常规路径以语音岛、事件顺序、文本归一化和多 provider 证据做确定性匹配；只有歧义 Case 才显示批次冻结的真实 LLM provider/model 请求，不得固定为 Qwen。计时首帧直接显示实际请求耗时，多 ASR 活动行按每家 provider 自己的任务总数展示（PD-067、PD-069、PD-072）。
+39. 历史时间戳只作审计，不参与强约束或音频边界；一个语音岛对应多个相邻历史事件时合并为一个 Case，并保留全部 source event ID（PD-070）。
+40. 文本归一化保留原文并生成可比较形式，例如 `223` 与 `two two three` 的共同逐位数字序列；文本只辅助归属，不能移动音频边界。归一化后仍不唯一时进入受控 LLM，校验失败则人工复核（PD-072）。
+41. 系统发现的历史 Turn 异常按组进入“人工复核 > Turn 异常复核”，与 ASR Good/Bad 复核分栏；复核人员确认或驳回，暂无法判断则保持待复核，不回写源工作簿，也不直接进入 Benchmark（PD-074）。
+42. 报告只统计人工确认的历史 Turn 标注异常组数和受影响 Turn 行数，并展示 Turn 复核覆盖率；按组展示 conversation、source event ID、对应 Case、错误类型、复核状态和音频证据，不计入 ASR 错误率（PD-071、PD-074）。
+43. Pass 2 恢复按 idempotency key 与精确 Case membership 复用 canonical 历史组；旧 Align 单通结构失败只保留历史诊断，新流程重建后仍歧义才允许受控 LLM，不得直接重放旧请求（KI-190、KI-194）。
+44. Benchmark 以 `(conversation_id, event_id)` 全库唯一；后续批次结果相同时复用原 ID，结果冲突时直接丢弃新候选，不新增、不覆盖、不追加修订，也不进入人工冲突复核（PD-073、PD-075）。该规则不新增页面入口。
 
 ## 需求到页面区域映射
 
@@ -58,9 +64,10 @@
 |---|---|---|
 | Version-frozen evaluation batch | 评测批次 → 新建评测；`#new-run-dialog`；失败/停止批次删除确认 | 已确认并冻结 |
 | Per-conversation package contract | 新建评测的数据上传与校验区域 | 已确认并改为逐通 Excel fixture |
-| First-pass / conversation ASR / Event Alignment / second-pass | `#page-run` 六阶段、资源和候选结果 | 已确认（V1.19 / PD-067、PD-069） |
+| First-pass / conversation ASR / audio & evidence alignment / second-pass | `#page-run` 六阶段、对齐规则、资源和候选结果 | V1.20 已冻结；待 Checkpoint A/B/C |
+| Historical Turn anomaly review | `#page-review` → `Turn 异常复核` 分栏、异常组队列、语音岛/映射证据、确认与驳回 | V1.20 已冻结；待 Checkpoint A/B/C |
 | Explicit manual Good or Bad review | `#page-review` 对照、候选与 Good/Bad/听不清 | 已确认 |
-| Evaluation metrics / reports | 批次入口 → `#page-report` | 已确认 |
+| Evaluation metrics / reports | 批次入口 → `#page-report`；`#historical-turn-quality` | V1.20 已冻结历史 Turn 组数 + 行数；待 Checkpoint A/B/C |
 | Benchmark ingestion, single deletion and download | `#page-library`、`#sample-dialog`、删除确认弹窗 | 已确认；删除复用冻结按钮与弹窗模式 |
 | Tags / context / Prompt / connections / cost | Configuration 四个入口；Azure GPT/OpenRouter 独立连接卡片 | 已确认；新增资源复用冻结卡片模式 |
 | Failed-batch partial results | 批次操作 → 复用 `#page-report` 详情组件并显示“部分结果 · 非完整报告”状态条 | 已确认；不改变正常报告基线 |
@@ -77,9 +84,10 @@
 | Batch | validating, running, paused, awaiting review, completed, completed partial, partially failed, safe terminal deletion, active deletion rejected |
 | Import | empty, valid, missing file, malformed workbook/audio, repair upload, discard unstarted upload |
 | ASR | pending, running, complete, partial failure, retry |
+| Audio & evidence alignment | deterministic aligned, merged historical events, ambiguous, LLM assisting, LLM rejected, manual review, sibling Case preserved, legacy checkpoint migrated |
 | Pass 2 | suspected error, likely correct, needs manual review, incomplete evidence |
-| Review | pending, candidate selected, manual text, Good, Bad, unclear, submitted, early completion |
-| Report | preliminary, final, final partial, immutable version history |
+| Review | ASR Case pending/candidate/manual text/Good/Bad/unclear; Turn anomaly pending/confirmed/rejected/deferred; submitted; early completion |
+| Report | preliminary, final, final partial, partial results, immutable version history, confirmed historical Turn group count, affected Turn row count, Turn review coverage, group-first drill-down |
 | Benchmark | AI/manual label, Good/Bad, type filter, both Good origins, 20 rows/page, selected/all-filtered download, detail/edit/new revision, grouped ZIP, unavailable audio |
 | Scenario tag | created, edited as new version, deleted unreferenced, deleted referenced with historical snapshot retained |
 | Evaluation context | prepared data, create, edit as new version, required-field error, historical snapshot retained |

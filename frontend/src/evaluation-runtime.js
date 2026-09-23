@@ -4,6 +4,8 @@ const runtime = {
   bootstrap: null,
   selectedBatchId: null,
   selectedReviewId: null,
+  selectedTurnIssueId: null,
+  reviewMode: "asr",
   reviewBatchId: null,
   selectedBenchmarkIds: new Set(),
   benchmarkItems: new Map(),
@@ -673,7 +675,7 @@ function activeOperationRows(batch) {
       : stage === "evaluation_asr"
         ? copy(`Call ${ordinal}/${total}`, `对话 ${ordinal}/${total}`)
         : stage === "event_alignment"
-          ? copy(`Alignment group ${ordinal}/${total} · Waiting for ${provider}`, `映射组 ${ordinal}/${total} · 等待 ${provider}`)
+          ? copy(`Evidence group ${ordinal}/${total} · Waiting for ${provider}`, `证据组 ${ordinal}/${total} · 等待 ${provider}`)
         : copy(`Group ${ordinal}/${total} · Waiting for ${provider}`, `请求组 ${ordinal}/${total} · 等待 ${provider}`);
     const asrPrefix = stage === "evaluation_asr" ? `${safe(provider)} · ` : "";
     return `<div class="runtime-live-operation ${stale ? "stale" : ""}" data-operation-id="${safe(operation.operation_id)}"><i aria-hidden="true"></i><span>${asrPrefix}${safe(action)}</span><time class="runtime-live-elapsed" data-started-at="${safe(operation.started_at)}" aria-hidden="true">${elapsed}</time></div>`;
@@ -839,7 +841,9 @@ function renderRun(batch) {
       `${batch.input_count} ${copy("conversations", "通对话")} · ${batch.denominator} ${copy("customer events parsed", "条用户事件已解析")}`,
       executionProgressCopy(batch, "pass_1"),
       executionProgressCopy(batch, "evaluation_asr"),
-      executionProgressCopy(batch, "event_alignment"),
+      batch.snapshot?.audio_alignment
+        ? `${batch.snapshot.audio_alignment.deterministic_count || 0} ${copy("deterministic", "确定性")} · ${batch.snapshot.audio_alignment.ambiguous_count || 0} ${copy("ambiguous", "歧义")} · ${batch.snapshot.audio_alignment.llm_request_count || 0} ${copy("LLM requests", "次 LLM 辅助")}`
+        : executionProgressCopy(batch, "event_alignment"),
       executionProgressCopy(batch, "pass_2"),
       batch.review_total
         ? `${batch.review_completed}/${batch.review_total} ${copy("reviewed", "已复核")}`
@@ -1247,6 +1251,32 @@ function renderReport(report) {
     metrics[3].querySelector("small").textContent = zh()
       ? `${payload.decision_counts["Good Case"] || 0} 正确 · ${payload.decision_counts["Bad Case"] || 0} 错误`
       : `${payload.decision_counts["Good Case"] || 0} Good · ${payload.decision_counts["Bad Case"] || 0} Bad`;
+  }
+
+  const turnQuality = payload.historical_turn_quality || {
+    confirmed_group_count: 0,
+    affected_turn_row_count: 0,
+    review_total: 0,
+    review_completed: 0,
+    review_pending: 0,
+    review_coverage: 100,
+    groups: [],
+  };
+  const turnCard = page.querySelector("#historical-turn-quality");
+  if (turnCard) {
+    turnCard.querySelector(".turn-quality-summary").textContent = copy(
+      `${turnQuality.confirmed_group_count} ${turnQuality.confirmed_group_count === 1 ? "group" : "groups"} · ${turnQuality.affected_turn_row_count} Turn rows`,
+      `${turnQuality.confirmed_group_count} 组 · ${turnQuality.affected_turn_row_count} 行 Turn`,
+    );
+    const turnMetrics = turnCard.querySelectorAll(".turn-quality-metrics .metric");
+    turnMetrics[0].querySelector("strong").textContent = turnQuality.confirmed_group_count;
+    turnMetrics[1].querySelector("strong").textContent = turnQuality.affected_turn_row_count;
+    turnMetrics[2].querySelector("strong").textContent = `${Number(turnQuality.review_coverage).toFixed(0)}%`;
+    turnMetrics[2].querySelector("small").textContent = `${turnQuality.review_completed} / ${turnQuality.review_total}`;
+    turnMetrics[3].querySelector("strong").textContent = turnQuality.review_pending;
+    turnCard.querySelector("tbody").innerHTML = turnQuality.groups.length
+      ? turnQuality.groups.map((group) => `<tr><td><span class="id">${safe(group.conversation_id)}</span></td><td>${safe(group.source_event_ids.join(" · "))}<br><span class="muted">${safe(group.affected_turn_count)} Turn</span></td><td>${safe(group.resulting_case_ids.join(" · "))}</td><td>${safe(turnIssueLabels(group.issue_types || [group.issue_type]).join(" · "))}</td><td><div class="turn-report-audio-list">${(group.audio_evidence?.islands || []).map((evidence) => `<div><audio class="turn-report-audio" controls preload="metadata" src="${safe(evidence.audio_url)}"></audio><span class="id">${safe(evidence.audio_island_id)}</span></div>`).join("")}</div></td></tr>`).join("")
+      : `<tr><td colspan="5" class="muted">${copy("No confirmed historical Turn issues in this report.", "本报告暂无已确认的历史 Turn 异常。")}</td></tr>`;
   }
 
   const funnel = page.querySelector(".funnel");
@@ -1716,6 +1746,7 @@ async function refreshBootstrap({ quiet = false } = {}) {
     renderSummary(payload.summary);
     renderBatches(payload.batches);
     renderReviews(payload.reviews);
+    renderHistoricalTurnIssues(payload.historical_turn_issues || []);
     renderBenchmarks(payload.benchmarks);
     renderScenarioTags(payload.scenario_tags || []);
     renderAsrCapabilities(payload.asr_capabilities || []);
@@ -2740,6 +2771,8 @@ function renderReviews(allReviews, { force = false } = {}) {
     ? allReviews.filter((review) => review.batch_id === runtime.reviewBatchId)
     : allReviews;
   const queue = document.querySelector("#page-review .queue");
+  const tabCount = document.querySelector("#page-review [data-review-mode='asr'] .review-count");
+  if (tabCount) tabCount.textContent = reviews.length;
   const header = queue.querySelector(".card-title");
   queue.querySelectorAll(".queue-item, .runtime-empty").forEach((item) => item.remove());
   header.querySelector("h2").textContent = `${copy("Pending", "待处理")} ${reviews.length}`;
@@ -2768,6 +2801,99 @@ function renderReviews(allReviews, { force = false } = {}) {
   const currentVersion = Number(reviewCard.dataset.reviewVersion || 0);
   if (force || currentId !== runtime.selectedReviewId || currentVersion !== selected.version) {
     renderReview(selected, reviews);
+  }
+}
+
+function selectReviewMode(mode) {
+  runtime.reviewMode = mode;
+  document.querySelectorAll("#page-review [data-review-mode]").forEach((button) => {
+    const active = button.dataset.reviewMode === mode;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+  document.querySelectorAll("#page-review [data-review-panel]").forEach((panel) => {
+    panel.hidden = panel.dataset.reviewPanel !== mode;
+  });
+  document.querySelector("#finish-early").hidden = mode !== "asr";
+}
+
+function turnIssueLabels(issueTypes = []) {
+  const labels = {
+    over_split: copy("Historical over-split", "历史 Turn 错拆"),
+    wrong_merge: copy("Historical wrong merge", "历史 Turn 错并"),
+    order_anomaly: copy("Historical order anomaly", "历史 Turn 错序"),
+  };
+  return issueTypes.map((value) => labels[value] || value);
+}
+
+function renderHistoricalTurnIssues(allIssues = []) {
+  const issues = runtime.reviewBatchId
+    ? allIssues.filter((issue) => issue.batch_id === runtime.reviewBatchId)
+    : allIssues;
+  const count = document.querySelector("#page-review .turn-review-count");
+  if (count) count.textContent = issues.length;
+  const sidebarCount = document.querySelector('.nav[data-page="review"] .review-count');
+  if (sidebarCount) {
+    const total = Number(runtime.bootstrap?.reviews?.length || 0)
+      + Number(runtime.bootstrap?.historical_turn_issues?.length || 0);
+    sidebarCount.textContent = total;
+    sidebarCount.hidden = total === 0;
+  }
+  const panel = document.querySelector("#page-review [data-review-panel='turn']");
+  const queue = panel.querySelector(".queue");
+  queue.querySelectorAll(".queue-item, .runtime-empty").forEach((item) => item.remove());
+  queue.querySelector("h2").textContent = `${copy("Pending Turn issue groups", "Turn 异常待处理")} ${issues.length}`;
+  if (!issues.length) {
+    queue.insertAdjacentHTML(
+      "beforeend",
+      `<div class="runtime-empty">${copy("No Turn issue groups remain.", "没有待复核的 Turn 异常组。")}</div>`,
+    );
+    panel.querySelector(".turn-review-detail").hidden = true;
+    return;
+  }
+  if (!issues.some((item) => item.issue_group_id === runtime.selectedTurnIssueId)) {
+    runtime.selectedTurnIssueId = issues[0].issue_group_id;
+  }
+  issues.forEach((issue) => {
+    const labels = turnIssueLabels(issue.issue_types || [issue.issue_type]);
+    queue.insertAdjacentHTML(
+      "beforeend",
+      `<button class="queue-item runtime-turn-issue-item ${issue.issue_group_id === runtime.selectedTurnIssueId ? "active" : ""}" data-turn-issue-id="${safe(issue.issue_group_id)}"><div class="queue-top"><span class="id">${safe(issue.conversation_id)}</span><span class="pill warn">${safe(issue.affected_turn_count)} Turn</span></div><b>${safe(labels.join(" · "))}</b><p>${safe(issue.source_event_ids.join(" · "))}</p></button>`,
+    );
+  });
+  const selected = issues.find((item) => item.issue_group_id === runtime.selectedTurnIssueId);
+  const detail = panel.querySelector(".turn-review-detail");
+  detail.hidden = false;
+  detail.dataset.issueGroupId = selected.issue_group_id;
+  detail.dataset.issueVersion = selected.version;
+  const evidenceIslands = selected.audio_evidence?.islands || [];
+  const issueLabels = turnIssueLabels(selected.issue_types || [selected.issue_type]);
+  detail.innerHTML = `<div class="review-head"><div><p class="eyebrow">${copy("Historical Turn quality", "历史 Turn 标注质量")}</p><h2>${copy("Confirm the suggested Turn-to-Case correction", "确认建议的 Turn 与 Case 修正关系")}</h2><p class="muted">${copy("Conversation", "对话")} <span class="id">${safe(selected.conversation_id)}</span> · ${safe(issueLabels.join(" · "))}</p></div><span class="pill warn">${safe(selected.affected_turn_count)} Turn</span></div><div class="notice">${copy("This is a separate source-data quality conclusion. It does not change the source workbook or count as an ASR error.", "这是独立的源数据质量结论：不回写源工作簿，也不计入 ASR 错误率。")}</div><section class="turn-review-section"><h3>${copy("Historical source Turns", "历史原始 Turn")}</h3><div class="turn-source-list">${selected.source_turns.map((turn) => `<article class="evidence"><label>${safe(turn.event_id)}${turn.source_row ? ` · row ${safe(turn.source_row)}` : ""}</label><p>${safe(turn.text)}</p></article>`).join("")}</div></section><section class="turn-review-section"><h3>${copy("Suggested Case mapping and audio evidence", "建议 Case 映射与音频证据")}</h3><div class="turn-case-evidence-list">${evidenceIslands.map((evidence) => `<article class="turn-case-evidence"><div class="turn-case-head"><div><span class="id">${safe(evidence.case_id)}</span>${evidence.suggested ? `<span class="pill blue">${copy("Suggested", "建议")}</span>` : ""}</div><span class="id">${safe(evidence.audio_island_id)}</span></div><div class="turn-audio-evidence"><audio controls preload="metadata" src="${safe(evidence.audio_url)}"></audio><span class="id">${formatTime(Number(evidence.start_s))} — ${formatTime(Number(evidence.end_s))}</span></div><div class="turn-provider-evidence">${(evidence.providers || []).map((provider) => `<div class="evidence"><label>${safe(provider.provider)} · ${safe(provider.turn_id)}</label><p>${safe(provider.text || copy("No provider text", "无厂商文本"))}</p><small>${copy("Role", "角色")}: ${safe(provider.inferred_role || "unknown")} · ${copy("Overlap", "重叠")}: ${safe(provider.overlap_s || 0)}s</small></div>`).join("") || `<p class="muted">${copy("No provider turn overlaps this island; keep it for manual judgment.", "该语音岛没有可用的厂商 Turn 重叠证据，请人工判断。")}</p>`}</div></article>`).join("")}</div></section><div class="turn-review-actions"><button class="btn" type="button" data-turn-decision="defer">${copy("Review later", "稍后处理")}</button><button class="btn" type="button" data-turn-decision="reject">${copy("Not a Turn issue", "不是 Turn 异常")}</button><button class="btn primary" type="button" data-turn-decision="confirm">${copy("Confirm Turn issue", "确认 Turn 异常")}</button></div>`;
+}
+
+async function submitHistoricalTurnDecision(decision) {
+  const detail = document.querySelector("#page-review .turn-review-detail");
+  try {
+    await json(
+      `/api/evaluation/historical-turn-issues/${encodeURIComponent(detail.dataset.issueGroupId)}/decision`,
+      {
+        method: "POST",
+        body: {
+          decision,
+          expected_version: Number(detail.dataset.issueVersion),
+          idempotency_key: idempotency(`turn-issue-${decision}`),
+        },
+      },
+    );
+    runtime.selectedTurnIssueId = null;
+    await refreshBootstrap({ quiet: true });
+    notify(decision === "confirm"
+      ? copy("Turn issue confirmed.", "Turn 异常已确认。")
+      : decision === "reject"
+        ? copy("Turn issue rejected.", "已判定不是 Turn 异常。")
+        : copy("Turn issue deferred.", "已移到稍后处理。"));
+  } catch (error) {
+    notify(error.message);
   }
 }
 
@@ -3758,15 +3884,21 @@ function installEvents() {
         runtime.reviewBatchId = runtime.selectedBatchId;
         runtime.selectedReviewId = null;
         runtime.reviewDirty = false;
+        selectReviewMode("asr");
         showPage("review");
         renderReviews(runtime.bootstrap.reviews, { force: true });
+        renderHistoricalTurnIssues(runtime.bootstrap.historical_turn_issues || []);
         return;
       }
       if (event.target.closest('.nav[data-page="review"]')) {
         runtime.reviewBatchId = null;
         runtime.selectedReviewId = null;
         runtime.reviewDirty = false;
-        window.setTimeout(() => renderReviews(runtime.bootstrap.reviews, { force: true }));
+        window.setTimeout(() => {
+          renderReviews(runtime.bootstrap.reviews, { force: true });
+          renderHistoricalTurnIssues(runtime.bootstrap.historical_turn_issues || []);
+          selectReviewMode(runtime.reviewMode);
+        });
       }
       if (event.target.closest('.nav[data-page="library"]')) {
         window.setTimeout(() => renderBenchmarks(runtime.benchmarkResult || runtime.bootstrap.benchmarks));
@@ -3778,6 +3910,28 @@ function installEvents() {
         runtime.selectedReviewId = reviewItem.dataset.reviewId;
         runtime.reviewDirty = false;
         renderReviews(runtime.bootstrap.reviews, { force: true });
+        return;
+      }
+      const reviewMode = event.target.closest("#page-review [data-review-mode]");
+      if (reviewMode) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        selectReviewMode(reviewMode.dataset.reviewMode);
+        return;
+      }
+      const turnIssueItem = event.target.closest(".runtime-turn-issue-item");
+      if (turnIssueItem) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        runtime.selectedTurnIssueId = turnIssueItem.dataset.turnIssueId;
+        renderHistoricalTurnIssues(runtime.bootstrap.historical_turn_issues || []);
+        return;
+      }
+      const turnDecision = event.target.closest("[data-turn-decision]");
+      if (turnDecision) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        await submitHistoricalTurnDecision(turnDecision.dataset.turnDecision);
         return;
       }
       const vendorCandidate = event.target.closest("#page-review .vendor-grid .vendor");

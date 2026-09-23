@@ -8,12 +8,25 @@
 
 ### Requirement: Evidence-gated idempotent ingestion
 
-第二轮明确 Good/Bad 且满足自动准入规则的 Case MUST 以 `AI 标注`进入正式 Benchmark；人工提交 Good/Bad 的 Case MUST 以 `人工标注`进入。唯一约束 MUST 至少覆盖 batch ID、conversation ID 和 event ID，使重试、重复 webhook 和恢复运行不会产生重复样本。
+第二轮明确 Good/Bad 且满足自动准入规则的 Case MUST 以 `AI 标注`进入正式 Benchmark；人工提交 Good/Bad 的 Case MUST 以 `人工标注`进入。正式 Library 的唯一约束 MUST 以 conversation ID 和 event ID 为业务键且跨批次生效；batch ID 只作为证据来源，不得参与判断样本是否重复。重试、重复 webhook、恢复运行、人工复核和后续批次再次命中同一事件时都不得产生第二条样本。
 
 #### Scenario: Automatically ingest a clear case
 
 - **WHEN** 第二轮输出满足准入规则的 Good 或 Bad
 - **THEN** 系统创建或返回同一 Benchmark 样本，保存 AI 标注来源及批次证据快照
+
+#### Scenario: Reuse the same event across batches
+
+- **GIVEN** Library 已存在某 conversation ID + event ID 的正式样本
+- **WHEN** 后续批次再次准入同一事件且结果与当前样本一致
+- **THEN** 系统返回原 Benchmark ID、追加可追溯的批次证据且不得增加 Library 样本数
+
+#### Scenario: Block a conflicting duplicate
+
+- **GIVEN** Library 已存在某 conversation ID + event ID 的正式样本
+- **WHEN** 后续批次产生不同 Good/Bad、标注文本或音频证据
+- **THEN** 系统直接丢弃新 Benchmark 候选，不得创建第二条样本、覆盖当前值、追加修订或创建人工冲突复核任务
+- **AND** 原样本的当前值、修订历史和导出内容保持不变，新批次的 Benchmark 新增数不得包含该候选
 
 #### Scenario: Ingest a reviewed case
 

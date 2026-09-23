@@ -33,6 +33,7 @@ from src.evaluation.models import (
     EvaluationPricingVersionWrite,
     EvaluationReviewComplete,
     EvaluationReviewSubmit,
+    HistoricalTurnReviewSubmit,
     PromptTemplateRestore,
     PromptTemplateWrite,
     ReferenceDictionaryWrite,
@@ -227,6 +228,7 @@ def create_evaluation_router(
             "summary": await store.summary(),
             "batches": await store.list_batches(),
             "reviews": await store.list_reviews("pending"),
+            "historical_turn_issues": await store.list_historical_turn_issues("open"),
             "benchmarks": await store.list_benchmarks(limit=20),
             "scenario_tags": await store.list_scenario_tags(),
             "reference_dictionaries": await store.list_reference_dictionaries(),
@@ -842,6 +844,43 @@ def create_evaluation_router(
         if path is None:
             raise HTTPException(status_code=404, detail="Review audio is unavailable")
         await store.audit_access("review_audio.played", review_id)
+        return FileResponse(path, media_type="audio/wav", filename=path.name)
+
+    @router.get("/historical-turn-issues")
+    async def historical_turn_issues(
+        status: str = Query(
+            default="open",
+            pattern="^(open|pending|deferred|confirmed|rejected|all)$",
+        ),
+    ) -> list[dict[str, object]]:
+        return await store.list_historical_turn_issues(status)
+
+    @router.post("/historical-turn-issues/{issue_group_id}/decision")
+    async def submit_historical_turn_issue(
+        issue_group_id: str,
+        payload: HistoricalTurnReviewSubmit,
+    ) -> dict[str, object]:
+        try:
+            return await store.submit_historical_turn_review(issue_group_id, payload)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    @router.get("/historical-turn-issues/{issue_group_id}/audio")
+    async def historical_turn_issue_audio(
+        issue_group_id: str,
+        audio_island_id: str | None = Query(default=None),
+    ) -> FileResponse:
+        path = await store.historical_turn_issue_audio_path(
+            issue_group_id,
+            audio_island_id,
+        )
+        if path is None:
+            raise HTTPException(status_code=404, detail="Historical Turn audio is unavailable")
+        await store.audit_access("historical_turn_issue_audio.played", issue_group_id)
         return FileResponse(path, media_type="audio/wav", filename=path.name)
 
     @router.get("/conversations/{conversation_id}/audio")

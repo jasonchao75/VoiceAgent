@@ -321,6 +321,135 @@
   overflow: visible;
 }
 
+.review-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.review-tabs .btn.active {
+  border-color: var(--accent);
+  background: rgba(58, 214, 133, 0.12);
+  color: var(--text);
+}
+
+.review-tabs .review-count,
+.review-tabs .turn-review-count {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+}
+
+.historical-turn-review[hidden] {
+  display: none;
+}
+
+.turn-review-detail,
+.turn-review-detail * {
+  min-width: 0;
+}
+
+.turn-audio-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.turn-audio-evidence audio {
+  width: min(100%, 420px);
+}
+
+.turn-source-list {
+  display: grid;
+  gap: 10px;
+}
+
+.turn-source-list p {
+  overflow-wrap: anywhere;
+}
+
+.turn-review-section {
+  margin-top: 18px;
+}
+
+.turn-review-section h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+
+.turn-case-evidence-list,
+.turn-provider-evidence,
+.turn-report-audio-list {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.turn-case-evidence {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.turn-case-head,
+.turn-case-head > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.turn-provider-evidence {
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+}
+
+.turn-provider-evidence p,
+.turn-provider-evidence small {
+  overflow-wrap: anywhere;
+}
+
+.turn-report-audio-list > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.turn-report-audio {
+  width: min(100%, 220px);
+  min-width: 0;
+}
+
+.turn-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+@media (max-width: 760px) {
+  .review-tabs .btn,
+  .turn-review-actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
 .benchmark-edit-form {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);

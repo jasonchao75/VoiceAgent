@@ -12,8 +12,10 @@ import shutil
 import uuid
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import aiosqlite
 import soundfile as sf  # type: ignore[import-untyped]
@@ -29,6 +31,7 @@ from src.evaluation.models import (
     EvaluationBatchAction,
     EvaluationBatchCreate,
     EvaluationReviewSubmit,
+    HistoricalTurnReviewSubmit,
 )
 from src.evaluation.pricing import normalize_pricing_model_id
 from src.evaluation.prompts import (
@@ -271,6 +274,15 @@ class EvaluationStore:
                     changed_at TEXT NOT NULL,
                     UNIQUE(benchmark_id, revision)
                 );
+                CREATE TABLE IF NOT EXISTS evaluation_benchmark_duplicate_archive (
+                    duplicate_id TEXT PRIMARY KEY,
+                    canonical_id TEXT NOT NULL,
+                    conversation_id TEXT NOT NULL,
+                    event_id TEXT NOT NULL,
+                    benchmark_json TEXT NOT NULL,
+                    revisions_json TEXT NOT NULL,
+                    archived_at TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS evaluation_batch_leases (
                     batch_id TEXT PRIMARY KEY REFERENCES evaluation_batches(id) ON DELETE CASCADE,
                     owner_id TEXT NOT NULL,
@@ -460,6 +472,78 @@ class EvaluationStore:
                     error TEXT,
                     updated_at TEXT NOT NULL,
                     PRIMARY KEY (batch_id, conversation_id)
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_audio_islands (
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    conversation_id TEXT NOT NULL,
+                    island_id TEXT NOT NULL,
+                    ordinal INTEGER NOT NULL,
+                    start_s REAL NOT NULL,
+                    end_s REAL NOT NULL,
+                    detector_version TEXT NOT NULL,
+                    parameters_json TEXT NOT NULL,
+                    features_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id,conversation_id,island_id)
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_cases (
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    case_id TEXT NOT NULL,
+                    conversation_id TEXT NOT NULL,
+                    primary_event_id TEXT NOT NULL,
+                    source_event_ids_json TEXT NOT NULL,
+                    target_event_ids_json TEXT NOT NULL,
+                    audio_island_id TEXT NOT NULL,
+                    start_s REAL NOT NULL,
+                    end_s REAL NOT NULL,
+                    boundary_rule TEXT NOT NULL,
+                    alignment_method TEXT NOT NULL,
+                    alignment_status TEXT NOT NULL,
+                    ambiguity_reasons_json TEXT NOT NULL,
+                    evidence_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id,case_id),
+                    UNIQUE (batch_id,conversation_id,audio_island_id)
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_alignment_evidence (
+                    batch_id TEXT NOT NULL,
+                    case_id TEXT NOT NULL,
+                    provider TEXT NOT NULL,
+                    turn_id TEXT NOT NULL,
+                    evidence_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id,case_id,provider,turn_id),
+                    FOREIGN KEY (batch_id,case_id)
+                        REFERENCES evaluation_cases(batch_id,case_id) ON DELETE CASCADE
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_historical_turn_issues (
+                    issue_group_id TEXT PRIMARY KEY,
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    conversation_id TEXT NOT NULL,
+                    source_event_ids_json TEXT NOT NULL,
+                    resulting_case_ids_json TEXT NOT NULL,
+                    issue_type TEXT NOT NULL,
+                    affected_turn_count INTEGER NOT NULL,
+                    audio_evidence_json TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    decision TEXT,
+                    reviewer TEXT,
+                    reviewed_at TEXT,
+                    version INTEGER NOT NULL DEFAULT 1,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_historical_turn_issue_revisions (
+                    id TEXT PRIMARY KEY,
+                    issue_group_id TEXT NOT NULL
+                        REFERENCES evaluation_historical_turn_issues(issue_group_id)
+                        ON DELETE CASCADE,
+                    version INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    decision TEXT,
+                    reviewer TEXT,
+                    changed_at TEXT NOT NULL,
+                    UNIQUE(issue_group_id,version)
                 );
                 CREATE TABLE IF NOT EXISTS evaluation_event_alignment_groups (
                     batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
@@ -657,6 +741,7 @@ class EvaluationStore:
                     await database.execute(
                         f"ALTER TABLE evaluation_benchmarks ADD COLUMN {column} {definition}"
                     )
+            await self._migrate_benchmark_global_uniqueness(database)
             pricing_columns = {
                 str(row[1])
                 for row in await (
@@ -708,6 +793,67 @@ class EvaluationStore:
             await database.commit()
         await self.recover_pending_benchmark_clips()
         await self.recover_missing_preliminary_reports()
+
+    async def _migrate_benchmark_global_uniqueness(
+        self,
+        database: aiosqlite.Connection,
+    ) -> None:
+        """Archive later duplicates, then enforce the global Benchmark business key."""
+        database.row_factory = aiosqlite.Row
+        duplicate_keys = await (
+            await database.execute(
+                """SELECT conversation_id,event_id
+                   FROM evaluation_benchmarks
+                   GROUP BY conversation_id,event_id HAVING COUNT(*) > 1"""
+            )
+        ).fetchall()
+        for duplicate_key in duplicate_keys:
+            rows = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_benchmarks
+                       WHERE conversation_id=? AND event_id=?
+                       ORDER BY created_at,id""",
+                    (duplicate_key["conversation_id"], duplicate_key["event_id"]),
+                )
+            ).fetchall()
+            canonical_id = str(rows[0]["id"])
+            for duplicate in rows[1:]:
+                duplicate_id = str(duplicate["id"])
+                revisions = await (
+                    await database.execute(
+                        """SELECT * FROM evaluation_benchmark_revisions
+                           WHERE benchmark_id=? ORDER BY revision""",
+                        (duplicate_id,),
+                    )
+                ).fetchall()
+                await database.execute(
+                    """INSERT OR IGNORE INTO evaluation_benchmark_duplicate_archive (
+                           duplicate_id,canonical_id,conversation_id,event_id,
+                           benchmark_json,revisions_json,archived_at
+                       ) VALUES (?,?,?,?,?,?,?)""",
+                    (
+                        duplicate_id,
+                        canonical_id,
+                        str(duplicate["conversation_id"]),
+                        str(duplicate["event_id"]),
+                        _json(dict(duplicate)),
+                        _json([dict(item) for item in revisions]),
+                        _utcnow(),
+                    ),
+                )
+                await database.execute(
+                    "DELETE FROM evaluation_benchmark_revisions WHERE benchmark_id=?",
+                    (duplicate_id,),
+                )
+                await database.execute(
+                    "DELETE FROM evaluation_benchmarks WHERE id=?",
+                    (duplicate_id,),
+                )
+        await database.execute(
+            """CREATE UNIQUE INDEX IF NOT EXISTS
+               evaluation_benchmarks_conversation_event_unique
+               ON evaluation_benchmarks(conversation_id,event_id)"""
+        )
 
     async def _seed_asr_capabilities(self, database: aiosqlite.Connection) -> None:
         """Seed truthful offline-ASR capability contracts without inventing validation."""
@@ -2427,6 +2573,436 @@ class EvaluationStore:
                 )
             await database.commit()
 
+    async def checkpoint_audio_islands(
+        self,
+        batch_id: str,
+        conversation_id: str,
+        islands: list[dict[str, Any]],
+    ) -> None:
+        """Freeze detector output before any transcript-based alignment runs."""
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute("PRAGMA foreign_keys = ON")
+            await database.execute("PRAGMA busy_timeout = 5000")
+            await database.execute("BEGIN IMMEDIATE")
+            existing = await (
+                await database.execute(
+                    """SELECT island_id,ordinal,start_s,end_s,detector_version,
+                              parameters_json,features_json
+                       FROM evaluation_audio_islands
+                       WHERE batch_id=? AND conversation_id=? ORDER BY ordinal""",
+                    (batch_id, conversation_id),
+                )
+            ).fetchall()
+            serialized = [
+                (
+                    str(item["island_id"]),
+                    int(item["ordinal"]),
+                    float(item["start_s"]),
+                    float(item["end_s"]),
+                    str(item["detector_version"]),
+                    _json(item["parameters"]),
+                    _json(item["features"]),
+                )
+                for item in islands
+            ]
+            if existing and [tuple(row) for row in existing] != serialized:
+                raise RuntimeError("Frozen audio islands changed across retry")
+            if not existing:
+                await database.executemany(
+                    """INSERT INTO evaluation_audio_islands (
+                           batch_id,conversation_id,island_id,ordinal,start_s,end_s,
+                           detector_version,parameters_json,features_json,created_at
+                       ) VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    [(batch_id, conversation_id, *item, _utcnow()) for item in serialized],
+                )
+            await database.commit()
+
+    async def audio_island_rows(
+        self,
+        batch_id: str,
+        conversation_id: str,
+    ) -> list[dict[str, Any]]:
+        """Return frozen islands in their persisted order."""
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            rows = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_audio_islands
+                       WHERE batch_id=? AND conversation_id=? ORDER BY ordinal""",
+                    (batch_id, conversation_id),
+                )
+            ).fetchall()
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            item = dict(row)
+            item["parameters"] = json.loads(item.pop("parameters_json"))
+            item["features"] = json.loads(item.pop("features_json"))
+            result.append(item)
+        return result
+
+    async def checkpoint_evaluation_case(
+        self,
+        batch_id: str,
+        case: dict[str, Any],
+    ) -> None:
+        """Persist one Case and its projections without coupling sibling outcomes."""
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute("PRAGMA foreign_keys = ON")
+            await database.execute("PRAGMA busy_timeout = 5000")
+            await database.execute("BEGIN IMMEDIATE")
+            now = _utcnow()
+            await database.execute(
+                """INSERT INTO evaluation_cases (
+                       batch_id,case_id,conversation_id,primary_event_id,
+                       source_event_ids_json,target_event_ids_json,audio_island_id,
+                       start_s,end_s,boundary_rule,alignment_method,alignment_status,
+                       ambiguity_reasons_json,evidence_json,updated_at
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                   ON CONFLICT(batch_id,case_id) DO UPDATE SET
+                       alignment_method=excluded.alignment_method,
+                       alignment_status=excluded.alignment_status,
+                       ambiguity_reasons_json=excluded.ambiguity_reasons_json,
+                       evidence_json=excluded.evidence_json,
+                       updated_at=excluded.updated_at""",
+                (
+                    batch_id,
+                    case["case_id"],
+                    case["conversation_id"],
+                    case["primary_event_id"],
+                    _json(case["source_event_ids"]),
+                    _json(case["target_event_ids"]),
+                    case["audio_island_id"],
+                    case["start_s"],
+                    case["end_s"],
+                    case["boundary_rule"],
+                    case["alignment_method"],
+                    case["alignment_status"],
+                    _json(case.get("ambiguity_reasons", [])),
+                    _json(
+                        {
+                            "historical_time_used": case.get("historical_time_used", False),
+                            "historical_text_forms": case.get("historical_text_forms", []),
+                            "ranking_evidence": case.get("ranking_evidence", []),
+                            "island": case.get("island", {}),
+                        }
+                    ),
+                    now,
+                ),
+            )
+            await database.execute(
+                "DELETE FROM evaluation_alignment_evidence WHERE batch_id=? AND case_id=?",
+                (batch_id, case["case_id"]),
+            )
+            await database.executemany(
+                """INSERT INTO evaluation_alignment_evidence
+                   (batch_id,case_id,provider,turn_id,evidence_json,updated_at)
+                   VALUES (?,?,?,?,?,?)""",
+                [
+                    (
+                        batch_id,
+                        case["case_id"],
+                        evidence["provider"],
+                        evidence["turn_id"],
+                        _json(evidence),
+                        now,
+                    )
+                    for evidence in case.get("providers", [])
+                ],
+            )
+            source_event_ids = [str(value) for value in case["source_event_ids"]]
+            if len(source_event_ids) > 1:
+                issue_group_id = (
+                    "HTI-"
+                    + uuid.uuid5(
+                        uuid.NAMESPACE_URL,
+                        f"{batch_id}:{case['conversation_id']}:{'|'.join(source_event_ids)}",
+                    )
+                    .hex[:20]
+                    .upper()
+                )
+                await database.execute(
+                    """INSERT INTO evaluation_historical_turn_issues (
+                           issue_group_id,batch_id,conversation_id,source_event_ids_json,
+                           resulting_case_ids_json,issue_type,affected_turn_count,
+                           audio_evidence_json,status,decision,reviewer,reviewed_at,
+                           version,created_at,updated_at
+                       ) VALUES (?,?,?,?,?,'over_split',?,?, 'pending',NULL,NULL,NULL,1,?,?)
+                       ON CONFLICT(issue_group_id) DO UPDATE SET
+                           resulting_case_ids_json=excluded.resulting_case_ids_json,
+                           audio_evidence_json=excluded.audio_evidence_json,
+                           updated_at=excluded.updated_at
+                       WHERE evaluation_historical_turn_issues.status IN ('pending','deferred')""",
+                    (
+                        issue_group_id,
+                        batch_id,
+                        case["conversation_id"],
+                        _json(source_event_ids),
+                        _json([case["case_id"]]),
+                        len(source_event_ids),
+                        _json(
+                            {
+                                "islands": [
+                                    {
+                                        "case_id": case["case_id"],
+                                        "audio_island_id": case["audio_island_id"],
+                                        "start_s": case["start_s"],
+                                        "end_s": case["end_s"],
+                                        "providers": case.get("providers", []),
+                                    }
+                                ]
+                            }
+                        ),
+                        now,
+                        now,
+                    ),
+                )
+            await database.commit()
+
+    async def checkpoint_historical_turn_issues(
+        self,
+        batch_id: str,
+        conversation_id: str,
+        events: list[dict[str, Any]],
+        islands: list[dict[str, Any]],
+        cases: list[dict[str, Any]],
+    ) -> None:
+        """Persist complete data-quality candidates after all Cases are known."""
+        customer_events = [event for event in events if event.get("speaker") == "customer"]
+        island_ordinal = {
+            str(island["island_id"]): int(island.get("ordinal", index))
+            for index, island in enumerate(islands)
+        }
+        case_by_event: dict[str, list[dict[str, Any]]] = {}
+        for case in cases:
+            for event_id in case.get("source_event_ids", []):
+                case_by_event.setdefault(str(event_id), []).append(case)
+        diagnostics = cases[0] if cases else {}
+        full_assignment = list(diagnostics.get("full_event_assignment", []))
+        assignment_by_event = {
+            str(item["event_id"]): str(item["island_id"]) for item in full_assignment
+        }
+        all_island_evidence = dict(diagnostics.get("all_island_evidence", {}))
+        ranking_rows = list(diagnostics.get("all_ranking_evidence", []))
+        island_by_id = {str(island["island_id"]): island for island in islands}
+
+        candidates: dict[tuple[str, ...], dict[str, Any]] = {}
+
+        def add_candidate(
+            source_event_ids: list[str],
+            issue_type: str,
+            evidence_islands: list[dict[str, Any]],
+            resulting_case_ids: list[str],
+        ) -> None:
+            key = tuple(source_event_ids)
+            candidate = candidates.setdefault(
+                key,
+                {
+                    "source_event_ids": source_event_ids,
+                    "issue_types": [],
+                    "resulting_case_ids": [],
+                    "islands": [],
+                },
+            )
+            if issue_type not in candidate["issue_types"]:
+                candidate["issue_types"].append(issue_type)
+            for case_id in resulting_case_ids:
+                if case_id not in candidate["resulting_case_ids"]:
+                    candidate["resulting_case_ids"].append(case_id)
+            known_islands = {str(item["audio_island_id"]) for item in candidate["islands"]}
+            for evidence in evidence_islands:
+                if str(evidence["audio_island_id"]) not in known_islands:
+                    candidate["islands"].append(evidence)
+                    known_islands.add(str(evidence["audio_island_id"]))
+
+        def case_evidence(case: dict[str, Any]) -> dict[str, Any]:
+            return {
+                "case_id": str(case["case_id"]),
+                "audio_island_id": str(case["audio_island_id"]),
+                "start_s": float(case["start_s"]),
+                "end_s": float(case["end_s"]),
+                "source_event_ids": [str(value) for value in case["source_event_ids"]],
+                "providers": list(case.get("providers", [])),
+                "suggested": False,
+            }
+
+        def suggested_evidence(
+            source_event_ids: list[str],
+            island_id: str,
+        ) -> dict[str, Any] | None:
+            island = island_by_id.get(island_id)
+            if island is None:
+                return None
+            identity = "|".join((conversation_id, island_id, *source_event_ids))
+            return {
+                "case_id": (f"CASE-SUG-{sha256(identity.encode()).hexdigest()[:16].upper()}"),
+                "audio_island_id": island_id,
+                "start_s": float(island["start_s"]),
+                "end_s": float(island["end_s"]),
+                "source_event_ids": source_event_ids,
+                "providers": list(all_island_evidence.get(island_id, [])),
+                "suggested": True,
+            }
+
+        def evidence_for_event(event_id: str) -> list[dict[str, Any]]:
+            formal = case_by_event.get(event_id, [])
+            if formal:
+                return [case_evidence(case) for case in formal]
+            island_id = assignment_by_event.get(event_id)
+            suggested = suggested_evidence([event_id], island_id) if island_id is not None else None
+            return [suggested] if suggested is not None else []
+
+        for case in cases:
+            source_ids = [str(value) for value in case.get("source_event_ids", [])]
+            if len(source_ids) > 1:
+                add_candidate(
+                    source_ids,
+                    "over_split",
+                    [case_evidence(case)],
+                    [str(case["case_id"])],
+                )
+
+        best_ranked_island: dict[str, dict[str, Any]] = {}
+        for ranking in ranking_rows:
+            event_id = str(ranking["event_id"])
+            current = best_ranked_island.get(event_id)
+            if current is None or float(ranking.get("total", 0.0)) > float(
+                current.get("total", 0.0)
+            ):
+                best_ranked_island[event_id] = ranking
+        for left, right in zip(customer_events, customer_events[1:], strict=False):
+            left_id = str(left["event_id"])
+            right_id = str(right["event_id"])
+            left_best = best_ranked_island.get(left_id)
+            right_best = best_ranked_island.get(right_id)
+            if left_best is None or right_best is None:
+                continue
+            if island_ordinal.get(str(left_best["island_id"]), -1) <= island_ordinal.get(
+                str(right_best["island_id"]), -1
+            ):
+                continue
+            if min(float(left_best["total"]), float(right_best["total"])) < 0.35:
+                continue
+            source_ids = [left_id, right_id]
+            evidence_rows = [
+                evidence for event_id in source_ids for evidence in evidence_for_event(event_id)
+            ]
+            unique_evidence = {
+                str(evidence["audio_island_id"]): evidence for evidence in evidence_rows
+            }
+            add_candidate(
+                source_ids,
+                "order_anomaly",
+                list(unique_evidence.values()),
+                [str(evidence["case_id"]) for evidence in unique_evidence.values()],
+            )
+
+        assigned_island_ids = {str(item["island_id"]) for item in full_assignment} or {
+            str(case["audio_island_id"]) for case in cases
+        }
+        orphan_islands = [
+            island for island in islands if str(island["island_id"]) not in assigned_island_ids
+        ]
+        for island in orphan_islands:
+            if not full_assignment or not customer_events:
+                continue
+            orphan_ordinal = island_ordinal[str(island["island_id"])]
+            nearest_assignment = min(
+                full_assignment,
+                key=lambda item: abs(
+                    island_ordinal.get(str(item["island_id"]), 0) - orphan_ordinal
+                ),
+            )
+            source_ids = [str(nearest_assignment["event_id"])]
+            existing_evidence = evidence_for_event(source_ids[0])
+            orphan_evidence = suggested_evidence(source_ids, str(island["island_id"]))
+            if orphan_evidence is None:
+                continue
+            combined_evidence = [*existing_evidence, orphan_evidence]
+            add_candidate(
+                source_ids,
+                "wrong_merge",
+                combined_evidence,
+                [str(evidence["case_id"]) for evidence in combined_evidence],
+            )
+
+        now = _utcnow()
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute("PRAGMA foreign_keys = ON")
+            await database.execute("PRAGMA busy_timeout = 5000")
+            await database.execute("BEGIN IMMEDIATE")
+            for source_key, candidate in candidates.items():
+                issue_group_id = (
+                    "HTI-"
+                    + uuid.uuid5(
+                        uuid.NAMESPACE_URL,
+                        f"{batch_id}:{conversation_id}:{'|'.join(source_key)}",
+                    )
+                    .hex[:20]
+                    .upper()
+                )
+                issue_types = sorted(candidate["issue_types"])
+                await database.execute(
+                    """INSERT INTO evaluation_historical_turn_issues (
+                           issue_group_id,batch_id,conversation_id,source_event_ids_json,
+                           resulting_case_ids_json,issue_type,affected_turn_count,
+                           audio_evidence_json,status,decision,reviewer,reviewed_at,
+                           version,created_at,updated_at
+                       ) VALUES (?,?,?,?,?,?,?,?, 'pending',NULL,NULL,NULL,1,?,?)
+                       ON CONFLICT(issue_group_id) DO UPDATE SET
+                           resulting_case_ids_json=excluded.resulting_case_ids_json,
+                           issue_type=excluded.issue_type,
+                           audio_evidence_json=excluded.audio_evidence_json,
+                           updated_at=excluded.updated_at
+                       WHERE evaluation_historical_turn_issues.status IN ('pending','deferred')""",
+                    (
+                        issue_group_id,
+                        batch_id,
+                        conversation_id,
+                        _json(list(source_key)),
+                        _json(candidate["resulting_case_ids"]),
+                        ",".join(issue_types),
+                        len(source_key),
+                        _json({"islands": candidate["islands"]}),
+                        now,
+                        now,
+                    ),
+                )
+            await database.commit()
+
+    async def evaluation_case_rows(self, batch_id: str) -> list[dict[str, Any]]:
+        """Return independently persisted Cases with decoded provider evidence."""
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            rows = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_cases
+                       WHERE batch_id=? ORDER BY conversation_id,start_s,case_id""",
+                    (batch_id,),
+                )
+            ).fetchall()
+            evidence_rows = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_alignment_evidence
+                       WHERE batch_id=? ORDER BY case_id,provider,turn_id""",
+                    (batch_id,),
+                )
+            ).fetchall()
+        evidence_by_case: dict[str, list[dict[str, Any]]] = {}
+        for row in evidence_rows:
+            evidence_by_case.setdefault(str(row["case_id"]), []).append(
+                json.loads(str(row["evidence_json"]))
+            )
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            item = dict(row)
+            item["source_event_ids"] = json.loads(item.pop("source_event_ids_json"))
+            item["target_event_ids"] = json.loads(item.pop("target_event_ids_json"))
+            item["ambiguity_reasons"] = json.loads(item.pop("ambiguity_reasons_json"))
+            item["evidence"] = json.loads(item.pop("evidence_json"))
+            item["providers"] = evidence_by_case.get(str(item["case_id"]), [])
+            result.append(item)
+        return result
+
     async def event_alignment_group_rows(self, batch_id: str) -> list[dict[str, Any]]:
         """Return Event Aligner checkpoints with decoded frozen membership."""
         async with aiosqlite.connect(self.database_path) as database:
@@ -2916,32 +3492,28 @@ class EvaluationStore:
                     if not label:
                         continue
                     benchmark_id = f"BM-{batch_id}-{conversation_id}-{event_id}"
-                    cursor = await database.execute(
-                        """INSERT OR IGNORE INTO evaluation_benchmarks (
-                           id,batch_id,conversation_id,event_id,case_type,source,language,
-                           scenario_tag,label,audio_start_s,audio_end_s,origin,
-                           positioning_quality,clip_status,clip_path,clip_error,trace_json,
-                           revision,created_at
-                           ) VALUES (?,?,?,?,?,'ai',?,?,?,?,?,?,?,'pending',NULL,NULL,'{}',1,?)""",
-                        (
-                            benchmark_id,
-                            batch_id,
-                            conversation_id,
-                            event_id,
-                            "good" if decision == "Good Case" else "bad",
-                            language,
-                            self._scenario_key(scenario),
-                            label,
-                            start_s,
-                            end_s,
-                            str(result.get("origin") or "suspect_candidate"),
-                            positioning_quality,
-                            _utcnow(),
-                        ),
+                    disposition, canonical_id = await self._ingest_benchmark_candidate(
+                        database,
+                        {
+                            "id": benchmark_id,
+                            "batch_id": batch_id,
+                            "conversation_id": conversation_id,
+                            "event_id": event_id,
+                            "case_type": "good" if decision == "Good Case" else "bad",
+                            "source": "ai",
+                            "language": language,
+                            "scenario_tag": self._scenario_key(scenario),
+                            "label": label,
+                            "audio_start_s": start_s,
+                            "audio_end_s": end_s,
+                            "origin": str(result.get("origin") or "suspect_candidate"),
+                            "positioning_quality": positioning_quality,
+                            "created_at": _utcnow(),
+                        },
                     )
-                    if cursor.rowcount:
-                        await self._append_benchmark_revision(database, benchmark_id)
-                        pending_clips.append(benchmark_id)
+                    if disposition == "created":
+                        await self._append_benchmark_revision(database, canonical_id)
+                        pending_clips.append(canonical_id)
                         benchmark_count += 1
             await database.commit()
         for benchmark_id in pending_clips:
@@ -2958,6 +3530,102 @@ class EvaluationStore:
                 )
             ).fetchone()
         return int(review_row[0]), int(benchmark_row[0])
+
+    async def _ingest_benchmark_candidate(
+        self,
+        database: aiosqlite.Connection,
+        candidate: dict[str, Any],
+    ) -> tuple[str, str]:
+        """Create, reuse, or discard one candidate under the global business key."""
+        database.row_factory = aiosqlite.Row
+        existing = await (
+            await database.execute(
+                """SELECT * FROM evaluation_benchmarks
+                   WHERE conversation_id=? AND event_id=?""",
+                (candidate["conversation_id"], candidate["event_id"]),
+            )
+        ).fetchone()
+        evidence = {
+            "batch_id": str(candidate["batch_id"]),
+            "candidate_id": str(candidate["id"]),
+            "source": str(candidate["source"]),
+            "received_at": str(candidate["created_at"]),
+        }
+        if existing is None:
+            trace = {"ingestion_evidence": [evidence]}
+            await database.execute(
+                """INSERT INTO evaluation_benchmarks (
+                       id,batch_id,conversation_id,event_id,case_type,source,language,
+                       scenario_tag,label,audio_start_s,audio_end_s,origin,
+                       positioning_quality,clip_status,clip_path,clip_error,trace_json,
+                       revision,created_at
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',NULL,NULL,?,1,?)""",
+                (
+                    candidate["id"],
+                    candidate["batch_id"],
+                    candidate["conversation_id"],
+                    candidate["event_id"],
+                    candidate["case_type"],
+                    candidate["source"],
+                    candidate["language"],
+                    candidate["scenario_tag"],
+                    candidate["label"],
+                    candidate["audio_start_s"],
+                    candidate["audio_end_s"],
+                    candidate["origin"],
+                    candidate["positioning_quality"],
+                    _json(trace),
+                    candidate["created_at"],
+                ),
+            )
+            return "created", str(candidate["id"])
+
+        canonical_id = str(existing["id"])
+        equivalent = (
+            str(existing["case_type"]) == str(candidate["case_type"])
+            and str(existing["language"]) == str(candidate["language"])
+            and str(existing["scenario_tag"]) == str(candidate["scenario_tag"])
+            and str(existing["label"]) == str(candidate["label"])
+            and abs(float(existing["audio_start_s"]) - float(candidate["audio_start_s"])) <= 0.001
+            and abs(float(existing["audio_end_s"]) - float(candidate["audio_end_s"])) <= 0.001
+        )
+        if not equivalent:
+            await self._audit(
+                database,
+                "benchmark.duplicate_conflict_discarded",
+                canonical_id,
+                {
+                    "candidate_id": str(candidate["id"]),
+                    "candidate_batch_id": str(candidate["batch_id"]),
+                    "conversation_id": str(candidate["conversation_id"]),
+                    "event_id": str(candidate["event_id"]),
+                },
+            )
+            return "discarded_conflict", canonical_id
+
+        trace = json.loads(str(existing["trace_json"] or "{}"))
+        ingestion_evidence = trace.setdefault("ingestion_evidence", [])
+        if not any(
+            str(item.get("batch_id")) == evidence["batch_id"]
+            and str(item.get("source")) == evidence["source"]
+            for item in ingestion_evidence
+            if isinstance(item, dict)
+        ):
+            ingestion_evidence.append(evidence)
+            await database.execute(
+                "UPDATE evaluation_benchmarks SET trace_json=? WHERE id=?",
+                (_json(trace), canonical_id),
+            )
+        await self._audit(
+            database,
+            "benchmark.duplicate_reused",
+            canonical_id,
+            {
+                "candidate_id": str(candidate["id"]),
+                "candidate_batch_id": str(candidate["batch_id"]),
+            },
+        )
+        return "reused", canonical_id
 
     async def _append_benchmark_revision(
         self,
@@ -3154,6 +3822,46 @@ class EvaluationStore:
         )
         return destination, trace
 
+    async def prepare_audio_first_case_clip(
+        self,
+        batch_id: str,
+        case: dict[str, Any],
+    ) -> tuple[Path, dict[str, Any]]:
+        """Write the exact frozen audio island shared by evaluation and review."""
+        conversation_id = str(case["conversation_id"])
+        source = self.conversation_user_audio_path(conversation_id)
+        if source is None:
+            raise FileNotFoundError("Pure-user WAV is unavailable")
+        start_s = float(case["start_s"])
+        end_s = float(case["end_s"])
+        if start_s < 0 or end_s <= start_s:
+            raise ValueError("Frozen audio island is invalid")
+        clip_key = uuid.uuid5(
+            uuid.NAMESPACE_URL,
+            f"{batch_id}:{case['case_id']}:pure-user-audio-island-v1",
+        ).hex
+        destination = self.asr_clip_root / f"{clip_key}.wav"
+        trace = await asyncio.to_thread(
+            self._write_benchmark_clip,
+            source,
+            destination,
+            start_s,
+            end_s,
+        )
+        trace.update(
+            {
+                "batch_id": batch_id,
+                "case_id": str(case["case_id"]),
+                "conversation_id": conversation_id,
+                "event_id": str(case["primary_event_id"]),
+                "source_event_ids": list(case["source_event_ids"]),
+                "audio_island_id": str(case["audio_island_id"]),
+                "boundary_rule": "pure_user_audio_island_v1",
+                "historical_time_used": False,
+            }
+        )
+        return destination, trace
+
     async def finalize_benchmark_clip(self, benchmark_id: str) -> None:
         """Recoverably move one pending Benchmark sample to ready or failed."""
         async with aiosqlite.connect(self.database_path) as database:
@@ -3168,7 +3876,7 @@ class EvaluationStore:
         source = self.conversation_user_audio_path(str(row["conversation_id"]))
         destination = self.benchmark_clip_root / f"{benchmark_id}.wav"
         error: str | None = None
-        trace: dict[str, Any] = {}
+        trace: dict[str, Any] = json.loads(str(row["trace_json"] or "{}"))
         try:
             if source is None:
                 raise FileNotFoundError("Pure-user WAV is unavailable")
@@ -3181,13 +3889,14 @@ class EvaluationStore:
                 raise ValueError("Benchmark position is unavailable")
             if quality != "full_recording" and "audio_timeline_mismatch" in issue_types:
                 raise ValueError("MP3 and user WAV timelines are not aligned")
-            trace = await asyncio.to_thread(
+            audio_trace = await asyncio.to_thread(
                 self._write_benchmark_clip,
                 source,
                 destination,
                 float(row["audio_start_s"]),
                 float(row["audio_end_s"]),
             )
+            trace["audio_clip"] = audio_trace
         except (OSError, RuntimeError, ValueError) as exc:
             destination.unlink(missing_ok=True)
             error = f"{type(exc).__name__}: {exc}"
@@ -3514,6 +4223,7 @@ class EvaluationStore:
             if reason and reason not in group["findings"]:
                 group["findings"].append(reason)
         suspicious = decision_counts["Bad Case"] + decision_counts["Needs manual audio review"]
+        historical_turn_quality = await self.historical_turn_quality(batch_id)
         payload = {
             "batch_id": batch_id,
             "batch_name": batch["name"],
@@ -3562,6 +4272,7 @@ class EvaluationStore:
             ],
             "asr_failures": asr_failures,
             "case_preparation_failures": case_preparation_failures,
+            "historical_turn_quality": historical_turn_quality,
             "cases": cases,
             "frozen_snapshot": batch["snapshot"],
         }
@@ -3862,6 +4573,7 @@ class EvaluationStore:
                         language_counts.items(), key=lambda item: (-item[1], item[0])
                     )
                 ],
+                "historical_turn_quality": await self.historical_turn_quality(batch_id),
             }
         )
         now = _utcnow()
@@ -5016,6 +5728,201 @@ class EvaluationStore:
                 resolved.unlink(missing_ok=True)
         return response
 
+    async def list_historical_turn_issues(
+        self,
+        status: str = "pending",
+    ) -> list[dict[str, Any]]:
+        """Return suspected historical Turn groups for their separate review queue."""
+        query = """SELECT issue.* FROM evaluation_historical_turn_issues issue
+                   JOIN evaluation_batches batch ON batch.id=issue.batch_id
+                   WHERE COALESCE(
+                       json_extract(batch.snapshot_json,'$.result_disposition'),
+                       'formal'
+                   ) != 'audit_only'"""
+        params: tuple[object, ...] = ()
+        if status == "open":
+            query += " AND issue.status IN ('pending','deferred')"
+        elif status != "all":
+            query += " AND issue.status=?"
+            params = (status,)
+        query += " ORDER BY issue.created_at,issue.issue_group_id"
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            rows = await (await database.execute(query, params)).fetchall()
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            item = dict(row)
+            item["source_event_ids"] = json.loads(item.pop("source_event_ids_json"))
+            item["resulting_case_ids"] = json.loads(item.pop("resulting_case_ids_json"))
+            item["audio_evidence"] = json.loads(item.pop("audio_evidence_json"))
+            item["issue_types"] = [value for value in str(item["issue_type"]).split(",") if value]
+            if "islands" not in item["audio_evidence"]:
+                item["audio_evidence"] = {"islands": [item["audio_evidence"]]}
+            for evidence in item["audio_evidence"]["islands"]:
+                evidence["audio_url"] = (
+                    f"/api/evaluation/historical-turn-issues/"
+                    f"{item['issue_group_id']}/audio?audio_island_id="
+                    f"{quote(str(evidence['audio_island_id']), safe='')}"
+                )
+            conversation = await self.get_conversation(str(item["conversation_id"]))
+            source_ids = set(item["source_event_ids"])
+            item["source_turns"] = [
+                {
+                    "event_id": str(event["event_id"]),
+                    "source_row": event.get("source_row"),
+                    "speaker": event.get("speaker"),
+                    "text": event.get("text"),
+                }
+                for event in (conversation or {}).get("events", [])
+                if str(event.get("event_id")) in source_ids
+            ]
+            item["audio_url"] = item["audio_evidence"]["islands"][0]["audio_url"]
+            result.append(item)
+        return result
+
+    async def submit_historical_turn_review(
+        self,
+        issue_group_id: str,
+        request: HistoricalTurnReviewSubmit,
+    ) -> dict[str, Any]:
+        """Persist confirm, reject, or defer without changing the source workbook."""
+        previous = await self._command_result(request.idempotency_key)
+        if previous is not None:
+            return previous
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            await database.execute("PRAGMA foreign_keys = ON")
+            await database.execute("BEGIN IMMEDIATE")
+            row = await (
+                await database.execute(
+                    "SELECT * FROM evaluation_historical_turn_issues WHERE issue_group_id=?",
+                    (issue_group_id,),
+                )
+            ).fetchone()
+            if row is None:
+                raise LookupError("Historical Turn issue group not found")
+            if int(row["version"]) != request.expected_version:
+                raise RuntimeError("Historical Turn issue changed; refresh before submitting")
+            if str(row["status"]) in {"confirmed", "rejected"}:
+                raise ValueError("Historical Turn issue review is already complete")
+            status = {
+                "confirm": "confirmed",
+                "reject": "rejected",
+                "defer": "deferred",
+            }[request.decision]
+            now = _utcnow()
+            version = int(row["version"]) + 1
+            reviewer = "authenticated_product_session"
+            await database.execute(
+                """UPDATE evaluation_historical_turn_issues
+                   SET status=?,decision=?,reviewer=?,reviewed_at=?,version=?,updated_at=?
+                   WHERE issue_group_id=?""",
+                (status, request.decision, reviewer, now, version, now, issue_group_id),
+            )
+            await database.execute(
+                """INSERT INTO evaluation_historical_turn_issue_revisions
+                   (id,issue_group_id,version,status,decision,reviewer,changed_at)
+                   VALUES (?,?,?,?,?,?,?)""",
+                (
+                    f"{issue_group_id}:v{version}",
+                    issue_group_id,
+                    version,
+                    status,
+                    request.decision,
+                    reviewer,
+                    now,
+                ),
+            )
+            response = {
+                "issue_group_id": issue_group_id,
+                "status": status,
+                "decision": request.decision,
+                "version": version,
+            }
+            await self._save_command(database, request.idempotency_key, response)
+            await self._audit(
+                database,
+                "historical_turn_issue.reviewed",
+                issue_group_id,
+                {"decision": request.decision, "status": status},
+            )
+            await database.commit()
+        return response
+
+    async def historical_turn_issue_audio_path(
+        self,
+        issue_group_id: str,
+        audio_island_id: str | None = None,
+    ) -> Path | None:
+        """Resolve the exact frozen Case island used as review evidence."""
+        async with aiosqlite.connect(self.database_path) as database:
+            row = await (
+                await database.execute(
+                    """SELECT batch_id,conversation_id,audio_evidence_json
+                       FROM evaluation_historical_turn_issues WHERE issue_group_id=?""",
+                    (issue_group_id,),
+                )
+            ).fetchone()
+        if row is None:
+            return None
+        evidence = json.loads(str(row[2]))
+        evidence_islands = evidence.get("islands") or [evidence]
+        selected = next(
+            (
+                item
+                for item in evidence_islands
+                if audio_island_id is None or str(item.get("audio_island_id")) == audio_island_id
+            ),
+            None,
+        )
+        if selected is None:
+            return None
+        case_id = str(selected["case_id"])
+        destination = self.asr_clip_root / (
+            uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                f"{row[0]}:{case_id}:pure-user-audio-island-v1",
+            ).hex
+            + ".wav"
+        )
+        if destination.is_file():
+            return destination
+        source = self.conversation_user_audio_path(str(row[1]))
+        if source is None:
+            return None
+        await asyncio.to_thread(
+            self._write_benchmark_clip,
+            source,
+            destination,
+            float(selected["start_s"]),
+            float(selected["end_s"]),
+        )
+        return destination
+
+    async def historical_turn_quality(self, batch_id: str) -> dict[str, Any]:
+        """Aggregate confirmed issue groups separately from ASR quality metrics."""
+        rows = [
+            row
+            for row in await self.list_historical_turn_issues("all")
+            if str(row["batch_id"]) == batch_id
+        ]
+        completed = [row for row in rows if row["status"] in {"confirmed", "rejected"}]
+        confirmed = [row for row in rows if row["status"] == "confirmed"]
+        affected_turns = {
+            (str(row["conversation_id"]), str(event_id))
+            for row in confirmed
+            for event_id in row["source_event_ids"]
+        }
+        return {
+            "confirmed_group_count": len(confirmed),
+            "affected_turn_row_count": len(affected_turns),
+            "review_total": len(rows),
+            "review_completed": len(completed),
+            "review_pending": len(rows) - len(completed),
+            "review_coverage": round((len(completed) / len(rows) * 100) if rows else 100, 2),
+            "groups": confirmed,
+        }
+
     async def list_reviews(self, status: str = "pending") -> list[dict[str, Any]]:
         """Return real review cases only; a clean store therefore returns none."""
         query = """SELECT r.* FROM evaluation_reviews r
@@ -5128,31 +6035,31 @@ class EvaluationStore:
                 ),
             )
             benchmark_created = request.decision in {"good", "bad"} and bool(label)
+            benchmark_disposition = "not_applicable"
             if benchmark_created:
                 benchmark_id = f"BM-M-{uuid.uuid4().hex[:8].upper()}"
-                cursor = await database.execute(
-                    """INSERT OR IGNORE INTO evaluation_benchmarks (
-                       id,batch_id,conversation_id,event_id,case_type,source,language,scenario_tag,
-                       label,audio_start_s,audio_end_s,origin,positioning_quality,clip_status,
-                       clip_path,clip_error,trace_json,revision,created_at
-                    ) VALUES (?,?,?,?,?,'manual',?,?,?,?,?,?,?,'pending',NULL,NULL,'{}',1,?)""",
-                    (
-                        benchmark_id,
-                        row["batch_id"],
-                        payload["conversation_id"],
-                        payload["event_id"],
-                        request.decision,
-                        request.language,
-                        request.scenario_tag,
-                        label,
-                        payload["start_s"],
-                        payload["end_s"],
-                        "manual_review",
-                        str(payload.get("positioning_quality") or "unavailable"),
-                        now,
-                    ),
+                benchmark_disposition, benchmark_id = await self._ingest_benchmark_candidate(
+                    database,
+                    {
+                        "id": benchmark_id,
+                        "batch_id": row["batch_id"],
+                        "conversation_id": payload["conversation_id"],
+                        "event_id": payload["event_id"],
+                        "case_type": request.decision,
+                        "source": "manual",
+                        "language": request.language,
+                        "scenario_tag": request.scenario_tag,
+                        "label": label,
+                        "audio_start_s": payload["start_s"],
+                        "audio_end_s": payload["end_s"],
+                        "origin": "manual_review",
+                        "positioning_quality": str(
+                            payload.get("positioning_quality") or "unavailable"
+                        ),
+                        "created_at": now,
+                    },
                 )
-                benchmark_created = bool(cursor.rowcount)
+                benchmark_created = benchmark_disposition == "created"
                 if benchmark_created:
                     await self._append_benchmark_revision(database, benchmark_id)
             response = {
@@ -5160,12 +6067,18 @@ class EvaluationStore:
                 "decision": request.decision,
                 "label": label,
                 "benchmark_created": benchmark_created,
+                "benchmark_id": benchmark_id,
+                "benchmark_disposition": benchmark_disposition,
             }
             await self._audit(
                 database,
                 "review.submit",
                 review_id,
-                {"decision": request.decision, "benchmark_created": benchmark_created},
+                {
+                    "decision": request.decision,
+                    "benchmark_created": benchmark_created,
+                    "benchmark_disposition": benchmark_disposition,
+                },
             )
             counts = await (
                 await database.execute(

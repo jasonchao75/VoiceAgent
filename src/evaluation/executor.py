@@ -9,6 +9,7 @@ import os
 import time
 import uuid
 from collections.abc import Awaitable
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, cast
 
@@ -18,10 +19,16 @@ from google.genai import types
 from openai import AsyncOpenAI
 
 from src.bots.crypto import BotKeyCipher
-from src.evaluation.alignment import build_turn_catalog
+from src.evaluation.alignment import (
+    build_audio_first_cases,
+    build_turn_catalog,
+    detect_audio_islands,
+    normalize_alignment_text,
+)
 from src.evaluation.asr_contract import ASRError, ASRResult
 from src.evaluation.pass2_packing import (
     FIXED_EVALUATION_USER_MESSAGE,
+    PassTwoGroup,
     build_event_alignment_unit,
     build_pass_one_payload,
     build_pass_one_unit,
@@ -58,6 +65,45 @@ logger = logging.getLogger(__name__)
 
 _ASR_HOURLY_USD = {"soniox": 0.10, "speechmatics": 0.129, "elevenlabs": 0.22}
 _ASR_PROVIDER_CONCURRENCY = {"soniox": 2, "speechmatics": 2, "elevenlabs": 2}
+_AUDIO_ALIGNMENT_FALLBACK_PROMPT = """You resolve one ambiguous audio-first alignment.
+Return JSON with exactly request_id, assignment_id, and provider_turns. Select one supplied
+assignment_id. provider_turns must contain exactly one supplied turn_id for every supplied
+island_id/provider candidate pair used by that assignment. Never create IDs or timestamps,
+never change an audio island boundary, and never reorder events. Use the supplied raw and
+normalized customer text, adjacent robot context, speaker evidence, and cross-provider
+agreement only to choose among the supplied legal candidates.
+Input JSON: {{payload}}
+"""
+
+
+def _reconcile_pass2_groups(
+    planned_groups: list[PassTwoGroup],
+    persisted_rows: list[dict[str, Any]],
+) -> tuple[list[PassTwoGroup], list[PassTwoGroup]]:
+    """Reuse frozen group IDs by membership identity across retry replanning."""
+    persisted_by_group_id = {str(row["group_id"]): row for row in persisted_rows}
+    persisted_by_key = {str(row["idempotency_key"]): row for row in persisted_rows}
+    canonical_groups: list[PassTwoGroup] = []
+    new_groups: list[PassTwoGroup] = []
+    for planned_group in planned_groups:
+        prior_by_key = persisted_by_key.get(planned_group.idempotency_key)
+        prior_by_id = persisted_by_group_id.get(planned_group.group_id)
+        if prior_by_key is not None:
+            persisted_case_keys = tuple(
+                (str(conversation_id), str(event_id))
+                for conversation_id, event_id in prior_by_key["case_keys"]
+            )
+            if persisted_case_keys != tuple(planned_group.case_keys):
+                raise EvaluationExecutionError("Frozen Pass 2 group membership changed")
+            if prior_by_id is not None and prior_by_id is not prior_by_key:
+                raise EvaluationExecutionError("Frozen Pass 2 group identity collided")
+            canonical_groups.append(replace(planned_group, group_id=str(prior_by_key["group_id"])))
+            continue
+        if prior_by_id is not None:
+            raise EvaluationExecutionError("Frozen Pass 2 group membership changed")
+        canonical_groups.append(planned_group)
+        new_groups.append(planned_group)
+    return canonical_groups, new_groups
 
 
 def _audio_media_type(path: Path) -> str:
@@ -742,7 +788,9 @@ class EvaluationRunner:
                 },
             )
             return
-        await self._run_asr(batch_id, batch, candidates)
+        aligned_candidates = await self._run_asr(batch_id, batch, candidates)
+        if aligned_candidates is not None:
+            candidates = aligned_candidates
         current = await self.store.get_batch(batch_id)
         if current is None or current["status"] == "budget_paused":
             return
@@ -837,7 +885,9 @@ class EvaluationRunner:
                 break
             selected = good_pool[:missing_good]
             del good_pool[:missing_good]
-            await self._run_asr(batch_id, batch, selected)
+            aligned_selected = await self._run_asr(batch_id, batch, selected)
+            if aligned_selected is not None:
+                selected = aligned_selected
             completed_good_keys = {
                 (str(row["conversation_id"]), str(row["event_id"]))
                 for row in await self.store.checkpoint_rows("evaluation_case_asr_runs", batch_id)
@@ -2447,14 +2497,204 @@ class EvaluationRunner:
                     mappings[(str(row["conversation_id"]), str(event.get("event_id")))] = event
         return mappings
 
+    async def _resolve_ambiguous_audio_cases(
+        self,
+        *,
+        batch_id: str,
+        batch: dict[str, Any],
+        conversation: dict[str, Any],
+        target_event_ids: list[str],
+        islands: list[dict[str, Any]],
+        provider_results: list[dict[str, Any]],
+        cases: list[dict[str, Any]],
+    ) -> tuple[list[dict[str, Any]], bool]:
+        """Use one bounded LLM choice, then deterministically validate and rebuild Cases."""
+        ambiguous = [case for case in cases if case["alignment_status"] == "ambiguous"]
+        if not ambiguous:
+            return cases, False
+        assignment_candidates = list(ambiguous[0].get("assignment_candidates") or [])
+        if not assignment_candidates:
+            return cases, False
+        request_id = str(
+            uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                f"{batch_id}:{conversation['conversation_id']}:audio-alignment-v1",
+            )
+        )
+        providers, turn_lookup = build_turn_catalog(
+            str(conversation["conversation_id"]), provider_results
+        )
+        provider_candidates: list[dict[str, Any]] = []
+        for island in islands:
+            for provider_row in providers:
+                provider = str(provider_row["provider"])
+                for turn in provider_row.get("turns") or []:
+                    overlap = max(
+                        0.0,
+                        min(float(island["end_s"]), float(turn["end_s"]))
+                        - max(float(island["start_s"]), float(turn["start_s"])),
+                    )
+                    if overlap <= 0:
+                        continue
+                    provider_candidates.append(
+                        {
+                            "island_id": str(island["island_id"]),
+                            "provider": provider,
+                            "turn_id": str(turn["turn_id"]),
+                            "speaker": str(turn.get("speaker") or ""),
+                            "text": str(turn.get("text") or ""),
+                            "text_forms": normalize_alignment_text(str(turn.get("text") or "")),
+                            "overlap_s": round(overlap, 6),
+                        }
+                    )
+        if not provider_candidates:
+            return cases, False
+        payload = {
+            "request_id": request_id,
+            "conversation_id": str(conversation["conversation_id"]),
+            "target_event_ids": target_event_ids,
+            "events": [
+                {
+                    "event_id": str(event["event_id"]),
+                    "speaker": str(event.get("speaker") or ""),
+                    "text": str(event.get("text") or ""),
+                    "text_forms": normalize_alignment_text(str(event.get("text") or "")),
+                }
+                for event in conversation["events"]
+            ],
+            "audio_islands": [
+                {
+                    "island_id": str(island["island_id"]),
+                    "start_s": float(island["start_s"]),
+                    "end_s": float(island["end_s"]),
+                }
+                for island in islands
+            ],
+            "assignment_candidates": assignment_candidates,
+            "provider_turn_candidates": provider_candidates,
+        }
+        model_id = str(batch["snapshot"]["pass_1_model"])
+        provider = await self._model_provider(model_id)
+        try:
+            result = await self._with_active_operation(
+                self._llm_json(
+                    model_id,
+                    _AUDIO_ALIGNMENT_FALLBACK_PROMPT,
+                    payload,
+                    max_output_tokens=4096,
+                    batch_id=batch_id,
+                    stage="audio_evidence_alignment",
+                    item_key=str(conversation["conversation_id"]),
+                    attempt=1,
+                    disable_thinking=True,
+                ),
+                batch_id=batch_id,
+                operation_id=(f"audio_evidence_alignment:{conversation['conversation_id']}:1"),
+                stage="event_alignment",
+                provider=provider,
+                ordinal=1,
+                total=1,
+            )
+            if set(result) != {"request_id", "assignment_id", "provider_turns"}:
+                raise ValueError("Audio alignment fallback returned an invalid object")
+            if str(result["request_id"]) != request_id:
+                raise ValueError("Audio alignment fallback request identity changed")
+            assignments = {str(item["assignment_id"]): item for item in assignment_candidates}
+            assignment = assignments.get(str(result["assignment_id"]))
+            if assignment is None:
+                raise ValueError("Audio alignment fallback selected an unknown assignment")
+            selected_path = tuple(int(value) for value in assignment["path"])
+            selected_islands = {
+                str(item["island_id"])
+                for item in assignment["event_islands"]
+                if str(item["event_id"]) in set(target_event_ids)
+            }
+            candidate_keys = {
+                (str(item["island_id"]), str(item["provider"]), str(item["turn_id"]))
+                for item in provider_candidates
+                if str(item["island_id"]) in selected_islands
+            }
+            expected_pairs = {(item[0], item[1]) for item in candidate_keys}
+            selected_rows = result["provider_turns"]
+            if not isinstance(selected_rows, list):
+                raise ValueError("Audio alignment fallback omitted provider turns")
+            selected_keys: set[tuple[str, str, str]] = set()
+            selected_turn_ids: dict[str, dict[str, str]] = {}
+            for row in selected_rows:
+                if not isinstance(row, dict) or set(row) != {
+                    "island_id",
+                    "provider",
+                    "turn_id",
+                }:
+                    raise ValueError("Audio alignment fallback turn selection is invalid")
+                key = (
+                    str(row["island_id"]),
+                    str(row["provider"]),
+                    str(row["turn_id"]),
+                )
+                if key not in candidate_keys or key in selected_keys:
+                    raise ValueError("Audio alignment fallback selected an unknown turn")
+                turn = turn_lookup.get(key[2])
+                if turn is None or str(turn["provider"]) != key[1]:
+                    raise ValueError("Audio alignment fallback turn ownership is invalid")
+                selected_keys.add(key)
+                selected_turn_ids.setdefault(key[0], {})[key[1]] = key[2]
+            if {(item[0], item[1]) for item in selected_keys} != expected_pairs:
+                raise ValueError("Audio alignment fallback omitted a provider candidate pair")
+            rebuilt = build_audio_first_cases(
+                str(conversation["conversation_id"]),
+                list(conversation["events"]),
+                target_event_ids,
+                islands,
+                provider_results,
+                minimum_provider_projections=min(2, len(batch["providers"])),
+                selected_assignment=selected_path,
+                selected_provider_turn_ids=selected_turn_ids,
+            )
+            unresolved = [
+                reason
+                for case in rebuilt
+                if case["alignment_status"] == "ambiguous"
+                for reason in case.get("ambiguity_reasons", [])
+            ]
+            if unresolved:
+                raise ValueError(
+                    "Audio alignment fallback failed deterministic evidence validation: "
+                    + ", ".join(sorted(set(unresolved)))
+                )
+            return rebuilt, True
+        except EvaluationBudgetReached:
+            raise
+        except Exception as exc:
+            logger.warning(
+                "audio_alignment_fallback_rejected batch=%s conversation=%s error=%s",
+                batch_id,
+                conversation["conversation_id"],
+                _safe_error(exc),
+            )
+            return cases, True
+
     async def _run_asr(
         self, batch_id: str, batch: dict[str, Any], candidates: list[dict[str, Any]]
-    ) -> None:
+    ) -> list[dict[str, Any]]:
         """Transcribe each full call once and project mapped turns into Case evidence."""
         case_keys = sorted(
             {(str(item["conversation_id"]), str(item["event_id"])) for item in candidates}
         )
         conversation_ids = sorted({conversation_id for conversation_id, _ in case_keys})
+        islands_by_conversation: dict[str, list[dict[str, Any]]] = {}
+        for conversation_id in conversation_ids:
+            source = self.store.conversation_user_audio_path(conversation_id)
+            if source is None:
+                islands_by_conversation[conversation_id] = []
+                continue
+            islands = await asyncio.to_thread(
+                detect_audio_islands,
+                source,
+                conversation_id,
+            )
+            await self.store.checkpoint_audio_islands(batch_id, conversation_id, islands)
+            islands_by_conversation[conversation_id] = islands
         existing_context = {
             (row["provider"], row["conversation_id"]): row
             for row in await self.store.checkpoint_rows("evaluation_asr_runs", batch_id)
@@ -2614,32 +2854,156 @@ class EvaluationRunner:
             context_by_conversation.setdefault(str(row["conversation_id"]), []).append(
                 {"provider": str(row["provider"]), **result}
             )
-        event_mappings = await self._run_event_alignment(
+        candidates_by_key = {
+            (str(item["conversation_id"]), str(item["event_id"])): item for item in candidates
+        }
+        aligned_candidates: list[dict[str, Any]] = []
+        event_mappings: dict[tuple[str, str], dict[str, Any]] = {}
+        cases_by_key: dict[tuple[str, str], dict[str, Any]] = {}
+        alignment_failures: dict[tuple[str, str], str] = {}
+        alignment_llm_request_count = 0
+        for conversation_id in conversation_ids:
+            conversation = await self.store.get_conversation(conversation_id)
+            if conversation is None:
+                continue
+            target_event_ids = [
+                event_id
+                for candidate_conversation, event_id in case_keys
+                if candidate_conversation == conversation_id
+            ]
+            cases = build_audio_first_cases(
+                conversation_id,
+                list(conversation["events"]),
+                target_event_ids,
+                islands_by_conversation.get(conversation_id, []),
+                context_by_conversation.get(conversation_id, []),
+                minimum_provider_projections=min(2, len(batch["providers"])),
+            )
+            cases, llm_used = await self._resolve_ambiguous_audio_cases(
+                batch_id=batch_id,
+                batch=batch,
+                conversation=conversation,
+                target_event_ids=target_event_ids,
+                islands=islands_by_conversation.get(conversation_id, []),
+                provider_results=context_by_conversation.get(conversation_id, []),
+                cases=cases,
+            )
+            alignment_llm_request_count += int(llm_used)
+            event_text = {
+                str(event["event_id"]): str(event.get("text") or "")
+                for event in conversation["events"]
+            }
+            if not cases:
+                for event_id in target_event_ids:
+                    base = candidates_by_key.get((conversation_id, event_id))
+                    if base is None:
+                        continue
+                    aligned_candidates.append(
+                        {
+                            **base,
+                            "source_event_ids": [event_id],
+                            "target_event_ids": [event_id],
+                            "production_transcript": event_text.get(event_id, ""),
+                        }
+                    )
+                    alignment_failures[(conversation_id, event_id)] = (
+                        "No valid pure-user audio island was detected"
+                    )
+            for case in cases:
+                await self.store.checkpoint_evaluation_case(batch_id, case)
+                primary_event_id = str(case["primary_event_id"])
+                target_ids = [str(value) for value in case["target_event_ids"]]
+                base = next(
+                    (
+                        candidates_by_key[(conversation_id, event_id)]
+                        for event_id in target_ids
+                        if (conversation_id, event_id) in candidates_by_key
+                    ),
+                    None,
+                )
+                if base is None:
+                    continue
+                aligned_candidates.append(
+                    {
+                        **base,
+                        "event_id": primary_event_id,
+                        "case_id": str(case["case_id"]),
+                        "source_event_ids": list(case["source_event_ids"]),
+                        "target_event_ids": target_ids,
+                        "production_transcript": " ".join(
+                            event_text.get(event_id, "") for event_id in case["source_event_ids"]
+                        ).strip(),
+                    }
+                )
+                if case["alignment_status"] not in {
+                    "deterministic_aligned",
+                    "llm_assisted_aligned",
+                }:
+                    alignment_failures[(conversation_id, primary_event_id)] = (
+                        "Audio-first alignment remains ambiguous: "
+                        + ", ".join(case.get("ambiguity_reasons", []))
+                    )
+                    continue
+                mapping = {
+                    "conversation_id": conversation_id,
+                    "event_id": primary_event_id,
+                    "case_id": str(case["case_id"]),
+                    "source_event_ids": list(case["source_event_ids"]),
+                    "audio_island_id": str(case["audio_island_id"]),
+                    "providers": [
+                        {
+                            "provider": evidence["provider"],
+                            "status": "mapped",
+                            "turn_id": evidence["turn_id"],
+                        }
+                        for evidence in case.get("providers", [])
+                    ],
+                }
+                event_mappings[(conversation_id, primary_event_id)] = mapping
+                cases_by_key[(conversation_id, primary_event_id)] = case
+            await self.store.checkpoint_historical_turn_issues(
+                batch_id,
+                conversation_id,
+                list(conversation["events"]),
+                islands_by_conversation.get(conversation_id, []),
+                cases,
+            )
+        await self.store.set_batch_state(
             batch_id,
-            batch,
-            case_keys,
-            context_by_conversation,
+            status="running",
+            stage="event_alignment",
+            progress=65,
+            snapshot_updates={
+                "audio_alignment": {
+                    "case_count": len(await self.store.evaluation_case_rows(batch_id)),
+                    "deterministic_count": len(event_mappings),
+                    "ambiguous_count": sum(
+                        1
+                        for row in await self.store.evaluation_case_rows(batch_id)
+                        if row["alignment_status"] == "ambiguous"
+                    ),
+                    "llm_request_count": alignment_llm_request_count,
+                }
+            },
         )
+        case_keys = sorted(event_mappings)
         prepared_clips: dict[tuple[str, str], tuple[Path, dict[str, Any]]] = {}
         clip_errors: dict[tuple[str, str], Exception] = {}
         for conversation_id, event_id in case_keys:
             try:
                 event_mapping = event_mappings.get((conversation_id, event_id))
                 if event_mapping is None:
-                    raise ValueError("Event Aligner produced no validated mapping for this event")
+                    raise ValueError("Audio evidence alignment produced no validated mapping")
                 if event_mapping.get("alignment_error"):
                     raise ValueError(
-                        "Event Aligner could not validate this event: "
+                        "Audio evidence alignment could not validate this Case: "
                         f"{event_mapping['alignment_error']}"
                     )
                 prepared_clips[
                     (conversation_id, event_id)
-                ] = await self.store.prepare_case_asr_clip(
+                ] = await self.store.prepare_audio_first_case_clip(
                     batch_id,
-                    conversation_id,
-                    event_id,
-                    context_by_conversation.get(conversation_id, []),
-                    event_mapping,
+                    cases_by_key[(conversation_id, event_id)],
                 )
             except (FileNotFoundError, LookupError, OSError, RuntimeError, ValueError) as exc:
                 clip_errors[(conversation_id, event_id)] = exc
@@ -2656,6 +3020,17 @@ class EvaluationRunner:
             provider: str, conversation_id: str, event_id: str
         ) -> dict[str, Any] | None:
             """Persist one mapped full-call turn without another provider dispatch."""
+            alignment_failure = alignment_failures.get((conversation_id, event_id))
+            if alignment_failure is not None:
+                return {
+                    "batch_id": batch_id,
+                    "provider": provider,
+                    "conversation_id": conversation_id,
+                    "event_id": event_id,
+                    "status": "failed",
+                    "attempts": 0,
+                    "error": _asr_error(provider, ValueError(alignment_failure)),
+                }
             clip_error = clip_errors.get((conversation_id, event_id))
             if clip_error is not None:
                 return {
@@ -2687,7 +3062,9 @@ class EvaluationRunner:
                     "attempts": 0,
                     "error": _asr_error(
                         provider,
-                        ValueError("Event Aligner did not map this provider to the target event"),
+                        ValueError(
+                            "Audio evidence alignment did not map this provider to the Case"
+                        ),
                     ),
                 }
             turn_id = str(provider_mapping.get("turn_id") or "")
@@ -2753,7 +3130,7 @@ class EvaluationRunner:
             *(
                 project(provider, conversation_id, event_id)
                 for provider in batch["providers"]
-                for conversation_id, event_id in case_keys
+                for conversation_id, event_id in sorted(set(case_keys) | set(alignment_failures))
             )
         )
         await self.store.checkpoint_case_asr_results_bulk(
@@ -2767,6 +3144,7 @@ class EvaluationRunner:
             progress_start=55,
             progress_end=75,
         )
+        return aligned_candidates
 
     @staticmethod
     def _frozen_asr_rate(batch: dict[str, Any], provider: str) -> float:
@@ -3150,6 +3528,25 @@ class EvaluationRunner:
                     alignment_by_case[
                         (str(row["conversation_id"]), str(event.get("event_id") or ""))
                     ] = event
+        for case in await self.store.evaluation_case_rows(batch_id):
+            if case["alignment_status"] not in {
+                "deterministic_aligned",
+                "llm_assisted_aligned",
+            }:
+                continue
+            alignment_by_case[(str(case["conversation_id"]), str(case["primary_event_id"]))] = {
+                "event_id": str(case["primary_event_id"]),
+                "case_id": str(case["case_id"]),
+                "source_event_ids": list(case["source_event_ids"]),
+                "providers": [
+                    {
+                        "provider": evidence["provider"],
+                        "status": "mapped",
+                        "turn_id": evidence["turn_id"],
+                    }
+                    for evidence in case.get("providers", [])
+                ],
+            }
         asr_rows = await self.store.checkpoint_rows("evaluation_case_asr_runs", batch_id)
         asr_by_case: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for row in asr_rows:
@@ -3212,8 +3609,9 @@ class EvaluationRunner:
                         for candidate in subset
                     ],
                     "production_transcripts": {
-                        str(candidate["event_id"]): current_production_by_event.get(
-                            str(candidate["event_id"]), ""
+                        str(candidate["event_id"]): str(
+                            candidate.get("production_transcript")
+                            or current_production_by_event.get(str(candidate["event_id"]), "")
                         )
                         for candidate in subset
                     },
@@ -3267,30 +3665,22 @@ class EvaluationRunner:
             policy=policy,
             shared_payload=shared_payload,
         )
-        all_prior_groups = {
-            str(row["group_id"]): row for row in await self.store.pass2_group_rows(batch_id)
-        }
-        prior_groups = {
-            group.group_id: all_prior_groups[group.group_id]
-            for group in groups
-            if group.group_id in all_prior_groups
-        }
-        for group in groups:
-            prior = prior_groups.get(group.group_id)
-            if prior is not None and str(prior["idempotency_key"]) != group.idempotency_key:
-                raise EvaluationExecutionError("Frozen Pass 2 group membership changed")
-            if prior is None:
-                await self.store.checkpoint_pass2_group(
-                    batch_id=batch_id,
-                    group_id=group.group_id,
-                    idempotency_key=group.idempotency_key,
-                    conversation_ids=[unit.conversation_id for unit in group.units],
-                    case_keys=list(group.case_keys),
-                    estimated_input_tokens=group.estimated_input_tokens,
-                    reserved_output_tokens=group.reserved_output_tokens,
-                    status="pending",
-                    attempts=0,
-                )
+        groups, new_groups = _reconcile_pass2_groups(
+            groups,
+            await self.store.pass2_group_rows(batch_id),
+        )
+        for group in new_groups:
+            await self.store.checkpoint_pass2_group(
+                batch_id=batch_id,
+                group_id=group.group_id,
+                idempotency_key=group.idempotency_key,
+                conversation_ids=[unit.conversation_id for unit in group.units],
+                case_keys=list(group.case_keys),
+                estimated_input_tokens=group.estimated_input_tokens,
+                reserved_output_tokens=group.reserved_output_tokens,
+                status="pending",
+                attempts=0,
+            )
         planned_group_total = len(
             [
                 row

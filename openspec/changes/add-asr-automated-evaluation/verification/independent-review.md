@@ -1,51 +1,65 @@
-# Independent Review — PD-067 / PD-069 Event Alignment increment
+# Independent Review — V1.20 audio-first recovery
 
 - Date: 2026-09-23
 - Reviewer: independent Change verifier
 - Result: **PASS**
-- Scope: six-stage UI; Event Alignment request policy, splitting and restart recovery; target-event subsets; bulk projection persistence; provider-local ASR progress; elapsed-time continuity
+- Scope: tasks 12.87–12.93; PD-070–PD-076; audio-first alignment, ambiguity-only LLM fallback, Pass 2 restart identity, legacy Align isolation, historical Turn review/reporting, and global Benchmark uniqueness
 
 ## Verdict
 
-PD-067/PD-069 passes independent static, deterministic/mock and isolated local-real verification. The four blockers from the previous review are resolved:
+V1.20 passes independent Engineering Checkpoint C. The implementation matches the frozen Delta Spec and prototype for the reviewed scope, the prior B1/B2 findings are closed, and the newly found overlapping historical-Turn metric defect (KI-199) was corrected and regression-tested during this re-review. Task 12.92 may be closed and the release may proceed through its separately authorized deployment controls.
 
-1. `mypy src` is green; the Event Alignment merge variable no longer conflicts with an optional result.
-2. Persisted report results update Pass 2 at step 5, not Event Alignment at step 4. The formal-route browser test loads report data and asserts the completed Case count remains on Pass 2.
-3. Execution-level regressions now prove timeout and schema-invalid parent supersession, deterministic conversation children, at most two singleton attempts, zero redispatch after restart, target-event subset merge, and reuse of the durable merged result.
-4. The verification records now identify V1.19 consistently, report the actual 65 confirmed decisions, and leave PD-069 Checkpoint C pending until this review.
+This PASS is not evidence of production deployment or a paid-provider run. It does not authorize retrying `EV-20260923-E65A`; no production data was changed and no external provider was called.
 
-## Contract trace
+## Requirement trace
 
-- The frozen V1.19 prototype SHA-256 is `17829744d355bc86da3625cdf5fc24b94a6a44db5e67551046e046abbd89649c` and matches the declared baseline.
-- The formal route renders six stages: validation, Pass 1, Multi-ASR, Event Alignment, Pass 2 and manual review. Event Alignment is step 4; Qwen activity is not shown under Multi-ASR.
-- Event Alignment shares the 131,072-token operating envelope, with exact rendered final input capped at 65,536, output capped at 32,768 and the remaining 32,768 held as safety. The wire request contains one payload, Thinking is disabled, and Qwen timeout is 180 seconds.
-- An oversized single conversation is split deterministically by target-event membership. Completed subsets merge by event ID into one conversation result and are skipped on restart.
-- Timeout and schema failures supersede a multi-conversation parent and generate deterministic child groups. Singleton leaves receive at most two total attempts; completed and exhausted work is not dispatched again after restart.
-- Case/provider turn projections are assembled first and persisted using one `BEGIN IMMEDIATE` bulk transaction with a 5-second SQLite busy timeout.
-- Active Multi-ASR rows use provider-local ordinal/total values while durable stage totals remain provider × conversation. Active Event Alignment elapsed time is rendered immediately from persisted `started_at` and continues ticking without a first-frame `00:00` reset.
+### PD-070 / PD-072 — audio-first Case alignment and bounded LLM assistance
+
+- Pure-user audio islands are frozen before text ranking. Historical timestamps are excluded (`historical_time_used=false`), event order is the hard monotonic constraint, and text cannot move waveform boundaries.
+- Numeric normalization maps forms such as `223` and `two two three` to the same digit sequence. Adjacent robot context and cross-provider text consistency are implemented as auditable legal-path ranking components.
+- Many adjacent historical events may map to one island/Case while preserving every source/target event ID.
+- Strong provider digit, inferred-role, and semantic conflicts keep a Case ambiguous. After an LLM selection, the runner rebuilds the Case through the deterministic path and rejects any selection that still has a deterministic conflict.
+- Alignment is persisted per Case, so an ambiguous event does not discard valid sibling Cases.
+
+### Pass 2 identity and legacy Event Alignment
+
+- Pass 2 retry reconciliation reuses the persisted canonical group ID for the same idempotency key and exact membership, even when its ordinal changes; membership drift is rejected.
+- The current audio-first ASR path does not replay legacy Event Alignment. A retained failed singleton checkpoint remains historical diagnostics while valid Cases are rebuilt and continue independently.
+
+### PD-071 / PD-074 — historical Turn quality
+
+- Detection covers over-split, wrong-merge, and order-anomaly groups and persists all source Turns, suggested Case/island mappings, provider evidence, and exact-island audio URLs.
+- Formal review supports confirm, reject, and defer in a queue separate from ASR review. The report includes confirmed-only group count, deduplicated affected Turn rows, review coverage/pending count, group detail, and audio playback without changing ASR rates, the source workbook, or Benchmark ingestion.
+- KI-199 is closed: affected rows are the union of `(conversation_id, source_event_id)` across confirmed groups. The overlapping wrong-merge/order-anomaly regression confirms two groups covering the same two source Turns report `2` rows, not `3`.
+- The formal production route/DOM displays source Turns, suggested Case mapping, provider evidence, per-island playback, and the report drill-down. Desktop and narrow Chromium checks pass without document/panel horizontal overflow.
+
+### PD-073 / PD-075 — global Benchmark identity
+
+- Migration installs global `(conversation_id, event_id)` uniqueness only after archiving legacy duplicates and their revisions/trace evidence.
+- Identical cross-batch AI/manual candidates reuse the canonical Benchmark ID. Conflicting later candidates are discarded before sample, revision, review-task, count, or export creation.
 
 ## Reproducible evidence
 
 | Check | Result |
 |---|---|
-| `python3 scripts/quality/verify_change.py add-asr-automated-evaluation` | PASS: 0 errors, 18 disclosed warnings, 4 unchecked tasks |
-| Focused Evaluation, packing, UI-contract and Qwen suite | PASS: 131 tests |
-| Full repository test suite | PASS: 278 tests; 2 known dependency deprecation warnings |
-| `ruff format --check src tests` and `ruff check src tests` | PASS |
-| `mypy src` | PASS: 43 source files |
+| Frozen prototype SHA-256 | PASS: `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62` |
+| `python3 scripts/quality/verify_change.py add-asr-automated-evaluation` | PASS: 0 errors, 20 disclosed warnings; 3 unchecked tasks include the independent-verification task itself and pre-existing out-of-scope work |
+| `.venv/bin/pytest -q` | PASS: 292 tests; 2 pre-existing dependency deprecation warnings |
+| `.venv/bin/pytest -q tests/test_evaluation.py tests/test_evaluation_ui_contract.py` | PASS: 127 tests |
+| V1.20 Turn review/report Playwright checks | PASS: 4 tests across desktop and narrow Chromium |
+| `.venv/bin/ruff format --check ...` and `.venv/bin/ruff check ...` (Evaluation scope) | PASS |
+| Scoped Mypy with current Python 3.13 environment | PASS: 5 affected Evaluation source files |
+| Default-target Mypy (`python_version=3.11`) in the current Python 3.13 venv | Environment-limited: NumPy's installed stub uses Python 3.12 type-statement syntax; project analysis does not start. CI remains the Python 3.11 authority. |
+| `npm run build` | PASS: production bundle built successfully |
 | `git diff --check` | PASS |
-| Frontend production build | PASS; largest chunk 359.47 kB |
-| Formal-route Event Alignment browser test | PASS: desktop and narrow Chromium, 2/2 |
 
-The browser test used the production Evaluation route and DOM against an isolated temporary local API process. It verifies six stages, Event Alignment at step 4, report-loaded Pass 2 results at step 5, a continuous 65-second elapsed value, provider-local `/36` totals and no horizontal overflow. The temporary data directory was removed after the run.
+The Playwright rerun used an isolated local data directory and the formal `/evaluation.html` route. Its temporary data was removed after the run. Backend tests independently cover exact-island clip generation; browser fixtures verify the production DOM and exact audio URLs without making provider calls.
 
-## Evidence classification and boundary
+## Evidence boundary and residual items
 
-- **Static:** PRD, proposal, Delta Spec, design, tasks, decisions, frozen prototype, delivery status and implementation trace.
-- **Deterministic/mock:** 131 focused tests and 278 full-suite tests, including injected timeout/schema failures and restart replay.
-- **Local-real:** production frontend bundle, SQLite transactions and the formal Evaluation route exercised through desktop and narrow Chromium.
-- **External-real:** PD-068 remains the bounded historical evidence that a 3-conversation/10-event Qwen Align group completed in 22.947 seconds with zero reasoning tokens. This re-review made no external request.
+- **Static:** frozen PRD/prototype, Delta Spec, design, tasks, decision records, migrations, implementation, and delivery status.
+- **Deterministic/mock:** 292 repository tests, including audio boundary, numeric normalization, context/consistency ranking, deterministic LLM rejection, Pass 2 restart identity, legacy isolation, Turn anomaly/metric behavior, and Benchmark migration/ingestion.
+- **Local-real:** SQLite migrations/transactions, frontend production build, formal-route desktop/narrow Chromium rendering and interaction.
+- **External-real:** none for V1.20. Deployment, production migration, and post-deploy verification remain pending under UV-035; E65A was not retried.
 
-This PASS does not claim deployment or a full paid production batch. Task 12.85, CI/CD, public health and deployed-SHA verification remain release-agent work. The gate's 18 disclosed warnings remain open as recorded, including external-real coverage gaps and pre-existing timeout cost-ledger/retry-scope issues.
-
-No paid provider request was sent, and batch `EV-20260923-E65A` was not retried, resumed or mutated during this review.
+No blocking finding remains in the reviewed V1.20 scope.

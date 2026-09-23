@@ -3,7 +3,7 @@
 ## Goals
 
 - 将已验证的离线“历史文本筛选 → 多 ASR 交叉转写 → LLM 证据判断 → 人工回听”流程变成可恢复、可审计的线上批次任务。
-- 以命中 conversation 的完整录音作为外部 ASR 调用单位，以 Event Aligner 映射出的 provider turn 文本作为 Case 证据；纯用户 event 切片只作为回听与 Benchmark 音频。
+- 以命中 conversation 的完整录音作为外部 ASR 调用单位，以纯用户音轨语音岛作为 Case 边界真相源；确定性投影或受控 LLM 辅助选中的 provider turn 文本作为 Case 证据，纯用户切片只作为回听与 Benchmark 音频。
 - 在没有预设 Ground Truth 的条件下，只自动接纳证据充分的 Good/Bad，把无法形成可靠标注的 Case 交给人工。
 - 将最终样本沉淀为 Good:Bad 目标 1:1、可追溯且可下载的 Benchmark Library。
 - 保持评测资源与生产流式 ASR 完全隔离，并为成本、失败恢复、敏感数据和长期留存提供工程保障。
@@ -21,9 +21,10 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | Import | 安全解包、校验、生成不可变输入清单 | 不调用外部模型，不猜测缺失关联 |
 | Batch orchestrator | 状态机、检查点、预算、重试、任务依赖 | 不在请求线程执行长任务 |
 | Evaluation ASR | 每命中 conversation/provider 一次完整通话转写，并从已映射 provider turn 投影事件候选 | 不接管生产流式 ASR 配置，不再次转录纯用户单句切片 |
+| Audio & evidence alignment | 从纯用户音轨冻结语音岛，按事件顺序确定性绑定历史事件与 provider turns，仅对歧义 Case 使用受控 LLM 辅助 | 不信任历史时间戳，不让文本或 LLM 修改音频边界，不把不唯一映射伪装为成功 |
 | Pass 1 | 从历史对话筛疑点并建立额外 Good 候选池 | 不产生 Ground Truth |
 | Pass 2 | 基于多源证据判定 Good/Bad/人工复核 | 不用多数票或 confidence 阈值替代证据规则 |
-| Review | 人工明确 Good/Bad/听不清 | 不把未提交草稿当作结论 |
+| Review | 分栏处理 ASR Case 的 Good/Bad/听不清，以及历史 Turn 异常组的确认/驳回 | 不把未提交草稿当作结论，不把 Turn 复核写入 Benchmark |
 | Benchmark | 剪用户音频、入库、追溯、下载 | 不接纳听不清或未复核 Case |
 | Report | 固化批次版本和指标 | 不宣称评测 ASR 的准确率或自动改生产配置 |
 
@@ -41,7 +42,7 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | `orchestrator` | 阶段依赖、并发限制、检查点、暂停/恢复/停止和预算门禁 |
 | `asr` | 三家异步文件 ASR 的统一接口与 provider adapter |
 | `llm` | 两轮 Prompt 渲染、结构化输出校验和重试 |
-| `alignment` | Event Aligner 输入/输出、真实 turn ID 校验、并集边界和定位精度 |
+| `alignment` | 语音岛检测、单调序列匹配、文本多表示归一化、provider turn 投影、歧义 LLM 辅助、真实 ID 校验和 Case 级持久化 |
 | `review` | 复核状态、显式 Good/Bad/听不清和审计 |
 | `benchmark` | Good 抽样、用户 WAV 剪辑、入库与 ZIP 导出 |
 | `reports` | 初步/最终不可变报告和聚合指标 |
@@ -82,7 +83,10 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | `UploadSession` | upload_id, archive checksum, staging path, expires_at, status |
 | `ConversationInput` | batch_id + conversation_id unique; three file references, hashes, audio metadata, timeline status |
 | `ConversationEvent` | conversation_id + event_id unique; timestamp, role, source text, validity/exclusion reason |
-| `EvaluationCase` | batch_id + conversation_id + event_id unique; origin, decision, language, tag, time range, evidence status |
+| `EvaluationCase` | stable case_id; batch_id + conversation_id + ordered source_event_ids; audio_island_id, frozen start/end, origin, decision, language, tag, alignment method/status and evidence status |
+| `AudioIsland` | batch_id + conversation_id + stable island_id; user_record start/end, signal features, detector version and frozen parameters |
+| `AlignmentEvidence` | case_id + provider + turn_id unique; overlap, raw/normalized text forms, assignment source (`deterministic` or `llm_assisted`) and validation status |
+| `HistoricalTurnIssue` | stable issue_group_id; batch/report/conversation, source_event_ids, resulting case IDs, issue type, audio evidence, affected turn count, review status/decision/reviewer/time and immutable revisions |
 | `ScenarioTag` / `ScenarioTagVersion` | stable tag ID; bilingual name/description, type, status, version, deleted_at; versions append-only |
 | `ReferenceDictionary` / `ReferenceDictionaryVersion` | stable dictionary key; name, purpose, generic schema, entries, status and append-only versions; context links reference exact versions |
 | `ProposedScenarioTag` | report_id + proposal_key unique; type, name_en/name_zh, description_en/description_zh, related case IDs, status |
@@ -91,7 +95,7 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | `LLMRun` | pass, prompt/model snapshot, input hash, output, schema status, token/cost metadata |
 | `ReviewResult` | case_id unique current result plus append-only revisions; Good/Bad/unclear, label, reviewer, time |
 | `EvaluationReport` | batch_id + version unique; preliminary/final, coverage, immutable payload, generated_at |
-| `BenchmarkSample` | batch_id + conversation_id + event_id unique; source, case type, label, clip, trace |
+| `BenchmarkSample` | conversation_id + event_id globally unique; batch IDs remain trace evidence; source, case type, label, clip, trace |
 | `AuditEvent` | actor, action, object, time, outcome, safe metadata; never raw transcript/key/audio |
 
 ## Import and storage design
@@ -125,7 +129,7 @@ All valid pass events in conversations containing at least one candidate form th
 
 ### Evaluation ASR fan-out
 
-After Pass 1 identifies target user events, each selected provider produces one diarized full-call timeline for every candidate-bearing conversation. Consecutive segments from the same anonymous speaker are persisted as stable turns. A dedicated Event Aligner then maps all target R events to existing provider turn IDs. Conversation units are dynamically packed against the frozen Pass 1 model's verified context limit: the whole batch uses one request when safe, otherwise the minimum safe groups are formed without splitting a conversation. Deterministic validation rejects invented IDs, wrong ownership, non-monotonic mappings, non-user turns and fewer than two provider mappings. Accepted provider turn intervals are unioned, validated on `user_record`, and may be expanded to cover user signal but never contracted inside the union. Excel `time (s)` is retained only for audit and never enters alignment. Pass 2 consumes the mapped full-call provider turn text directly; the generated pure-user WAV is playback and Benchmark evidence, not a second ASR input.
+After Pass 1 identifies target user events, each selected provider produces one diarized full-call timeline for every candidate-bearing conversation. Consecutive segments from the same anonymous speaker are persisted as stable turns. The audio-and-evidence alignment stage first freezes `user_record` speech islands, then maps ordered historical events and provider turns onto those immutable islands. Deterministic sequence matching handles the normal path; only ambiguous Cases receive a bounded request to the batch-frozen alignment LLM. Every accepted mapping references existing IDs and passes deterministic ownership, monotonic-order, frozen-boundary and cross-provider checks. Excel `time (s)` remains audit-only. Pass 2 consumes the projected full-call provider turn text directly; the generated Case WAV is playback and Benchmark evidence, not a second ASR input.
 
 Provider responses are normalized but raw safe response payloads may be retained access-controlled for troubleshooting. Local segment IDs use full conversation ID and provider identity; UI only exposes them inside technical evidence.
 
@@ -166,22 +170,19 @@ Because provider transcription is conversation-scoped and these events come only
 
 ## Audio alignment and clipping
 
-- Retain the workbook event time only as source audit metadata; it never participates in alignment, ranking, tie-breaking or clipping.
-- Transcribe the full-call recording once per selected provider and candidate-bearing conversation with speaker diarization explicitly enabled. Persist word/segment text, start/end timestamps and anonymous speaker labels separately from event-level candidates.
-- Group consecutive same-speaker segments into immutable provider turns with stable IDs. The Event Aligner receives complete ordered worksheet events, all target R IDs and each provider's turns; it selects only existing turn IDs or returns missing/ambiguous and never emits timestamps.
-- Dynamically pack complete conversation units into the fewest safe Event Aligner groups. Persist group membership, attempts, usage, cost and results so only failed groups retry and completed mappings are reused after restart.
-- Treat Event Alignment as the explicit fourth execution stage. Use the shared 64K final-input / 32K output envelope, serialize business evidence once in the rendered System Prompt, send a fixed content-free User instruction, disable Thinking, and use a 180-second client timeout.
-- On timeout or response-contract failure, persist the parent as `superseded` and deterministically bisect complete conversations. A singleton leaf gets at most one additional attempt; completed conversation mappings are durable and excluded from restart dispatch.
-- If one conversation is too large before dispatch, split only its target events into stable subsets while repeating the required history/turn evidence, then merge validated subset outputs by event ID before marking that conversation complete.
-- Build all Case/provider turn projections in memory and persist them in one SQLite transaction with `busy_timeout=5000`, avoiding hundreds of independent writers that can hide the provider outcome behind `database is locked`.
-- Render six execution cards. Compute live elapsed text before inserting each row and update it once per second; ASR ordinals are provider-local while durable stage progress remains global.
-- Validate group identity, conversation/event/provider ownership, existing turn IDs, monotonic event order, customer speaker role and at least two providers mapped to the same user utterance. Invalid or insufficient mapping fails only the affected event and records an actionable reason.
-- Derive the source interval from the union of accepted provider turns (`min(start)`, `max(end)`), not their intersection. Use the verified shared `record`/`user_record` timeline to validate signal and expand to nearby user activity when needed; never shrink inside the provider union. Noise/energy detection must never choose a different event or replace missing Event Aligner evidence.
-- Do not impose a fixed ten-second limit from the earlier example. If the selected turns create an implausibly broad or cross-event interval, fail explicitly rather than truncate and risk dropping speech.
-- Write one stable user-event WAV and reuse it across the review player and Benchmark materialization; never submit it to an ASR provider.
-- Treat provider segment timestamps as clip-relative technical evidence; never expand the source interval from provider boundaries or LLM references.
-- Fail the affected Case evidence explicitly when the shared timeline or interval is invalid; never invent a candidate or fall back to Excel time.
-- Only use an MP3-derived range on WAV after import verified the common timeline. Never infer user/robot from stereo channels; the RiyadBank fixture has identical channel content and requires provider diarization plus historical roles.
+- Retain workbook event time only as source audit metadata. It never participates in hard constraints, boundary detection, ranking, tie-breaking, clipping or automatic failure decisions.
+- Detect ordered speech islands directly from `user_record` and freeze their start/end before consulting any transcript. Store detector version and effective parameters with the batch so retries reproduce the same islands. There is no fixed ten-second cutoff; dataset-wide boundary regressions must justify the shipped detector parameters.
+- Preserve worksheet row/event order as the historical sequence. A monotonic sequence matcher maps ordered target events to ordered islands, permits adjacent many-events-to-one-island merges and never permits crossing assignments. A merged Case retains every source event ID and one stable composite Case identity.
+- Normalize text without overwriting raw evidence. For every historical/provider text store comparable forms including Unicode/case/punctuation normalization, digit-sequence form and numeric-value form; for example `223` and `two two three` share `2|2|3`, while raw strings remain visible. Adjacent robot-turn context and cross-provider consistency rank only assignments already legal under event/island order.
+- Transcribe the full-call recording once per selected provider and candidate-bearing conversation with speaker diarization enabled. Group consecutive same-speaker segments into immutable provider turns and project their text to frozen islands by overlap. Provider timestamps are technical evidence from the recording timeline; they cannot move island boundaries.
+- A mapping is deterministic only when one assignment path uniquely satisfies the frozen evidence policy. If event/island counts differ, normalized evidence ties, a provider turn spans multiple islands or providers conflict, persist the affected Case as `ambiguous` rather than guessing.
+- Only ambiguous Cases enter the controlled LLM fallback using the batch-frozen alignment model/resource. The request contains a bounded candidate set of real event IDs, island IDs and provider turn IDs plus raw/normalized evidence and adjacent context. The model can select only those IDs and explain the choice; it cannot emit timestamps, create IDs, reorder events or change island boundaries.
+- Validate every LLM-assisted result deterministically for request identity, complete candidate membership, real IDs, conversation/provider ownership, monotonic order, frozen island boundaries and cross-provider evidence. Invalid, incomplete, conflicting or structurally malformed output routes only that Case to manual review.
+- Treat “Audio & Evidence Alignment” as the explicit fourth stage. Local deterministic work contributes Case progress but creates no external-request row. Each fallback LLM request appears in this stage with the actual frozen provider/model, ordinal/total and elapsed time; it uses the common final-message envelope, budget ledger, idempotency and bounded timeout/retry policy.
+- Persist each Case and its provider projections independently. One unresolved Case cannot discard valid sibling Cases. Use a bounded transaction/busy timeout for each stable Case result instead of conversation-atomic success and hundreds of independent projection writers.
+- Preserve legacy LLM Align groups, including exhausted singleton structure failures, as immutable diagnostics. Retry planning excludes their old request shape, rebuilds evidence through the new deterministic path, and permits a new controlled LLM request only if the rebuilt Case remains ambiguous.
+- Write one stable audio-island WAV per Case and reuse it across review and Benchmark; never submit it to an ASR provider. Invalid or empty islands fail only the affected Case and never fall back to Excel time, a wider full-call interval or unselected text.
+- Detect historical Turn over-split, wrong-merge and order anomalies from the event-to-island mapping. Persist stable issue groups with all source event IDs, affected Turn row count, merged Case and audio evidence for report materialization.
 
 ## Review behavior
 
@@ -219,6 +220,13 @@ Metrics are computed from immutable event/result rows, never from UI counters:
 | Suspected ASR error rate | Pass 2 Bad + needs manual review | All valid user events successfully analyzed by Pass 1 |
 | Manually confirmed error rate | Manual review Bad | Same valid user-event denominator |
 | Review completion | Submitted Good + Bad + unclear | Total manual-review tasks |
+| Confirmed historical Turn annotation issues | `historical_turn_error_group_count` | Count of anomaly groups explicitly confirmed by a reviewer |
+| Affected historical Turn rows | `affected_historical_turn_count` | Count of distinct source event/Turn rows across confirmed groups |
+| Historical Turn review coverage | confirmed + rejected ÷ all detected issue groups | Pending/undetermined groups stay outside confirmed counts |
+
+Historical Turn metrics are source-data quality observations. They appear in preliminary, final, final-partial and partial-results projections with group-first drill-down, but never change the suspected-ASR or manually-confirmed error-rate numerator/denominator. The source workbook remains immutable.
+
+Pass 2 restart identity is membership-based. The planner first resolves a persisted group by `(batch_id, idempotency_key)` and reuses its canonical group ID when exact Case membership and input snapshot match, even if retry ordinals changed after alignment recovery. A reused key with different membership is a deterministic conflict; the executor must not insert a second row or dispatch a provider request.
 
 The preliminary report freezes after the automated stage and shows zero/current manual coverage. Freezing also updates the owning batch's report pointer and final suspected numerator before the operation returns; startup recovery links and reconciles an already-frozen report when a prior interruption left those batch fields stale. Scenario tags are canonicalized to the frozen tag key before aggregation, while the renderer provides the same canonical projection for already-immutable historical payloads. The final report is a new version created after full or explicitly early review completion. Reports include excluded counts/reasons, actual Good:Bad balance, labels, language/scenario distributions, evidence-linked observations and structured proposed tags. They do not directly recommend changing production resources.
 
@@ -226,8 +234,9 @@ For a paused or partially failed batch that already has a preliminary report, an
 
 ## Benchmark lifecycle
 
-- Automatic Good/Bad is inserted idempotently after admission.
-- Manual Good/Bad is inserted after submission.
+- Automatic Good/Bad is inserted idempotently after admission using global `(conversation_id, event_id)` identity.
+- Manual Good/Bad is inserted after submission using the same global identity.
+- A later identical result returns the canonical Benchmark ID without increasing the Library count. A later conflicting result is discarded before clip/revision creation: it never changes the existing sample, appends a revision, enters a conflict-review queue or contributes to the new-Benchmark count.
 - Unclear and unreviewed Cases never create samples.
 - Clip creation and database insertion use a recoverable two-phase status: pending clip, ready, or failed; failed files cannot appear downloadable.
 - Later corrections create a new sample revision and retain the previous label/tag/source history.
