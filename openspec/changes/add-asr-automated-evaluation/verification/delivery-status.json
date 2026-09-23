@@ -2080,11 +2080,12 @@
     },
     {
       "id": "KI-205",
-      "status": "open",
+      "status": "resolved",
       "summary": "The Manual Review page can keep a stale Turn issue count after backend reconciliation has superseded old candidates.",
       "impact": "The product owner sees 135 Turn issues even though production currently has 40 open groups; the stale count makes the corrected evidence rule appear ineffective and overstates manual workload.",
       "source": "Product owner report and authenticated read-only production SQLite inspection on 2026-09-23. E65A contains 95 superseded wrong_merge rows, 40 current open groups and a preliminary report with 2 confirmed plus 40 pending groups. The frontend reuses runtime.bootstrap review arrays on review navigation unless another action refreshed bootstrap.",
       "next_action": "Refresh bootstrap before entering Manual Review, opening a batch's review queue, or switching ASR/Turn modes; add a UI contract regression and verify the current production count after deployment.",
+      "resolution": "Commit 07a24fe3b327dcadd37aee1c5a7d8489df8253b0 refreshes current review data at all three entry points and passed independent review, CI 35866898945 and production deploy 35867153151. The deployed frontend bundle contains the refresh-failure guard; authenticated production readback confirms 40 pending Turn groups, 95 superseded groups, no E65A lease and no deployment-triggered batch update.",
       "disclosed_to_user": true
     },
     {

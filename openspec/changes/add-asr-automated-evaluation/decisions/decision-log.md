@@ -23,7 +23,7 @@
 - Reason: 只读生产数据库证明新规则已把 95 个旧 `wrong_merge` 候选标记为 `superseded`；当前真实待复核为 40 组，最新报告为 2 已确认 + 40 待复核。页面显示的 135 是旧前端状态，并非数据库仍有 135 个开放候选。
 - Consequences: 复核入口和分栏切换增加一次轻量 bootstrap 请求；接口失败时保留当前可见内容并显示既有安全提示，不以旧数量冒充已刷新结果。
 - Updated artifacts: Delta Spec、`design.md`、`tasks.md`、正式 Evaluation 页面、UI 回归与交付记录。
-- Verification: 待完成本地回归、独立验收、CI/CD，并在生产重新进入 Turn 复核时确认显示当前 40 组或届时最新值。
+- Verification: 全量 pytest 294、UI 静态契约 8、正式页面 desktop/narrow 6 条定向回归、前端构建与独立验收均 PASS。提交 `07a24fe3b327dcadd37aee1c5a7d8489df8253b0` 已推送；CI `35866898945`、生产部署 `35867153151` 与公开健康检查均 PASS。生产容器包含新刷新保护，认证只读数据库核对为 2 组已确认、40 组待复核、95 组已淘汰；E65A 无活跃租约且更新时间未因发布改变。
 
 ### PD-078 — 发布 Pass 2、Turn 异常与复核双语修复到生产
 

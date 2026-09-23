@@ -247,4 +247,4 @@
 - [x] 13.7 Publish the independently verified adaptive Pass 2 retry and truthful-progress release, preserve production Evaluation data and failed checkpoints, and verify CI/CD plus public health without triggering a paid batch retry (PD-052)
 - [x] 13.8 Publish KI-161 after the PD-053 release completes, then backfill EV-20260921-BA92's completed decisions without external calls and verify 18 reviews, 20 Benchmarks, 6 retained failures and no frozen report (PD-055)
 - [x] 13.9 Publish the independently verified KI-200–KI-204 repair, preserve production Evaluation data, verify CI/CD/public health/deployed SHA, and confirm E65A was not automatically retried (PD-078)
-- [ ] 13.10 Refresh current ASR/Turn review data whenever users enter or switch the review queues, verify stale 135 cannot survive navigation when production has 40 open Turn groups, and publish without external calls (PD-079 / KI-205)
+- [x] 13.10 Refresh current ASR/Turn review data whenever users enter or switch the review queues, verify stale 135 cannot survive navigation when production has 40 open Turn groups, and publish without external calls (PD-079 / KI-205)
