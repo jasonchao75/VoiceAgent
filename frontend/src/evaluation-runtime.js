@@ -1760,6 +1760,7 @@ async function refreshBootstrap({ quiet = false } = {}) {
       showPage("batches");
       notify(copy("No real evaluation report exists.", "当前没有真实评测报告。"));
     }
+    return true;
   } catch (error) {
     if (!quiet) {
       renderBootstrapPlaceholder(copy(
@@ -1768,6 +1769,7 @@ async function refreshBootstrap({ quiet = false } = {}) {
       ));
       notify(`${copy("Local evaluation API is unavailable", "本地评测接口不可用")} · ${error.message}`);
     }
+    return false;
   }
 }
 
@@ -2815,6 +2817,17 @@ function selectReviewMode(mode) {
     panel.hidden = panel.dataset.reviewPanel !== mode;
   });
   document.querySelector("#finish-early").hidden = mode !== "asr";
+}
+
+async function refreshReviewQueues() {
+  const refreshed = await refreshBootstrap({ quiet: true });
+  if (!refreshed) {
+    notify(copy(
+      "Review data could not be refreshed. Keeping the current page.",
+      "复核数据刷新失败，已保留当前页面。",
+    ));
+  }
+  return refreshed;
 }
 
 function turnIssueLabels(issueTypes = []) {
@@ -3881,6 +3894,7 @@ function installEvents() {
       }
       if (event.target.closest(".runtime-open-review")) {
         event.preventDefault();
+        if (!await refreshReviewQueues()) return;
         runtime.reviewBatchId = runtime.selectedBatchId;
         runtime.selectedReviewId = null;
         runtime.reviewDirty = false;
@@ -3891,6 +3905,9 @@ function installEvents() {
         return;
       }
       if (event.target.closest('.nav[data-page="review"]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (!await refreshReviewQueues()) return;
         runtime.reviewBatchId = null;
         runtime.selectedReviewId = null;
         runtime.reviewDirty = false;
@@ -3899,6 +3916,8 @@ function installEvents() {
           renderHistoricalTurnIssues(runtime.bootstrap.historical_turn_issues || []);
           selectReviewMode(runtime.reviewMode);
         });
+        showPage("review");
+        return;
       }
       if (event.target.closest('.nav[data-page="library"]')) {
         window.setTimeout(() => renderBenchmarks(runtime.benchmarkResult || runtime.bootstrap.benchmarks));
@@ -3916,6 +3935,7 @@ function installEvents() {
       if (reviewMode) {
         event.preventDefault();
         event.stopImmediatePropagation();
+        if (!await refreshReviewQueues()) return;
         selectReviewMode(reviewMode.dataset.reviewMode);
         return;
       }

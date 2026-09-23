@@ -86,6 +86,8 @@ def test_historical_turn_review_has_a_separate_queue_and_report_section() -> Non
     assert 'data-review-panel="turn"' in PAGE
     assert 'id="historical-turn-quality"' in PAGE
     assert "function renderHistoricalTurnIssues(allIssues = [])" in RUNTIME
+    assert "async function refreshReviewQueues()" in RUNTIME
+    assert RUNTIME.count("if (!await refreshReviewQueues()) return;") >= 3
     assert "renderHistoricalTurnIssues(runtime.bootstrap.historical_turn_issues || []);" in RUNTIME
     assert "/api/evaluation/historical-turn-issues/" in RUNTIME
     assert 'copy("Confirm Turn issue", "确认 Turn 异常")' in RUNTIME

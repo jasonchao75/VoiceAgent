@@ -149,6 +149,8 @@
 
 原始语音岛 MUST 作为不可变底层音频证据保留，但语音岛与口语 Turn 不得被假设为一对一。同一个 provider customer turn 跨越的多个岛 MUST 视为同一口语 Turn 的停顿片段，不得仅因其中一个岛未被 Case 使用就生成 `wrong_merge`。只有相邻机器人 turn，或至少两家 provider 都把该岛与已分配岛识别为不同 customer turn 时，系统才可创建 `wrong_merge` 待复核候选；证据不足时保持为同 Turn 片段且不占用人工复核队列。
 
+正式页面每次打开人工复核、从批次进入复核或切换 ASR Case/Turn 异常分栏时 MUST 重新读取当前开放复核数据，再渲染数量与队列；不得继续使用页面首次加载时的旧候选数组冒充当前状态。刷新 MUST 为只读操作，不得重跑批次或调用外部资源。
+
 完整录音 provider turn MUST 按与已冻结 Case 区间的时间重叠投影为候选文本。只有存在唯一且满足冻结证据策略的映射时，系统才可标记 `deterministic_aligned`。事件/语音岛数量不一致、多个合法路径同分、粗粒度 provider turn 横跨多个岛或 provider 证据冲突时，受影响 Case MUST 标记 `ambiguous` 并进入受控 LLM 辅助；不得直接声称成功。
 
 辅助 LLM MUST 使用批次冻结的资源/模型，并且只接收受影响 Case 的真实 event ID、audio-island ID、provider turn ID、原始/归一化文本及必要相邻上下文。模型只能从输入候选 ID 中选择并说明依据，MUST NOT 生成时间戳、新 ID、改变语音岛边界或打破事件顺序。程序 MUST 在使用结果前校验请求/Case 身份、完整候选集合、真实 ID、conversation/provider 归属、单调顺序、冻结边界和跨 provider 证据；结构无效、遗漏、冲突或仍不唯一时，该 Case MUST 进入人工复核。
@@ -199,6 +201,13 @@
 
 - **WHEN** 一个未分配语音岛与最近 Case 之间存在相邻机器人 turn，或至少两家 provider 均以不同 customer turn ID 覆盖这两个岛
 - **THEN** 系统可生成 `wrong_merge` 待复核候选，并同时保存已分配岛、额外岛和支持独立 Turn 的 provider 证据
+
+#### Scenario: Refresh the current Turn review queue
+
+- **GIVEN** 后端已把不再成立的候选标记为 `superseded`
+- **WHEN** 用户打开人工复核、从批次进入复核或切换 Turn 异常分栏
+- **THEN** 页面重新读取服务端开放候选，只显示当前 `pending`/`deferred` 数量，不继续显示刷新前的旧数量
+- **AND** 该操作不改变批次、复核、报告、Benchmark 或费用，也不产生 ASR/LLM 请求
 
 #### Scenario: Persist projected ASR evidence per Case
 - **WHEN** 同一 conversation 的一个 Case 已唯一对齐，而 sibling Case 仍歧义或失败

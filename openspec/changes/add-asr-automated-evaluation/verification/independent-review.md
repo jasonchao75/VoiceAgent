@@ -1,56 +1,55 @@
-# Independent Review — retry terminal state, Turn reconciliation, and review localization
+# Independent Review — current Manual Review queue refresh
 
 - Date: 2026-09-23
 - Reviewer: independent Change verifier
 - Result: **PASS**
-- Scope: tasks 12.94–12.96; KI-200–KI-204; Pass 2 canonical terminal reconciliation, historical Turn wrong-merge evidence/lifecycle, and bilingual Manual Review queue labels/counts
+- Scope: PD-079 / KI-205 and the KI-206 failure-path correction; current ASR/Turn review data on sidebar entry, batch entry, and review-mode switching
 
 ## Verdict
 
-The increment passes independent verification. Pass 2 terminal state now depends only on the current canonical Case membership; historical failed checkpoints remain diagnostic while missing or failed current Cases still block completion. Historical Turn reconciliation suppresses pause fragments without independent-Turn evidence, preserves reproduced deferred state and revisions, supersedes disappeared open candidates, and leaves confirmed/rejected decisions untouched. The formal Manual Review route renders the ASR Case and historical Turn tabs plus the Turn queue title correctly in English and Chinese while retaining live counts.
+The implementation passes independent Engineering Checkpoint C for the scoped increment. All three entry paths call the same read-only bootstrap refresh before rendering or switching review queues. A successful refresh replaces the stale client arrays and counts; a failed refresh shows a bilingual safety notification, keeps the current view and visible count, and does not present cached data as newly refreshed.
 
-Two defects found during the first review pass were recorded as KI-203/KI-204, corrected by the implementation agent, and independently re-tested before this PASS. No production data was changed, no paid provider was called, and `EV-20260923-E65A` was not retried.
+The first independent pass found that `quiet` bootstrap failure was silently swallowed. That defect was recorded as KI-206, corrected by the implementation agent, and independently re-tested before this PASS. This verdict authorizes neither deployment nor User Gate 2 acceptance. Production deployment and a post-deploy page check showing the then-current open count remain task 13.10.
 
 ## Requirement trace
 
-### Pass 2 canonical terminal state
+### Current source of truth
 
-- The runner freezes `pass_2_canonical_case_keys` before dispatch and updates it when balanced Good Cases are added.
-- `_current_pass2_failures` reports a current Case when its latest per-Case checkpoint is missing or not completed, so an active current failure still yields `partially_failed`.
-- Historical failed Case/group rows outside the current canonical set do not affect terminal state, materialization, balancing, or reporting.
-- The deterministic regression proves both sides: historical `R1=failed` is ignored when only `R2` is canonical, while `R1` blocks when it remains canonical.
+- `refreshReviewQueues()` reads `/api/evaluation/bootstrap`; the response replaces `runtime.bootstrap` before counts and queue rows are rendered.
+- Sidebar Manual Review entry, a batch's Open Review action, and ASR Case / Historical Turn mode switching all await this same refresh.
+- The operation is GET-only. It does not call batch execution, ASR, LLM, review mutation, reporting, Benchmark, or cost endpoints.
+- Retained authenticated production evidence records E65A at 40 open Turn groups and 95 superseded groups, with 2 confirmed plus 40 pending in the latest report. This production database evidence was not mutated or re-queried during this review.
 
-### Historical Turn wrong-merge and lifecycle
+### Failure behavior
 
-- A same-provider customer turn spanning the assigned and orphan RMS islands suppresses `wrong_merge`.
-- A candidate is allowed only with an intervening robot boundary or distinct customer-turn IDs from at least two providers; raw islands remain evidence and historical timestamps/text do not decide the boundary.
-- Reproduced pending/deferred candidates are updated in place. The regression proves deferred version 2 survives replay with its revision intact.
-- A disappeared open candidate transitions to `superseded` with an appended system revision and is excluded from report quality metrics; a later reproduction can reactivate it. Confirmed/rejected rows are outside reconciliation and remain immutable.
+- `refreshBootstrap()` returns an explicit success boolean.
+- On failure, `refreshReviewQueues()` shows “Review data could not be refreshed. Keeping the current page.” (and the Chinese equivalent) and returns false.
+- Each entry path stops before `showPage`, `selectReviewMode`, or queue re-rendering when refresh fails. The sidebar path also prevents the generic navigation handler from exposing the old review page first.
+- Browser regression proves the sidebar remains on batches, the batch action remains on task detail, and the mode switch remains on ASR while the old count is visibly retained with an explicit failure notification.
 
-### Manual Review localization
+### Formal UI and frozen baseline
 
-- ASR Case and historical Turn tab labels use bilingual label nodes separate from their live count nodes.
-- The Turn queue title also separates localized label and dynamic count, and historical Turn content is refreshed after a language change.
-- The production `/evaluation.html` DOM passed the exact English-to-Chinese label/title/count assertions at both desktop and narrow Chromium viewports.
-- The frozen prototype remains unchanged at SHA-256 `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62`; retained V1.20 desktop/narrow review and report screenshots remain the visual baseline evidence.
+- Fixture and failure checks exercise the production `/evaluation.html` route, production runtime module, and existing review DOM; there is no parallel static acceptance shell.
+- Desktop and narrow Chromium both prove the original Turn review, stale-count replacement, and failed-refresh behavior.
+- The frozen prototype remains unchanged at SHA-256 `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62`.
+- The formal Turn-review screenshot evidence was recaptured by the production-route regression at both viewports; this increment changes data freshness and failure behavior, not the frozen layout.
 
 ## Reproducible evidence
 
 | Check | Result |
 |---|---|
-| Focused Pass 2 / Turn lifecycle tests | PASS: 4 tests |
+| KI-205/KI-206 Playwright checks | PASS: 6/6 across desktop and narrow Chromium |
+| Evaluation UI static contract | PASS: 8/8 |
 | Full repository test suite | PASS: 294 tests; 2 pre-existing dependency deprecation warnings |
-| Manual Review localization Playwright check | PASS: 2 tests, desktop and narrow Chromium |
 | Frontend production build | PASS |
-| Scoped Ruff format/check | PASS |
-| Scoped Mypy with the installed Python 3.13 environment | PASS: 2 changed Evaluation source files |
-| Change gate | PASS: 0 errors, 20 disclosed warnings; the 2 unchecked tasks are pre-existing tasks 12.3a and 12.64 outside this increment |
+| Change gate | PASS: 0 errors; disclosed pre-existing/open warnings remain |
 | `git diff --check` | PASS |
 
-## Evidence boundary
+## Evidence boundary and remaining work
 
-- **Static:** Delta Spec, design, decisions, tasks, delivery status, implementation, migration-compatible storage schema, frozen prototype, and retained UI screenshots.
-- **Deterministic/local-real:** SQLite persistence and revision behavior, 294 repository tests, production frontend build, and formal-route desktop/narrow Chromium interaction.
-- **External-real:** not performed. Existing open delivery warnings remain disclosed and do not invalidate this scoped increment; production retry/deployment requires its own authorization and verification.
+- **Static:** PRD, unchanged frozen prototype, Delta Spec, design, PD-079, tasks, UI checklist, implementation, and delivery-status evidence.
+- **Fixture/local-real:** local API service plus formal production route/DOM; success and HTTP 503 refresh paths at desktop and narrow viewports.
+- **External-real retained evidence:** authenticated read-only production inspection showing 40 open and 95 superseded E65A Turn groups. This review made no production request or mutation.
+- **Not yet verified:** the new frontend has not been deployed and reopened in production, so the live page has not yet demonstrated 40 (or the later current value). Task 13.10 and KI-205 remain open until CI/CD, deployed SHA/health, and post-deploy UI readback succeed.
 
-No blocking finding remains in tasks 12.94–12.96.
+No implementation blocker remains for PD-079 release.

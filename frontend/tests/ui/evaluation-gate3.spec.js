@@ -753,6 +753,126 @@ test("reviews historical Turn issues in a separate audio-first queue", async ({ 
   expect(submitted.expected_version).toBe(1);
 });
 
+test("refreshes stale Turn issue counts before opening the queue", async ({ page }) => {
+  const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
+  const staleIssue = {
+    issue_group_id: "HTI-STALE",
+    batch_id: "EV-STALE",
+    conversation_id: "1030000000070676",
+    source_event_ids: ["R28"],
+    resulting_case_ids: ["CASE-I014"],
+    issue_type: "wrong_merge",
+    issue_types: ["wrong_merge"],
+    affected_turn_count: 1,
+    status: "pending",
+    version: 1,
+    audio_evidence: { islands: [] },
+    source_turns: [],
+  };
+  let bootstrapRequests = 0;
+  await page.route("**/api/evaluation/bootstrap", async (route) => {
+    bootstrapRequests += 1;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...bootstrap,
+        reviews: [],
+        historical_turn_issues: bootstrapRequests === 1 ? [staleIssue] : [],
+      }),
+    });
+  });
+
+  await page.goto("/evaluation.html?page=review");
+  await expect(page.locator("#page-review .turn-review-count")).toHaveText("1");
+  await page.locator('[data-review-mode="turn"]').click();
+  await expect(page.locator("#page-review .turn-review-count")).toHaveText("0");
+  await expect(page.locator("#page-review [data-review-panel='turn'] .queue h2")).toHaveText(
+    "Pending Turn issue groups 0",
+  );
+  expect(bootstrapRequests).toBeGreaterThanOrEqual(2);
+});
+
+test("keeps the current view when review queue refresh fails", async ({ page }) => {
+  const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
+  const staleIssue = {
+    issue_group_id: "HTI-REFRESH-FAILURE",
+    batch_id: "EV-REFRESH-FAILURE",
+    conversation_id: "1030000000070676",
+    source_event_ids: ["R28"],
+    resulting_case_ids: ["CASE-I014"],
+    issue_type: "wrong_merge",
+    issue_types: ["wrong_merge"],
+    affected_turn_count: 1,
+    status: "pending",
+    version: 1,
+    audio_evidence: { islands: [] },
+    source_turns: [],
+  };
+  const batch = {
+    id: "EV-REFRESH-FAILURE",
+    name: "Refresh failure",
+    context_name: "Review refresh guard",
+    input_count: 1,
+    status: "awaiting_review",
+    stage: "manual_review",
+    progress: 92,
+    denominator: 1,
+    excluded_count: 0,
+    suspected_numerator: 1,
+    cost: 0,
+    budget: 1,
+    providers: ["soniox"],
+    updated_at: "2026-09-23T12:00:00Z",
+    version: 1,
+    report_type: null,
+    review_total: 1,
+    review_completed: 0,
+    snapshot: {},
+  };
+  let bootstrapRequests = 0;
+  await page.route("**/api/evaluation/bootstrap", async (route) => {
+    bootstrapRequests += 1;
+    if (bootstrapRequests === 1) {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...bootstrap,
+          batches: [batch],
+          reviews: [],
+          historical_turn_issues: [staleIssue],
+        }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "offline" }),
+    });
+  });
+
+  await page.goto("/evaluation.html");
+  await page.locator('.nav[data-page="review"]').click();
+  await expect(page.locator("#page-batches")).toHaveClass(/active/);
+  await expect(page.locator('.nav[data-page="review"] .review-count')).toHaveText("1");
+  await expect(page.locator("#toast")).toContainText("Review data could not be refreshed");
+
+  await page.locator('tr[data-batch-id="EV-REFRESH-FAILURE"] [data-action="open"]').click();
+  await expect(page.locator("#page-run")).toHaveClass(/active/);
+  await page.locator(".runtime-open-review").click();
+  await expect(page.locator("#page-run")).toHaveClass(/active/);
+  await expect(page.locator("#toast")).toContainText("Review data could not be refreshed");
+
+  bootstrapRequests = 0;
+  await page.goto("/evaluation.html?page=review");
+  await expect(page.locator('[data-review-mode="asr"]')).toHaveClass(/active/);
+  await page.locator('[data-review-mode="turn"]').click();
+  await expect(page.locator('[data-review-mode="asr"]')).toHaveClass(/active/);
+  await expect(page.locator('[data-review-mode="turn"]')).not.toHaveClass(/active/);
+  await expect(page.locator("#page-review .turn-review-count")).toHaveText("1");
+  await expect(page.locator("#toast")).toContainText("Review data could not be refreshed");
+});
+
 test("renders a persisted report into the frozen report structure", async ({ page }, testInfo) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   bootstrap.batches = [{

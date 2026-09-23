@@ -264,8 +264,8 @@
       "id": "KI-171",
       "status": "open",
       "summary": "Retry failed resources does not filter persisted failures by retryability and can re-run deterministic or explicitly non-retryable failures.",
-      "impact": "EV-20260922-7D19 retried a Speechmatics full-call invalid_result through attempt 9 even though the new safe error marks it retryable=false. A later retry also regressed the visible batch from partial_failure/92% to evaluation_asr/53% and it was then paused, although all 17 persisted Pass 2 decisions remain completed. Event-alignment failures with completed frozen mappings are reproduced at attempts=0, and EV-20260922-64A8 repeated the deterministic Pass 1 preflight failure through attempt 6. Repeated clicks can add avoidable delay, misleading progress and, for provider work, cost without changing the outcome.",
-      "source": "Read-only production checkpoint/telemetry inspection on 2026-09-22 plus executor trace. At the latest check 7D19 had no active lease, status=paused, stage=evaluation_asr and progress=53 while evaluation_pass2_runs still contained 17 completed rows. The retry action changes the batch back to running, while Pass 1, full-call ASR and event-clip orchestration skip only completed rows and do not consult the persisted retryable contract before scheduling failed work.",
+      "impact": "EV-20260922-7D19 retried a Speechmatics full-call invalid_result through attempt 9 even though the new safe error marks it retryable=false. A later retry also regressed the visible batch from partial_failure/92% to evaluation_asr/53% and it was then paused, although all 17 persisted Pass 2 decisions remain completed. Event-alignment failures with completed frozen mappings are reproduced at attempts=0, and EV-20260922-64A8 repeated the deterministic Pass 1 preflight failure through attempt 6. On E65A, the 2026-09-23 12:44 UTC retry completed 29 Pass 2 groups / 79 Cases but left 23 exhausted Event Alignment timeouts and one structure failure closed, so the batch returned to partial_failure/92%. Repeated clicks can therefore both re-run ineligible work and fail to reopen eligible exhausted work.",
+      "source": "Read-only production checkpoint/telemetry inspection on 2026-09-22 and authenticated production SQLite inspection on 2026-09-23 plus executor trace. E65A has no active operation; its latest manual retry is audited at 12:44:34 UTC, Pass 2 completed at 12:49:40 UTC, while 24 failed Event Alignment runs remain timestamped 08:04:17 UTC because align_group allows no new local attempts after the persisted attempt ceiling is reached.",
       "next_action": "Build a retry plan from safe failure categories, skip retryable=false and deterministic completed-mapping failures, show what will and will not be retried before dispatch, and ensure a retry with no eligible work does not start paid calls.",
       "resolution_note": "PD-064 now prevents non-retryable Qwen group failures from being redispatched and preserves exhausted leaf failures. The broader retry-failed planner still does not filter all persisted ASR/alignment failures or preview eligible scope, so this issue remains open under task 12.64.",
       "disclosed_to_user": true
@@ -2077,21 +2077,42 @@
       "next_action": "Re-render historical Turn issues on every language change and extend the desktop/narrow browser regression to assert the dynamic queue heading.",
       "resolution": "The Turn queue title now keeps the localized label and dynamic count in separate nodes, and the language callback refreshes historical Turn content. Desktop and narrow Chromium both pass English-to-Chinese tab/title/count assertions.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-205",
+      "status": "open",
+      "summary": "The Manual Review page can keep a stale Turn issue count after backend reconciliation has superseded old candidates.",
+      "impact": "The product owner sees 135 Turn issues even though production currently has 40 open groups; the stale count makes the corrected evidence rule appear ineffective and overstates manual workload.",
+      "source": "Product owner report and authenticated read-only production SQLite inspection on 2026-09-23. E65A contains 95 superseded wrong_merge rows, 40 current open groups and a preliminary report with 2 confirmed plus 40 pending groups. The frontend reuses runtime.bootstrap review arrays on review navigation unless another action refreshed bootstrap.",
+      "next_action": "Refresh bootstrap before entering Manual Review, opening a batch's review queue, or switching ASR/Turn modes; add a UI contract regression and verify the current production count after deployment.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-206",
+      "status": "resolved",
+      "summary": "The initial review-queue refresh silently falls back to stale data when bootstrap refresh fails.",
+      "impact": "A failed refresh can still switch the user into the old Turn queue and continue showing 135 without any warning, making stale data appear current.",
+      "source": "Independent PD-079 review on 2026-09-23 traced refreshReviewQueues through refreshBootstrap({quiet:true}); refreshBootstrap catches the error without returning failure or notifying, and all three click handlers continue rendering the old runtime.bootstrap arrays.",
+      "next_action": "Return explicit refresh success/failure, notify on review refresh failure, stop all three navigation paths before they render stale queues, and add successful plus failed refresh browser coverage for Turn tab, sidebar review and batch review entry.",
+      "resolution": "refreshBootstrap now returns explicit success/failure; all three review entry paths stop on failure and show a bilingual warning instead of presenting stale data as refreshed. Desktop and narrow Chromium passed the original Turn flow, successful stale-count refresh, and failed-refresh retention scenarios (6/6), and independent re-review passed.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
     {
       "id": "UV-038",
-      "status": "open",
-      "summary": "The independently verified KI-200–KI-204 repair has not yet completed production CI/CD and post-deployment readback.",
-      "reason": "PD-078 authorizes the release, but the commit has not yet been pushed and the production SHA, public health, preserved Evaluation data and unchanged E65A execution state have not yet been verified.",
+      "status": "resolved",
+      "summary": "The KI-200–KI-204 release is healthy in production, but E65A's unchanged execution state has not been read back with an authenticated session.",
+      "reason": "Commit 68fe2d8523d4bec6e26d81e196c5b26c82595eed passed CI run 35861606198 and production deployment run 35861840313; the deployment log confirmed the same production SHA and the public health endpoint returned status=ok. The deployment workflow contains no batch-retry action, but the anonymous production batch-list request returned HTTP 401, so E65A's persisted timestamps and active-operation state were not independently read back after deployment.",
+      "resolution": "Authenticated read-only production SQLite inspection confirmed no active E65A operation. Its next execution is explicitly audited as batch.retry_failed at 2026-09-23T12:44:34+00:00, after deployment, matching the product owner's manual retry; the deployment itself did not create a retry action or provider operation.",
       "disclosed_to_user": true
     },
     {
       "id": "UV-037",
-      "status": "open",
+      "status": "resolved",
       "summary": "The repository's default Python 3.11 Mypy target cannot parse the installed Python 3.13 NumPy stubs in this local environment.",
       "reason": "The default Mypy run stops in numpy/__init__.pyi before project checking because the local virtualenv contains Python 3.13-only type syntax while pyproject.toml targets Python 3.11. The two changed source files pass Mypy when checked with the installed runtime target (3.13); the authoritative Python 3.11 check remains for CI.",
+      "resolution": "The authoritative Python 3.11 checks passed in CI run 35861606198; the local failure remains an environment-only stub/runtime mismatch and is not a release defect.",
       "disclosed_to_user": true
     },
     {

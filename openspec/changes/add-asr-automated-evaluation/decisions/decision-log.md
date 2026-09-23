@@ -4,12 +4,26 @@
 
 ## Status
 
-- Recorded decisions: 74 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 75 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-23
 
 ## Decisions
+
+### PD-079 — Turn 复核入口始终刷新线上当前队列
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: KI-205；新 `wrong_merge` 证据门槛上线后，生产 Turn 待复核数量仍显示 135
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人指出线上旧候选未下降并要求修正
+- Confirmation quote: “线上的Turn问题，怎么还是135个，能不能给改一下”
+- Decision: 打开“人工复核”、从批次进入复核或切换 ASR Case/Turn 异常分栏时，正式页面必须先重新读取当前服务端 bootstrap，再渲染数量和队列；不得继续显示页面首次加载时的旧候选数组。该刷新只读，不重跑批次、不调用外部资源，也不改变复核记录。
+- Reason: 只读生产数据库证明新规则已把 95 个旧 `wrong_merge` 候选标记为 `superseded`；当前真实待复核为 40 组，最新报告为 2 已确认 + 40 待复核。页面显示的 135 是旧前端状态，并非数据库仍有 135 个开放候选。
+- Consequences: 复核入口和分栏切换增加一次轻量 bootstrap 请求；接口失败时保留当前可见内容并显示既有安全提示，不以旧数量冒充已刷新结果。
+- Updated artifacts: Delta Spec、`design.md`、`tasks.md`、正式 Evaluation 页面、UI 回归与交付记录。
+- Verification: 待完成本地回归、独立验收、CI/CD，并在生产重新进入 Turn 复核时确认显示当前 40 组或届时最新值。
 
 ### PD-078 — 发布 Pass 2、Turn 异常与复核双语修复到生产
 
@@ -23,7 +37,7 @@
 - Reason: 产品负责人要求上述已验证修复在线上生效。
 - Consequences: 发布保留现有生产 Evaluation 数据，不清空历史、不自动重试 `EV-20260923-E65A`、不发起 ASR/LLM 付费调用。用户后续手动重试才会使用新规则。
 - Updated artifacts: `decision-log.md`、`tasks.md`、`verification/delivery-status.json`、发布提交与 CI/CD 证据。
-- Verification: 发布前全量测试、双视口 UI、构建、Change gate 与独立验收均 PASS；发布后需核对远端提交、CI/CD、生产健康、实际部署 SHA 与 E65A 未被自动操作。
+- Verification: 发布前全量测试、双视口 UI、构建、Change gate 与独立验收均 PASS。提交 `68fe2d8523d4bec6e26d81e196c5b26c82595eed` 已推送；CI `35861606198`、生产部署 `35861840313` 与公开健康检查均 PASS，部署日志确认生产 SHA 与提交一致。后续认证只读核对确认部署未创建 E65A 自动重试；下一次执行来自产品负责人在 `2026-09-23T12:44:34+00:00` 的手动 `batch.retry_failed`。
 
 ### PD-077 — 修复 Pass 2 历史失败误判与 Turn 异常过量候选
 
