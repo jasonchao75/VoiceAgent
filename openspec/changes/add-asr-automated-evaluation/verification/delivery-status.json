@@ -70,6 +70,15 @@
     "public_health": "PASS",
     "production_behavior": "The production deployment and public /health verification succeeded with status=ok. The release preserved production data, did not operate 7D19, and made no paid provider call."
   },
+  "pd061_release": {
+    "status": "PASS",
+    "implementation_commit": "ec373a4dcfa3b475105d383876734a2d21a1f7ef",
+    "deployed_commit": "ca2e80aa289d0c9f5276767baeb0cf334bd7cf4e",
+    "ci_run": 35813859148,
+    "deployment_run": 35814003041,
+    "public_health": "PASS",
+    "production_behavior": "Production runs the verified full-call-turn projection release. The deployment did not start provider work or mutate EV-20260923-E65A: its updated_at remains 2026-09-23T02:26:50+00:00 with status=partially_failed, eight failed Pass 2 groups and thirty failed Cases. New LLM call-logic implementation was excluded."
+  },
   "external_calls": [
     {
       "provider": "Alibaba Cloud DashScope native API / qwen3.8-max",

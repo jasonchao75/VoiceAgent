@@ -210,7 +210,7 @@
 - [x] 12.70 Keep one stable pure-user WAV per Case for playback/review/Benchmark only, and make Multi-ASR progress/cost count only full-call conversation/provider jobs (PD-061)
 - [x] 12.71 Update reports, failure diagnostics and regressions so mapped full-call turn text remains visible without creating event-level provider calls (PD-061)
 - [x] 12.72 Run scoped/full checks, Change gate and independent verification without making a paid external call or mutating production batches (PD-061)
-- [ ] 12.73 Commit and deploy PD-061 before any new LLM call-logic implementation, then verify CI, production health, deployed SHA and preservation of E65A without a provider dispatch (PD-063)
+- [x] 12.73 Commit and deploy PD-061 before any new LLM call-logic implementation, then verify CI, production health, deployed SHA and preservation of E65A without a provider dispatch (PD-063)
 
 ## 13. Production deployment boundary (authorized by PD-042)
 

@@ -23,7 +23,7 @@
 - Reason: PD-061 与后续 Qwen/LLM 超时、Thinking 和拆组策略会触及同一执行器及 Change 文件；顺序发布可以建立清晰生产基线，避免共享工作区交叉提交和无法归因的线上行为。
 - Consequences: 本次发布不得自动重跑或改写 E65A，不得触发付费 ASR/LLM；发布后需核对 CI、部署、生产健康和生产提交 SHA。后续 LLM 逻辑由另一任务在收到明确恢复通知后继续。
 - Updated artifacts: `decision-log.md`、`tasks.md`、`verification/delivery-status.json`、提交与发布证据。
-- Verification: Pending CI and production deployment.
+- Verification: PASS。代码提交 `ec373a4` 与格式修复 `ca2e80a` 已进入 `main`；CI run `35813859148`、生产部署 run `35814003041` 和公网健康检查成功。生产服务器运行 `ca2e80aa289d0c9f5276767baeb0cf334bd7cf4e`；E65A 的 `updated_at=2026-09-23T02:26:50+00:00`、8 个失败组和 30 个失败 Case 均未变化，未触发供应商调用。
 
 ### PD-062 — 修复前以最小 Qwen Pass 2 原组和按 Case 拆分验证超时根因
 
