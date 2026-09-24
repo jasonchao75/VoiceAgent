@@ -1,5 +1,5 @@
 {
-  "phase": "pd069_deployed_product_acceptance_pending",
+  "phase": "stability_closure_deployed_paid_canary_and_product_acceptance_pending",
   "product_acceptance": "pending",
   "local_acceptance_deployment": "pd030_image_rebuilt_and_running_healthy_at_127.0.0.1_8000_on_2026-09-19;_display_translation_route_present;_EV-20260918-2655_remains_awaiting_review",
   "production_paths": [
@@ -21,7 +21,7 @@
       "C"
     ]
   },
-  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call. PD-060 authorizes publishing the independently verified finish-with-current-results capability while preserving production data, leaving 7D19 untouched, and making no paid provider call. PD-063 authorizes publishing PD-061 before any new LLM call-logic implementation, preserving E65A and making no paid provider call. PD-064 and PD-065 authorize implementing and deploying the Qwen timeout/splitting correction and live-request progress UI after the V1.18 User Gate 1 amendment, independent verification and release checks, without automatically retrying E65A. PD-069 authorizes implementing and deploying the verified bounded Event Alignment recovery and V1.19 six-stage UI while preserving E65A and making no new provider call.",
+  "deployment_policy": "Local acceptance deployment is authorized by PD-021. PD-042 authorized the initial production deployment. PD-044 authorized the KI-128 production hotfix while preserving existing production Evaluation data. PD-052 authorized publishing the adaptive retry increment while preserving production data and leaving the paid batch retry to the user. PD-054 authorized publishing only the PD-053 diarization-first alignment increment for product acceptance without starting a paid evaluation. PD-057 authorizes publishing only the independently verified PD-056 Event Aligner increment while preserving production data and without starting or retrying a paid evaluation. PD-058 authorizes completing the hard-cap correction through production deployment while leaving CB26 stopped and making no paid evaluation request. PD-059 authorizes publishing the independently verified shared-generation-budget, truthful-progress and safe-ASR-diagnostic correction while preserving production data and without automatically retrying CB26 or 7D19 or making a paid provider call. PD-060 authorizes publishing the independently verified finish-with-current-results capability while preserving production data, leaving 7D19 untouched, and making no paid provider call. PD-063 authorizes publishing PD-061 before any new LLM call-logic implementation, preserving E65A and making no paid provider call. PD-064 and PD-065 authorize implementing and deploying the Qwen timeout/splitting correction and live-request progress UI after the V1.18 User Gate 1 amendment, independent verification and release checks, without automatically retrying E65A. PD-069 authorizes implementing and deploying the verified bounded Event Alignment recovery and V1.19 six-stage UI while preserving E65A and making no new provider call. PD-083 authorizes deploying the independently verified stability closure while preserving production history and forbids automatic E65A retry or paid provider calls.",
   "external_call_policy": "PD-018 remains the default. PD-035 grants one narrow ASR exception. PD-042 grants one report-translation verification for EV-20260920-9D33 through its frozen Qwen Pass 1 model under a USD 0.10 ceiling, with no second page-triggered verification. PD-062 grants one pre-fix Qwen3.8-Max Pass 2 diagnostic for EV-20260923-E65A group G0008, limited to the original two-Case request plus at most two single-Case fallbacks and USD 5 total.",
   "independent_release_review": {
     "status": "PASS",
@@ -94,6 +94,15 @@
     "deployment_run": 35831260997,
     "public_health": "PASS",
     "production_behavior": "The production container reported Healthy at the exact release commit and the independent public health read returned status=ok with zero pending or active sessions. A post-deploy read-only SQLite check found EV-20260923-E65A still partially_failed with updated_at 2026-09-23T05:49:14+00:00, eight failed Pass 2 groups and thirty failed Pass 2 Cases; the timestamp predates this deployment and proves no automatic retry or batch mutation occurred. No supplier request was made by this release."
+  },
+  "pd080_pd083_stability_release": {
+    "status": "PASS",
+    "implementation_commit": "ab874e1f74b594e26b3fd8ca7707d7eaed4fdc5a",
+    "deployed_commit": "c18ab097378889a9eb27c5d9a3d8c1134be47220",
+    "ci_run": 35950302499,
+    "deployment_run": 35950473730,
+    "public_health": "PASS",
+    "production_behavior": "The exact deployed SHA became Healthy and public /health returned status=ok with zero pending or active sessions. The deployment precheck, compatibility verifier and rollback-image path completed successfully. Read-only production inspection found EV-20260923-E65A already completed at 2026-09-24T01:08:01+00:00, more than two hours before deployment; it had no active operation, no post-deploy telemetry, no post-deploy ledger entry and no usage reservation, proving this release did not retry the batch or dispatch a paid provider request."
   },
   "external_calls": [
     {
@@ -2123,21 +2132,22 @@
     },
     {
       "id": "KI-209",
-      "status": "open",
+      "status": "resolved",
       "summary": "The first production release attempt was blocked because three changed Python files did not pass the CI Ruff format check.",
       "impact": "CI run 35950072591 stopped in backend checks before image publication and deployment, so production remains unchanged.",
       "source": "GitHub Actions run 35950072591 on 2026-09-24 reported that src/evaluation/executor.py, src/evaluation/storage.py and tests/test_evaluation.py would be reformatted.",
       "next_action": "Apply the repository formatter to the three files, run the exact CI backend sequence locally, push a format-only correction and require a green replacement CI run before deployment.",
-      "resolution": null,
+      "resolution": "The three files were formatted without business-logic changes. Local Ruff format/check, 304 repository tests and frontend build passed; authoritative Python 3.11 CI run 35950302499 then passed every backend, frontend and image step, and production deployment run 35950473730 succeeded at commit c18ab097378889a9eb27c5d9a3d8c1134be47220.",
       "disclosed_to_user": true
     }
   ],
   "unverified_items": [
     {
       "id": "UV-040",
-      "status": "open",
+      "status": "resolved",
       "summary": "The independently verified PD-080–PD-082 stability closure has not yet completed production CI/CD, deployed-SHA, health and preservation checks.",
-      "reason": "PD-083 authorizes production deployment without E65A retry or paid provider calls. The release is now entering the existing CI/CD workflow; production evidence must be recorded before task 14.8 is complete.",
+      "reason": "PD-083 authorizes production deployment without E65A retry or paid provider calls. Production evidence was required before task 14.8 could complete.",
+      "resolution": "Commit c18ab097378889a9eb27c5d9a3d8c1134be47220 passed CI run 35950302499 and production deployment run 35950473730. The exact SHA became Healthy and public /health returned status=ok with zero pending or active sessions. Deployment precheck/compatibility verification and rollback-image preparation passed. Read-only production inspection found E65A completed at 2026-09-24T01:08:01+00:00 before the 03:12 UTC deployment, with no active operation, no post-deploy telemetry or ledger entry, and no reservation; deployment therefore did not retry it or dispatch a paid request.",
       "disclosed_to_user": true
     },
     {

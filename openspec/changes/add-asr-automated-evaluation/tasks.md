@@ -258,5 +258,5 @@
 - [x] 14.5 Separate provider `unavailable`, Case `excluded_insufficient_evidence` and batch lifecycle; generate a completed coverage report whenever execution reaches a terminal plan, even at zero evaluable Cases (PD-082, KI-207)
 - [x] 14.6 Split dashboard summary into explicit active-source, selected-report/batch and global-Benchmark scopes, with source IDs and denominators (KI-188, KI-189)
 - [x] 14.7 Add migration, restart, repeated-retry, timeout-ledger, zero/partial/full-coverage and mixed-provider regressions; run scoped/full checks, Change gate and independent verification without paid calls or production mutation
-- [ ] 14.8 Under PD-083, deploy the independently verified stability closure with backup/rollback evidence; verify CI, production health, deployed SHA and preservation of E65A without any automatic provider dispatch
+- [x] 14.8 Under PD-083, deploy the independently verified stability closure with backup/rollback evidence; verify CI, production health, deployed SHA and preservation of E65A without any automatic provider dispatch
 - [ ] 14.9 After a separate paid-call authorization, run the staged S2/S3 canaries and any E65A recovery with explicit data scope, cost ceiling and stop conditions before S4 release acceptance

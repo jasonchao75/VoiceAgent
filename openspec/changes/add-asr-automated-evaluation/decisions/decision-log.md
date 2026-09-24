@@ -23,7 +23,7 @@
 - Reason: 产品负责人要求已验证修复在线上生效，同时真实 canary 和历史批次恢复仍属于逐次授权的外部付费操作。
 - Consequences: 生产启动可执行向后兼容 Schema 初始化，并仅按精确证据回填历史数据集绑定；部署失败使用现有上一镜像回滚。S2 canary、E65A 重试和 User Gate 2 继续保留为独立后续授权，不得从本次部署授权推导。
 - Updated artifacts: `decision-log.md`、`tasks.md`、`verification/delivery-status.json`、发布提交和 CI/CD 证据。
-- Verification: 发布前 304 项全仓测试、定向 Ruff、前端构建、正式路由双视口 6/6、Change gate与独立验收均 PASS；生产证据待本次发布完成后回填。
+- Verification: 发布前 304 项全仓测试、Ruff、前端构建、正式路由双视口 6/6、Change gate 与独立验收均 PASS。首次 CI `35950072591` 因 3 个文件未通过 Ruff format 被阻断且未进入部署；格式修正提交 `c18ab097378889a9eb27c5d9a3d8c1134be47220` 通过 CI `35950302499` 和生产部署 `35950473730`，容器 Healthy、公网 `/health` 为 `status=ok`。生产只读核对显示 E65A 已于部署前的 `2026-09-24T01:08:01+00:00` 完成，部署后无活动任务、无新遥测、无新费用记录或预留，本次发布未自动重试或发起付费调用。
 
 ### PD-082 — 批次执行完成与证据覆盖不足必须分开
 
