@@ -106,6 +106,15 @@
   },
   "external_calls": [
     {
+      "provider": "Speechmatics, Soniox, ElevenLabs and Alibaba Cloud DashScope / qwen3.8-max",
+      "data_scope": "Exactly five authorized RiyadBank conversations selected from the frozen production source to cover short/long audio and candidate/no-candidate paths; matching audio is sent only to the three ASR providers, and corresponding conversation text plus ASR evidence only to Qwen3.8-Max",
+      "cost_ceiling": "USD 1 total across the complete S2 normal and controlled-timeout sequence",
+      "stop_condition": "Stop immediately on any duplicate provider dispatch, state regression, cost above USD 1, sent/unknown usage without a durable reservation, P0/P1 correctness defect, authentication error or rate limit. Do not continue to S3, S4 or any E65A rerun under this authorization.",
+      "authorization_decision_id": "PD-084",
+      "status": "Authorized on 2026-09-24; execution and evidence are pending.",
+      "evidence": "verification/s2-external-real-canary-2026-09-24.md"
+    },
+    {
       "provider": "Alibaba Cloud DashScope native API / qwen3.8-max",
       "data_scope": "One deduplicated Event Aligner group from EV-20260923-E65A containing only selected conversations' persisted history events, target events and the three providers' full-call ASR turns; no audio, credentials, unrelated conversations or other batch data",
       "cost_ceiling": "USD 1 total",

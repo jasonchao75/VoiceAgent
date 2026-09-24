@@ -4,12 +4,26 @@
 
 ## Status
 
-- Recorded decisions: 79 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 80 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-23
 
 ## Decisions
+
+### PD-084 — 授权 5 通 S2 external-real canary
+
+- Status: Confirmed
+- Date: 2026-09-24
+- Source question: Q-024；是否按 Option A 授权本次 S2 调用
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；Agent 明确披露 5 通数据、四家供应商、USD 1 硬上限与异常停止条件后，产品负责人确认执行
+- Confirmation quote: “那你搞吧。可以”
+- Decision: 从已授权的利雅得银行冻结数据中选 5 通覆盖长/短音频和候选/无候选结果，向 Speechmatics、Soniox、ElevenLabs 发送对应音频，向 Qwen3.8-Max 发送对话文本与 ASR 证据；本次 S2 总费用硬上限 USD 1。先跑正常路径，再执行一次受控“发送后本地超时”恢复验证。
+- Stop conditions: 出现任何重复供应商调用、状态回退、费用超限、未知用量未入账、P0/P1 数据正确性错误、鉴权或限流异常时立即停止，不进入 S3。
+- Consequences: 只授权本次 S2；不授权 20 通 S3、82 通 S4、E65A 再运行或超出上述数据/厂商/费用范围的其他外部调用。
+- Updated artifacts: `decision-log.md`、`open-questions.md`、`verification/delivery-status.json`、S2 证据记录。
+- Verification: 待记录 5 通冻结 dataset ID/manifest、Batch ID、供应商任务数、Case/请求组/费用台账、受控超时恢复结果和停止条件核对。
 
 ### PD-083 — 发布稳定性收口代码到生产，但不自动重试或付费调用
 
