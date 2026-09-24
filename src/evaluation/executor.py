@@ -72,7 +72,7 @@ island_id/provider candidate pair used by that assignment. Never create IDs or t
 never change an audio island boundary, and never reorder events. Use the supplied raw and
 normalized customer text, adjacent robot context, speaker evidence, and cross-provider
 agreement only to choose among the supplied legal candidates.
-Input JSON: {{payload}}
+The user message contains the complete input JSON exactly once.
 """
 
 

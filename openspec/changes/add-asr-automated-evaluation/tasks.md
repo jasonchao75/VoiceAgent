@@ -260,3 +260,4 @@
 - [x] 14.7 Add migration, restart, repeated-retry, timeout-ledger, zero/partial/full-coverage and mixed-provider regressions; run scoped/full checks, Change gate and independent verification without paid calls or production mutation
 - [x] 14.8 Under PD-083, deploy the independently verified stability closure with backup/rollback evidence; verify CI, production health, deployed SHA and preservation of E65A without any automatic provider dispatch
 - [ ] 14.9 After a separate paid-call authorization, run the staged S2/S3 canaries and any E65A recovery with explicit data scope, cost ceiling and stop conditions before S4 release acceptance
+- [ ] 14.10 Fix the unresolved `{{payload}}` slot that prevents every ambiguous audio-alignment fallback before dispatch; add a regression, independently verify, deploy, and rerun only the stopped PD-084 five-conversation S2 scope (KI-210)

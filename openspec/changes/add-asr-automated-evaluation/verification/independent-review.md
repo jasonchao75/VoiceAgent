@@ -50,3 +50,37 @@ This PASS covers local implementation readiness through task 14.7. It does **not
 - **Fixture/mock:** the full repository suite, focused stability regressions, and intercepted production-route UI scenarios pass.
 - **Local-real:** SQLite migration/restart/idempotency behavior and the built production frontend route were exercised without external providers or production data.
 - **External-real / production:** intentionally not exercised. Supplier billing reconciliation, paid canary behavior, E65A recovery, deployment/rollback, and authenticated production UI confirmation remain task 14.8 evidence, not part of this PASS.
+
+## KI-210 hotfix re-review
+
+- Date: 2026-09-24
+- Result: **PASS — local implementation only**
+- Scope: `_AUDIO_ALIGNMENT_FALLBACK_PROMPT`, its regression, task 14.10, KI-210, and the stopped PD-084 S2 evidence
+
+### Root-cause conclusion
+
+The reported root cause is confirmed. The old fallback system prompt contained `{{payload}}`, while the runtime payload is a dictionary of business fields such as `request_id` and `assignment_candidates`; it has no field named `payload`. The shared strict renderer therefore raised `ValueError: Prompt has unresolved runtime slots: payload` before budget reservation or Qwen dispatch. This exactly explains why the five Pass 1 conversations and twelve full-context ASR requests could finish while all four ambiguous fallback paths stopped before any Qwen reservation/dispatch, followed by failed Case-ASR projections and nine evidence exclusions.
+
+### Fix assessment
+
+The fix is minimal and correct: it removes the invalid runtime slot from the fallback system prompt and states that the complete JSON is carried once in the user message. The existing non-`system_only_payload` branch of `_llm_json` serializes the payload exactly once as `user_message`; the rendered system prompt now contains neither a runtime slot nor the request payload. No retry, state, budget, provider, Case, or batch semantics changed.
+
+The new regression fails on the old template and passes on the new one: it requires strict rendering to succeed, rejects any unresolved `{{...}}` slot, proves the request payload is absent from the system prompt, and confirms the one-user-message contract. Existing ambiguous-audio tests continue to validate legal-ID selection and deterministic evidence rejection.
+
+### Reproducible evidence
+
+| Check | Result |
+|---|---|
+| Old-template deterministic reproduction | PASS: strict rendering raises `ValueError: Prompt has unresolved runtime slots: payload` |
+| New prompt regression | PASS as part of the repository suite |
+| Existing ambiguous-audio fallback regressions | PASS as part of the repository suite |
+| `.venv/bin/pytest -q` | PASS: 305 tests; two pre-existing dependency deprecation warnings |
+| `.venv/bin/ruff check src/evaluation/executor.py tests/test_evaluation.py` | PASS |
+| `.venv/bin/ruff format --check src/evaluation/executor.py tests/test_evaluation.py` | PASS |
+| `git diff --check` | PASS |
+| `python3 scripts/quality/verify_change.py add-asr-automated-evaluation` | PASS with warnings; KI-210 remains Open pending production deployment and authorized S2 rerun |
+| External provider call / production mutation | Not performed |
+
+### Remaining boundary
+
+KI-210 is cleared for the code-release step, but it is not yet production-resolved. Task 14.10 must remain incomplete until the hotfix is independently deployed and the separately authorized, stopped five-conversation PD-084 S2 scope is rerun. That production rerun must prove the four fallback items reach durable Qwen reservation/dispatch without duplicate payload, then verify downstream Case-ASR, Case outcomes, Event Alignment, Pass 2, cost ceiling, and stop conditions. No evidence in this review authorizes a broader S3/S4 or E65A run.

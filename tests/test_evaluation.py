@@ -38,6 +38,7 @@ from src.evaluation.connections import ASRConnectionError
 from src.evaluation.connections import test_asr_connection as run_asr_connection_test
 from src.evaluation.dataset import audit_dataset
 from src.evaluation.executor import (
+    _AUDIO_ALIGNMENT_FALLBACK_PROMPT,
     EvaluationBudgetReached,
     EvaluationExecutionError,
     EvaluationRequestOutputTooLarge,
@@ -108,6 +109,17 @@ def test_qwen_timeouts_and_reasoning_effort_follow_the_frozen_stage_policy() -> 
     assert _qwen_reasoning_effort(thinking=False, stage="pass_1") is None
     assert _qwen_reasoning_effort(thinking=True, stage="pass_2") == "medium"
     assert _qwen_reasoning_effort(thinking=True, stage="other") == "high"
+
+
+def test_audio_alignment_fallback_prompt_has_no_unresolved_or_duplicate_payload_slot() -> None:
+    """Fallback payload stays in the user message instead of an unresolved system slot."""
+    payload = {"request_id": "audio-alignment-request", "assignment_candidates": []}
+
+    rendered = _render_prompt(_AUDIO_ALIGNMENT_FALLBACK_PROMPT, payload)
+
+    assert "{{" not in rendered
+    assert payload["request_id"] not in rendered
+    assert "complete input JSON exactly once" in rendered
 
 
 @pytest.mark.asyncio

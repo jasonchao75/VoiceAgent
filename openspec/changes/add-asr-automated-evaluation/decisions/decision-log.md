@@ -23,7 +23,7 @@
 - Stop conditions: 出现任何重复供应商调用、状态回退、费用超限、未知用量未入账、P0/P1 数据正确性错误、鉴权或限流异常时立即停止，不进入 S3。
 - Consequences: 只授权本次 S2；不授权 20 通 S3、82 通 S4、E65A 再运行或超出上述数据/厂商/费用范围的其他外部调用。
 - Updated artifacts: `decision-log.md`、`open-questions.md`、`verification/delivery-status.json`、S2 证据记录。
-- Verification: 待记录 5 通冻结 dataset ID/manifest、Batch ID、供应商任务数、Case/请求组/费用台账、受控超时恢复结果和停止条件核对。
+- Verification: 正常路径第 1 次尝试 `EV-20260924-EF94` 在 USD 0.03971245 时命中 P1 停止条件：5 个 Pass 1 结果和 12 个 full-context ASR 完成，13 个预留全部 settled，但未解析的 `{{payload}}` Prompt 槽位使 4 个 Audio Alignment fallback 均在发送前失败，导致 27 个 Case-ASR 失败、9 个 Case 全部排除。已停止受控超时和 S3；KI-210 修复、独立验收、发布及同范围重跑待完成。
 
 ### PD-083 — 发布稳定性收口代码到生产，但不自动重试或付费调用
 

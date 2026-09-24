@@ -111,7 +111,7 @@
       "cost_ceiling": "USD 1 total across the complete S2 normal and controlled-timeout sequence",
       "stop_condition": "Stop immediately on any duplicate provider dispatch, state regression, cost above USD 1, sent/unknown usage without a durable reservation, P0/P1 correctness defect, authentication error or rate limit. Do not continue to S3, S4 or any E65A rerun under this authorization.",
       "authorization_decision_id": "PD-084",
-      "status": "Authorized on 2026-09-24; execution and evidence are pending.",
+      "status": "Normal-path attempt 1 executed on 2026-09-24 as EV-20260924-EF94 and stopped under the authorized P1 condition. Five Pass 1 results and twelve full-context ASR calls completed; all thirteen reservations settled; frozen-rate cost was USD 0.03971245. All twenty-seven Case-ASR projections then failed locally because the audio-alignment fallback Prompt contained an unresolved {{payload}} slot, excluding all nine Cases before Event Alignment/Pass 2. No fallback provider request was sent. Controlled-timeout and S3 were not run. KI-210 tracks the repair and same-scope rerun.",
       "evidence": "verification/s2-external-real-canary-2026-09-24.md"
     },
     {
@@ -2147,6 +2147,16 @@
       "source": "GitHub Actions run 35950072591 on 2026-09-24 reported that src/evaluation/executor.py, src/evaluation/storage.py and tests/test_evaluation.py would be reformatted.",
       "next_action": "Apply the repository formatter to the three files, run the exact CI backend sequence locally, push a format-only correction and require a green replacement CI run before deployment.",
       "resolution": "The three files were formatted without business-logic changes. Local Ruff format/check, 304 repository tests and frontend build passed; authoritative Python 3.11 CI run 35950302499 then passed every backend, frontend and image step, and production deployment run 35950473730 succeeded at commit c18ab097378889a9eb27c5d9a3d8c1134be47220.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-210",
+      "status": "open",
+      "summary": "The first PD-084 five-conversation production canary completed execution but all 27 Case-ASR tasks failed, excluding all nine Cases before Event Alignment and Pass 2.",
+      "impact": "Batch EV-20260924-EF94 truthfully reports completed at 100% under PD-082, but it produced zero evaluable Cases and therefore cannot satisfy S2. Continuing to the controlled-timeout check or S3 would hide a real P1 external path defect.",
+      "source": "Read-only production evidence on 2026-09-24: five Pass 1 conversations completed; 12 full-context ASR calls settled; evaluation_case_asr_runs has 27 failed rows; evaluation_case_outcomes has nine excluded_insufficient_evidence rows; Event Alignment and Pass 2 have zero rows; total frozen-rate cost is USD 0.03971245 with 13 settled reservations and no active/unknown usage.",
+      "next_action": "Keep PD-084 stopped, inspect the 27 safe error payloads and production logs, reproduce deterministically, fix the common Case-ASR failure without changing completed-batch semantics, independently verify and redeploy before a narrowly authorized rerun.",
+      "resolution": null,
       "disclosed_to_user": true
     }
   ],
