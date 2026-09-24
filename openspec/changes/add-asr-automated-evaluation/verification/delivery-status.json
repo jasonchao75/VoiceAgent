@@ -2186,9 +2186,26 @@
       "next_action": "PD-086 explicitly defers Turn anomaly redesign and removes it from the current delivery scope. Keep all user-visible Turn Case output, queue, report and review surfaces disabled; ignore uncertain Turn evidence; preserve all 154 internal historical rows. Any future redesign, recalculation or restoration requires a separately confirmed Change and independent verification.",
       "resolution": null,
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-213",
+      "status": "open",
+      "summary": "Evaluation upload and batch creation have archive safety ceilings but no operational conversation-count cap, remaining-disk admission check, or supported chunking workflow for large datasets.",
+      "impact": "A valid large upload becomes an immutable active dataset and every new batch includes all valid conversations. Hundreds of conversations can therefore create long-running Pass 1 work and up to providers × candidate-conversations full-call ASR jobs, while repeated immutable uploads consume the small production disk until deployment or application writes fail.",
+      "source": "Read-only code and production-capacity inspection on 2026-09-24: HTTP upload permits 512 MiB, nginx permits 500 MiB, archive extraction permits 5000 files/2 GiB expanded/512 MiB per member, and create_batch uses the active dataset's complete conversation_count. Production has 5.4 GiB free at 77% disk utilization, 961 MiB RAM with 346 MiB available, and a 441 MiB Evaluation volume. The local 0707-0731 package is 137,754,135 bytes compressed, 613,765,900 bytes expanded, 2,658 dataset files and 886 conversations.",
+      "next_action": "Before treating large uploads as generally supported, add a disk-space admission margin, an explicit per-batch conversation cap or dataset slicing flow, a pre-run task/cost estimate, and retained-dataset lifecycle controls; verify them with a non-paid large-package load test.",
+      "resolution": null,
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
+    {
+      "id": "UV-041",
+      "status": "open",
+      "summary": "Hundreds-of-conversations upload validation and batch execution have not been load-tested on the production-sized 1 GiB host.",
+      "reason": "Static limits show that a roughly 100-140 MiB ZIP containing 886 conversations fits the file-count, compressed-size and expanded-size guards, but no evidence proves upload/audit latency, memory headroom, full-batch duration, provider throttling, recovery behavior or cost at that scale. No large package was uploaded and no provider call was made during this diagnostic.",
+      "disclosed_to_user": true
+    },
     {
       "id": "UV-040",
       "status": "resolved",
