@@ -2120,6 +2120,16 @@
       "next_action": "Make the retry plan an execution whitelist, classify legacy errors conservatively, block duplicate dispatch for sent/unknown reservations, scope router/media reads to batch datasets, persist excluded_insufficient_evidence Cases, and add restart/migration/lineage/UI regressions before re-review.",
       "resolution": "The retry plan now derives from the canonical workset and is enforced at every current and legacy dispatch boundary, including audio-alignment fallback. Sent/unknown/settled identities fail closed after restart; historical API/media reads require the frozen batch dataset; Case exclusions persist independently. Migration/restart, mixed-provider satisfied evidence, bounded lineage and desktop/narrow formal-route regressions pass, and independent technical re-review found no remaining B-01–B-07 implementation blocker.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-209",
+      "status": "open",
+      "summary": "The first production release attempt was blocked because three changed Python files did not pass the CI Ruff format check.",
+      "impact": "CI run 35950072591 stopped in backend checks before image publication and deployment, so production remains unchanged.",
+      "source": "GitHub Actions run 35950072591 on 2026-09-24 reported that src/evaluation/executor.py, src/evaluation/storage.py and tests/test_evaluation.py would be reformatted.",
+      "next_action": "Apply the repository formatter to the three files, run the exact CI backend sequence locally, push a format-only correction and require a green replacement CI run before deployment.",
+      "resolution": null,
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [

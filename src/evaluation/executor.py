@@ -831,9 +831,7 @@ class EvaluationRunner:
         provider_status_by_case: dict[tuple[str, str], dict[str, str]] = {}
         for row in asr_rows:
             key = (str(row["conversation_id"]), str(row["event_id"]))
-            provider_status_by_case.setdefault(key, {})[str(row["provider"])] = str(
-                row["status"]
-            )
+            provider_status_by_case.setdefault(key, {})[str(row["provider"])] = str(row["status"])
         for conversation_id, event_id in sorted(candidate_keys):
             has_evidence = (conversation_id, event_id) in evidence_case_keys
             await self.store.checkpoint_case_outcome(
@@ -1048,19 +1046,11 @@ class EvaluationRunner:
             await self.store.freeze_preliminary_report(batch_id)
             return
         review_count, benchmark_count = await self.store.materialize_pass2_results(batch_id)
-        terminal_status = (
-            "awaiting_review"
-            if review_count
-            else "completed"
-        )
+        terminal_status = "awaiting_review" if review_count else "completed"
         await self.store.set_batch_state(
             batch_id,
             status=terminal_status,
-            stage=(
-                "manual_review"
-                if review_count
-                else "completed"
-            ),
+            stage=("manual_review" if review_count else "completed"),
             progress=92 if review_count else 100,
             review_total=review_count,
             snapshot_updates={
@@ -1606,9 +1596,7 @@ class EvaluationRunner:
         try:
             groups = pack_pass_one_units(
                 batch_id=(
-                    batch_id
-                    if retry_generation == 0
-                    else f"{batch_id}:retry:{retry_generation}"
+                    batch_id if retry_generation == 0 else f"{batch_id}:retry:{retry_generation}"
                 ),
                 units=units,
                 system_prompt=prompt,
@@ -1919,9 +1907,9 @@ class EvaluationRunner:
             conversation_id = str(conversation["conversation_id"])
             if existing.get(conversation_id, {}).get("status") == "completed":
                 return
-            if int(snapshot.get("retry_generation") or 0) and not await (
-                self.store.retry_item_allowed(batch_id, "pass1", (conversation_id,))
-            ):
+            if int(
+                snapshot.get("retry_generation") or 0
+            ) and not await self.store.retry_item_allowed(batch_id, "pass1", (conversation_id,)):
                 return
             payload = {
                 "conversation_history": conversation["events"],
@@ -2382,9 +2370,7 @@ class EvaluationRunner:
             )
         model_id = str(batch["snapshot"]["pass_1_model"])
         lineage_batch_id = (
-            batch_id
-            if retry_generation == 0
-            else f"{batch_id}:retry:{retry_generation}"
+            batch_id if retry_generation == 0 else f"{batch_id}:retry:{retry_generation}"
         )
         provider = await self._model_provider(model_id)
         policy = evaluation_token_policy(provider, model_id.split("::", 1)[-1])
@@ -2683,12 +2669,12 @@ class EvaluationRunner:
         ambiguous = [case for case in cases if case["alignment_status"] == "ambiguous"]
         if not ambiguous:
             return cases, False
-        if int(batch["snapshot"].get("retry_generation") or 0) and not await (
-            self.store.retry_item_allowed(
-                batch_id,
-                "event_alignment",
-                (str(conversation["conversation_id"]),),
-            )
+        if int(
+            batch["snapshot"].get("retry_generation") or 0
+        ) and not await self.store.retry_item_allowed(
+            batch_id,
+            "event_alignment",
+            (str(conversation["conversation_id"]),),
         ):
             return cases, False
         assignment_candidates = list(ambiguous[0].get("assignment_candidates") or [])
@@ -2911,10 +2897,10 @@ class EvaluationRunner:
                 prior.get("result")
             ):
                 return
-            if int(batch["snapshot"].get("retry_generation") or 0) and not await (
-                self.store.retry_item_allowed(
-                    batch_id, "asr", (provider, conversation_id)
-                )
+            if int(
+                batch["snapshot"].get("retry_generation") or 0
+            ) and not await self.store.retry_item_allowed(
+                batch_id, "asr", (provider, conversation_id)
             ):
                 return
             if prior.get("status") == "failed" and not _persisted_asr_error_retryable(
@@ -3707,8 +3693,8 @@ class EvaluationRunner:
             scoped_candidates: list[dict[str, Any]] = []
             for candidate in candidates:
                 key = (str(candidate["conversation_id"]), str(candidate["event_id"]))
-                if pass2_status.get(key) != "completed" and await (
-                    self.store.retry_item_allowed(batch_id, "pass2", key)
+                if pass2_status.get(key) != "completed" and await self.store.retry_item_allowed(
+                    batch_id, "pass2", key
                 ):
                     scoped_candidates.append(candidate)
             candidates = scoped_candidates

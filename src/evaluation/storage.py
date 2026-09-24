@@ -768,9 +768,7 @@ class EvaluationStore:
                 ).fetchall()
             }
             if "dataset_id" not in batch_columns:
-                await database.execute(
-                    "ALTER TABLE evaluation_batches ADD COLUMN dataset_id TEXT"
-                )
+                await database.execute("ALTER TABLE evaluation_batches ADD COLUMN dataset_id TEXT")
             if "dataset_binding_status" not in batch_columns:
                 await database.execute(
                     """ALTER TABLE evaluation_batches ADD COLUMN dataset_binding_status TEXT
@@ -1938,9 +1936,7 @@ class EvaluationStore:
         content_manifest = {
             "source_name": source_name,
             "audit": audit.to_dict(include_conversations=False),
-            "conversation_ids": sorted(
-                str(item["conversation_id"]) for item in conversations
-            ),
+            "conversation_ids": sorted(str(item["conversation_id"]) for item in conversations),
             "files": sorted(files, key=lambda item: str(item["path"])),
         }
         manifest_hash = sha256(_json(content_manifest).encode("utf-8")).hexdigest()
@@ -1971,10 +1967,7 @@ class EvaluationStore:
             """INSERT INTO evaluation_dataset_conversations (
                    dataset_id,conversation_id,payload_json
                ) VALUES (?,?,?)""",
-            [
-                (dataset_id, str(item["conversation_id"]), _json(item))
-                for item in conversations
-            ],
+            [(dataset_id, str(item["conversation_id"]), _json(item)) for item in conversations],
         )
         return {
             "dataset_id": dataset_id,
@@ -2354,9 +2347,8 @@ class EvaluationStore:
             if self._active_dataset
             else "benchmarks/RiyadBankConversation"
         )
-        result["dataset_id"] = (
-            self._active_dataset_version_id
-            or (self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source")
+        result["dataset_id"] = self._active_dataset_version_id or (
+            self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source"
         )
         result["active"] = True
         return result
@@ -2374,9 +2366,8 @@ class EvaluationStore:
             if self._active_dataset
             else "benchmarks/RiyadBankConversation"
         )
-        result["dataset_id"] = (
-            self._active_dataset_version_id
-            or (self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source")
+        result["dataset_id"] = self._active_dataset_version_id or (
+            self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source"
         )
         result["active"] = True
         return result
@@ -2402,10 +2393,7 @@ class EvaluationStore:
                 ).fetchone()
                 if binding is None:
                     raise LookupError("Batch not found")
-                if (
-                    str(binding["dataset_binding_status"]) != "bound"
-                    or not binding["dataset_id"]
-                ):
+                if str(binding["dataset_binding_status"]) != "bound" or not binding["dataset_id"]:
                     raise ValueError(
                         "Historical batch is legacy_unbound; "
                         "source-dependent reprocessing is blocked"
@@ -4803,9 +4791,7 @@ class EvaluationStore:
         coverage = batch["snapshot"].get("coverage") or {
             "eligible": len(cases),
             "excluded": excluded_count,
-            "exclusion_reason": (
-                "pass_1_failed_or_unavailable" if excluded_count else None
-            ),
+            "exclusion_reason": ("pass_1_failed_or_unavailable" if excluded_count else None),
         }
         completed_cases = [
             case
@@ -4833,15 +4819,18 @@ class EvaluationStore:
             "valid_user_events": valid_events,
             "source_user_events": source_user_events,
             "excluded_count": excluded_count,
-            "excluded_reasons": ([
-                {
-                    "reason": str(
-                        coverage.get("exclusion_reason")
-                        or "pass_1_failed_or_unavailable"
-                    ),
-                    "count": int(coverage.get("excluded") or excluded_count),
-                }
-            ] if excluded_count or coverage.get("excluded") else []),
+            "excluded_reasons": (
+                [
+                    {
+                        "reason": str(
+                            coverage.get("exclusion_reason") or "pass_1_failed_or_unavailable"
+                        ),
+                        "count": int(coverage.get("excluded") or excluded_count),
+                    }
+                ]
+                if excluded_count or coverage.get("excluded")
+                else []
+            ),
             "coverage": coverage,
             "batch_lifecycle": batch["status"],
             "source_warning_counts": batch["snapshot"].get("source_warning_counts", {}),
@@ -6412,10 +6401,7 @@ class EvaluationStore:
             ).fetchone()
             if batch is None:
                 raise LookupError("Batch not found")
-            if (
-                str(batch["dataset_binding_status"]) != "bound"
-                or not batch["dataset_id"]
-            ):
+            if str(batch["dataset_binding_status"]) != "bound" or not batch["dataset_id"]:
                 raise ValueError(
                     "Historical batch is legacy_unbound; source-dependent retry is blocked"
                 )
@@ -7038,11 +7024,7 @@ class EvaluationStore:
             raise ValueError("Batch dataset binding is unavailable")
         manifest = json.loads(str(row[0]))
         expected = next(
-            (
-                item
-                for item in manifest.get("files", [])
-                if str(item.get("path")) == relative_path
-            ),
+            (item for item in manifest.get("files", []) if str(item.get("path")) == relative_path),
             None,
         )
         actual = await asyncio.to_thread(self._file_fingerprint, root, relative_path)
@@ -7569,9 +7551,7 @@ class EvaluationStore:
                 "suspected_numerator": latest_evaluated["suspected_numerator"],
                 "valid_user_events": latest_evaluated["denominator"],
                 "suspected_rate": round(
-                    latest_evaluated["suspected_numerator"]
-                    / latest_evaluated["denominator"]
-                    * 100,
+                    latest_evaluated["suspected_numerator"] / latest_evaluated["denominator"] * 100,
                     1,
                 ),
             }

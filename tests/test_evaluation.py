@@ -5917,9 +5917,7 @@ async def test_event_alignment_retry_opens_new_bounded_lineage(
         status="completed",
         stage="completed",
         progress=100,
-        snapshot_updates={
-            "pass_2_canonical_case_keys": [[_VALID_CONVERSATION_ID, event_id]]
-        },
+        snapshot_updates={"pass_2_canonical_case_keys": [[_VALID_CONVERSATION_ID, event_id]]},
     )
     plan = await evaluation_store.retry_plan(str(batch["id"]))
     retried = await evaluation_store.act_on_batch(
@@ -5977,10 +5975,7 @@ async def test_event_alignment_retry_opens_new_bounded_lineage(
                                 {
                                     "provider": provider_name,
                                     "status": "mapped",
-                                    "turn_id": (
-                                        f"{_VALID_CONVERSATION_ID}:"
-                                        f"{provider_name}:turn:1"
-                                    ),
+                                    "turn_id": (f"{_VALID_CONVERSATION_ID}:{provider_name}:turn:1"),
                                 }
                                 for provider_name in ("soniox", "speechmatics")
                             ],
@@ -6004,8 +5999,7 @@ async def test_event_alignment_retry_opens_new_bounded_lineage(
     assert len(calls) == 1
     assert any(row["group_id"] == "EAG-OLD-EXHAUSTED" for row in groups)
     assert any(
-        row["status"] == "completed" and row["group_id"] != "EAG-OLD-EXHAUSTED"
-        for row in groups
+        row["status"] == "completed" and row["group_id"] != "EAG-OLD-EXHAUSTED" for row in groups
     )
 
 
@@ -7059,9 +7053,7 @@ async def test_retry_plan_filters_deterministic_failures_and_is_version_bound(
     plan = await evaluation_store.retry_plan(str(batch["id"]))
     assert len(plan["eligible_items"]) == 1
     assert len(plan["skipped_items"]) == 4
-    assert plan["estimated_max_retry_cost_usd"] == pytest.approx(
-        plan["hard_budget_remaining_usd"]
-    )
+    assert plan["estimated_max_retry_cost_usd"] == pytest.approx(plan["hard_budget_remaining_usd"])
     retried = await evaluation_store.act_on_batch(
         str(batch["id"]),
         EvaluationBatchAction(
