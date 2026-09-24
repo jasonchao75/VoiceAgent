@@ -76,27 +76,11 @@ def test_running_batches_show_live_request_elapsed_time_without_verbose_history(
     assert "<b>6 人工复核</b>" in PAGE
 
 
-def test_historical_turn_review_has_a_separate_queue_and_report_section() -> None:
-    """Historical Turn issues must stay separate from ASR review and error rates."""
-    assert 'data-review-mode="turn"' in PAGE
+def test_historical_turn_review_is_hidden_while_recalculation_is_pending() -> None:
+    """Untrusted Turn candidates must not remain visible during recalculation."""
+    assert 'data-review-mode="turn" role="tab" aria-selected="false" hidden' in PAGE
     assert 'data-en="ASR Case review" data-zh="ASR Case 复核"' in PAGE
-    assert 'data-en="Historical Turn review" data-zh="Turn 异常复核"' in PAGE
-    assert 'data-en="Pending Turn issue groups" data-zh="Turn 异常待处理"' in PAGE
-    assert 'class="turn-queue-count"' in PAGE
-    assert 'data-review-panel="turn"' in PAGE
-    assert 'id="historical-turn-quality"' in PAGE
-    assert "function renderHistoricalTurnIssues(allIssues = [])" in RUNTIME
-    assert "async function refreshReviewQueues()" in RUNTIME
-    assert RUNTIME.count("if (!await refreshReviewQueues()) return;") >= 3
-    assert "renderHistoricalTurnIssues(runtime.bootstrap.historical_turn_issues || []);" in RUNTIME
-    assert "/api/evaluation/historical-turn-issues/" in RUNTIME
-    assert 'copy("Confirm Turn issue", "确认 Turn 异常")' in RUNTIME
-    assert 'copy("Not a Turn issue", "不是 Turn 异常")' in RUNTIME
-    assert 'copy("Historical wrong merge", "历史 Turn 错并")' in RUNTIME
-    assert 'copy("Historical order anomaly", "历史 Turn 错序")' in RUNTIME
-    assert (
-        'copy("Suggested Case mapping and audio evidence", "建议 Case 映射与音频证据")' in RUNTIME
-    )
-    assert 'class="turn-report-audio"' in RUNTIME
-    assert "turnQuality.confirmed_group_count" in RUNTIME
-    assert "turnQuality.affected_turn_row_count" in RUNTIME
+    assert 'id="historical-turn-quality" hidden' in PAGE
+    css = Path("frontend/src/evaluation-runtime.css").read_text(encoding="utf-8")
+    assert "#historical-turn-quality" in css
+    assert "display: none !important" in css

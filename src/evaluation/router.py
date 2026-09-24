@@ -47,6 +47,8 @@ from src.evaluation.pricing import (
 )
 from src.evaluation.storage import EvaluationStore
 
+_HISTORICAL_TURN_REVIEW_PAUSED = True
+
 
 def _safe_slug(value: str) -> str:
     """Convert controlled grouping values to filesystem-safe ZIP paths."""
@@ -228,7 +230,12 @@ def create_evaluation_router(
             "summary": await store.summary(),
             "batches": await store.list_batches(),
             "reviews": await store.list_reviews("pending"),
-            "historical_turn_issues": await store.list_historical_turn_issues("open"),
+            "historical_turn_review_paused": _HISTORICAL_TURN_REVIEW_PAUSED,
+            "historical_turn_issues": (
+                []
+                if _HISTORICAL_TURN_REVIEW_PAUSED
+                else await store.list_historical_turn_issues("open")
+            ),
             "benchmarks": await store.list_benchmarks(limit=20),
             "scenario_tags": await store.list_scenario_tags(),
             "reference_dictionaries": await store.list_reference_dictionaries(),
@@ -863,6 +870,8 @@ def create_evaluation_router(
             pattern="^(open|pending|deferred|confirmed|rejected|all)$",
         ),
     ) -> list[dict[str, object]]:
+        if _HISTORICAL_TURN_REVIEW_PAUSED:
+            return []
         return await store.list_historical_turn_issues(status)
 
     @router.post("/historical-turn-issues/{issue_group_id}/decision")
@@ -870,6 +879,11 @@ def create_evaluation_router(
         issue_group_id: str,
         payload: HistoricalTurnReviewSubmit,
     ) -> dict[str, object]:
+        if _HISTORICAL_TURN_REVIEW_PAUSED:
+            raise HTTPException(
+                status_code=409,
+                detail="Historical Turn review is paused pending recalculation.",
+            )
         try:
             return await store.submit_historical_turn_review(issue_group_id, payload)
         except LookupError as exc:
@@ -884,6 +898,11 @@ def create_evaluation_router(
         issue_group_id: str,
         audio_island_id: str | None = Query(default=None),
     ) -> FileResponse:
+        if _HISTORICAL_TURN_REVIEW_PAUSED:
+            raise HTTPException(
+                status_code=404,
+                detail="Historical Turn review is paused pending recalculation.",
+            )
         path = await store.historical_turn_issue_audio_path(
             issue_group_id,
             audio_island_id,

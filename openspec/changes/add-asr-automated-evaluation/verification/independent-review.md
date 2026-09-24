@@ -84,3 +84,45 @@ The new regression fails on the old template and passes on the new one: it requi
 ### Remaining boundary
 
 KI-210 is cleared for the code-release step, but it is not yet production-resolved. Task 14.10 must remain incomplete until the hotfix is independently deployed and the separately authorized, stopped five-conversation PD-084 S2 scope is rerun. That production rerun must prove the four fallback items reach durable Qwen reservation/dispatch without duplicate payload, then verify downstream Case-ASR, Case outcomes, Event Alignment, Pass 2, cost ceiling, and stop conditions. No evidence in this review authorizes a broader S3/S4 or E65A run.
+
+## KI-211 and PD-085 / KI-212 pre-deployment review
+
+- Date: 2026-09-24
+- Result: **PASS — local implementation only**
+- Scope: Qwen3.8-Max audio-alignment strict JSON Schema, safe rejection and alignment-failure classification; immediate Historical Turn presentation/write suspension without deleting history
+
+### KI-211 conclusion
+
+The native DashScope request now carries a call-specific `response_format` with `type=json_schema`, a named schema, `strict=true`, required fields, `additionalProperties=false`, and enums limited to the frozen request, assignment, island, provider, and turn identifiers. The request uses Qwen3.8-Max with thinking disabled, and keeps the existing deterministic tuple/ownership/order validation after parsing. A rejected response is logged with a bounded, content-safe reason; downstream projection failures are classified as non-retryable `event_alignment_failed` rather than an ASR provider outage.
+
+This matches Alibaba Cloud's current native DashScope contract: Qwen3.8-Max supports JSON Schema structured output; native requests place `response_format` under `parameters`; the documented object contains `type`, `json_schema.name`, `json_schema.schema`, and `json_schema.strict`; and the documented constraints include `enum`, `required`, and `additionalProperties`. The initial use of undocumented `const` was rejected during this review and replaced with a supported one-value `enum` before PASS.
+
+Official references:
+
+- https://docs.modelstudio.console.alibabacloud.com/en/model-studio/qwen-structured-output
+- https://docs.modelstudio.console.alibabacloud.com/en/model-studio/qwen-api-via-dashscope
+
+### PD-085 / KI-212 conclusion
+
+The suspension is fail-closed at every exposed Historical Turn surface: bootstrap and list return an empty queue without reading candidates, decision writes return HTTP 409, and audio returns HTTP 404. The production HTML hides the Turn tab, Turn panel, and report card. ASR Case review remains available and passed its existing desktop/narrow regression.
+
+Historical data is preserved. The regression creates a real persisted Historical Turn row, records `issue_group_id/status/version`, calls the suspended bootstrap/list/write routes, then reads SQLite directly and proves the row is unchanged. No delete, migration, recomputation, or candidate-generation behavior was added to the suspension.
+
+### Reproducible evidence
+
+| Check | Result |
+|---|---|
+| KI-211 / KI-212 focused backend selection | PASS: 7 tests before the final persistence strengthening; final regression is included in the full suite |
+| Historical Turn hidden report/tab, desktop + narrow Chromium | PASS: 4/4 |
+| Existing ASR Case review, desktop + narrow Chromium | PASS: 2/2 |
+| `.venv/bin/pytest -q` | PASS: 308 tests; two pre-existing dependency deprecation warnings |
+| `.venv/bin/ruff check src/evaluation src/llm/qwen_dashscope.py tests/test_evaluation.py tests/test_qwen_dashscope.py` | PASS |
+| `.venv/bin/ruff format --check src/evaluation src/llm/qwen_dashscope.py tests/test_evaluation.py tests/test_qwen_dashscope.py` | PASS |
+| `npm run build` | PASS |
+| `git diff --check` | PASS |
+| `python3 scripts/quality/verify_change.py add-asr-automated-evaluation` | PASS with warnings; KI-211 and KI-212 remain Open pending deployment/production evidence |
+| Provider call / production write | Not performed |
+
+### Remaining boundary
+
+The increment is cleared for the code-release step, not declared production-resolved. KI-211 still requires deployment and a separately authorized external-real rerun proving that the production Qwen endpoint accepts the exact schema and that validated fallback output reaches usable Case-ASR, Event Alignment, and Pass 2 without misclassifying ASR providers. KI-212 still requires deployment and authenticated production read-only confirmation that the Turn tab/report/counts are absent, list/bootstrap are empty, writes are blocked, ASR Case review remains usable, and historical row counts/versions are unchanged. Recalculation and re-enabling the Turn feature remain task 14.13 and are outside this PASS.

@@ -45,6 +45,7 @@ from src.evaluation.executor import (
     EvaluationRequestTooLarge,
     EvaluationRunner,
     _asr_error,
+    _audio_alignment_response_format,
     _completion_limit_field,
     _current_pass2_failures,
     _gemini_thinking_config,
@@ -120,6 +121,33 @@ def test_audio_alignment_fallback_prompt_has_no_unresolved_or_duplicate_payload_
     assert "{{" not in rendered
     assert payload["request_id"] not in rendered
     assert "complete input JSON exactly once" in rendered
+
+
+def test_audio_alignment_fallback_uses_strict_dynamic_json_schema() -> None:
+    """Fallback output must be limited to the frozen legal IDs and exact shape."""
+    payload = {
+        "request_id": "request-1",
+        "assignment_candidates": [{"assignment_id": "assignment-1"}],
+        "provider_turn_candidates": [
+            {
+                "island_id": "island-1",
+                "provider": "soniox",
+                "turn_id": "turn-1",
+            }
+        ],
+    }
+
+    response_format = _audio_alignment_response_format(payload)
+    schema = response_format["json_schema"]["schema"]
+
+    assert response_format["type"] == "json_schema"
+    assert response_format["json_schema"]["strict"] is True
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["request_id"]["enum"] == ["request-1"]
+    assert schema["properties"]["assignment_id"]["enum"] == ["assignment-1"]
+    turn_schema = schema["properties"]["provider_turns"]["items"]
+    assert turn_schema["additionalProperties"] is False
+    assert turn_schema["properties"]["turn_id"]["enum"] == ["turn-1"]
 
 
 @pytest.mark.asyncio
@@ -473,6 +501,19 @@ def test_asr_failures_keep_actionable_categories_without_upstream_payloads() -> 
     }
     assert "secret provider body" not in json.dumps(rejected)
     assert empty["category"] == "empty_transcript"
+
+    alignment = json.loads(
+        _asr_error(
+            "soniox",
+            ValueError("Audio-first alignment remains ambiguous: provider_turn_role_conflict"),
+        )
+    )
+    assert alignment == {
+        "provider": "soniox",
+        "category": "event_alignment_failed",
+        "retryable": False,
+        "message": "Audio-first alignment remains ambiguous: provider_turn_role_conflict",
+    }
     assert empty["retryable"] is True
 
 
@@ -1396,6 +1437,84 @@ async def test_historical_turn_issue_detects_wrong_merge_and_order_anomaly(
         for evidence in wrong_merge["audio_evidence"]["islands"]
     ]
     assert clips == [None, None]
+
+
+@pytest.mark.asyncio
+async def test_historical_turn_review_routes_are_paused_without_deleting_history(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Paused production routes expose no queue and reject stale review writes."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Paused Historical Turn review",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="paused-historical-turn-review-001",
+        )
+    )
+    await evaluation_store.checkpoint_evaluation_case(
+        str(batch["id"]),
+        {
+            "case_id": "CASE-PAUSED-R1-R2",
+            "conversation_id": "C-paused-turn",
+            "primary_event_id": "R1",
+            "target_event_ids": ["R1", "R2"],
+            "source_event_ids": ["R1", "R2"],
+            "audio_island_id": "C-paused-turn:island:1",
+            "start_s": 1.0,
+            "end_s": 2.0,
+            "boundary_rule": "pure_user_audio_island_v1",
+            "alignment_method": "monotonic_audio_first_v1",
+            "alignment_status": "deterministic_aligned",
+            "ambiguity_reasons": [],
+            "historical_time_used": False,
+            "historical_text_forms": [],
+            "island": {},
+            "providers": [],
+        },
+    )
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        before = await database.execute_fetchall(
+            "SELECT issue_group_id, status, version FROM evaluation_historical_turn_issues"
+        )
+    assert len(before) == 1
+
+    async def unexpected_list(_status: str = "pending") -> list[dict[str, object]]:
+        raise AssertionError("paused routes must not load historical Turn candidates")
+
+    monkeypatch.setattr(
+        evaluation_store,
+        "list_historical_turn_issues",
+        unexpected_list,
+    )
+    app = FastAPI()
+    app.include_router(create_evaluation_router(evaluation_store))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        bootstrap = await client.get("/api/evaluation/bootstrap")
+        listed = await client.get("/api/evaluation/historical-turn-issues")
+        submitted = await client.post(
+            "/api/evaluation/historical-turn-issues/stale-issue/decision",
+            json={
+                "decision": "reject",
+                "expected_version": 1,
+                "idempotency_key": "paused-turn-review-write",
+            },
+        )
+
+    assert bootstrap.status_code == 200
+    assert bootstrap.json()["historical_turn_review_paused"] is True
+    assert bootstrap.json()["historical_turn_issues"] == []
+    assert listed.status_code == 200
+    assert listed.json() == []
+    assert submitted.status_code == 409
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        after = await database.execute_fetchall(
+            "SELECT issue_group_id, status, version FROM evaluation_historical_turn_issues"
+        )
+    assert after == before
 
 
 @pytest.mark.asyncio

@@ -111,7 +111,7 @@
       "cost_ceiling": "USD 1 total across the complete S2 normal and controlled-timeout sequence",
       "stop_condition": "Stop immediately on any duplicate provider dispatch, state regression, cost above USD 1, sent/unknown usage without a durable reservation, P0/P1 correctness defect, authentication error or rate limit. Do not continue to S3, S4 or any E65A rerun under this authorization.",
       "authorization_decision_id": "PD-084",
-      "status": "Normal-path attempt 1 executed on 2026-09-24 as EV-20260924-EF94 and stopped under the authorized P1 condition. Five Pass 1 results and twelve full-context ASR calls completed; all thirteen reservations settled; frozen-rate cost was USD 0.03971245. All twenty-seven Case-ASR projections then failed locally because the audio-alignment fallback Prompt contained an unresolved {{payload}} slot, excluding all nine Cases before Event Alignment/Pass 2. No fallback provider request was sent. Controlled-timeout and S3 were not run. KI-210 tracks the repair and same-scope rerun.",
+      "status": "Normal-path attempt 1 EV-20260924-EF94 stopped at USD 0.03971245 before fallback dispatch because of KI-210. After independent verification and deployment, explicitly reauthorized normal-path attempt 2 EV-20260924-9550 completed five Pass 1 conversations, twelve full-context ASR calls and four settled Qwen audio-alignment fallback calls at USD 0.12006345, proving KI-210 fixed. The fallback response still failed the deterministic local contract, so twenty-seven Case-ASR projections were unavailable and nine Cases were excluded before Event Alignment/Pass 2. The cumulative recorded cost is USD 0.15977590. Controlled-timeout and S3 were not run; KI-211 tracks the stopped downstream repair.",
       "evidence": "verification/s2-external-real-canary-2026-09-24.md"
     },
     {
@@ -2151,11 +2151,31 @@
     },
     {
       "id": "KI-210",
-      "status": "open",
+      "status": "resolved",
       "summary": "The first PD-084 five-conversation production canary completed execution but all 27 Case-ASR tasks failed, excluding all nine Cases before Event Alignment and Pass 2.",
       "impact": "Batch EV-20260924-EF94 truthfully reports completed at 100% under PD-082, but it produced zero evaluable Cases and therefore cannot satisfy S2. Continuing to the controlled-timeout check or S3 would hide a real P1 external path defect.",
       "source": "Read-only production evidence on 2026-09-24: five Pass 1 conversations completed; 12 full-context ASR calls settled; evaluation_case_asr_runs has 27 failed rows; evaluation_case_outcomes has nine excluded_insufficient_evidence rows; Event Alignment and Pass 2 have zero rows; total frozen-rate cost is USD 0.03971245 with 13 settled reservations and no active/unknown usage.",
-      "next_action": "Keep PD-084 stopped, inspect the 27 safe error payloads and production logs, reproduce deterministically, fix the common Case-ASR failure without changing completed-batch semantics, independently verify and redeploy before a narrowly authorized rerun.",
+      "next_action": "Closed by the independently verified and deployed Prompt repair plus the exact-scope production rerun; KI-211 tracks the newly isolated downstream response-contract defect.",
+      "resolution": "Commit 86043ed7a51c9c2c3eff44521300a9db93a8c484 passed CI 35952360458 and production deployment 35952519003. The deployed code contained no unresolved payload slot. EV-20260924-9550 then created and settled four distinct qwen audio_evidence_alignment reservations, proving fallback requests now reach the provider; the active source was immediately restored to 82 conversations.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-211",
+      "status": "open",
+      "summary": "The PD-084 hotfix rerun dispatched and settled all four audio-alignment fallback requests, but all 27 Case-ASR projections still failed and excluded all nine Cases before Event Alignment and Pass 2.",
+      "impact": "The unresolved Prompt slot is fixed in production, but S2 still cannot pass because the next downstream projection step produces zero eligible Cases. Continuing to the controlled-timeout check or any broader external-real run would violate the P1 stop condition.",
+      "source": "Read-only production evidence for EV-20260924-9550 on 2026-09-24: five Pass 1 conversations and twelve full-context ASR calls completed; four Qwen audio_evidence_alignment reservations settled; evaluation_case_asr_runs has 27 failed rows; evaluation_case_outcomes has nine excluded_insufficient_evidence rows; Event Alignment and Pass 2 have zero rows; recorded batch cost is USD 0.12006345 with no active operation.",
+      "next_action": "Keep the paid path stopped, inspect the safe Case-ASR errors and fallback results, determine the next common failure, reproduce it locally, then repair and independently verify before requesting or using any further external-real authorization.",
+      "resolution": null,
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-212",
+      "status": "open",
+      "summary": "The global Historical Turn review queue counts batch-local duplicates and can infer wrong_merge from orphan audio islands even when the original source already contains a separate nearby customer Turn or the island is noise.",
+      "impact": "Production currently displays 57 open groups, but this is 40 from E65A plus 9 from EF94 plus 8 from 9550 rather than 57 independent anomalies. In conversation 1030000000070676, R3 is incorrectly linked to both the 5.16-5.82s Arabic response and the separate 17.38-19.34s 235 response already represented by R6; R11 is also linked to the 37.90-38.36s fragment reported by the product owner as noise. This overstates review workload and presents low-confidence inference as a Turn defect.",
+      "source": "Product-owner report on 2026-09-24 plus read-only production inspection: list_historical_turn_issues(open) returns every formal batch row; open groups are E65A=40, EF94=9 and 9550=8. checkpoint_historical_turn_issues assigns each orphan island to the nearest monotonic assignment by island ordinal and does not first exclude islands explained by another source Turn, noise, or an already-open canonical issue from another batch.",
+      "next_action": "Deploy the implemented UI/API suspension first. Then audit representative false positives including R3 and R11, define a dataset-level canonical identity and high-precision evidence gate, and repair generation, reconciliation, queue counting and migration without deleting review history before any recalculation or display restoration.",
       "resolution": null,
       "disclosed_to_user": true
     }

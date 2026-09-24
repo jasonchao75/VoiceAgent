@@ -151,6 +151,8 @@
 
 正式页面每次打开人工复核、从批次进入复核或切换 ASR Case/Turn 异常分栏时 MUST 重新读取当前开放复核数据，再渲染数量与队列；不得继续使用页面首次加载时的旧候选数组冒充当前状态。刷新 MUST 为只读操作，不得重跑批次或调用外部资源。
 
+在 Turn 异常候选的跨批次唯一性、噪声排除和完整源 Turn 解释规则重新验证通过前，系统 MUST 暂停所有 Historical Turn 候选的用户展示与复核写入；历史候选、复核决定和版本记录 MUST 保留且不得删除。暂停不得影响 ASR Case 复核、批次执行或历史报告数据。
+
 完整录音 provider turn MUST 按与已冻结 Case 区间的时间重叠投影为候选文本。只有存在唯一且满足冻结证据策略的映射时，系统才可标记 `deterministic_aligned`。事件/语音岛数量不一致、多个合法路径同分、粗粒度 provider turn 横跨多个岛或 provider 证据冲突时，受影响 Case MUST 标记 `ambiguous` 并进入受控 LLM 辅助；不得直接声称成功。
 
 辅助 LLM MUST 使用批次冻结的资源/模型，并且只接收受影响 Case 的真实 event ID、audio-island ID、provider turn ID、原始/归一化文本及必要相邻上下文。模型只能从输入候选 ID 中选择并说明依据，MUST NOT 生成时间戳、新 ID、改变语音岛边界或打破事件顺序。程序 MUST 在使用结果前校验请求/Case 身份、完整候选集合、真实 ID、conversation/provider 归属、单调顺序、冻结边界和跨 provider 证据；结构无效、遗漏、冲突或仍不唯一时，该 Case MUST 进入人工复核。
@@ -208,6 +210,13 @@
 - **WHEN** 用户打开人工复核、从批次进入复核或切换 Turn 异常分栏
 - **THEN** 页面重新读取服务端开放候选，只显示当前 `pending`/`deferred` 数量，不继续显示刷新前的旧数量
 - **AND** 该操作不改变批次、复核、报告、Benchmark 或费用，也不产生 ASR/LLM 请求
+
+#### Scenario: Pause an untrusted Turn review queue
+
+- **GIVEN** 已确认现有 Turn 候选会跨批次重复，并可把其他源 Turn 或噪声误判为历史 Turn 异常
+- **WHEN** 用户打开人工复核、报告或 Historical Turn API
+- **THEN** 页面不显示 Turn 异常入口、数量或报告卡，读取接口返回空队列，复核写入被拒绝
+- **AND** 系统保留全部历史候选、复核决定和审计版本，不删除或重算生产数据
 
 #### Scenario: Persist projected ASR evidence per Case
 - **WHEN** 同一 conversation 的一个 Case 已唯一对齐，而 sibling Case 仍歧义或失败

@@ -649,7 +649,15 @@ test("keeps English manual-review UI free of Chinese while preserving source tex
   await expect(review.locator(".evidence-grid .evidence").nth(2)).toContainText("原始来源文本");
 });
 
-test("reviews historical Turn issues in a separate audio-first queue", async ({ page }, testInfo) => {
+test("hides historical Turn review while recalculation is pending", async ({ page }) => {
+  await page.goto("/evaluation.html?page=review");
+
+  await expect(page.locator('[data-review-mode="turn"]')).toBeHidden();
+  await expect(page.locator('[data-review-panel="turn"]')).toBeHidden();
+  await expect(page.locator('[data-review-mode="asr"]')).toHaveClass(/active/);
+});
+
+test.skip("reviews historical Turn issues in a separate audio-first queue", async ({ page }, testInfo) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   bootstrap.reviews = [];
   bootstrap.historical_turn_issues = [{
@@ -753,7 +761,7 @@ test("reviews historical Turn issues in a separate audio-first queue", async ({ 
   expect(submitted.expected_version).toBe(1);
 });
 
-test("refreshes stale Turn issue counts before opening the queue", async ({ page }) => {
+test.skip("refreshes stale Turn issue counts before opening the queue", async ({ page }) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   const staleIssue = {
     issue_group_id: "HTI-STALE",
@@ -866,11 +874,7 @@ test("keeps the current view when review queue refresh fails", async ({ page }) 
   bootstrapRequests = 0;
   await page.goto("/evaluation.html?page=review");
   await expect(page.locator('[data-review-mode="asr"]')).toHaveClass(/active/);
-  await page.locator('[data-review-mode="turn"]').click();
-  await expect(page.locator('[data-review-mode="asr"]')).toHaveClass(/active/);
-  await expect(page.locator('[data-review-mode="turn"]')).not.toHaveClass(/active/);
-  await expect(page.locator("#page-review .turn-review-count")).toHaveText("1");
-  await expect(page.locator("#toast")).toContainText("Review data could not be refreshed");
+  await expect(page.locator('[data-review-mode="turn"]')).toBeHidden();
 });
 
 test("renders a persisted report into the frozen report structure", async ({ page }, testInfo) => {
@@ -1048,12 +1052,7 @@ test("renders a persisted report into the frozen report structure", async ({ pag
   await expect(page.getByText("Production ASR recognition analysis", { exact: true })).toBeVisible();
   await expect(page.getByText("All suspicious cases in this batch", { exact: true })).toBeVisible();
   const turnQuality = page.locator("#historical-turn-quality");
-  await expect(turnQuality.locator(".turn-quality-summary")).toContainText("1 group · 2 Turn rows");
-  await expect(turnQuality).toContainText("50%");
-  await expect(turnQuality).toContainText("1030000000070676");
-  await expect(turnQuality).toContainText("R28 · R30");
-  await expect(turnQuality).toContainText("Historical over-split");
-  await expect(turnQuality.locator(".turn-report-audio")).toHaveCount(1);
+  await expect(turnQuality).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth))
     .toBeLessThanOrEqual(1);
   await page.screenshot({

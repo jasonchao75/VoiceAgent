@@ -4,12 +4,24 @@
 
 ## Status
 
-- Recorded decisions: 80 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 81 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-23
 
 ## Decisions
+
+### PD-085 — 暂停展示 Historical Turn 异常，保留历史后重新计算
+
+- Status: Confirmed
+- Date: 2026-09-24
+- Source question: 产品负责人质疑生产 57 个 Turn 异常及 `1030000000070676` 的 R3/R11 误报后，是否暂停旧队列
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人要求先收口前一修复，同时立即暂停 Turn 异常展示
+- Confirmation quote: “Turn发现异常的这次你先暂停展示吧，重新算这个再考虑，但是一定要先暂停展示。甚至先不要都可以”
+- Decision: 立即隐藏 Historical Turn 复核入口、数量与报告卡；API 不再返回候选并拒绝复核写入。保留数据库中的候选、复核决定、版本和审计记录，不删除历史。完成跨批次唯一性、噪声排除与完整源 Turn 解释规则后再重新计算并另行恢复展示。
+- Consequences: ASR Case 复核和评测批次不受影响；现有 57/42 等 Turn 数量在重新验证前均不作为产品结论。
+- Updated artifacts: Delta Spec、tasks、生产 UI/API、回归测试、`delivery-status.json`。
 
 ### PD-084 — 授权 5 通 S2 external-real canary
 
@@ -18,12 +30,12 @@
 - Source question: Q-024；是否按 Option A 授权本次 S2 调用
 - Decision owner: Product owner
 - Source thread/message: 当前 Codex 任务；Agent 明确披露 5 通数据、四家供应商、USD 1 硬上限与异常停止条件后，产品负责人确认执行
-- Confirmation quote: “那你搞吧。可以”
+- Confirmation quote: “那你搞吧。可以”；安全门禁要求再次明确范围后，产品负责人补充确认：“同意上述数据范围、接收方和 0.96 美元预算”
 - Decision: 从已授权的利雅得银行冻结数据中选 5 通覆盖长/短音频和候选/无候选结果，向 Speechmatics、Soniox、ElevenLabs 发送对应音频，向 Qwen3.8-Max 发送对话文本与 ASR 证据；本次 S2 总费用硬上限 USD 1。先跑正常路径，再执行一次受控“发送后本地超时”恢复验证。
 - Stop conditions: 出现任何重复供应商调用、状态回退、费用超限、未知用量未入账、P0/P1 数据正确性错误、鉴权或限流异常时立即停止，不进入 S3。
 - Consequences: 只授权本次 S2；不授权 20 通 S3、82 通 S4、E65A 再运行或超出上述数据/厂商/费用范围的其他外部调用。
 - Updated artifacts: `decision-log.md`、`open-questions.md`、`verification/delivery-status.json`、S2 证据记录。
-- Verification: 正常路径第 1 次尝试 `EV-20260924-EF94` 在 USD 0.03971245 时命中 P1 停止条件：5 个 Pass 1 结果和 12 个 full-context ASR 完成，13 个预留全部 settled，但未解析的 `{{payload}}` Prompt 槽位使 4 个 Audio Alignment fallback 均在发送前失败，导致 27 个 Case-ASR 失败、9 个 Case 全部排除。已停止受控超时和 S3；KI-210 修复、独立验收、发布及同范围重跑待完成。
+- Verification: 正常路径第 1 次尝试 `EV-20260924-EF94` 在 USD 0.03971245 时命中 P1 停止条件。KI-210 随后完成本地修复、独立验收、CI 与生产发布；同范围第 2 次尝试 `EV-20260924-9550` 证明 4 个 Audio Alignment fallback 均已真实发送并 settled，因而关闭 KI-210。但 fallback 的自由 JSON 仍未通过本地确定性契约，27 个 Case-ASR 再次不可用、9 个 Case 全部排除；批次在 USD 0.12006345 时停止，未执行受控超时与 S3，转由 KI-211 继续修复。
 
 ### PD-083 — 发布稳定性收口代码到生产，但不自动重试或付费调用
 

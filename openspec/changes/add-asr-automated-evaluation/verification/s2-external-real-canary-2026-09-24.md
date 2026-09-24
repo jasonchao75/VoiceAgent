@@ -34,4 +34,16 @@
 - Repair: remove the duplicate/unresolved system-prompt slot and state that the user message contains the complete input JSON exactly once. A regression now proves the system prompt renders with no unresolved slot and does not embed the request payload.
 - Local verification: 4 focused regressions passed; full repository suite 305 passed with the two previously disclosed dependency warnings; Ruff format/check, scoped Mypy and frontend production build passed.
 
-Independent review, deployment and a rerun limited to the same five frozen conversations remain required before S2 can pass. The original PD-084 USD 1 ceiling applies cumulatively; USD 0.03971245 has already been consumed according to the frozen-rate ledger.
+### Normal-path attempt 2 — stopped
+
+- Explicit confirmation: “同意上述数据范围、接收方和 0.96 美元预算”
+- Release evidence: commit `86043ed7a51c9c2c3eff44521300a9db93a8c484`; CI `35952360458` PASS; deployment `35952519003` PASS; deployed import confirmed the fallback Prompt contains no unresolved `{{payload}}` slot
+- Frozen dataset: `dataset-ce0c06a95d2246639a0327902f59e3cc`; batch `EV-20260924-9550`; `completed / completed / 100%`; frozen budget USD 0.96; recorded cost USD 0.12006345
+- Active-source restoration: the 82-conversation source was immediately re-audited and activated as `dataset-7cd6d37da8cc4b219cbb720e12b3315e`
+- Completed external work: five Pass 1 conversations, twelve full-context ASR calls, and four distinct Qwen `audio_evidence_alignment` fallback requests; every reservation settled and no active or unknown-usage operation remained
+- KI-210 result: **RESOLVED**. Unlike attempt 1, all four fallback calls crossed reservation and dispatch and returned.
+- Stop-condition result: **TRIGGERED**. The fallback's generic JSON Object response still failed the deterministic local selection contract in all four candidate conversations. The system then projected 27 Case-ASR rows as unavailable and excluded all nine Cases before Event Alignment and Pass 2. The paid path stopped; controlled-timeout and S3 were not run.
+- Cumulative recorded cost: USD 0.15977590 across attempts 1 and 2, below the authorized USD 1 ceiling.
+- Follow-up repair: KI-211 changes Qwen3.8-Max fallback to the provider's supported strict JSON Schema contract, retains a safe local rejection reason, and classifies alignment unavailability as `event_alignment_failed` rather than an ASR provider failure.
+
+S2 remains incomplete. KI-211 requires independent local verification and deployment; any further external-real call requires a new explicit authorization because attempt 2 hit the P1 stop condition.

@@ -260,4 +260,7 @@
 - [x] 14.7 Add migration, restart, repeated-retry, timeout-ledger, zero/partial/full-coverage and mixed-provider regressions; run scoped/full checks, Change gate and independent verification without paid calls or production mutation
 - [x] 14.8 Under PD-083, deploy the independently verified stability closure with backup/rollback evidence; verify CI, production health, deployed SHA and preservation of E65A without any automatic provider dispatch
 - [ ] 14.9 After a separate paid-call authorization, run the staged S2/S3 canaries and any E65A recovery with explicit data scope, cost ceiling and stop conditions before S4 release acceptance
-- [ ] 14.10 Fix the unresolved `{{payload}}` slot that prevents every ambiguous audio-alignment fallback before dispatch; add a regression, independently verify, deploy, and rerun only the stopped PD-084 five-conversation S2 scope (KI-210)
+- [x] 14.10 Fix the unresolved `{{payload}}` slot that prevents every ambiguous audio-alignment fallback before dispatch; add a regression, independently verify, deploy, and rerun only the stopped PD-084 five-conversation S2 scope (KI-210)
+- [ ] 14.11 Constrain Qwen3.8-Max audio-alignment output with its supported strict JSON Schema, retain a safe rejection reason, classify alignment unavailability separately from ASR provider failure, independently verify and deploy before any separately authorized external-real rerun (KI-211)
+- [ ] 14.12 Immediately pause Historical Turn queue/report/API exposure without deleting history and deploy the suspension (PD-085 / KI-212)
+- [ ] 14.13 Redesign dataset-level canonical identity, noise exclusion and complete-source-Turn reconciliation; independently verify before recalculation or restoring display (PD-085 / KI-212)

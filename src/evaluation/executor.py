@@ -227,6 +227,69 @@ def _structured_response_format(
     return {"type": "json_object"}
 
 
+def _audio_alignment_response_format(payload: dict[str, Any]) -> dict[str, Any]:
+    """Constrain Qwen's alignment choice to the supplied identifiers and shape."""
+    assignment_ids = sorted(
+        {
+            str(item["assignment_id"])
+            for item in payload.get("assignment_candidates") or []
+            if isinstance(item, dict) and item.get("assignment_id")
+        }
+    )
+    provider_turns = [
+        item for item in payload.get("provider_turn_candidates") or [] if isinstance(item, dict)
+    ]
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "audio_alignment_choice",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "request_id": {
+                        "type": "string",
+                        "enum": [str(payload["request_id"])],
+                    },
+                    "assignment_id": {"type": "string", "enum": assignment_ids},
+                    "provider_turns": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": len(provider_turns),
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "island_id": {
+                                    "type": "string",
+                                    "enum": sorted(
+                                        {str(item["island_id"]) for item in provider_turns}
+                                    ),
+                                },
+                                "provider": {
+                                    "type": "string",
+                                    "enum": sorted(
+                                        {str(item["provider"]) for item in provider_turns}
+                                    ),
+                                },
+                                "turn_id": {
+                                    "type": "string",
+                                    "enum": sorted(
+                                        {str(item["turn_id"]) for item in provider_turns}
+                                    ),
+                                },
+                            },
+                            "required": ["island_id", "provider", "turn_id"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
+                "required": ["request_id", "assignment_id", "provider_turns"],
+                "additionalProperties": False,
+            },
+        },
+    }
+
+
 def _safe_execution_failure(exc: Exception, stage: str) -> dict[str, object]:
     """Describe a batch failure without retaining upstream bodies or credentials."""
     category = _safe_error(exc)
@@ -305,6 +368,14 @@ def _asr_error(provider: str, exc: Exception) -> str:
     if isinstance(exc, ValueError) and str(exc).startswith("Event Aligner"):
         category = "event_alignment_failed"
         message = str(exc)[:160]
+        retryable = False
+    elif isinstance(exc, ValueError) and (
+        str(exc).startswith("Audio-first alignment")
+        or str(exc).startswith("Audio evidence alignment")
+    ):
+        category = "event_alignment_failed"
+        message = str(exc)[:160]
+        retryable = False
     elif isinstance(exc, ValueError) and (
         "provider turns" in str(exc) or "provider union" in str(exc)
     ):
@@ -1151,6 +1222,7 @@ class EvaluationRunner:
         system_only_payload: bool = False,
         user_instruction: str | None = None,
         max_input_tokens: int | None = None,
+        response_format: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Call a verified model and require one JSON object response."""
         provider = await self._model_provider(model_id)
@@ -1279,9 +1351,11 @@ class EvaluationRunner:
                     "max_tokens": output_limit,
                     "temperature": 0,
                 }
-                response_format = _structured_response_format(provider, thinking, actual_model)
-                if response_format is not None:
-                    request_body["response_format"] = response_format
+                selected_response_format = response_format or _structured_response_format(
+                    provider, thinking, actual_model
+                )
+                if selected_response_format is not None:
+                    request_body["response_format"] = selected_response_format
                 async with httpx.AsyncClient(timeout=request_timeout) as azure_client:
                     await self.store.mark_budget_sent(
                         reserve_key,
@@ -1348,6 +1422,7 @@ class EvaluationRunner:
                     enable_thinking=True if thinking else False if disable_thinking else None,
                     reasoning_effort=_qwen_reasoning_effort(thinking=thinking, stage=stage),
                     structured_json=True,
+                    response_format=response_format,
                 )
                 async with httpx.AsyncClient(timeout=request_timeout) as dashscope_client:
                     await self.store.mark_budget_sent(
@@ -1413,9 +1488,11 @@ class EvaluationRunner:
                     {"role": "user", "content": user_message},
                 ],
             }
-            response_format = _structured_response_format(provider, thinking, actual_model)
-            if response_format is not None:
-                request["response_format"] = response_format
+            selected_response_format = response_format or _structured_response_format(
+                provider, thinking, actual_model
+            )
+            if selected_response_format is not None:
+                request["response_format"] = selected_response_format
             if thinking:
                 if provider == "deepseek":
                     request["reasoning_effort"] = "high"
@@ -2752,6 +2829,7 @@ class EvaluationRunner:
                     item_key=str(conversation["conversation_id"]),
                     attempt=1,
                     disable_thinking=True,
+                    response_format=_audio_alignment_response_format(payload),
                 ),
                 batch_id=batch_id,
                 operation_id=(f"audio_evidence_alignment:{conversation['conversation_id']}:1"),
@@ -2831,11 +2909,15 @@ class EvaluationRunner:
         except EvaluationBudgetReached:
             raise
         except Exception as exc:
+            controlled_reason = str(exc)[:160]
+            if not controlled_reason.startswith("Audio alignment fallback"):
+                controlled_reason = _safe_error(exc)
             logger.warning(
-                "audio_alignment_fallback_rejected batch=%s conversation=%s error=%s",
+                "audio_alignment_fallback_rejected batch=%s conversation=%s error=%s reason=%s",
                 batch_id,
                 conversation["conversation_id"],
                 _safe_error(exc),
+                controlled_reason,
             )
             return cases, True
 

@@ -350,6 +350,11 @@
   display: none;
 }
 
+/* Paused until the dataset-level Turn anomaly model is recalculated. */
+#historical-turn-quality {
+  display: none !important;
+}
+
 .turn-review-detail,
 .turn-review-detail * {
   min-width: 0;

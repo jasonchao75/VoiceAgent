@@ -55,6 +55,7 @@ def native_dashscope_request(
     enable_thinking: bool | None,
     reasoning_effort: str | None = None,
     structured_json: bool = False,
+    response_format: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a text-only request using the native DashScope message contract."""
     output_limit_key = (
@@ -68,7 +69,9 @@ def native_dashscope_request(
         parameters["enable_thinking"] = enable_thinking
     if reasoning_effort is not None:
         parameters["reasoning_effort"] = reasoning_effort
-    if structured_json and model.casefold().startswith("qwen3.8-"):
+    if response_format is not None:
+        parameters["response_format"] = response_format
+    elif structured_json and model.casefold().startswith("qwen3.8-"):
         parameters["response_format"] = {"type": "json_object"}
     return {
         "model": model,

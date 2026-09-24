@@ -77,6 +77,30 @@ def test_native_qwen_request_supports_thinking_and_parses_usage() -> None:
     }
 
 
+def test_native_qwen_request_accepts_strict_response_schema() -> None:
+    """A call-specific JSON Schema must replace generic JSON Object mode."""
+    response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "choice",
+            "strict": True,
+            "schema": {"type": "object", "additionalProperties": False},
+        },
+    }
+
+    request = native_dashscope_request(
+        model="qwen3.8-max",
+        system_prompt="Choose one legal value.",
+        user_message="{}",
+        max_output_tokens=256,
+        enable_thinking=False,
+        structured_json=True,
+        response_format=response_format,
+    )
+
+    assert request["parameters"]["response_format"] == response_format
+
+
 def test_native_qwen38_caps_total_output_for_both_passes() -> None:
     """Qwen 3.8 must cap combined reasoning and answer tokens in every pass."""
     for thinking in (False, True):
