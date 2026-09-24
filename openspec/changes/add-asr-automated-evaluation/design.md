@@ -24,7 +24,7 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | Audio & evidence alignment | 从纯用户音轨冻结语音岛，按事件顺序确定性绑定历史事件与 provider turns，仅对歧义 Case 使用受控 LLM 辅助 | 不信任历史时间戳，不让文本或 LLM 修改音频边界，不把不唯一映射伪装为成功 |
 | Pass 1 | 从历史对话筛疑点并建立额外 Good 候选池 | 不产生 Ground Truth |
 | Pass 2 | 基于多源证据判定 Good/Bad/人工复核 | 不用多数票或 confidence 阈值替代证据规则 |
-| Review | 分栏处理 ASR Case 的 Good/Bad/听不清，以及历史 Turn 异常组的确认/驳回 | 不把未提交草稿当作结论，不把 Turn 复核写入 Benchmark |
+| Review | 处理 ASR Case 的 Good/Bad/听不清；Historical Turn 人工审核按 PD-086 保持关闭 | 不把未提交草稿当作结论，不生成、展示或写入 Turn 人工审核 Case |
 | Benchmark | 剪用户音频、入库、追溯、下载 | 不接纳听不清或未复核 Case |
 | Report | 固化批次版本和指标 | 不宣称评测 ASR 的准确率或自动改生产配置 |
 

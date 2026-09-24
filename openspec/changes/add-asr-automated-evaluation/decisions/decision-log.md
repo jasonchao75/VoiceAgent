@@ -4,12 +4,24 @@
 
 ## Status
 
-- Recorded decisions: 81 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 82 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
-- Last reviewed: 2026-09-23
+- Last reviewed: 2026-09-24
 
 ## Decisions
+
+### PD-086 — 暂不生成或展示任何 Historical Turn 人工审核 Case
+
+- Status: Confirmed
+- Date: 2026-09-24
+- Source question: Turn 异常误判根因与杂音识别仍需后续优化时，当前是否继续生成或展示 Turn 人工审核 Case
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人明确要求先忽略不好确定的 Turn，并暂不报告 Turn 人工审核 Case
+- Confirmation quote: “算了吧，你发现有不好确定的Turn的时候，先忽略吧。后面再优化。现在先不用报Turn人工审核case了。”
+- Decision: 当前产品不向用户产出、返回、计数或展示任何新的 Historical Turn 人工审核 Case；证据不足、难以区分杂音或无法唯一解释的 Turn 直接忽略，不进入人工复核。已暂停的入口、报告和写入继续保持关闭，内部历史候选及审计记录可保留但不作为产品结论。恢复该能力必须作为后续独立优化重新确认规则、验证结果并发布，不得由后台重算或普通批次自动恢复。
+- Consequences: ASR Case 复核、批次执行和 Benchmark 不受影响；内部可继续保留诊断证据，但不得形成用户可见的 Turn 人工审核 Case。本 Change 不再把 Turn 规则重算或恢复展示作为当前交付任务，也不因 Turn 不确定性把批次或 Case 记为失败。
+- Updated artifacts: Delta Spec、design、tasks、`delivery-status.json`；生产暂停行为已由 PD-085 发布并验证，无需新增代码或外部调用。
 
 ### PD-085 — 暂停展示 Historical Turn 异常，保留历史后重新计算
 

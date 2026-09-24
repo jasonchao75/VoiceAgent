@@ -263,4 +263,4 @@
 - [x] 14.10 Fix the unresolved `{{payload}}` slot that prevents every ambiguous audio-alignment fallback before dispatch; add a regression, independently verify, deploy, and rerun only the stopped PD-084 five-conversation S2 scope (KI-210)
 - [x] 14.11 Constrain Qwen3.8-Max audio-alignment output with its supported strict JSON Schema, retain a safe rejection reason, classify alignment unavailability separately from ASR provider failure, independently verify and deploy before any separately authorized external-real rerun (KI-211)
 - [x] 14.12 Immediately pause Historical Turn queue/report/API exposure without deleting history and deploy the suspension (PD-085 / KI-212)
-- [ ] 14.13 Redesign dataset-level canonical identity, noise exclusion and complete-source-Turn reconciliation; independently verify before recalculation or restoring display (PD-085 / KI-212)
+- [x] 14.13 Record PD-086 as a deliberate scope deferral: keep user-visible Historical Turn Case output/review/reporting disabled, ignore uncertain Turn evidence, preserve internal history, and require a future separately confirmed Change before redesign, recalculation or restoration
