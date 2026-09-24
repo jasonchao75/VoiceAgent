@@ -104,6 +104,14 @@
     "public_health": "PASS",
     "production_behavior": "The exact deployed SHA became Healthy and public /health returned status=ok with zero pending or active sessions. The deployment precheck, compatibility verifier and rollback-image path completed successfully. Read-only production inspection found EV-20260923-E65A already completed at 2026-09-24T01:08:01+00:00, more than two hours before deployment; it had no active operation, no post-deploy telemetry, no post-deploy ledger entry and no usage reservation, proving this release did not retry the batch or dispatch a paid provider request."
   },
+  "pd085_release": {
+    "status": "PASS_WITH_EXTERNAL_REAL_PENDING",
+    "commit": "58f10d07b5c5089f154d71659ada03d1d25d92a7",
+    "ci_run": 35961633970,
+    "deployment_run": 35961797271,
+    "public_health": "PASS",
+    "production_behavior": "Authenticated HTTPS verification returned historical_turn_review_paused=true, an empty bootstrap Turn queue, an empty Historical Turn list, HTTP 409 for a synthetic decision write, and deployed HTML with the Turn tab and report card hidden while the ASR tab remains present. Direct SQLite snapshots before and after were identical: 154 historical rows remain, including all 57 pending rows. No provider call or batch execution was triggered. The Qwen strict-schema path remains external-real unverified pending separate authorization."
+  },
   "external_calls": [
     {
       "provider": "Speechmatics, Soniox, ElevenLabs and Alibaba Cloud DashScope / qwen3.8-max",
@@ -2165,7 +2173,7 @@
       "summary": "The PD-084 hotfix rerun dispatched and settled all four audio-alignment fallback requests, but all 27 Case-ASR projections still failed and excluded all nine Cases before Event Alignment and Pass 2.",
       "impact": "The unresolved Prompt slot is fixed in production, but S2 still cannot pass because the next downstream projection step produces zero eligible Cases. Continuing to the controlled-timeout check or any broader external-real run would violate the P1 stop condition.",
       "source": "Read-only production evidence for EV-20260924-9550 on 2026-09-24: five Pass 1 conversations and twelve full-context ASR calls completed; four Qwen audio_evidence_alignment reservations settled; evaluation_case_asr_runs has 27 failed rows; evaluation_case_outcomes has nine excluded_insufficient_evidence rows; Event Alignment and Pass 2 have zero rows; recorded batch cost is USD 0.12006345 with no active operation.",
-      "next_action": "Keep the paid path stopped, inspect the safe Case-ASR errors and fallback results, determine the next common failure, reproduce it locally, then repair and independently verify before requesting or using any further external-real authorization.",
+      "next_action": "The strict Qwen JSON Schema repair is independently verified and deployed at 58f10d07b5c5089f154d71659ada03d1d25d92a7. Keep the paid path stopped until a separately authorized exact-scope external-real rerun proves the production endpoint accepts the schema and produces usable Case-ASR, Event Alignment and Pass 2 results.",
       "resolution": null,
       "disclosed_to_user": true
     },
@@ -2175,7 +2183,7 @@
       "summary": "The global Historical Turn review queue counts batch-local duplicates and can infer wrong_merge from orphan audio islands even when the original source already contains a separate nearby customer Turn or the island is noise.",
       "impact": "Production currently displays 57 open groups, but this is 40 from E65A plus 9 from EF94 plus 8 from 9550 rather than 57 independent anomalies. In conversation 1030000000070676, R3 is incorrectly linked to both the 5.16-5.82s Arabic response and the separate 17.38-19.34s 235 response already represented by R6; R11 is also linked to the 37.90-38.36s fragment reported by the product owner as noise. This overstates review workload and presents low-confidence inference as a Turn defect.",
       "source": "Product-owner report on 2026-09-24 plus read-only production inspection: list_historical_turn_issues(open) returns every formal batch row; open groups are E65A=40, EF94=9 and 9550=8. checkpoint_historical_turn_issues assigns each orphan island to the nearest monotonic assignment by island ordinal and does not first exclude islands explained by another source Turn, noise, or an already-open canonical issue from another batch.",
-      "next_action": "Deploy the implemented UI/API suspension first. Then audit representative false positives including R3 and R11, define a dataset-level canonical identity and high-precision evidence gate, and repair generation, reconciliation, queue counting and migration without deleting review history before any recalculation or display restoration.",
+      "next_action": "The UI/API suspension is deployed and production-verified with all 154 historical rows preserved. Now audit representative false positives including R3 and R11, define a dataset-level canonical identity and high-precision evidence gate, and repair generation, reconciliation, queue counting and migration before any recalculation or display restoration.",
       "resolution": null,
       "disclosed_to_user": true
     }

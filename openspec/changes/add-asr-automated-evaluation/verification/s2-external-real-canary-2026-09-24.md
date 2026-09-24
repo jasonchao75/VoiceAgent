@@ -46,4 +46,11 @@
 - Cumulative recorded cost: USD 0.15977590 across attempts 1 and 2, below the authorized USD 1 ceiling.
 - Follow-up repair: KI-211 changes Qwen3.8-Max fallback to the provider's supported strict JSON Schema contract, retains a safe local rejection reason, and classifies alignment unavailability as `event_alignment_failed` rather than an ASR provider failure.
 
-S2 remains incomplete. KI-211 requires independent local verification and deployment; any further external-real call requires a new explicit authorization because attempt 2 hit the P1 stop condition.
+S2 remains incomplete. KI-211 has passed independent local verification and deployment; any external-real proof still requires a new explicit authorization because attempt 2 hit the P1 stop condition.
+
+## KI-211 repair release
+
+- Commit `58f10d07b5c5089f154d71659ada03d1d25d92a7` passed CI run `35961633970` and production deployment run `35961797271`.
+- Independent verification passed 308 repository tests, scoped Ruff format/check, frontend build, Change gate, and six desktop/narrow browser checks.
+- Production now contains the strict Qwen3.8-Max JSON Schema repair and separately pauses every Historical Turn UI/API surface under PD-085 without deleting history.
+- No external provider call was made during repair, verification, deployment, or production readback. S2 remains stopped until a new exact-scope authorization proves the production Qwen endpoint accepts the schema and the downstream chain becomes usable.
