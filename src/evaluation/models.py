@@ -41,6 +41,7 @@ class EvaluationBatchAction(BaseModel):
     action: Literal["start", "pause", "resume", "stop", "retry_failed"]
     expected_version: int = Field(ge=1)
     idempotency_key: str = Field(min_length=8, max_length=160)
+    retry_plan_hash: str | None = Field(default=None, min_length=64, max_length=64)
 
 
 class EvaluationBatchDelete(BaseModel):

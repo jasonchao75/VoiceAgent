@@ -62,24 +62,26 @@ Change 启动时仓库只有实时 VoiceAgent 的 ASR/LLM/TTS Pipeline、Bot 配
 | `draft` | 上传或配置未完成 | validating, cancelled |
 | `validating` | 校验输入 | ready, validation_failed |
 | `ready` | 校验通过、等待确认 | running, cancelled |
-| `running` | 自动阶段执行中 | awaiting_review, partially_failed, budget_paused, stopped |
-| `partially_failed` | 至少一个可恢复资源失败 | running, awaiting_review, completed_partial, stopped |
+| `running` | 自动阶段执行中 | awaiting_review, completed, budget_paused, paused, stopped, failed |
+| `failed` | 系统级故障使执行无法走到可解释终点或无法生成报告 | running, stopped |
 | `budget_paused` | 已达费用上限 | running, stopped |
 | `paused` | 用户暂停；保留全部成功检查点 | running, completed_partial, stopped |
 | `awaiting_review` | 自动分析完成且存在人工任务 | completed, completed_partial |
-| `completed` | 全部复核完成并已生成最终报告 | terminal |
-| `completed_partial` | 负责人提前结束并生成部分覆盖最终报告 | terminal |
+| `completed` | 计划工作全部达到可解释终态并生成报告；覆盖不足不改变完成状态 | terminal |
+| `completed_partial` | 兼容历史提前结束记录；新终态统一对外显示“已完成”并单独披露覆盖 | terminal |
 | `validation_failed` | 输入不符合契约 | validating, cancelled |
 | `stopped` / `cancelled` | 用户终止 | terminal |
 
-单资源失败可使批次显示 `partially_failed`，但只要每个相关对话仍满足“历史转写 + 至少一家评测 ASR”，合格 Case 可继续第二轮；全部评测 ASR 失败的对话停在资源错误，不生成结论。
+三层状态不得混用：provider attempt 可为 `unavailable`；证据不足的 Case 为 `excluded_insufficient_evidence`；batch lifecycle 只回答任务是否跑完。即使所有 Case 被排除，只要计划工作达到终态并生成包含零覆盖与排除原因的报告，批次仍为 `completed`。
 
 ## Data model
 
 | Entity | Key fields and constraints |
 |---|---|
-| `EvaluationBatch` | batch_id, status, snapshot_id, budget_limit, spent, counters, version |
-| `BatchSnapshot` | context/reference-dictionary/tag/screening-strategy/prompt/provider/model/pricing versions; immutable JSON plus normalized references |
+| `EvaluationBatch` | batch_id, status, dataset_id/binding_status, snapshot_id, budget_limit, spent, counters, version |
+| `DatasetVersion` | dataset_id, immutable manifest, conversation/event membership, file/content hashes, created_at |
+| `BatchSnapshot` | dataset identity/manifest hash plus context/reference-dictionary/tag/screening-strategy/prompt/provider/model/pricing versions; immutable JSON plus normalized references |
+| `RetryPlan` | batch/version, canonical eligible items, skipped items/reasons, estimated maximum cost, unknown usage and plan hash |
 | `UploadSession` | upload_id, archive checksum, staging path, expires_at, status |
 | `ConversationInput` | batch_id + conversation_id unique; three file references, hashes, audio metadata, timeline status |
 | `ConversationEvent` | conversation_id + event_id unique; timestamp, role, source text, validity/exclusion reason |

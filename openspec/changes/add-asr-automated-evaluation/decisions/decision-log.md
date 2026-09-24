@@ -4,12 +4,68 @@
 
 ## Status
 
-- Recorded decisions: 75 confirmed, 3 superseded, 1 invalidated
+- Recorded decisions: 79 confirmed, 3 superseded, 1 invalidated
 - Open product decisions: 0
 - Engineering Checkpoint C: PASS for PD-064/PD-065 independent re-review; User Gate 2 remains product-owner acceptance
 - Last reviewed: 2026-09-23
 
 ## Decisions
+
+### PD-083 — 发布稳定性收口代码到生产，但不自动重试或付费调用
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: PD-080–PD-082 稳定性收口通过独立验收后，是否进入生产部署
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；Agent 明确说明部署代码与 E65A/付费恢复分开授权后，产品负责人确认生产部署
+- Confirmation quote: “授权进入生产部署”
+- Decision: 将已独立验收 PASS 的数据集冻结、canonical 重试计划、未知用量预算、Case 排除/批次完成语义和统计范围修复精确提交到 `main`，通过既有 CI/CD 发布并核验提交 SHA、健康状态、数据兼容与回滚证据。发布保留生产历史，不删除或强绑不能证明来源的历史批次，不自动重试 `EV-20260923-E65A`，不发起任何 ASR/LLM 付费调用。
+- Reason: 产品负责人要求已验证修复在线上生效，同时真实 canary 和历史批次恢复仍属于逐次授权的外部付费操作。
+- Consequences: 生产启动可执行向后兼容 Schema 初始化，并仅按精确证据回填历史数据集绑定；部署失败使用现有上一镜像回滚。S2 canary、E65A 重试和 User Gate 2 继续保留为独立后续授权，不得从本次部署授权推导。
+- Updated artifacts: `decision-log.md`、`tasks.md`、`verification/delivery-status.json`、发布提交和 CI/CD 证据。
+- Verification: 发布前 304 项全仓测试、定向 Ruff、前端构建、正式路由双视口 6/6、Change gate与独立验收均 PASS；生产证据待本次发布完成后回填。
+
+### PD-082 — 批次执行完成与证据覆盖不足必须分开
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: Q-023；单个 ASR 厂商失败或所有厂商均无有效证据时，是否应把 Case 或整批标记为失败
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人连续质疑 Speechmatics 局部失败到批次失败的推导，并明确执行完成就是完成
+- Confirmation quote: “你判断‘失败’的逻辑我不认可啊”；“这个东西，我不接受失败啊。任务执行完了就是执行完了，为什么说失败呢？”
+- Decision: 批次状态表达执行生命周期，不表达数据质量或证据覆盖。只要计划内工作都达到可解释的终态并生成报告，批次就是 `completed`，不得因某个 provider 不可用、某些 Case 证据不足，甚至全部 Case 都无法形成 Good/Bad 结论而标记为 failed/partially_failed。单个 provider 只记对应证据源 `unavailable`；达不到最低证据门槛的 Case 记为 `excluded_insufficient_evidence`，报告披露覆盖数、排除数和原因，但任务状态仍为已完成。只有执行器未能走到终点或无法生成可读报告的系统级故障，才能使用 failed；可恢复中断必须保持 paused/budget_paused 或等价非终态，不冒充已完成。
+- Reason: 多厂商是证据冗余，而非“任一厂商失败就整批失败”的串联依赖。产品终态必须回答“任务是否跑完”，覆盖与结果可用性由报告回答。
+- Consequences: 需分离 provider attempt、Case eligibility 和 batch lifecycle 三层状态；重试计划只重试值得恢复且会改变覆盖的工作，终态汇总不再用局部 provider/Case 失败行决定批次失败。正式页面以“已完成”展示执行完成批次，并就近显示覆盖率和排除原因。
+- Updated artifacts: `decisions/open-questions.md`、`decision-log.md`；Delta Spec、`design.md`、`tasks.md`、状态矩阵、实现和测试待同步。
+- Verification: 产品口径已确认；当前代码仍会把 unavailable Case 投影为 `partially_failed`，尚未修复或验证。
+
+### PD-081 — 无证据的历史批次不强绑，超时未知费用保守占用预算
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: Q-021、Q-022；稳定性收口中历史批次数据集绑定与外部 LLM 超时费用的处理方案
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；Agent 解释两项方案 A 后，产品负责人同时确认
+- Confirmation quote: “两个都按 A”
+- Decision: 历史批次只在清单、文件指纹或完整来源快照能唯一证明原数据集时回填绑定；其余标记 `legacy_unbound`，保留所有历史结果、报告、复核和费用，但禁止必须重读原数据的重试、重切、重对齐和重算。外部 LLM 请求已发送但客户端超时时，把预留估算持久化为 `usage_unknown` 并继续占用批次硬预算；只在有明确供应商用量、未执行证据或账单核销后调整。
+- Reason: 不得把当前数据集猜成旧批次的原数据，也不得因客户端超时就假设供应商没有计费。
+- Consequences: 新批次必须冻结数据集身份/清单/指纹；历史迁移 fail closed 且不删数据。超时未知费用加下一次请求可能超额时阻止重试。本决定不授权付费重跑、生产数据迁移或发布。
+- Updated artifacts: `decisions/open-questions.md`、`decision-log.md`；Delta Spec、`design.md`、`tasks.md`、实现和测试待同步。
+- Verification: 仅完成产品决定闭环；数据库迁移、重试门禁、超时核销和生产行为尚未实现或验证。
+
+### PD-080 — 确认 ASR Evaluation 稳定性收口基线并先完成差距审查
+
+- Status: Confirmed
+- Date: 2026-09-23
+- Source question: 在近期连续生产故障后，是否暂停继续逐点修补，采用产品流程、数据状态、统一执行恢复、分级验证放量四层稳定性收口，并先制作规则到实现/测试/生产证据的差距矩阵
+- Decision owner: Product owner
+- Source thread/message: 当前 Codex 任务；产品负责人审阅 `stabilization-plan.md` 后确认，并要求继续展示具体做法
+- Confirmation quote: “我觉得你写的没问题啊。”；“那你继续？我看看你咋做。”
+- Decision: 采用 `stabilization-plan.md` 的四层收口方向和五项候选产品基线，先完成只读代码/测试/交付证据审查和 `stability-gap-matrix.md`，再按 P0/P1/P2 与 S0–S4 门禁确定实施顺序。稳定性期间不把新增能力混入整改，不以局部测试或单次供应商成功替代完整恢复和分级 canary 证据。
+- Reason: 现有规则大量存在于 Spec 和历史决定中，但没有全部转化为数据约束、统一执行语义和阻断式发布门禁，导致同类问题跨阶段复发。
+- Consequences: 本确认只授权审查、规划和仓库内决策记录；不授权生产数据修改、付费外部调用、E65A 重试或生产发布。进入代码实现前必须把对应 Milestone 拆入 tasks、更新受影响 Delta Spec/design，并重新运行 Change gate。
+- Updated artifacts: `stabilization-plan.md`、`stability-gap-matrix.md`、本决策记录。
+- Verification: 本轮以静态代码、现有 fixture/mock/local-real/external-real/production 证据分级审查；不得宣称四层收口已实现。
 
 ### PD-079 — Turn 复核入口始终刷新线上当前队列
 

@@ -244,12 +244,40 @@ Soniox `stt-async-v5`、Speechmatics `melia-1` batch/multi 和 ElevenLabs `scrib
 #### Scenario: One evaluation ASR fails
 
 - **WHEN** 线上历史转写和至少一家评测 ASR 成功，但其他资源在自动重试后仍失败
-- **THEN** 第二轮继续，Case 标记为证据不完整；用户可只重试失败资源，已成功资源不得重复调用
+- **THEN** 该 provider 只标记为 `unavailable`；其他 provider 达到 Case 证据门槛时第二轮继续，已成功资源不得重复调用，该局部结果不得使批次显示为失败
 
 #### Scenario: All evaluation ASRs fail
 
 - **WHEN** 某通对话的全部评测 ASR 均无法产生可用结果
-- **THEN** 该对话暂停进入第二轮并显示可操作错误，不生成默认 Good/Bad 结论
+- **THEN** 受影响 Case 标记 `excluded_insufficient_evidence`，不生成默认 Good/Bad 结论；其他 Case 继续，计划工作终结后批次仍以“已完成”生成报告并披露排除数和原因
+
+### Requirement: Frozen dataset identity and truthful completion
+
+每个新批次 MUST 永久绑定创建时的 dataset ID、不可变清单、conversation/event 成员和内容指纹。历史批次只在证据唯一时回填；无法证明时 MUST 保留为 `legacy_unbound` 并禁止依赖原数据的再处理，不删除历史结果。
+
+#### Scenario: Replace the active source after a batch starts
+
+- **WHEN** 新数据集被激活，而旧批次被查看、恢复、重试或生成报告
+- **THEN** 旧批次只从自己冻结的 dataset version 读取 conversation/event/文件，不得读取当前活动数据集
+
+#### Scenario: Finish with unavailable evidence
+
+- **WHEN** 所有计划任务均达到成功、不可用或排除等可解释终态
+- **THEN** 系统生成覆盖报告并将 batch lifecycle 置为 `completed`；只有执行未能走到终点或无法生成报告的系统级故障才能使用 `failed`
+
+### Requirement: Versioned retry plan and uncertain usage
+
+任何付费重试前 MUST 从当前 canonical workset 生成只读、版本化的 retry plan，列出可重试项、跳过项/原因、未知用量、预计费用上限和停止条件。空计划不得启动执行器。已发送但超时的 LLM 请求 MUST 持久化为 `usage_unknown` 并按预留估算继续占用硬预算，直到可核销证据出现。
+
+#### Scenario: Retry exhausted Event Alignment work
+
+- **WHEN** 历史 Event Alignment timeout 已耗尽旧尝试次数，但按当前分类仍属于可恢复工作
+- **THEN** retry plan 为其创建新的有界 retry lineage 并按当前拆分策略执行；旧失败只作审计，不得因旧 attempts 为空循环或决定终态
+
+#### Scenario: Time out after provider dispatch
+
+- **WHEN** LLM 请求已发送但客户端在用量返回前超时
+- **THEN** 保留该 reservation，标记 `usage_unknown`，将估算金额纳入后续预算门禁；不得当作“未调用/未花费”直接释放
 
 #### Scenario: Report preserves mapped full-call ASR evidence
 

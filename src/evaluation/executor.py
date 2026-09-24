@@ -696,8 +696,8 @@ class EvaluationRunner:
             )
             await self.store.set_batch_state(
                 batch_id,
-                status="partially_failed",
-                stage=str(current["stage"]) if current is not None else "failed",
+                status="failed",
+                stage="failed",
                 progress=int(current["progress"]) if current is not None else 0,
                 snapshot_updates={
                     "execution_error": failure["category"],
@@ -725,7 +725,7 @@ class EvaluationRunner:
             progress=21,
             snapshot_updates={"provider_execution": "running"},
         )
-        conversations = await self.store.source_conversations()
+        conversations = await self.store.source_conversations(batch_id=batch_id)
         await self._run_pass_one(batch_id, conversations)
         current = await self.store.get_batch(batch_id)
         if current is None or current["status"] == "budget_paused":
@@ -754,21 +754,27 @@ class EvaluationRunner:
         if not completed_conversation_ids:
             await self.store.set_batch_state(
                 batch_id,
-                status="partially_failed",
-                stage="failed",
-                progress=44,
+                status="completed",
+                stage="completed",
+                progress=100,
                 snapshot_updates={
-                    "provider_execution": "failed",
+                    "provider_execution": "completed_with_exclusions",
                     "execution_error": "pass_1_failed",
                     "execution_failure": {
                         "category": "pass_1_failed",
-                        "message": "All first-pass evaluations failed",
+                        "message": "No first-pass conversation produced evaluable evidence.",
                         "stage": "pass_1",
-                        "retryable": True,
+                        "retryable": False,
                     },
                     "pass_1_failed": failed_pass_one,
+                    "coverage": {
+                        "eligible": 0,
+                        "excluded": source_user_events,
+                        "exclusion_reason": "insufficient_first_pass_evidence",
+                    },
                 },
             )
+            await self.store.freeze_preliminary_report(batch_id)
             return
         candidates = self._candidates(pass_one_rows)
         candidate_conversation_ids = {str(item["conversation_id"]) for item in candidates}
@@ -784,20 +790,27 @@ class EvaluationRunner:
             },
         )
         if not candidates:
-            report = await self.store.freeze_preliminary_report(batch_id)
             await self.store.set_batch_state(
                 batch_id,
-                status="completed_partial" if failed_pass_one else "completed",
+                status="completed",
                 stage="completed",
                 progress=100,
                 snapshot_updates={
-                    "provider_execution": "completed",
+                    "provider_execution": (
+                        "completed_with_exclusions" if failed_pass_one else "completed"
+                    ),
                     "pass_1_failed": failed_pass_one,
                     "benchmark_count": 0,
-                    "latest_report_id": report["report_id"],
-                    "latest_report_type": report["report_type"],
+                    "coverage": {
+                        "eligible": valid_user_events,
+                        "excluded": max(0, source_user_events - valid_user_events),
+                        "exclusion_reason": (
+                            "insufficient_first_pass_evidence" if failed_pass_one else None
+                        ),
+                    },
                 },
             )
+            await self.store.freeze_preliminary_report(batch_id)
             return
         aligned_candidates = await self._run_asr(batch_id, batch, candidates)
         if aligned_candidates is not None:
@@ -815,6 +828,22 @@ class EvaluationRunner:
         candidate_keys = {
             (str(item["conversation_id"]), str(item["event_id"])) for item in candidates
         }
+        provider_status_by_case: dict[tuple[str, str], dict[str, str]] = {}
+        for row in asr_rows:
+            key = (str(row["conversation_id"]), str(row["event_id"]))
+            provider_status_by_case.setdefault(key, {})[str(row["provider"])] = str(
+                row["status"]
+            )
+        for conversation_id, event_id in sorted(candidate_keys):
+            has_evidence = (conversation_id, event_id) in evidence_case_keys
+            await self.store.checkpoint_case_outcome(
+                batch_id,
+                conversation_id,
+                event_id,
+                status=("eligible" if has_evidence else "excluded_insufficient_evidence"),
+                reason=(None if has_evidence else "insufficient_provider_evidence"),
+                provider_status=provider_status_by_case.get((conversation_id, event_id), {}),
+            )
         unavailable_case_keys = sorted(candidate_keys - evidence_case_keys)
         unavailable_conversation_ids = sorted({key[0] for key in unavailable_case_keys})
         alignment_rows = await self.store.checkpoint_rows(
@@ -827,7 +856,7 @@ class EvaluationRunner:
         ]
         await self.store.set_batch_state(
             batch_id,
-            status="partially_failed" if unavailable_conversation_ids else "running",
+            status="running",
             stage=(
                 "pass_2"
                 if eligible_candidates
@@ -842,6 +871,22 @@ class EvaluationRunner:
             },
         )
         if not eligible_candidates:
+            await self.store.set_batch_state(
+                batch_id,
+                status="completed",
+                stage="completed",
+                progress=100,
+                excluded_count=len(unavailable_case_keys),
+                snapshot_updates={
+                    "provider_execution": "completed_with_exclusions",
+                    "coverage": {
+                        "eligible": 0,
+                        "excluded": len(unavailable_case_keys),
+                        "exclusion_reason": "insufficient_provider_evidence",
+                    },
+                },
+            )
+            await self.store.freeze_preliminary_report(batch_id)
             return
         canonical_pass2_keys = set(candidate_keys & evidence_case_keys)
         await self.store.set_batch_state(
@@ -876,17 +921,24 @@ class EvaluationRunner:
             review_count, benchmark_count = await self.store.materialize_pass2_results(batch_id)
             await self.store.set_batch_state(
                 batch_id,
-                status="partially_failed",
-                stage="pass_2",
-                progress=int(current["progress"]),
+                status="awaiting_review" if review_count else "completed",
+                stage="manual_review" if review_count else "completed",
+                progress=92 if review_count else 100,
+                excluded_count=len(incomplete_suspects) + len(unavailable_case_keys),
                 review_total=review_count,
                 snapshot_updates={
-                    "provider_execution": "partially_failed",
+                    "provider_execution": "completed_with_exclusions",
                     "pass_2_failed": len(incomplete_suspects),
                     "good_balance_deferred": True,
                     "benchmark_count": benchmark_count,
+                    "coverage": {
+                        "eligible": len(canonical_pass2_keys) - len(incomplete_suspects),
+                        "excluded": len(incomplete_suspects) + len(unavailable_case_keys),
+                        "exclusion_reason": "insufficient_or_incomplete_evidence",
+                    },
                 },
             )
+            await self.store.freeze_preliminary_report(batch_id)
             return
         good_pool = self._good_pool(
             pass_one_rows,
@@ -976,24 +1028,28 @@ class EvaluationRunner:
             review_count, benchmark_count = await self.store.materialize_pass2_results(batch_id)
             await self.store.set_batch_state(
                 batch_id,
-                status="partially_failed",
-                stage="pass_2",
-                progress=92,
+                status="awaiting_review" if review_count else "completed",
+                stage="manual_review" if review_count else "completed",
+                progress=92 if review_count else 100,
+                excluded_count=failed + len(unavailable_case_keys),
                 review_total=review_count,
                 snapshot_updates={
-                    "provider_execution": "partially_failed",
+                    "provider_execution": "completed_with_exclusions",
                     "pass_2_failed": failed,
                     "pass_2_failed_groups": failed_groups,
                     "benchmark_count": benchmark_count,
+                    "coverage": {
+                        "eligible": len(canonical_pass2_keys) - failed,
+                        "excluded": failed + len(unavailable_case_keys),
+                        "exclusion_reason": "insufficient_or_incomplete_evidence",
+                    },
                 },
             )
+            await self.store.freeze_preliminary_report(batch_id)
             return
         review_count, benchmark_count = await self.store.materialize_pass2_results(batch_id)
-        report = await self.store.freeze_preliminary_report(batch_id)
         terminal_status = (
-            "partially_failed"
-            if unavailable_conversation_ids
-            else "awaiting_review"
+            "awaiting_review"
             if review_count
             else "completed"
         )
@@ -1001,22 +1057,28 @@ class EvaluationRunner:
             batch_id,
             status=terminal_status,
             stage=(
-                "partial_failure"
-                if unavailable_conversation_ids
-                else "manual_review"
+                "manual_review"
                 if review_count
                 else "completed"
             ),
             progress=92 if review_count else 100,
             review_total=review_count,
             snapshot_updates={
-                "provider_execution": "completed",
+                "provider_execution": (
+                    "completed_with_exclusions" if unavailable_case_keys else "completed"
+                ),
                 "pass_2_failed": failed,
                 "benchmark_count": benchmark_count,
-                "latest_report_id": report["report_id"],
-                "latest_report_type": report["report_type"],
+                "coverage": {
+                    "eligible": len(canonical_pass2_keys),
+                    "excluded": len(unavailable_case_keys),
+                    "exclusion_reason": (
+                        "insufficient_provider_evidence" if unavailable_case_keys else None
+                    ),
+                },
             },
         )
+        await self.store.freeze_preliminary_report(batch_id)
 
     async def _validate_connections(self, batch: dict[str, Any]) -> None:
         """Fail before billing if a frozen provider or model connection is unavailable."""
@@ -1143,10 +1205,13 @@ class EvaluationRunner:
             idempotency_key=reserve_key,
             batch_id=batch_id,
             estimated_usd=float(reserve_amount) * float(fx.get(reserve_currency, 0)),
+            provider=provider,
+            stage=stage,
             pause_batch_on_rejection=pause_batch_on_budget_rejection,
         ):
             raise EvaluationBudgetReached("Batch budget reached before the next LLM call")
         settled = False
+        dispatched = False
         if provider == "gemini":
             client = genai.Client(api_key=key)
             try:
@@ -1166,6 +1231,12 @@ class EvaluationRunner:
                     config.pop("temperature")
                 config["max_output_tokens"] = output_limit
                 async with asyncio.timeout(request_timeout):
+                    await self.store.mark_budget_sent(
+                        reserve_key,
+                        provider=provider,
+                        stage=stage,
+                    )
+                    dispatched = True
                     response = await client.aio.models.generate_content(
                         model=actual_model,
                         contents=user_message,
@@ -1204,7 +1275,10 @@ class EvaluationRunner:
             finally:
                 await client.aio.aclose()
                 if not settled:
-                    await self.store.release_budget(reserve_key)
+                    if dispatched:
+                        await self.store.mark_budget_unknown(reserve_key)
+                    else:
+                        await self.store.release_budget(reserve_key)
         if provider == "azure_gpt":
             try:
                 request_body: dict[str, Any] = {
@@ -1219,6 +1293,12 @@ class EvaluationRunner:
                 if response_format is not None:
                     request_body["response_format"] = response_format
                 async with httpx.AsyncClient(timeout=request_timeout) as azure_client:
+                    await self.store.mark_budget_sent(
+                        reserve_key,
+                        provider=provider,
+                        stage=stage,
+                    )
+                    dispatched = True
                     response = await azure_client.post(
                         base_url,
                         headers={"api-key": key, "Content-Type": "application/json"},
@@ -1264,7 +1344,10 @@ class EvaluationRunner:
                 return _parse_json(content)
             finally:
                 if not settled:
-                    await self.store.release_budget(reserve_key)
+                    if dispatched:
+                        await self.store.mark_budget_unknown(reserve_key)
+                    else:
+                        await self.store.release_budget(reserve_key)
         if provider == "qwen" and is_native_dashscope_url(base_url):
             try:
                 request_body = native_dashscope_request(
@@ -1277,6 +1360,12 @@ class EvaluationRunner:
                     structured_json=True,
                 )
                 async with httpx.AsyncClient(timeout=request_timeout) as dashscope_client:
+                    await self.store.mark_budget_sent(
+                        reserve_key,
+                        provider=provider,
+                        stage=stage,
+                    )
+                    dispatched = True
                     response = await dashscope_client.post(
                         native_dashscope_generation_url(base_url, actual_model),
                         headers={
@@ -1316,7 +1405,10 @@ class EvaluationRunner:
                 return _parse_json(content)
             finally:
                 if not settled:
-                    await self.store.release_budget(reserve_key)
+                    if dispatched:
+                        await self.store.mark_budget_unknown(reserve_key)
+                    else:
+                        await self.store.release_budget(reserve_key)
         client = AsyncOpenAI(
             api_key=key,
             base_url=base_url.rstrip("/") + "/",
@@ -1353,6 +1445,12 @@ class EvaluationRunner:
                 elif provider == "qwen" and disable_thinking:
                     request["extra_body"] = {"enable_thinking": False}
             request[_completion_limit_field(provider, actual_model)] = output_limit
+            await self.store.mark_budget_sent(
+                reserve_key,
+                provider=provider,
+                stage=stage,
+            )
+            dispatched = True
             response = await client.chat.completions.create(
                 **request,
             )
@@ -1392,7 +1490,10 @@ class EvaluationRunner:
         finally:
             await client.close()
             if not settled:
-                await self.store.release_budget(reserve_key)
+                if dispatched:
+                    await self.store.mark_budget_unknown(reserve_key)
+                else:
+                    await self.store.release_budget(reserve_key)
 
     @staticmethod
     def _frozen_llm_cost(
@@ -1457,18 +1558,30 @@ class EvaluationRunner:
             str(row["conversation_id"]): row
             for row in await self.store.checkpoint_rows("evaluation_pass1_runs", batch_id)
         }
+        retry_generation = int(snapshot.get("retry_generation") or 0)
         prior_group_rows = await self.store.pass1_group_rows(batch_id)
         prior_groups = {str(row["group_id"]): row for row in prior_group_rows}
-        pending_conversations = (
-            conversations
-            if prior_groups
-            else [
+        if retry_generation == 0:
+            pending_conversations = (
+                conversations
+                if prior_groups
+                else [
+                    conversation
+                    for conversation in conversations
+                    if existing.get(str(conversation["conversation_id"]), {}).get("status")
+                    != "completed"
+                ]
+            )
+        else:
+            pending_conversations = [
                 conversation
                 for conversation in conversations
                 if existing.get(str(conversation["conversation_id"]), {}).get("status")
                 != "completed"
+                and await self.store.retry_item_allowed(
+                    batch_id, "pass1", (str(conversation["conversation_id"]),)
+                )
             ]
-        )
         if not pending_conversations:
             return
         shared_payload = {
@@ -1492,7 +1605,11 @@ class EvaluationRunner:
         ]
         try:
             groups = pack_pass_one_units(
-                batch_id=batch_id,
+                batch_id=(
+                    batch_id
+                    if retry_generation == 0
+                    else f"{batch_id}:retry:{retry_generation}"
+                ),
                 units=units,
                 system_prompt=prompt,
                 shared_payload=shared_payload,
@@ -1801,6 +1918,10 @@ class EvaluationRunner:
         async def analyze(conversation: dict[str, Any]) -> None:
             conversation_id = str(conversation["conversation_id"])
             if existing.get(conversation_id, {}).get("status") == "completed":
+                return
+            if int(snapshot.get("retry_generation") or 0) and not await (
+                self.store.retry_item_allowed(batch_id, "pass1", (conversation_id,))
+            ):
                 return
             payload = {
                 "conversation_history": conversation["events"],
@@ -2201,13 +2322,21 @@ class EvaluationRunner:
         context_by_conversation: dict[str, list[dict[str, Any]]],
     ) -> dict[tuple[str, str], dict[str, Any]]:
         """Map all target events with batch-first, conversation-atomic LLM requests."""
+        retry_generation = int(batch["snapshot"].get("retry_generation") or 0)
         targets_by_conversation: dict[str, list[str]] = {}
         for conversation_id, event_id in case_keys:
             targets_by_conversation.setdefault(conversation_id, []).append(event_id)
         unit_payloads: dict[str, dict[str, Any]] = {}
         units = []
         for conversation_id, target_ids in sorted(targets_by_conversation.items()):
-            conversation = await self.store.get_conversation(conversation_id)
+            if retry_generation and not await self.store.retry_item_allowed(
+                batch_id, "event_alignment", (conversation_id,)
+            ):
+                continue
+            conversation = await self.store.get_conversation(
+                conversation_id,
+                batch_id=batch_id,
+            )
             if conversation is None:
                 raise EvaluationExecutionError("Event Aligner conversation is unavailable")
             providers, lookup = build_turn_catalog(
@@ -2252,6 +2381,11 @@ class EvaluationRunner:
                 )
             )
         model_id = str(batch["snapshot"]["pass_1_model"])
+        lineage_batch_id = (
+            batch_id
+            if retry_generation == 0
+            else f"{batch_id}:retry:{retry_generation}"
+        )
         provider = await self._model_provider(model_id)
         policy = evaluation_token_policy(provider, model_id.split("::", 1)[-1])
         completed_alignment_rows = {
@@ -2261,7 +2395,7 @@ class EvaluationRunner:
         }
         units = [unit for unit in units if unit.conversation_id not in completed_alignment_rows]
         groups = pack_event_alignment_units(
-            batch_id=batch_id,
+            batch_id=lineage_batch_id,
             units=units,
             system_prompt=EVENT_ALIGNER_SYSTEM_PROMPT,
             policy=policy,
@@ -2317,7 +2451,7 @@ class EvaluationRunner:
             for members in (ordered_units[:midpoint], ordered_units[midpoint:]):
                 children.extend(
                     pack_event_alignment_units(
-                        batch_id=batch_id,
+                        batch_id=lineage_batch_id,
                         units=members,
                         system_prompt=EVENT_ALIGNER_SYSTEM_PROMPT,
                         policy=policy,
@@ -2549,6 +2683,14 @@ class EvaluationRunner:
         ambiguous = [case for case in cases if case["alignment_status"] == "ambiguous"]
         if not ambiguous:
             return cases, False
+        if int(batch["snapshot"].get("retry_generation") or 0) and not await (
+            self.store.retry_item_allowed(
+                batch_id,
+                "event_alignment",
+                (str(conversation["conversation_id"]),),
+            )
+        ):
+            return cases, False
         assignment_candidates = list(ambiguous[0].get("assignment_candidates") or [])
         if not assignment_candidates:
             return cases, False
@@ -2721,7 +2863,10 @@ class EvaluationRunner:
         conversation_ids = sorted({conversation_id for conversation_id, _ in case_keys})
         islands_by_conversation: dict[str, list[dict[str, Any]]] = {}
         for conversation_id in conversation_ids:
-            source = self.store.conversation_user_audio_path(conversation_id)
+            source = await self.store.batch_conversation_user_audio_path(
+                batch_id,
+                conversation_id,
+            )
             if source is None:
                 islands_by_conversation[conversation_id] = []
                 continue
@@ -2766,12 +2911,21 @@ class EvaluationRunner:
                 prior.get("result")
             ):
                 return
+            if int(batch["snapshot"].get("retry_generation") or 0) and not await (
+                self.store.retry_item_allowed(
+                    batch_id, "asr", (provider, conversation_id)
+                )
+            ):
+                return
             if prior.get("status") == "failed" and not _persisted_asr_error_retryable(
                 prior.get("error")
             ):
                 return
-            conversation = await self.store.get_conversation(conversation_id)
-            path = self.store.conversation_audio_path(conversation_id)
+            conversation = await self.store.get_conversation(
+                conversation_id,
+                batch_id=batch_id,
+            )
+            path = await self.store.batch_conversation_audio_path(batch_id, conversation_id)
             if conversation is None or path is None:
                 await self.store.checkpoint_result(
                     "evaluation_asr_runs",
@@ -2900,7 +3054,10 @@ class EvaluationRunner:
         alignment_failures: dict[tuple[str, str], str] = {}
         alignment_llm_request_count = 0
         for conversation_id in conversation_ids:
-            conversation = await self.store.get_conversation(conversation_id)
+            conversation = await self.store.get_conversation(
+                conversation_id,
+                batch_id=batch_id,
+            )
             if conversation is None:
                 continue
             target_event_ids = [
@@ -3541,6 +3698,22 @@ class EvaluationRunner:
         """Evaluate preflight-safe request groups with bounded per-Case evidence."""
         if not candidates:
             return
+        retry_generation = int(batch["snapshot"].get("retry_generation") or 0)
+        if retry_generation:
+            pass2_status = {
+                (str(row["conversation_id"]), str(row["event_id"])): str(row["status"])
+                for row in await self.store.checkpoint_rows("evaluation_pass2_runs", batch_id)
+            }
+            scoped_candidates: list[dict[str, Any]] = []
+            for candidate in candidates:
+                key = (str(candidate["conversation_id"]), str(candidate["event_id"]))
+                if pass2_status.get(key) != "completed" and await (
+                    self.store.retry_item_allowed(batch_id, "pass2", key)
+                ):
+                    scoped_candidates.append(candidate)
+            candidates = scoped_candidates
+            if not candidates:
+                return
         candidate_by_key = {
             (str(candidate["conversation_id"]), str(candidate["event_id"])): candidate
             for candidate in candidates
@@ -3696,7 +3869,11 @@ class EvaluationRunner:
                     continue
                 units.append(unit)
         groups = pack_units(
-            batch_id=f"{batch_id}:{plan_key}",
+            batch_id=(
+                f"{batch_id}:{plan_key}"
+                if retry_generation == 0
+                else f"{batch_id}:retry:{retry_generation}:{plan_key}"
+            ),
             units=units,
             system_prompt=prompt,
             policy=policy,

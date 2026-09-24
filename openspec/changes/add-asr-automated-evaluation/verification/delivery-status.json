@@ -203,11 +203,12 @@
     },
     {
       "id": "KI-177",
-      "status": "open",
+      "status": "resolved",
       "summary": "Timed-out LLM requests release their local budget reservation and create no usage ledger entry even though the provider may have processed and billed them.",
       "impact": "E65A shows no Pass 2 LLM ledger rows after 24 requests reached the 120-second timeout, so the displayed batch cost remains USD 0.55 and may understate the supplier invoice. The application cannot reconcile canceled client waits with provider-side usage or enforce a truthful retry budget.",
       "source": "Read-only production SQLite and executor inspection on 2026-09-22: all 24 Pass 2 attempts have timeout telemetry, no Pass 2 cost-ledger entry exists, and _llm_json releases the reservation whenever no response usage is received. Provider-side billing remains unverified.",
       "next_action": "Before broad retry, constrain the external-real probe by an explicit call count and supplier-price ceiling; then add provider request IDs or a reconciliation path so timeout billing is represented separately from confirmed zero usage.",
+      "resolution": "Reservations now persist reserved/sent/settled/usage_unknown/released. A post-dispatch timeout retains its estimate in the hard budget, reports unknown usage, and the same sent/unknown/settled request identity fails closed after restart instead of dispatching again.",
       "disclosed_to_user": true
     },
     {
@@ -262,12 +263,12 @@
     },
     {
       "id": "KI-171",
-      "status": "open",
+      "status": "resolved",
       "summary": "Retry failed resources does not filter persisted failures by retryability and can re-run deterministic or explicitly non-retryable failures.",
       "impact": "EV-20260922-7D19 retried a Speechmatics full-call invalid_result through attempt 9 even though the new safe error marks it retryable=false. A later retry also regressed the visible batch from partial_failure/92% to evaluation_asr/53% and it was then paused, although all 17 persisted Pass 2 decisions remain completed. Event-alignment failures with completed frozen mappings are reproduced at attempts=0, and EV-20260922-64A8 repeated the deterministic Pass 1 preflight failure through attempt 6. On E65A, the 2026-09-23 12:44 UTC retry completed 29 Pass 2 groups / 79 Cases but left 23 exhausted Event Alignment timeouts and one structure failure closed, so the batch returned to partial_failure/92%. Repeated clicks can therefore both re-run ineligible work and fail to reopen eligible exhausted work.",
       "source": "Read-only production checkpoint/telemetry inspection on 2026-09-22 and authenticated production SQLite inspection on 2026-09-23 plus executor trace. E65A has no active operation; its latest manual retry is audited at 12:44:34 UTC, Pass 2 completed at 12:49:40 UTC, while 24 failed Event Alignment runs remain timestamped 08:04:17 UTC because align_group allows no new local attempts after the persisted attempt ceiling is reached.",
       "next_action": "Build a retry plan from safe failure categories, skip retryable=false and deterministic completed-mapping failures, show what will and will not be retried before dispatch, and ensure a retry with no eligible work does not start paid calls.",
-      "resolution_note": "PD-064 now prevents non-retryable Qwen group failures from being redispatched and preserves exhausted leaf failures. The broader retry-failed planner still does not filter all persisted ASR/alignment failures or preview eligible scope, so this issue remains open under task 12.64.",
+      "resolution_note": "The version-bound retry plan now filters deterministic, explicitly non-retryable, superseded and already-satisfied work; legacy unknown strings fail closed. The consumed plan is persisted as the executor whitelist, creates bounded retry lineage, exposes scope and cost ceiling before dispatch, and rejects stale or empty plans.",
       "disclosed_to_user": true
     },
     {
@@ -1912,20 +1913,22 @@
     },
     {
       "id": "KI-188",
-      "status": "open",
+      "status": "resolved",
       "summary": "The monthly-batch summary shows only the currently active source package, and historical batches do not freeze a dataset identity.",
       "impact": "The retained 56-conversation and active 82-conversation packages total 138 source conversations, but the card displays 82 because it reads only the active audit. Historical batch rows and the 56 source files still exist, so they were not deleted. However, activating the 82-conversation package replaced the shared source index; a paused or retryable 56-conversation batch can therefore resolve source conversations through the current 82-conversation dataset instead of its original package, and historical source-detail links are not reliably batch-scoped.",
       "source": "Read-only production inspection on 2026-09-23 found immutable upload directories containing 56 and 82 workbooks, four retained 56-conversation batch rows, active dataset 0801-0831.zip with 82 conversations, and a shared source index containing only 82 rows. Code inspection shows import_dataset_upload calls _sync_source_data, which deletes and replaces evaluation_source_conversations, summary reads fixture_status for only the active package, and create_batch stores source counts/name but no dataset_id used for subsequent source resolution.",
       "next_action": "Define the card as retained unique source inventory (138 for the current two packages), persist a dataset registry, freeze dataset_id on every batch, scope conversation/event lookup and retries to that dataset, and migrate existing 56/82 batches to their retained package before allowing old-batch retries.",
+      "resolution": "Datasets now have immutable IDs, manifests, member payloads and file hashes. Every new batch binds one version; only exact historical matches migrate, while legacy_unbound history remains visible but cannot be source-reprocessed. Batch APIs and report media resolve the frozen version.",
       "disclosed_to_user": true
     },
     {
       "id": "KI-189",
-      "status": "open",
+      "status": "resolved",
       "summary": "The dashboard's suspected-error ratio silently uses an older finalized batch while adjacent cards use current global or active-source data.",
       "impact": "The active 82-conversation source and running E65A batch both have 560 customer events, but the dashboard shows 4/249 from finalized batch EV-20260922-64A8 without naming that batch. The 249 denominator is internally valid for 64A8 because only customer events from its Pass 1-completed conversations were included, but presenting it next to the current 82-conversation source makes it look like the current dataset lost 311 events.",
       "source": "Read-only production inspection on 2026-09-23 found active source count 82/560 and E65A denominator 560, while 64A8 froze source_user_event_count=381 and later finalized with denominator=249, suspected_numerator=4. Code inspection shows summary selects the latest eligible finalized formal report for the ratio, while the first card reads the currently active source audit; the UI does not expose the selected report ID or coverage exclusion.",
       "next_action": "Choose one dashboard scope and make it explicit. Recommended: show the current running batch when present with its stage label, otherwise the latest finalized batch, and always display the batch ID plus excluded-event count; do not combine an unattributed historical ratio with current-source inventory.",
+      "resolution": "Summary responses now separate active_source, selected_report and global_benchmark_library, including source or batch identity and denominators; the dashboard consumes those explicit scopes instead of mixing an unnamed historical ratio with active-source cards.",
       "disclosed_to_user": true
     },
     {
@@ -2097,9 +2100,36 @@
       "next_action": "Return explicit refresh success/failure, notify on review refresh failure, stop all three navigation paths before they render stale queues, and add successful plus failed refresh browser coverage for Turn tab, sidebar review and batch review entry.",
       "resolution": "refreshBootstrap now returns explicit success/failure; all three review entry paths stop on failure and show a bilingual warning instead of presenting stale data as refreshed. Desktop and narrow Chromium passed the original Turn flow, successful stale-count refresh, and failed-refresh retention scenarios (6/6), and independent re-review passed.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-207",
+      "status": "resolved",
+      "summary": "Provider request failure, Case evidence insufficiency and batch delivery failure are conflated in Evaluation status projection.",
+      "impact": "A single unavailable ASR provider can be presented as failed alongside a partially_failed batch even when redundant providers still satisfy the Case evidence contract; when no provider evidence exists, the product does not clearly distinguish an excluded Case from a system-level batch failure. This makes successful partial delivery look like execution failure and encourages unnecessary retries.",
+      "source": "Product-owner challenge on 2026-09-23 plus executor trace: evaluation_asr_runs and evaluation_case_asr_runs persist provider-level failed rows, evidence_case_keys accepts Cases with completed evidence, but unavailable Case keys are later projected into partially_failed without a separate excluded/evidence-insufficient product state.",
+      "next_action": "Close Q-023, then separate provider availability, Case eligibility/exclusion and batch deliverability in the state model, report schema, retry plan and UI regressions.",
+      "resolution": "Provider attempts remain independently diagnosable, each Case durably records eligible or excluded_insufficient_evidence with provider statuses, and a terminal plan freezes a completed coverage report even with zero evaluable Cases. Only a system interruption that prevents terminal delivery marks the batch failed.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-208",
+      "status": "resolved",
+      "summary": "The first stability-closure implementation does not yet make the retry plan authoritative across dispatch, restart, historical source playback, and Case exclusion persistence.",
+      "impact": "A retry can include non-canonical or deterministic historical failures, a sent request with unknown usage can be dispatched again after restart, historical audio URLs can fall back to the active dataset, and evidence-insufficient Cases lack a durable state distinct from provider and batch lifecycle.",
+      "source": "Independent review B-01 through B-07 on 2026-09-23, recorded in verification/independent-review.md after 298 repository tests passed.",
+      "next_action": "Make the retry plan an execution whitelist, classify legacy errors conservatively, block duplicate dispatch for sent/unknown reservations, scope router/media reads to batch datasets, persist excluded_insufficient_evidence Cases, and add restart/migration/lineage/UI regressions before re-review.",
+      "resolution": "The retry plan now derives from the canonical workset and is enforced at every current and legacy dispatch boundary, including audio-alignment fallback. Sent/unknown/settled identities fail closed after restart; historical API/media reads require the frozen batch dataset; Case exclusions persist independently. Migration/restart, mixed-provider satisfied evidence, bounded lineage and desktop/narrow formal-route regressions pass, and independent technical re-review found no remaining B-01–B-07 implementation blocker.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
+    {
+      "id": "UV-040",
+      "status": "open",
+      "summary": "The independently verified PD-080–PD-082 stability closure has not yet completed production CI/CD, deployed-SHA, health and preservation checks.",
+      "reason": "PD-083 authorizes production deployment without E65A retry or paid provider calls. The release is now entering the existing CI/CD workflow; production evidence must be recorded before task 14.8 is complete.",
+      "disclosed_to_user": true
+    },
     {
       "id": "UV-038",
       "status": "resolved",
@@ -2206,6 +2236,14 @@
       "summary": "The new diarization-first event alignment has not yet been exercised against one current paid full-call result from Soniox, Speechmatics and ElevenLabs.",
       "reason": "This implementation turn is limited to repository-contained local-real audio plus deterministic/mock provider responses; no new paid external call has been authorized.",
       "resolution": "The user-initiated production batch EV-20260922-6AA1 exercised the deployed path with current paid Soniox, Speechmatics and ElevenLabs full-call results. Read-only replay confirms real diarized timelines and exposes KI-162 through KI-164; no additional external call was made during diagnosis.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-026",
+      "status": "resolved",
+      "summary": "The current stability-closure frontend changes have not completed the dual-viewport Playwright suite in the sandboxed runner.",
+      "reason": "The production frontend build is green, but Chromium cannot start because macOS denied MachPortRendezvousServer registration inside the sandbox. The suite must be rerun outside that sandbox before UI verification can be claimed.",
+      "resolution": "The local service and Chromium were started with the required host permissions. The two directly affected lifecycle/retry tests pass on desktop and narrow Chromium (4/4); the production frontend build also passes. The broader shared-state suite remains tracked separately by UV-022.",
       "disclosed_to_user": true
     },
     {

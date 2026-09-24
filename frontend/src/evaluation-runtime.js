@@ -511,7 +511,7 @@ const STATUS = {
   paused: ["warn", "Paused", "已暂停"],
   awaiting_review: ["warn", "Awaiting review", "待人工复核"],
   completed: ["good", "Completed", "已完成"],
-  completed_partial: ["blue", "Final · partial", "最终报告 · 部分覆盖"],
+  completed_partial: ["blue", "Completed · partial coverage", "已完成 · 部分覆盖"],
   partially_failed: ["bad", "Partially failed", "部分失败"],
   budget_paused: ["warn", "Budget paused", "预算暂停"],
   stopped: ["", "Stopped", "已停止"],
@@ -585,6 +585,12 @@ function batchAction(batch) {
   if (batch.status === "completed_partial" && Number(batch.snapshot?.pass_2_failed || 0) > 0) {
     return ["retry_failed", copy("Retry failed resources", "重试失败资源")];
   }
+  if (
+    batch.status === "completed"
+    && Number(batch.snapshot?.coverage?.excluded || 0) > 0
+  ) {
+    return ["retry_failed", copy("Improve excluded coverage", "补跑被排除项")];
+  }
   if (["completed", "completed_partial"].includes(batch.status)) {
     return ["report", copy("Evaluation report", "评测报告")];
   }
@@ -595,15 +601,23 @@ function renderSummary(summary) {
   const metrics = document.querySelectorAll("#page-batches .grid4 .metric");
   if (metrics.length < 4) return;
   metrics[0].querySelector("strong").textContent = summary.batch_count;
-  metrics[0].querySelector("small").textContent = `${summary.conversation_count} ${copy("source conversations available", "通来源对话可用")}`;
+  const activeSource = summary.active_source || summary;
+  const selectedReport = summary.selected_report || (summary.suspected_rate != null ? {
+    suspected_rate: summary.suspected_rate,
+    suspected_numerator: summary.suspected_numerator,
+    valid_user_events: summary.valid_user_events,
+    batch_id: "legacy",
+  } : null);
+  const benchmarkLibrary = summary.benchmark_library || summary;
+  metrics[0].querySelector("small").textContent = `${activeSource.conversation_count} ${copy("source conversations available", "通来源对话可用")} · ${activeSource.dataset_id || "—"}`;
   metrics[1].querySelector("strong").textContent = summary.pending_reviews;
   metrics[1].querySelector("small").textContent = `${copy("From", "来自")} ${summary.pending_conversations} ${copy("conversations", "通对话")}`;
-  metrics[2].querySelector("strong").textContent = summary.suspected_rate ?? "—";
-  metrics[2].querySelector("small").textContent = summary.suspected_rate
-    ? `${summary.suspected_numerator} / ${summary.valid_user_events} ${copy("valid user events", "个有效用户事件")}`
+  metrics[2].querySelector("strong").textContent = selectedReport?.suspected_rate ?? "—";
+  metrics[2].querySelector("small").textContent = selectedReport
+    ? `${selectedReport.suspected_numerator} / ${selectedReport.valid_user_events} ${copy("valid user events", "个有效用户事件")} · ${selectedReport.batch_id}`
     : `${summary.source_issue_count} ${copy("source issues; evaluation not run", "个来源问题；尚未评测")}`;
-  metrics[3].querySelector("strong").textContent = summary.benchmark_count;
-  metrics[3].querySelector("small").textContent = `${summary.benchmark_ai_count} ${copy("AI", "AI 标注")} · ${summary.benchmark_manual_count} ${copy("manual", "人工标注")}`;
+  metrics[3].querySelector("strong").textContent = benchmarkLibrary.benchmark_count;
+  metrics[3].querySelector("small").textContent = `${benchmarkLibrary.ai_count ?? summary.benchmark_ai_count} ${copy("AI", "AI 标注")} · ${benchmarkLibrary.manual_count ?? summary.benchmark_manual_count} ${copy("manual", "人工标注")} · ${copy("global library", "全局库")}`;
   const reviewCount = document.querySelector(".review-count");
   reviewCount.textContent = summary.pending_reviews;
   reviewCount.hidden = Number(summary.pending_reviews) === 0;
@@ -1451,7 +1465,9 @@ async function toggleReportAudio(button) {
   }
   if (runtime.reportAudio) runtime.reportAudio.pause();
   if (runtime.reportAudioButton) runtime.reportAudioButton.textContent = `▶ ${copy("Audio", "试听")}`;
-  const audio = new Audio(`/api/evaluation/conversations/${encodeURIComponent(button.dataset.conversationId)}/user-audio`);
+  const reportBatchId = runtime.currentReport?.payload?.batch_id;
+  const batchQuery = reportBatchId ? `?batch_id=${encodeURIComponent(reportBatchId)}` : "";
+  const audio = new Audio(`/api/evaluation/conversations/${encodeURIComponent(button.dataset.conversationId)}/user-audio${batchQuery}`);
   const start = Number(button.dataset.start);
   const end = Number(button.dataset.end);
   runtime.reportAudio = audio;
@@ -1602,8 +1618,9 @@ async function openRuntimeConversation(button) {
   const drawer = document.querySelector("#conversation-drawer");
   const mask = document.querySelector("#conversation-drawer-mask");
   try {
-    const conversation = await json(`/api/evaluation/conversations/${encodeURIComponent(conversationId)}`);
     const batchId = runtime.currentReport?.payload?.batch_id;
+    const batchQuery = batchId ? `?batch_id=${encodeURIComponent(batchId)}` : "";
+    const conversation = await json(`/api/evaluation/conversations/${encodeURIComponent(conversationId)}${batchQuery}`);
     const batch = runtime.bootstrap?.batches?.find((item) => item.id === batchId);
     const passOneModel = batch?.snapshot?.pass_1_model;
     const state = {
@@ -1897,12 +1914,29 @@ async function deleteScenarioTag() {
 
 async function runBatchAction(batchId, action, version) {
   try {
+    let retryPlanHash = null;
+    if (action === "retry_failed") {
+      const plan = await json(
+        `/api/evaluation/batches/${encodeURIComponent(batchId)}/retry-plan`,
+      );
+      if (!plan.eligible_items?.length) {
+        notify(copy("No retryable work remains.", "没有可重试的任务。"));
+        return;
+      }
+      const scope = copy(
+        `${plan.eligible_items.length} items will retry; ${plan.skipped_items.length} will be skipped. Unknown usage: $${Number(plan.unknown_usage_usd || 0).toFixed(2)}. Maximum additional cost: $${Number(plan.estimated_max_retry_cost_usd || 0).toFixed(2)}. Continue?`,
+        `将重试 ${plan.eligible_items.length} 项，跳过 ${plan.skipped_items.length} 项；未知用量 $${Number(plan.unknown_usage_usd || 0).toFixed(2)}，本次新增费用上限 $${Number(plan.estimated_max_retry_cost_usd || 0).toFixed(2)}。继续吗？`,
+      );
+      if (!window.confirm(scope)) return;
+      retryPlanHash = plan.plan_hash;
+    }
     const updated = await json(`/api/evaluation/batches/${encodeURIComponent(batchId)}/actions`, {
       method: "POST",
       body: {
         action,
         expected_version: Number(version),
         idempotency_key: idempotency(`batch-${action}`),
+        ...(retryPlanHash ? { retry_plan_hash: retryPlanHash } : {}),
       },
     });
     runtime.selectedBatchId = batchId;
@@ -1910,7 +1944,7 @@ async function runBatchAction(batchId, action, version) {
       start: ["Evaluation started.", "评测已开始。"],
       pause: ["Evaluation paused.", "评测已暂停。"],
       resume: ["Evaluation resumed.", "评测已恢复。"],
-      retry_failed: ["Failed work queued for retry.", "失败任务已提交重试。"],
+      retry_failed: ["Retryable work queued; deterministic failures were skipped.", "可重试任务已提交，确定性失败已跳过。"],
     }[action] || [`Batch ${action} saved.`, "批次操作已保存。"];
     notify(copy(actionCopy[0], actionCopy[1]));
     renderRun(updated);

@@ -201,7 +201,7 @@
 - [x] 12.61 Give single-Case local input/output planning failures dedicated preflight categories and preserve the last meaningful stage, progress, checkpoints and cost when a guarded run becomes partially failed (PD-059, KI-170)
 - [x] 12.62 Persist and display safe ASR failure diagnostics with provider, full-call/event scope, attempts, retryability, controlled category and actionable reason, excluding raw responses and customer evidence (PD-059)
 - [x] 12.63 Add cross-provider budget, truthful-progress and ASR-redaction regressions; complete independent verification and deploy without automatically retrying CB26 or 7D19 or making paid calls (PD-059)
-- [ ] 12.64 Respect the persisted retryable contract when building a retry-failed plan; skip non-retryable provider results and deterministic alignment/preflight failures, and present the eligible retry scope before any paid dispatch (KI-171)
+- [x] 12.64 Respect the persisted retryable contract when building a retry-failed plan; skip non-retryable provider results and deterministic alignment/preflight failures, and present the eligible retry scope before any paid dispatch (KI-171)
 - [x] 12.65 Account for the longest corrective retry instruction during Pass 1 packing, or deterministically re-plan a failed near-cap group before retry, so a schema correction cannot turn a previously dispatched group into a permanent local input-cap failure (KI-172)
 - [x] 12.66 Add a version-checked, idempotent no-provider command that freezes paused/partially-failed batches with a preliminary report as `final_partial`/`completed_partial`, preserving successes and excluding incomplete work (PD-060, KI-173)
 - [x] 12.67 Add the “Use current results” batch action and confirmation copy by reusing the frozen dialog pattern, with API/UI regressions for preservation, exclusion, no provider dispatch and invalid states (PD-060)
@@ -248,3 +248,15 @@
 - [x] 13.8 Publish KI-161 after the PD-053 release completes, then backfill EV-20260921-BA92's completed decisions without external calls and verify 18 reviews, 20 Benchmarks, 6 retained failures and no frozen report (PD-055)
 - [x] 13.9 Publish the independently verified KI-200–KI-204 repair, preserve production Evaluation data, verify CI/CD/public health/deployed SHA, and confirm E65A was not automatically retried (PD-078)
 - [x] 13.10 Refresh current ASR/Turn review data whenever users enter or switch the review queues, verify stale 135 cannot survive navigation when production has 40 open Turn groups, and publish without external calls (PD-079 / KI-205)
+
+## 14. Stability closure (PD-080–PD-082)
+
+- [x] 14.1 Persist immutable dataset versions and bind every new batch to dataset ID, manifest/member snapshot and content hash; migrate only provable history and mark the rest `legacy_unbound` without deletion (KI-188)
+- [x] 14.2 Make every batch-scoped source read resolve the frozen dataset rather than the mutable active source index; block source-dependent reprocessing for `legacy_unbound`
+- [x] 14.3 Add versioned retry plans over the canonical workset, filter non-retryable/deterministic failures, reopen eligible exhausted Event Alignment work with a new bounded lineage, and keep empty plans from starting (KI-171)
+- [x] 14.4 Persist reservation lifecycle `reserved/sent/settled/usage_unknown/released`; retain timeout estimates in the hard budget and expose unknown usage for reconciliation (KI-177)
+- [x] 14.5 Separate provider `unavailable`, Case `excluded_insufficient_evidence` and batch lifecycle; generate a completed coverage report whenever execution reaches a terminal plan, even at zero evaluable Cases (PD-082, KI-207)
+- [x] 14.6 Split dashboard summary into explicit active-source, selected-report/batch and global-Benchmark scopes, with source IDs and denominators (KI-188, KI-189)
+- [x] 14.7 Add migration, restart, repeated-retry, timeout-ledger, zero/partial/full-coverage and mixed-provider regressions; run scoped/full checks, Change gate and independent verification without paid calls or production mutation
+- [ ] 14.8 Under PD-083, deploy the independently verified stability closure with backup/rollback evidence; verify CI, production health, deployed SHA and preservation of E65A without any automatic provider dispatch
+- [ ] 14.9 After a separate paid-call authorization, run the staged S2/S3 canaries and any E65A recovery with explicit data scope, cost ceiling and stop conditions before S4 release acceptance

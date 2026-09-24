@@ -500,11 +500,12 @@ async def test_guarded_failure_preserves_last_stage_and_progress(
 
     updated = await evaluation_store.get_batch(batch["id"])
     assert updated is not None
-    assert updated["status"] == "partially_failed"
-    assert updated["stage"] == "pass_2"
+    assert updated["status"] == "failed"
+    assert updated["stage"] == "failed"
     assert updated["progress"] == 75
     assert updated["cost"] == 1.25
     assert updated["snapshot"]["execution_failure"]["category"] == ("preflight_output_limit")
+    assert updated["snapshot"]["execution_failure"]["stage"] == "pass_2"
 
 
 def test_runtime_prompts_use_frozen_slots_and_render_without_residue() -> None:
@@ -1382,8 +1383,7 @@ async def test_historical_turn_issue_detects_wrong_merge_and_order_anomaly(
         )
         for evidence in wrong_merge["audio_evidence"]["islands"]
     ]
-    assert all(clip is not None and clip.is_file() for clip in clips)
-    assert len({clip.name for clip in clips if clip is not None}) == 2
+    assert clips == [None, None]
 
 
 @pytest.mark.asyncio
@@ -1638,11 +1638,19 @@ async def test_case_asr_clip_uses_pure_user_event_interval(
         ],
     }
 
-    async def get_conversation(_conversation_id: str) -> dict[str, object]:
+    async def get_conversation(
+        _conversation_id: str,
+        *,
+        batch_id: str | None = None,
+    ) -> dict[str, object]:
+        del batch_id
         return conversation
 
+    async def batch_user_audio(_batch_id: str, _conversation_id: str) -> Path:
+        return source
+
     monkeypatch.setattr(evaluation_store, "get_conversation", get_conversation)
-    monkeypatch.setattr(evaluation_store, "conversation_user_audio_path", lambda _value: source)
+    monkeypatch.setattr(evaluation_store, "batch_conversation_user_audio_path", batch_user_audio)
     path, trace = await evaluation_store.prepare_case_asr_clip(
         str(batch["id"]),
         "C-1",
@@ -1674,7 +1682,12 @@ async def test_case_asr_clip_rejects_unreliable_shared_timeline(
     event = next(item for item in conversation["events"] if item["speaker"] == "customer")
     conversation["issues"] = [{"issue_type": "audio_timeline_mismatch"}]
 
-    async def mismatched(_conversation_id: str) -> dict[str, object]:
+    async def mismatched(
+        _conversation_id: str,
+        *,
+        batch_id: str | None = None,
+    ) -> dict[str, object]:
+        del batch_id
         return conversation
 
     monkeypatch.setattr(evaluation_store, "get_conversation", mismatched)
@@ -1710,7 +1723,12 @@ async def test_run_asr_checkpoints_invalid_timeline_without_provider_dispatch(
     conversation["issues"] = [{"issue_type": "audio_timeline_mismatch"}]
     dispatched_event_ids: list[str | None] = []
 
-    async def mismatched(_conversation_id: str) -> dict[str, object]:
+    async def mismatched(
+        _conversation_id: str,
+        *,
+        batch_id: str | None = None,
+    ) -> dict[str, object]:
+        del batch_id
         return conversation
 
     async def context_only_dispatch(
@@ -4372,7 +4390,8 @@ async def test_all_pass_one_failures_stop_before_asr(
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     asr_called = False
 
-    async def one_conversation() -> list[dict[str, object]]:
+    async def one_conversation(*, batch_id: str | None = None) -> list[dict[str, object]]:
+        del batch_id
         return [conversation]
 
     async def connections_ok(_batch: dict[str, object]) -> None:
@@ -4403,8 +4422,8 @@ async def test_all_pass_one_failures_stop_before_asr(
 
     updated = await evaluation_store.get_batch(batch["id"])
     assert updated is not None
-    assert updated["status"] == "partially_failed"
-    assert updated["stage"] == "failed"
+    assert updated["status"] == "completed"
+    assert updated["stage"] == "completed"
     assert updated["snapshot"]["execution_failure"]["category"] == "pass_1_failed"
     assert asr_called is False
 
@@ -4430,7 +4449,8 @@ async def test_zero_candidate_first_pass_completes_without_asr(
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
     asr_called = False
 
-    async def one_conversation() -> list[dict[str, object]]:
+    async def one_conversation(*, batch_id: str | None = None) -> list[dict[str, object]]:
+        del batch_id
         return [conversation]
 
     async def connections_ok(_batch: dict[str, object]) -> None:
@@ -4500,7 +4520,8 @@ async def test_all_provider_failure_stops_affected_conversation_before_pass_two(
     event = next(item for item in conversation["events"] if item["speaker"] == "customer")
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
 
-    async def one_conversation() -> list[dict[str, object]]:
+    async def one_conversation(*, batch_id: str | None = None) -> list[dict[str, object]]:
+        del batch_id
         return [conversation]
 
     async def connections_ok(_batch: dict[str, object]) -> None:
@@ -4554,8 +4575,8 @@ async def test_all_provider_failure_stops_affected_conversation_before_pass_two(
 
     updated = await evaluation_store.get_batch(batch["id"])
     assert updated is not None
-    assert updated["status"] == "partially_failed"
-    assert updated["stage"] == "evaluation_asr"
+    assert updated["status"] == "completed"
+    assert updated["stage"] == "completed"
     assert updated["snapshot"]["asr_unavailable_conversations"] == [_VALID_CONVERSATION_ID]
     assert await evaluation_store.checkpoint_rows("evaluation_pass2_runs", batch["id"]) == []
     assert await evaluation_store.list_reviews() == []
@@ -4584,7 +4605,8 @@ async def test_partial_pass_two_materializes_completed_results(
     assert len(events) == 2
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
 
-    async def one_conversation() -> list[dict[str, object]]:
+    async def one_conversation(*, batch_id: str | None = None) -> list[dict[str, object]]:
+        del batch_id
         return [conversation]
 
     async def connections_ok(_batch: dict[str, object]) -> None:
@@ -4684,10 +4706,10 @@ async def test_partial_pass_two_materializes_completed_results(
 
     updated = await evaluation_store.get_batch(batch["id"])
     assert updated is not None
-    assert updated["status"] == "partially_failed"
+    assert updated["status"] == "awaiting_review"
     assert updated["review_total"] == 1
     assert len(await evaluation_store.list_reviews()) == 1
-    assert await evaluation_store.latest_report(batch["id"]) is None
+    assert await evaluation_store.latest_report(batch["id"]) is not None
 
 
 @pytest.mark.asyncio
@@ -4711,7 +4733,8 @@ async def test_single_provider_success_continues_and_preserves_failed_evidence(
     event = next(item for item in conversation["events"] if item["speaker"] == "customer")
     runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
 
-    async def one_conversation() -> list[dict[str, object]]:
+    async def one_conversation(*, batch_id: str | None = None) -> list[dict[str, object]]:
+        del batch_id
         return [conversation]
 
     async def connections_ok(_batch: dict[str, object]) -> None:
@@ -5600,7 +5623,12 @@ async def test_event_alignment_split_is_restart_safe(
     }
     original_get_conversation = evaluation_store.get_conversation
 
-    async def get_conversation(conversation_id: str) -> dict[str, object] | None:
+    async def get_conversation(
+        conversation_id: str,
+        *,
+        batch_id: str | None = None,
+    ) -> dict[str, object] | None:
+        del batch_id
         if conversation_id in conversations:
             return conversations[conversation_id]
         return await original_get_conversation(conversation_id)
@@ -5837,6 +5865,148 @@ async def test_event_alignment_target_subsets_merge_once_and_resume_without_disp
     assert len(persisted) == 1
     merged_events = persisted[0]["result"]["events"]
     assert [item["event_id"] for item in merged_events] == event_ids
+
+
+@pytest.mark.asyncio
+async def test_event_alignment_retry_opens_new_bounded_lineage(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An approved retry retains exhausted history and dispatches a new lineage."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Event Alignment retry lineage",
+            asr_providers=["soniox", "speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="event-alignment-retry-lineage",
+        )
+    )
+    source = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert source is not None
+    target = next(item for item in source["events"] if item["speaker"] == "customer")
+    event_id = str(target["event_id"])
+    await evaluation_store.checkpoint_result(
+        "evaluation_event_alignment_runs",
+        (batch["id"], _VALID_CONVERSATION_ID),
+        status="failed",
+        attempts=2,
+        error=json.dumps({"category": "timeout", "retryable": True}),
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_case_asr_runs",
+        (batch["id"], "soniox", _VALID_CONVERSATION_ID, event_id),
+        status="failed",
+        attempts=2,
+        error=json.dumps({"category": "timeout", "retryable": True}),
+    )
+    await evaluation_store.checkpoint_event_alignment_group(
+        batch_id=str(batch["id"]),
+        group_id="EAG-OLD-EXHAUSTED",
+        idempotency_key="old-exhausted-lineage",
+        conversation_ids=[_VALID_CONVERSATION_ID],
+        estimated_input_tokens=100,
+        reserved_output_tokens=100,
+        status="failed",
+        attempts=2,
+        error="timeout",
+    )
+    completed = await evaluation_store.set_batch_state(
+        str(batch["id"]),
+        status="completed",
+        stage="completed",
+        progress=100,
+        snapshot_updates={
+            "pass_2_canonical_case_keys": [[_VALID_CONVERSATION_ID, event_id]]
+        },
+    )
+    plan = await evaluation_store.retry_plan(str(batch["id"]))
+    retried = await evaluation_store.act_on_batch(
+        str(batch["id"]),
+        EvaluationBatchAction(
+            action="retry_failed",
+            expected_version=int(completed["version"]),
+            idempotency_key="event-alignment-retry-action",
+            retry_plan_hash=str(plan["plan_hash"]),
+        ),
+    )
+    contexts = {
+        _VALID_CONVERSATION_ID: [
+            {
+                "provider": provider_name,
+                "segments": [
+                    {"start": 0.0, "end": 0.5, "speaker": "S1", "text": "robot"},
+                    {
+                        "start": 0.5,
+                        "end": 1.5,
+                        "speaker": "S2",
+                        "text": str(target["text"]),
+                    },
+                ],
+            }
+            for provider_name in ("soniox", "speechmatics")
+        ]
+    }
+    calls: list[str] = []
+
+    async def provider(_model_id: str) -> str:
+        return "deepseek"
+
+    async def align_request(*args: object, **_kwargs: object) -> dict[str, object]:
+        payload = cast(dict[str, object], args[2])
+        group_id = str(payload["request_group_id"])
+        calls.append(group_id)
+        return {
+            "request_group_id": group_id,
+            "results": [
+                {
+                    "conversation_id": _VALID_CONVERSATION_ID,
+                    "speaker_roles": [
+                        {
+                            "provider": provider_name,
+                            "customer_speaker": "S2",
+                            "robot_speakers": ["S1"],
+                        }
+                        for provider_name in ("soniox", "speechmatics")
+                    ],
+                    "events": [
+                        {
+                            "event_id": event_id,
+                            "providers": [
+                                {
+                                    "provider": provider_name,
+                                    "status": "mapped",
+                                    "turn_id": (
+                                        f"{_VALID_CONVERSATION_ID}:"
+                                        f"{provider_name}:turn:1"
+                                    ),
+                                }
+                                for provider_name in ("soniox", "speechmatics")
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(runner, "_model_provider", provider)
+    monkeypatch.setattr(runner, "_llm_json", align_request)
+    result = await runner._run_event_alignment(
+        str(batch["id"]),
+        retried,
+        [(_VALID_CONVERSATION_ID, event_id)],
+        contexts,
+    )
+    groups = await evaluation_store.event_alignment_group_rows(str(batch["id"]))
+    assert set(result) == {(_VALID_CONVERSATION_ID, event_id)}
+    assert len(calls) == 1
+    assert any(row["group_id"] == "EAG-OLD-EXHAUSTED" for row in groups)
+    assert any(
+        row["status"] == "completed" and row["group_id"] != "EAG-OLD-EXHAUSTED"
+        for row in groups
+    )
 
 
 @pytest.mark.asyncio
@@ -6124,6 +6294,16 @@ async def test_benchmark_export_is_durable_async_and_downloadable(
     evaluation_store: EvaluationStore,
 ) -> None:
     """ZIP generation should expose a durable job before an authenticated download."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Benchmark export",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="benchmark-export-source-001",
+        )
+    )
     async with aiosqlite.connect(evaluation_store.database_path) as connection:
         await connection.executemany(
             """INSERT INTO evaluation_benchmarks (
@@ -6133,7 +6313,7 @@ async def test_benchmark_export_is_durable_async_and_downloadable(
             [
                 (
                     "BM-EXPORT",
-                    "EV-EXPORT",
+                    batch["id"],
                     _VALID_CONVERSATION_ID,
                     "R2",
                     "good",
@@ -6148,7 +6328,7 @@ async def test_benchmark_export_is_durable_async_and_downloadable(
                 ),
                 (
                     "BM-MISSING-AUDIO",
-                    "EV-EXPORT",
+                    batch["id"],
                     "missing-conversation",
                     "R4",
                     "bad",
@@ -6212,6 +6392,16 @@ async def test_benchmark_clip_state_and_corrections_are_persisted(
 ) -> None:
     """Managed clips become playable and corrections retain immutable history."""
     benchmark_id = "BM-LIFECYCLE"
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Benchmark lifecycle",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="benchmark-lifecycle-source-001",
+        )
+    )
     async with aiosqlite.connect(evaluation_store.database_path) as connection:
         await connection.execute(
             """INSERT INTO evaluation_benchmarks (
@@ -6220,7 +6410,7 @@ async def test_benchmark_clip_state_and_corrections_are_persisted(
                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 benchmark_id,
-                "EV-LIFECYCLE",
+                batch["id"],
                 _VALID_CONVERSATION_ID,
                 "R2",
                 "bad",
@@ -6487,3 +6677,486 @@ async def test_elevenlabs_adapter_uses_synchronous_fallback_without_webhook(
 
     assert request_id is None
     assert result["text"] == "fallback"
+
+
+@pytest.mark.asyncio
+async def test_sent_timeout_reservation_remains_unknown_and_blocks_budget(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """A dispatched timeout remains committed until provider usage is reconciled."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Unknown usage",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="unknown-usage-source-001",
+        )
+    )
+    assert await evaluation_store.reserve_budget(
+        idempotency_key="unknown-reservation-001",
+        batch_id=str(batch["id"]),
+        estimated_usd=6,
+        provider="deepseek",
+        stage="pass_2",
+    )
+    await evaluation_store.mark_budget_sent(
+        "unknown-reservation-001",
+        provider="deepseek",
+        stage="pass_2",
+    )
+    await evaluation_store.mark_budget_unknown("unknown-reservation-001")
+    await evaluation_store.release_budget("unknown-reservation-001")
+
+    assert not await evaluation_store.reserve_budget(
+        idempotency_key="would-overspend-001",
+        batch_id=str(batch["id"]),
+        estimated_usd=5,
+        pause_batch_on_rejection=False,
+    )
+    summary = await evaluation_store.cost_summary(str(batch["id"]))
+    assert summary["money_status"] == "usage_unknown"
+    assert summary["unknown_usage_usd"] == pytest.approx(6)
+    assert summary["committed_total_usd"] == pytest.approx(6)
+
+    restarted = EvaluationStore(
+        evaluation_store.database_path,
+        evaluation_store.seed_dataset_root,
+    )
+    await restarted.initialize()
+    with pytest.raises(RuntimeError, match="automatic redispatch is blocked"):
+        await restarted.reserve_budget(
+            idempotency_key="unknown-reservation-001",
+            batch_id=str(batch["id"]),
+            estimated_usd=6,
+            provider="deepseek",
+            stage="pass_2",
+        )
+
+
+def test_retryability_fails_closed_for_legacy_deterministic_and_unknown_errors() -> None:
+    """Free-form historical failures never silently authorize another paid call."""
+    assert EvaluationStore._retryability("preflight_input_limit") == (
+        False,
+        "preflight_input_limit",
+    )
+    assert EvaluationStore._retryability("schema_contract: missing IDs") == (
+        False,
+        "schema_contract",
+    )
+    assert EvaluationStore._retryability("unclassified legacy failure") == (
+        False,
+        "unknown_failure",
+    )
+    assert EvaluationStore._retryability("timeout") == (True, "timeout")
+
+
+@pytest.mark.asyncio
+async def test_batch_reads_frozen_dataset_and_legacy_unbound_blocks_reprocessing(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Mutable active-source rows cannot change a batch's frozen evidence."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Frozen dataset",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="frozen-dataset-source-001",
+        )
+    )
+    before = await evaluation_store.get_conversation(
+        _VALID_CONVERSATION_ID,
+        batch_id=str(batch["id"]),
+    )
+    assert before is not None
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        await database.execute(
+            """UPDATE evaluation_source_events SET text='mutated active source'
+               WHERE conversation_id=?""",
+            (_VALID_CONVERSATION_ID,),
+        )
+        await database.commit()
+    after = await evaluation_store.get_conversation(
+        _VALID_CONVERSATION_ID,
+        batch_id=str(batch["id"]),
+    )
+    assert after == before
+
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        await database.execute(
+            """UPDATE evaluation_batches
+               SET dataset_id=NULL,dataset_binding_status='legacy_unbound'
+               WHERE id=?""",
+            (batch["id"],),
+        )
+        await database.commit()
+    with pytest.raises(ValueError, match="legacy_unbound"):
+        await evaluation_store.source_conversations(batch_id=str(batch["id"]))
+
+
+@pytest.mark.asyncio
+async def test_legacy_dataset_binding_migration_is_exact_restart_safe_and_non_destructive(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Only provable history binds; ambiguous history and its results survive restart."""
+    provable = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Provable legacy binding",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="provable-legacy-binding-001",
+        )
+    )
+    ambiguous = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Ambiguous legacy binding",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="ambiguous-legacy-binding-001",
+        )
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_pass1_runs",
+        (ambiguous["id"], _VALID_CONVERSATION_ID),
+        status="completed",
+        attempts=1,
+        result={"issues": []},
+    )
+    provable_snapshot = dict(provable["snapshot"])
+    ambiguous_snapshot = dict(ambiguous["snapshot"])
+    ambiguous_snapshot["source"] = "unknown-historical-package.zip"
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        await database.execute(
+            """INSERT INTO evaluation_audit
+               (id,action,object_id,metadata_json,created_at)
+               VALUES (?,?,?,?,?)""",
+            (
+                "audit-provable-legacy-binding",
+                "dataset.upload_activated",
+                provable["dataset_id"],
+                json.dumps({"filename": provable_snapshot["source"]}),
+                provable["created_at"],
+            ),
+        )
+        await database.execute(
+            """UPDATE evaluation_batches
+               SET dataset_id=NULL,dataset_binding_status='legacy_unbound',snapshot_json=?
+               WHERE id=?""",
+            (json.dumps(provable_snapshot), provable["id"]),
+        )
+        await database.execute(
+            """UPDATE evaluation_batches
+               SET dataset_id=NULL,dataset_binding_status='legacy_unbound',snapshot_json=?
+               WHERE id=?""",
+            (json.dumps(ambiguous_snapshot), ambiguous["id"]),
+        )
+        await database.commit()
+
+    restarted = EvaluationStore(
+        evaluation_store.database_path,
+        evaluation_store.seed_dataset_root,
+    )
+    await restarted.initialize()
+    migrated = await restarted.get_batch(str(provable["id"]))
+    retained = await restarted.get_batch(str(ambiguous["id"]))
+    assert migrated is not None and migrated["dataset_binding_status"] == "bound"
+    assert migrated["dataset_id"] == provable["dataset_id"]
+    assert retained is not None and retained["dataset_binding_status"] == "legacy_unbound"
+    assert retained["dataset_id"] is None
+    rows = await restarted.checkpoint_rows("evaluation_pass1_runs", str(ambiguous["id"]))
+    assert len(rows) == 1 and rows[0]["status"] == "completed"
+
+    restarted_again = EvaluationStore(
+        evaluation_store.database_path,
+        evaluation_store.seed_dataset_root,
+    )
+    await restarted_again.initialize()
+    stable = await restarted_again.get_batch(str(provable["id"]))
+    still_unbound = await restarted_again.get_batch(str(ambiguous["id"]))
+    assert stable is not None and stable["dataset_id"] == provable["dataset_id"]
+    assert still_unbound is not None
+    assert still_unbound["dataset_binding_status"] == "legacy_unbound"
+
+
+@pytest.mark.asyncio
+async def test_conversation_api_uses_batch_frozen_source_after_active_swap(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Production conversation routes honor batch_id instead of the mutable active source."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Frozen route",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="frozen-route-source-001",
+        )
+    )
+    frozen = await evaluation_store.get_conversation(
+        _VALID_CONVERSATION_ID,
+        batch_id=str(batch["id"]),
+    )
+    assert frozen is not None
+    original_text = frozen["events"][0]["text"]
+    async with aiosqlite.connect(evaluation_store.database_path) as database:
+        await database.execute(
+            """UPDATE evaluation_source_events SET text='active source changed'
+               WHERE conversation_id=? AND source_row=(
+                   SELECT MIN(source_row) FROM evaluation_source_events
+                   WHERE conversation_id=?
+               )""",
+            (_VALID_CONVERSATION_ID, _VALID_CONVERSATION_ID),
+        )
+        await database.commit()
+    app = FastAPI()
+    app.include_router(create_evaluation_router(evaluation_store))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        active_response = await client.get(
+            f"/api/evaluation/conversations/{_VALID_CONVERSATION_ID}"
+        )
+        frozen_response = await client.get(
+            f"/api/evaluation/conversations/{_VALID_CONVERSATION_ID}",
+            params={"batch_id": batch["id"]},
+        )
+        frozen_audio = await client.get(
+            f"/api/evaluation/conversations/{_VALID_CONVERSATION_ID}/user-audio",
+            params={"batch_id": batch["id"]},
+        )
+    assert active_response.json()["events"][0]["text"] == "active source changed"
+    assert frozen_response.json()["events"][0]["text"] == original_text
+    assert frozen_response.json()["user_audio_url"].endswith(f"batch_id={batch['id']}")
+    assert frozen_audio.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_case_exclusion_is_durable_without_failing_batch(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Provider failure is stored below a completed batch as a Case exclusion."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Case exclusion",
+            asr_providers=["speechmatics"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="case-exclusion-source-001",
+        )
+    )
+    await evaluation_store.checkpoint_case_outcome(
+        str(batch["id"]),
+        _VALID_CONVERSATION_ID,
+        "R1",
+        status="excluded_insufficient_evidence",
+        reason="insufficient_provider_evidence",
+        provider_status={"speechmatics": "failed"},
+    )
+    completed = await evaluation_store.set_batch_state(
+        str(batch["id"]),
+        status="completed",
+        stage="completed",
+        progress=100,
+        snapshot_updates={
+            "coverage": {
+                "eligible": 0,
+                "excluded": 1,
+                "exclusion_reason": "insufficient_provider_evidence",
+            }
+        },
+    )
+    outcomes = await evaluation_store.case_outcome_rows(str(batch["id"]))
+    assert completed["status"] == "completed"
+    assert outcomes == [
+        {
+            "batch_id": batch["id"],
+            "conversation_id": _VALID_CONVERSATION_ID,
+            "event_id": "R1",
+            "status": "excluded_insufficient_evidence",
+            "reason": "insufficient_provider_evidence",
+            "updated_at": outcomes[0]["updated_at"],
+            "provider_status": {"speechmatics": "failed"},
+        }
+    ]
+
+
+@pytest.mark.asyncio
+async def test_retry_plan_filters_deterministic_failures_and_is_version_bound(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Only eligible persisted failures can enter a new retry generation."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Retry plan",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="retry-plan-source-001",
+        )
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_pass2_runs",
+        (batch["id"], _VALID_CONVERSATION_ID, "retryable"),
+        status="failed",
+        attempts=3,
+        error=json.dumps({"category": "timeout", "retryable": True}),
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_pass2_runs",
+        (batch["id"], _VALID_CONVERSATION_ID, "deterministic"),
+        status="failed",
+        attempts=1,
+        error=json.dumps({"category": "schema_error", "retryable": False}),
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_pass2_runs",
+        (batch["id"], _VALID_CONVERSATION_ID, "superseded"),
+        status="failed",
+        attempts=2,
+        error=json.dumps({"category": "timeout", "retryable": True}),
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_case_asr_runs",
+        (batch["id"], "speechmatics", "C-SATISFIED", "satisfied"),
+        status="failed",
+        attempts=2,
+        error=json.dumps({"category": "timeout", "retryable": True}),
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_case_asr_runs",
+        (batch["id"], "elevenlabs", "C-SATISFIED", "satisfied"),
+        status="completed",
+        attempts=1,
+        result={"text": "usable evidence"},
+    )
+    await evaluation_store.checkpoint_result(
+        "evaluation_asr_runs",
+        (batch["id"], "speechmatics", "C-SATISFIED"),
+        status="failed",
+        attempts=2,
+        error=json.dumps({"category": "timeout", "retryable": True}),
+    )
+    completed = await evaluation_store.set_batch_state(
+        str(batch["id"]),
+        status="completed",
+        stage="completed",
+        progress=100,
+        snapshot_updates={
+            "pass_2_canonical_case_keys": [
+                [_VALID_CONVERSATION_ID, "retryable"],
+                [_VALID_CONVERSATION_ID, "deterministic"],
+            ]
+        },
+    )
+    plan = await evaluation_store.retry_plan(str(batch["id"]))
+    assert len(plan["eligible_items"]) == 1
+    assert len(plan["skipped_items"]) == 4
+    assert plan["estimated_max_retry_cost_usd"] == pytest.approx(
+        plan["hard_budget_remaining_usd"]
+    )
+    retried = await evaluation_store.act_on_batch(
+        str(batch["id"]),
+        EvaluationBatchAction(
+            action="retry_failed",
+            expected_version=int(completed["version"]),
+            idempotency_key="retry-plan-action-001",
+            retry_plan_hash=str(plan["plan_hash"]),
+        ),
+    )
+    assert retried["status"] == "running"
+    assert retried["snapshot"]["retry_generation"] == 1
+    assert await evaluation_store.retry_item_allowed(
+        str(batch["id"]), "pass2", (_VALID_CONVERSATION_ID, "retryable")
+    )
+    assert not await evaluation_store.retry_item_allowed(
+        str(batch["id"]), "pass2", (_VALID_CONVERSATION_ID, "superseded")
+    )
+    with pytest.raises(RuntimeError, match="batch changed|stale"):
+        await evaluation_store.act_on_batch(
+            str(batch["id"]),
+            EvaluationBatchAction(
+                action="retry_failed",
+                expected_version=int(completed["version"]),
+                idempotency_key="retry-plan-action-stale-001",
+                retry_plan_hash=str(plan["plan_hash"]),
+            ),
+        )
+
+
+@pytest.mark.asyncio
+async def test_legacy_pass1_and_audio_fallback_cannot_bypass_retry_plan(
+    evaluation_store: EvaluationStore,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Every legacy/current LLM dispatch boundary obeys the consumed retry whitelist."""
+    batch = await evaluation_store.create_batch(
+        EvaluationBatchCreate(
+            name="Retry dispatch guard",
+            asr_providers=["elevenlabs"],
+            pass_1_model="deepseek-chat",
+            pass_2_model="deepseek-chat",
+            budget_limit=10,
+            idempotency_key="retry-dispatch-guard-source-001",
+        )
+    )
+    conversation = await evaluation_store.get_conversation(_VALID_CONVERSATION_ID)
+    assert conversation is not None
+    guarded_batch = {
+        **batch,
+        "snapshot": {**batch["snapshot"], "retry_generation": 1},
+    }
+    dispatches = 0
+
+    async def deny_retry(
+        _batch_id: str,
+        _stage: str,
+        _key: tuple[str, ...],
+    ) -> bool:
+        return False
+
+    async def forbidden_dispatch(*_args: object, **_kwargs: object) -> dict[str, object]:
+        nonlocal dispatches
+        dispatches += 1
+        raise AssertionError("retry whitelist was bypassed")
+
+    runner = EvaluationRunner(evaluation_store, cast(BotKeyCipher, object()))
+    monkeypatch.setattr(evaluation_store, "retry_item_allowed", deny_retry)
+    monkeypatch.setattr(runner, "_llm_json", forbidden_dispatch)
+    await runner._run_pass_one_legacy(
+        str(batch["id"]),
+        [conversation],
+        guarded_batch,
+    )
+    ambiguous = [{"alignment_status": "ambiguous"}]
+    unchanged, used = await runner._resolve_ambiguous_audio_cases(
+        batch_id=str(batch["id"]),
+        batch=guarded_batch,
+        conversation=conversation,
+        target_event_ids=[str(conversation["events"][0]["event_id"])],
+        islands=[],
+        provider_results=[],
+        cases=ambiguous,
+    )
+    assert unchanged == ambiguous
+    assert used is False
+    assert dispatches == 0
+
+
+@pytest.mark.asyncio
+async def test_summary_exposes_non_interchangeable_scopes(
+    evaluation_store: EvaluationStore,
+) -> None:
+    """Dashboard consumers receive explicit source, report, and library scopes."""
+    summary = await evaluation_store.summary()
+    assert summary["active_source"]["scope"] == "active_source"
+    assert summary["active_source"]["dataset_id"]
+    assert summary["benchmark_library"]["scope"] == "global_benchmark_library"
+    assert summary["selected_report"] is None

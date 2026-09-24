@@ -1,55 +1,52 @@
-# Independent Review — current Manual Review queue refresh
+# Independent Review — PD-080–PD-082 stability closure
 
 - Date: 2026-09-23
 - Reviewer: independent Change verifier
 - Result: **PASS**
-- Scope: PD-079 / KI-205 and the KI-206 failure-path correction; current ASR/Turn review data on sidebar entry, batch entry, and review-mode switching
+- Scope: tasks 12.64 and 14.1–14.7; batch/provider/Case state separation, immutable dataset binding, authoritative retry planning and Event Alignment lineage, timeout budget accounting, dashboard scope, migration/restart/repeated-retry coverage, and the production UI route
 
 ## Verdict
 
-The implementation passes independent Engineering Checkpoint C for the scoped increment. All three entry paths call the same read-only bootstrap refresh before rendering or switching review queues. A successful refresh replaces the stale client arrays and counts; a failed refresh shows a bilingual safety notification, keeps the current view and visible count, and does not present cached data as newly refreshed.
+The PD-080–PD-082 stability increment passes independent verification. The implementation now keeps a terminal batch `completed` independently from provider availability and Case evidence coverage, persists Case exclusions, freezes dataset identity, and makes the versioned retry plan an enforced dispatch whitelist. The first-review blockers B-01 through B-07 are closed by implementation traces and regressions.
 
-The first independent pass found that `quiet` bootstrap failure was silently swallowed. That defect was recorded as KI-206, corrected by the implementation agent, and independently re-tested before this PASS. This verdict authorizes neither deployment nor User Gate 2 acceptance. Production deployment and a post-deploy page check showing the then-current open count remain task 13.10.
+This PASS covers local implementation readiness through task 14.7. It does **not** authorize deployment, paid provider calls, E65A recovery, production migration, or User Gate 2; those remain task 14.8 and require separate authorization and production evidence.
 
-## Requirement trace
+## First-review blocker closure
 
-### Current source of truth
-
-- `refreshReviewQueues()` reads `/api/evaluation/bootstrap`; the response replaces `runtime.bootstrap` before counts and queue rows are rendered.
-- Sidebar Manual Review entry, a batch's Open Review action, and ASR Case / Historical Turn mode switching all await this same refresh.
-- The operation is GET-only. It does not call batch execution, ASR, LLM, review mutation, reporting, Benchmark, or cost endpoints.
-- Retained authenticated production evidence records E65A at 40 open Turn groups and 95 superseded groups, with 2 confirmed plus 40 pending in the latest report. This production database evidence was not mutated or re-queried during this review.
-
-### Failure behavior
-
-- `refreshBootstrap()` returns an explicit success boolean.
-- On failure, `refreshReviewQueues()` shows “Review data could not be refreshed. Keeping the current page.” (and the Chinese equivalent) and returns false.
-- Each entry path stops before `showPage`, `selectReviewMode`, or queue re-rendering when refresh fails. The sidebar path also prevents the generic navigation handler from exposing the old review page first.
-- Browser regression proves the sidebar remains on batches, the batch action remains on task detail, and the mode switch remains on ASR while the old count is visibly retained with an explicit failure notification.
-
-### Formal UI and frozen baseline
-
-- Fixture and failure checks exercise the production `/evaluation.html` route, production runtime module, and existing review DOM; there is no parallel static acceptance shell.
-- Desktop and narrow Chromium both prove the original Turn review, stale-count replacement, and failed-refresh behavior.
-- The frozen prototype remains unchanged at SHA-256 `a37220ea1a24e7a538cfdf8677612fe0d29e00a6fca46063e01e316703f91e62`.
-- The formal Turn-review screenshot evidence was recaptured by the production-route regression at both viewports; this increment changes data freshness and failure behavior, not the frozen layout.
+| Finding | Closure evidence |
+|---|---|
+| B-01 canonical retry scope | Retry planning filters superseded/non-canonical rows and suppresses failed sibling provider attempts when every current Case already has completed evidence. The mixed-provider `C-SATISFIED` regression proves the failed full-call provider is skipped. |
+| B-02 authoritative dispatch whitelist | The consumed retry plan is checked at grouped Pass 1, legacy Pass 1, ASR, current and legacy Event Alignment, ambiguous-audio fallback, and Pass 2 dispatch boundaries. Event Alignment opens a bounded new lineage and the plan exposes a cost ceiling. The legacy-bypass regression proves alternate paths cannot escape the plan. |
+| B-03 legacy error classification | Structured categories remain explicit and unrecognized/string-form legacy failures fail closed instead of defaulting to retryable; deterministic failures are skipped. |
+| B-04 uncertain usage after restart | Reservation states are durable. Existing `sent`, `usage_unknown`, and `settled` identities cannot be reserved or dispatched again after restart, while their estimates remain in the hard budget. |
+| B-05 frozen historical source | Conversation and audio APIs accept `batch_id`; storage resolves the batch-bound dataset; report audio and conversation DOM carry the selected batch ID. API and dual-viewport tests prove an active-source change cannot redirect a historical report. |
+| B-06 durable Case state | `evaluation_case_outcomes` durably separates `eligible` from `excluded_insufficient_evidence` and preserves provider diagnostics. A terminal plan produces a completed report for zero, partial, or full evaluable coverage. |
+| B-07 recovery and UI evidence | Exact/non-destructive legacy migration, second-restart stability, no redispatch after restart, canonical/satisfied filtering, bounded Event Alignment lineage, timeout ledger, mixed providers, Case exclusion, batch-scoped API, and the production DOM have regressions. Desktop and narrow Chromium both pass the three affected user paths. |
 
 ## Reproducible evidence
 
 | Check | Result |
 |---|---|
-| KI-205/KI-206 Playwright checks | PASS: 6/6 across desktop and narrow Chromium |
-| Evaluation UI static contract | PASS: 8/8 |
-| Full repository test suite | PASS: 294 tests; 2 pre-existing dependency deprecation warnings |
-| Frontend production build | PASS |
-| Change gate | PASS: 0 errors; disclosed pre-existing/open warnings remain |
+| `.venv/bin/pytest -q` | PASS: 304 tests; two pre-existing dependency deprecation warnings |
+| Stability-focused backend selection | PASS: 13 tests, including exact legacy migration/restart, reservation restart, canonical/satisfied filtering, Event Alignment lineage, legacy dispatch bypass, batch-scoped API, and Case exclusion |
+| `.venv/bin/ruff check src/evaluation tests/test_evaluation.py` | PASS |
 | `git diff --check` | PASS |
+| `npm run build` | PASS |
+| Production route, desktop + narrow Chromium | PASS: 6/6 — persisted historical report, completed batch with scoped coverage retry, and separated active-source/selected-report/global scopes |
+| `python3 scripts/quality/verify_change.py add-asr-automated-evaluation` | PASS; remaining warnings are disclosed pre-existing or external-real items outside this local stability increment |
+| Paid provider call / production mutation | Not performed, as required |
 
-## Evidence boundary and remaining work
+## Representative trace conclusions
 
-- **Static:** PRD, unchanged frozen prototype, Delta Spec, design, PD-079, tasks, UI checklist, implementation, and delivery-status evidence.
-- **Fixture/local-real:** local API service plus formal production route/DOM; success and HTTP 503 refresh paths at desktop and narrow viewports.
-- **External-real retained evidence:** authenticated read-only production inspection showing 40 open and 95 superseded E65A Turn groups. This review made no production request or mutation.
-- **Not yet verified:** the new frontend has not been deployed and reopened in production, so the live page has not yet demonstrated 40 (or the later current value). Task 13.10 and KI-205 remain open until CI/CD, deployed SHA/health, and post-deploy UI readback succeed.
+1. A completed batch remains completed when one provider is unavailable; the affected Case is either satisfied by other completed evidence or durably excluded for insufficient evidence.
+2. A retry starts only from the exact versioned plan the operator confirmed. Empty, deterministic, superseded, already-satisfied, or non-whitelisted work cannot reach a provider dispatch path.
+3. A timeout after send becomes `usage_unknown`: its estimate remains reserved, restart does not redispatch the same identity, and the UI discloses unknown usage and the retry cost ceiling.
+4. Historical reports, conversation detail, and audio use the batch-bound immutable dataset. Provable legacy history is bound exactly; ambiguous history remains `legacy_unbound`, is preserved, and cannot be source-reprocessed.
+5. Dashboard cards expose active-source, selected-report/batch, and global Benchmark identities and denominators separately on the same production route and DOM.
 
-No implementation blocker remains for PD-079 release.
+## Evidence boundary
+
+- **Static:** Delta Spec, design, PD-080–PD-082, decisions, tasks, implementation, migrations, production UI runtime, prototype mapping, checklist, and delivery-status records were reviewed.
+- **Fixture/mock:** the full repository suite, focused stability regressions, and intercepted production-route UI scenarios pass.
+- **Local-real:** SQLite migration/restart/idempotency behavior and the built production frontend route were exercised without external providers or production data.
+- **External-real / production:** intentionally not exercised. Supplier billing reconciliation, paid canary behavior, E65A recovery, deployment/rollback, and authenticated production UI confirmation remain task 14.8 evidence, not part of this PASS.

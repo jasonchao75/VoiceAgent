@@ -799,6 +799,16 @@ def create_evaluation_router(
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    @router.get("/batches/{batch_id}/retry-plan")
+    async def batch_retry_plan(batch_id: str) -> dict[str, object]:
+        """Return and freeze the exact workset allowed for the next retry."""
+        try:
+            return await store.retry_plan(batch_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
     @router.delete("/batches/{batch_id}")
     async def delete_batch(
         batch_id: str,
@@ -884,25 +894,51 @@ def create_evaluation_router(
         return FileResponse(path, media_type="audio/wav", filename=path.name)
 
     @router.get("/conversations/{conversation_id}/audio")
-    async def conversation_audio(conversation_id: str) -> FileResponse:
-        path = store.conversation_audio_path(conversation_id)
+    async def conversation_audio(
+        conversation_id: str,
+        batch_id: str | None = Query(default=None),
+    ) -> FileResponse:
+        try:
+            path = (
+                await store.batch_conversation_audio_path(batch_id, conversation_id)
+                if batch_id
+                else store.conversation_audio_path(conversation_id)
+            )
+        except (FileNotFoundError, LookupError, RuntimeError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         if path is None:
             raise HTTPException(status_code=404, detail="Conversation audio is unavailable")
         await store.audit_access("source_audio.played", conversation_id, {"kind": "full_call"})
         return FileResponse(path, media_type="audio/mpeg")
 
     @router.get("/conversations/{conversation_id}")
-    async def conversation(conversation_id: str) -> dict[str, object]:
+    async def conversation(
+        conversation_id: str,
+        batch_id: str | None = Query(default=None),
+    ) -> dict[str, object]:
         """Return the parsed source workbook and actual audio metadata."""
-        result = await store.get_conversation(conversation_id)
+        try:
+            result = await store.get_conversation(conversation_id, batch_id=batch_id)
+        except (FileNotFoundError, LookupError, RuntimeError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         if result is None:
             raise HTTPException(status_code=404, detail="Conversation source is unavailable")
         await store.audit_access("source_conversation.viewed", conversation_id)
         return result
 
     @router.get("/conversations/{conversation_id}/user-audio")
-    async def conversation_user_audio(conversation_id: str) -> FileResponse:
-        path = store.conversation_user_audio_path(conversation_id)
+    async def conversation_user_audio(
+        conversation_id: str,
+        batch_id: str | None = Query(default=None),
+    ) -> FileResponse:
+        try:
+            path = (
+                await store.batch_conversation_user_audio_path(batch_id, conversation_id)
+                if batch_id
+                else store.conversation_user_audio_path(conversation_id)
+            )
+        except (FileNotFoundError, LookupError, RuntimeError, ValueError) as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         if path is None:
             raise HTTPException(status_code=404, detail="Customer audio is unavailable")
         await store.audit_access("source_audio.played", conversation_id, {"kind": "customer"})

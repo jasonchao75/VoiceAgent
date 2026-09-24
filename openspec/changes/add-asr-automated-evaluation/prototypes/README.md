@@ -57,6 +57,9 @@
 42. 报告只统计人工确认的历史 Turn 标注异常组数和受影响 Turn 行数，并展示 Turn 复核覆盖率；按组展示 conversation、source event ID、对应 Case、错误类型、复核状态和音频证据，不计入 ASR 错误率（PD-071、PD-074）。
 43. Pass 2 恢复按 idempotency key 与精确 Case membership 复用 canonical 历史组；旧 Align 单通结构失败只保留历史诊断，新流程重建后仍歧义才允许受控 LLM，不得直接重放旧请求（KI-190、KI-194）。
 44. Benchmark 以 `(conversation_id, event_id)` 全库唯一；后续批次结果相同时复用原 ID，结果冲突时直接丢弃新候选，不新增、不覆盖、不追加修订，也不进入人工冲突复核（PD-073、PD-075）。该规则不新增页面入口。
+45. 批次终态、供应商尝试和 Case 证据状态分层：执行计划走完并生成报告即为“已完成”；供应商不可用只保留诊断，证据不足的 Case 标为 `excluded_insufficient_evidence`，不把批次改成失败（PD-082）。该变化复用既有完成态、覆盖率与报告结构，不改变冻结视觉基线。
+46. “补跑被排除项”复用既有批次操作与原生确认框；确认文案展示可重试/跳过数量、未知用量和新增费用上限，后台只执行同一版本清单内的项目。没有可重试项目不得启动（PD-080–PD-082）。
+47. 批次首页四张指标卡分别标明当前活动数据集、待复核、所选报告/批次口径和全局 Benchmark 库；历史报告及其对话/音频始终携带 `batch_id` 读取冻结数据集。该变化只修正数据作用域与辅助文案，不新增页面区域。
 
 ## 需求到页面区域映射
 
@@ -73,6 +76,9 @@
 | Failed-batch partial results | 批次操作 → 复用 `#page-report` 详情组件并显示“部分结果 · 非完整报告”状态条 | 已确认；不改变正常报告基线 |
 | Finish with current results | 批次操作 → 复用 `#finish-dialog` 确认模式 → `#page-report` 最终部分覆盖报告 | 已确认；复用冻结弹窗与报告结构 |
 | Live external-request visibility | 批次列表运行行与 `#page-run` 当前阶段 → 每个活动请求一行计时；暂停/部分失败列表使用精简摘要 | 已确认并冻结（V1.18 / PD-066） |
+| Completed delivery with Case exclusions | 批次列表完成态 → 覆盖率说明 → `#page-report` Case 状态/排除原因 | PD-082；复用冻结完成态与报告结构，无新视觉 Gate |
+| Versioned scoped retry | 完成态批次操作“补跑被排除项” → 浏览器确认 → 原批次行 | PD-080–PD-082；复用冻结批次操作/确认模式，桌面与窄屏验证 |
+| Explicit dashboard scopes | `#page-batches .grid4` 四张指标卡 | PD-080–PD-082；仅数据口径和辅助文案变化，无结构变化 |
 | Bilingual and overflow-safe UI | 全页面、dialog、drawer | 已确认；截图和自动断言在 Engineering Checkpoint A/C 留证 |
 
 ## 原型状态覆盖

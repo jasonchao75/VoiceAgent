@@ -992,14 +992,20 @@ test("renders a persisted report into the frozen report structure", async ({ pag
   const conversation = {
     conversation_id: "1030000000091506",
     event_count: 2,
-    audio_url: "/api/evaluation/conversations/1030000000091506/audio",
+    audio_url: "/api/evaluation/conversations/1030000000091506/audio?batch_id=EV-REPORT-RUNTIME",
     events: [
       { event_id: "R17", time_s: 57.1, speaker: "robot", text: "Which customer tier do you mean?" },
       { event_id: "R18", time_s: 61.2, speaker: "customer", text: "أقول لك أنا، أنا عميلة الهدية." },
     ],
   };
-  await page.route(/\/api\/evaluation\/conversations\/1030000000091506$/, async (route) => {
+  const scopedSourceRequests = [];
+  await page.route(/\/api\/evaluation\/conversations\/1030000000091506\?batch_id=EV-REPORT-RUNTIME$/, async (route) => {
+    scopedSourceRequests.push(route.request().url());
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(conversation) });
+  });
+  await page.route(/\/api\/evaluation\/conversations\/1030000000091506\/(?:audio|user-audio)\?batch_id=EV-REPORT-RUNTIME$/, async (route) => {
+    scopedSourceRequests.push(route.request().url());
+    await route.fulfill({ status: 200, contentType: "audio/wav", body: Buffer.alloc(44) });
   });
   const translationPayloads = [];
   await page.route("**/api/evaluation/batches/EV-REPORT-RUNTIME/display-translation", async (route) => {
@@ -1061,6 +1067,8 @@ test("renders a persisted report into the frozen report structure", async ({ pag
   await expect(page.locator("#batch-case-details tbody tr")).toHaveCount(1);
   await expect(page.locator("#batch-case-details")).toContainText("1030000000091506 · R18");
   await expect(page.locator("#batch-case-details .runtime-report-audio")).toBeVisible();
+  await page.locator("#batch-case-details .runtime-report-audio").click();
+  await expect.poll(() => scopedSourceRequests.some((url) => url.includes("/user-audio?batch_id=EV-REPORT-RUNTIME"))).toBeTruthy();
   await expect(page.locator("#page-report > .grid4 .metric").nth(3)).toContainText("Benchmark samples");
   await expect(page.locator("#page-report > .grid4 .metric").nth(3)).toContainText("1");
   await expect(page.locator("#production-asr-analysis")).toContainText("1 / 1 cases show errors");
@@ -1091,6 +1099,7 @@ test("renders a persisted report into the frozen report structure", async ({ pag
     "业务实体",
   );
   await page.locator("#batch-case-details .runtime-conversation-link").click();
+  await expect.poll(() => scopedSourceRequests.some((url) => url.endsWith("?batch_id=EV-REPORT-RUNTIME"))).toBeTruthy();
   await expect(page.locator("#conversation-drawer")).toBeVisible();
   await expect(page.locator("#conversation-drawer .runtime-conversation-turn")).toHaveCount(2);
   await expect(page.locator("#conversation-drawer")).toContainText("أقول لك أنا، أنا عميلة الهدية.");
@@ -1417,7 +1426,7 @@ test("exposes every persisted batch lifecycle state and its next action", async 
   await page.waitForTimeout(1_100);
   await expect(elapsed).not.toHaveText(before);
   await expect(operationStatus).toHaveText(announcement);
-  await expect(page.locator('tr[data-batch-id="EV-PARTIAL"] .job-state')).toContainText("Final · partial");
+  await expect(page.locator('tr[data-batch-id="EV-PARTIAL"] .job-state')).toContainText("Completed · partial coverage");
 });
 
 test("shows audio-evidence alignment as step four with continuous elapsed time", async ({ page }) => {
@@ -1589,25 +1598,106 @@ test("confirms finishing an incomplete batch with current results", async ({ pag
   expect(completionRequest.expected_version).toBe(8);
 });
 
-test("labels a legacy failed preliminary report honestly and exposes retry", async ({ page }) => {
+test("keeps a completed batch completed while offering a scoped coverage retry", async ({ page }) => {
   const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
   bootstrap.batches = [{
-    ...bootstrap.batches[0],
     id: "EV-PASS2-FAILED",
-    status: "completed_partial",
+    name: "Coverage exclusions",
+    context_name: "Riyad Bank branch routing v4",
+    input_count: 56,
+    status: "completed",
     stage: "completed",
+    progress: 100,
+    denominator: 381,
+    excluded_count: 3,
+    suspected_numerator: 7,
+    cost: 0.25,
+    budget: 10,
+    providers: ["speechmatics"],
+    updated_at: "2026-09-17T00:00:00Z",
+    version: 8,
     report_type: "preliminary",
-    snapshot: { pass_2_failed: 73 },
+    review_total: 0,
+    review_completed: 0,
+    active_operations: [],
+    snapshot: { coverage: { eligible: 7, excluded: 3 } },
   }];
+  let actionRequest;
+  await page.route("**/api/evaluation/bootstrap", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(bootstrap) });
+  });
+  await page.route("**/api/evaluation/batches/EV-PASS2-FAILED/retry-plan", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({
+      plan_hash: "a".repeat(64),
+      eligible_items: [{ stage: "pass2", key: ["C-1", "R1"] }],
+      skipped_items: [{ stage: "case_asr", key: ["speechmatics", "C-2", "R2"] }],
+      unknown_usage_usd: 0.25,
+      hard_budget_remaining_usd: 9.5,
+      estimated_max_retry_cost_usd: 9.5,
+    }) });
+  });
+  await page.route("**/api/evaluation/batches/EV-PASS2-FAILED/actions", async (route) => {
+    actionRequest = route.request().postDataJSON();
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({
+      ...bootstrap.batches[0], status: "running", stage: "pass_2", version: 9,
+    }) });
+  });
+  let confirmationMessage = "";
+  page.on("dialog", (dialog) => {
+    confirmationMessage = dialog.message();
+    dialog.accept();
+  });
+  await page.goto("/evaluation.html");
+  const row = page.locator('tr[data-batch-id="EV-PASS2-FAILED"]');
+  await expect(row.locator(".job-state")).toContainText("Completed");
+  await expect(row.getByRole("button", { name: "Evaluation report" })).toHaveCount(1);
+  await row.getByRole("button", { name: "Improve excluded coverage" }).click();
+  await expect.poll(() => actionRequest).toBeTruthy();
+  expect(confirmationMessage).toContain("Maximum additional cost: $9.50");
+  expect(actionRequest.retry_plan_hash).toBe("a".repeat(64));
+  await expect(row.getByRole("button", { name: "Delete" })).toHaveCount(1);
+});
+
+test("renders active source, selected report, and global Benchmark as separate scopes", async ({ page }) => {
+  const bootstrap = await (await page.request.get("/api/evaluation/bootstrap")).json();
+  bootstrap.batches = [];
+  bootstrap.summary = {
+    ...bootstrap.summary,
+    batch_count: 6,
+    pending_reviews: 3,
+    pending_conversations: 2,
+    source_issue_count: 0,
+    active_source: {
+      scope: "active_source",
+      dataset_id: "dataset-active-82",
+      conversation_count: 82,
+    },
+    selected_report: {
+      scope: "selected_report",
+      batch_id: "EV-HISTORICAL-REPORT",
+      suspected_rate: 12.5,
+      suspected_numerator: 5,
+      valid_user_events: 40,
+    },
+    benchmark_library: {
+      scope: "global_benchmark_library",
+      benchmark_count: 17,
+      ai_count: 10,
+      manual_count: 7,
+    },
+  };
   await page.route("**/api/evaluation/bootstrap", async (route) => {
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(bootstrap) });
   });
   await page.goto("/evaluation.html");
-  const row = page.locator('tr[data-batch-id="EV-PASS2-FAILED"]');
-  await expect(row.locator(".job-state")).toContainText("Automated stage partially failed");
-  await expect(row.getByRole("button", { name: "Evaluation report" })).toHaveCount(1);
-  await expect(row.getByRole("button", { name: "Retry failed resources" })).toHaveCount(1);
-  await expect(row.getByRole("button", { name: "Delete" })).toHaveCount(1);
+  const metrics = page.locator("#page-batches .grid4 .metric");
+  await expect(metrics.nth(0)).toContainText("82 source conversations available");
+  await expect(metrics.nth(0)).toContainText("dataset-active-82");
+  await expect(metrics.nth(2)).toContainText("12.5");
+  await expect(metrics.nth(2)).toContainText("5 / 40 valid user events");
+  await expect(metrics.nth(2)).toContainText("EV-HISTORICAL-REPORT");
+  await expect(metrics.nth(3)).toContainText("17");
+  await expect(metrics.nth(3)).toContainText("10 AI · 7 manual · global library");
 });
 
 test("replaces prototype rows with explicit loading and API error states", async ({ page }) => {

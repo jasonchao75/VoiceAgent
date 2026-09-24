@@ -178,6 +178,7 @@ class EvaluationStore:
         self.benchmark_clip_root = database_path.parent / "evaluation-benchmark-clips"
         self.asr_clip_root = database_path.parent / "evaluation-asr-clips"
         self._source_audit: DatasetAudit | None = None
+        self._active_dataset_version_id: str | None = None
         self._active_dataset: dict[str, Any] | None = None
         self._pending_dataset: dict[str, Any] | None = None
         self._pending_audit: DatasetAudit | None = None
@@ -222,6 +223,21 @@ class EvaluationStore:
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL,
                     version INTEGER NOT NULL DEFAULT 1
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_dataset_versions (
+                    dataset_id TEXT PRIMARY KEY,
+                    source_name TEXT NOT NULL,
+                    root_path TEXT NOT NULL,
+                    manifest_hash TEXT NOT NULL,
+                    manifest_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_dataset_conversations (
+                    dataset_id TEXT NOT NULL
+                        REFERENCES evaluation_dataset_versions(dataset_id) ON DELETE CASCADE,
+                    conversation_id TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    PRIMARY KEY (dataset_id, conversation_id)
                 );
                 CREATE TABLE IF NOT EXISTS evaluation_reviews (
                     id TEXT PRIMARY KEY,
@@ -505,6 +521,16 @@ class EvaluationStore:
                     PRIMARY KEY (batch_id,case_id),
                     UNIQUE (batch_id,conversation_id,audio_island_id)
                 );
+                CREATE TABLE IF NOT EXISTS evaluation_case_outcomes (
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    conversation_id TEXT NOT NULL,
+                    event_id TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    reason TEXT,
+                    provider_status_json TEXT NOT NULL DEFAULT '{}',
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (batch_id,conversation_id,event_id)
+                );
                 CREATE TABLE IF NOT EXISTS evaluation_alignment_evidence (
                     batch_id TEXT NOT NULL,
                     case_id TEXT NOT NULL,
@@ -642,7 +668,22 @@ class EvaluationStore:
                     idempotency_key TEXT PRIMARY KEY,
                     batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
                     estimated_usd REAL NOT NULL,
-                    created_at TEXT NOT NULL
+                    status TEXT NOT NULL DEFAULT 'reserved',
+                    provider TEXT,
+                    stage TEXT,
+                    sent_at TEXT,
+                    settled_at TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_retry_plans (
+                    plan_hash TEXT PRIMARY KEY,
+                    batch_id TEXT NOT NULL REFERENCES evaluation_batches(id) ON DELETE CASCADE,
+                    batch_version INTEGER NOT NULL,
+                    generation INTEGER NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    consumed_at TEXT
                 );
                 CREATE TABLE IF NOT EXISTS evaluation_telemetry (
                     id TEXT PRIMARY KEY,
@@ -720,6 +761,21 @@ class EvaluationStore:
                     await database.execute("PRAGMA table_info(evaluation_benchmarks)")
                 ).fetchall()
             }
+            batch_columns = {
+                str(row[1])
+                for row in await (
+                    await database.execute("PRAGMA table_info(evaluation_batches)")
+                ).fetchall()
+            }
+            if "dataset_id" not in batch_columns:
+                await database.execute(
+                    "ALTER TABLE evaluation_batches ADD COLUMN dataset_id TEXT"
+                )
+            if "dataset_binding_status" not in batch_columns:
+                await database.execute(
+                    """ALTER TABLE evaluation_batches ADD COLUMN dataset_binding_status TEXT
+                       NOT NULL DEFAULT 'legacy_unbound'"""
+                )
             if "origin" not in benchmark_columns:
                 await database.execute(
                     """ALTER TABLE evaluation_benchmarks ADD COLUMN origin TEXT
@@ -758,6 +814,29 @@ class EvaluationStore:
                     """ALTER TABLE evaluation_pricing_versions ADD COLUMN default_batch_budget REAL
                        NOT NULL DEFAULT 10"""
                 )
+            reservation_columns = {
+                str(row[1])
+                for row in await (
+                    await database.execute("PRAGMA table_info(evaluation_cost_reservations)")
+                ).fetchall()
+            }
+            for column, definition in (
+                ("status", "TEXT NOT NULL DEFAULT 'reserved'"),
+                ("provider", "TEXT"),
+                ("stage", "TEXT"),
+                ("sent_at", "TEXT"),
+                ("settled_at", "TEXT"),
+                ("updated_at", "TEXT"),
+            ):
+                if column not in reservation_columns:
+                    await database.execute(
+                        f"ALTER TABLE evaluation_cost_reservations ADD COLUMN {column} {definition}"
+                    )
+            await database.execute(
+                """UPDATE evaluation_cost_reservations
+                   SET updated_at=COALESCE(updated_at,created_at)
+                   WHERE updated_at IS NULL"""
+            )
             self._active_dataset = await self._load_dataset_meta(database, _ACTIVE_DATASET_META)
             self._pending_dataset = await self._load_dataset_meta(database, _PENDING_DATASET_META)
             active_root = self._managed_dataset_path(self._active_dataset)
@@ -777,7 +856,25 @@ class EvaluationStore:
             else:
                 self._pending_dataset = None
                 self._pending_audit = None
+            dataset_id = str(
+                (self._active_dataset or {}).get("dataset_id")
+                or self._mounted_dataset_id(self._source_audit)
+            )
+            dataset_version = await self._persist_dataset_version(
+                database,
+                dataset_id=dataset_id,
+                source_name=(
+                    str(self._active_dataset["filename"])
+                    if self._active_dataset
+                    else "benchmarks/RiyadBankConversation"
+                ),
+                root=self.dataset_root,
+                audit=self._source_audit,
+            )
+            self._active_dataset_version_id = str(dataset_version["dataset_id"])
             await self._remove_legacy_simulations(database)
+            await self._persist_retained_dataset_versions(database)
+            await self._migrate_provable_batch_bindings(database)
             await self._seed_scenario_tags(database)
             await self._seed_evaluation_configuration(database)
             await self._seed_asr_capabilities(database)
@@ -1772,6 +1869,220 @@ class EvaluationStore:
             ),
         )
 
+    @staticmethod
+    def _mounted_dataset_id(audit: DatasetAudit) -> str:
+        """Return a provisional ID; persistence replaces it with a content hash."""
+        del audit
+        return "mounted-pending"
+
+    @staticmethod
+    def _file_fingerprint(root: Path, relative_path: str | None) -> dict[str, Any] | None:
+        """Hash one source artifact so a dataset version identifies exact bytes."""
+        if not relative_path:
+            return None
+        path = root / relative_path
+        if not path.is_file():
+            return {"path": relative_path, "missing": True}
+        digest = sha256()
+        with path.open("rb") as source:
+            for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return {
+            "path": relative_path,
+            "size_bytes": path.stat().st_size,
+            "sha256": digest.hexdigest(),
+        }
+
+    async def _persist_dataset_version(
+        self,
+        database: aiosqlite.Connection,
+        *,
+        dataset_id: str,
+        source_name: str,
+        root: Path,
+        audit: DatasetAudit,
+    ) -> dict[str, Any]:
+        """Persist immutable membership, events, paths, and content fingerprints."""
+        database.row_factory = aiosqlite.Row
+        if not dataset_id.startswith("mounted-"):
+            existing = await (
+                await database.execute(
+                    """SELECT dataset_id,manifest_hash,manifest_json
+                       FROM evaluation_dataset_versions WHERE dataset_id=?""",
+                    (dataset_id,),
+                )
+            ).fetchone()
+            if existing is not None:
+                return {
+                    "dataset_id": str(existing["dataset_id"]),
+                    "manifest_hash": str(existing["manifest_hash"]),
+                    "manifest": json.loads(str(existing["manifest_json"])),
+                }
+        conversations: list[dict[str, Any]] = []
+        files: list[dict[str, Any]] = []
+        for conversation in audit.conversations:
+            payload = conversation.to_dict(include_events=True)
+            conversations.append(payload)
+            for relative_path in (
+                conversation.history_path,
+                conversation.record_path,
+                conversation.user_record_path,
+            ):
+                fingerprint = await asyncio.to_thread(
+                    self._file_fingerprint,
+                    root,
+                    relative_path,
+                )
+                if fingerprint is not None:
+                    files.append(fingerprint)
+        content_manifest = {
+            "source_name": source_name,
+            "audit": audit.to_dict(include_conversations=False),
+            "conversation_ids": sorted(
+                str(item["conversation_id"]) for item in conversations
+            ),
+            "files": sorted(files, key=lambda item: str(item["path"])),
+        }
+        manifest_hash = sha256(_json(content_manifest).encode("utf-8")).hexdigest()
+        if dataset_id.startswith("mounted-"):
+            dataset_id = f"mounted-{manifest_hash[:24]}"
+        manifest = {"dataset_id": dataset_id, **content_manifest}
+        existing = await (
+            await database.execute(
+                """SELECT manifest_hash,manifest_json FROM evaluation_dataset_versions
+                   WHERE dataset_id=?""",
+                (dataset_id,),
+            )
+        ).fetchone()
+        if existing is not None:
+            return {
+                "dataset_id": dataset_id,
+                "manifest_hash": str(existing["manifest_hash"]),
+                "manifest": json.loads(str(existing["manifest_json"])),
+            }
+        now = _utcnow()
+        await database.execute(
+            """INSERT INTO evaluation_dataset_versions (
+                   dataset_id,source_name,root_path,manifest_hash,manifest_json,created_at
+               ) VALUES (?,?,?,?,?,?)""",
+            (dataset_id, source_name, str(root.resolve()), manifest_hash, _json(manifest), now),
+        )
+        await database.executemany(
+            """INSERT INTO evaluation_dataset_conversations (
+                   dataset_id,conversation_id,payload_json
+               ) VALUES (?,?,?)""",
+            [
+                (dataset_id, str(item["conversation_id"]), _json(item))
+                for item in conversations
+            ],
+        )
+        return {
+            "dataset_id": dataset_id,
+            "manifest_hash": manifest_hash,
+            "manifest": manifest,
+        }
+
+    async def _persist_retained_dataset_versions(
+        self,
+        database: aiosqlite.Connection,
+    ) -> None:
+        """Register retained immutable upload directories without activating them."""
+        database.row_factory = aiosqlite.Row
+        for root in sorted(self.upload_root.glob("dataset-*")):
+            if not root.is_dir():
+                continue
+            dataset_id = root.name
+            existing = await (
+                await database.execute(
+                    "SELECT 1 FROM evaluation_dataset_versions WHERE dataset_id=?",
+                    (dataset_id,),
+                )
+            ).fetchone()
+            if existing is not None:
+                continue
+            audit_row = await (
+                await database.execute(
+                    """SELECT metadata_json FROM evaluation_audit
+                       WHERE action='dataset.upload_activated' AND object_id=?
+                       ORDER BY created_at DESC LIMIT 1""",
+                    (dataset_id,),
+                )
+            ).fetchone()
+            metadata = json.loads(str(audit_row[0])) if audit_row else {}
+            source_name = str(metadata.get("filename") or dataset_id)
+            audit = await asyncio.to_thread(audit_dataset, root, expected_conversations=None)
+            await self._persist_dataset_version(
+                database,
+                dataset_id=dataset_id,
+                source_name=source_name,
+                root=root,
+                audit=audit,
+            )
+
+    async def _migrate_provable_batch_bindings(
+        self,
+        database: aiosqlite.Connection,
+    ) -> None:
+        """Bind legacy batches only when activation chronology and counts agree exactly."""
+        database.row_factory = aiosqlite.Row
+        batches = await (
+            await database.execute(
+                """SELECT id,input_count,snapshot_json,created_at
+                   FROM evaluation_batches
+                   WHERE dataset_binding_status='legacy_unbound' OR dataset_id IS NULL"""
+            )
+        ).fetchall()
+        for batch in batches:
+            activation = await (
+                await database.execute(
+                    """SELECT object_id,metadata_json,created_at FROM evaluation_audit
+                       WHERE action='dataset.upload_activated' AND created_at<=?
+                       ORDER BY created_at DESC LIMIT 1""",
+                    (str(batch["created_at"]),),
+                )
+            ).fetchone()
+            if activation is None:
+                continue
+            version = await (
+                await database.execute(
+                    """SELECT manifest_hash,manifest_json FROM evaluation_dataset_versions
+                       WHERE dataset_id=?""",
+                    (str(activation["object_id"]),),
+                )
+            ).fetchone()
+            if version is None:
+                continue
+            snapshot = json.loads(str(batch["snapshot_json"]))
+            metadata = json.loads(str(activation["metadata_json"]))
+            manifest = json.loads(str(version["manifest_json"]))
+            audit = manifest.get("audit") or {}
+            exact_match = (
+                str(snapshot.get("source") or "") == str(metadata.get("filename") or "")
+                and int(batch["input_count"]) == int(audit.get("conversation_count") or -1)
+                and snapshot.get("source_counts") == audit.get("counts")
+                and int(snapshot.get("source_event_count") or -1)
+                == int(audit.get("event_count") or -2)
+                and int(snapshot.get("source_user_event_count") or -1)
+                == int(audit.get("user_event_count") or -2)
+            )
+            if not exact_match:
+                continue
+            dataset_id = str(activation["object_id"])
+            snapshot.update(
+                {
+                    "dataset_id": dataset_id,
+                    "dataset_binding_status": "bound",
+                    "dataset_manifest_hash": str(version["manifest_hash"]),
+                    "dataset_manifest": manifest,
+                }
+            )
+            await database.execute(
+                """UPDATE evaluation_batches
+                   SET dataset_id=?,dataset_binding_status='bound',snapshot_json=?
+                   WHERE id=?""",
+                (dataset_id, _json(snapshot), str(batch["id"])),
+            )
+
     async def _sync_source_data(
         self,
         database: aiosqlite.Connection,
@@ -1928,6 +2239,13 @@ class EvaluationStore:
             )
             async with aiosqlite.connect(self.database_path) as database:
                 if audit.valid:
+                    dataset_version = await self._persist_dataset_version(
+                        database,
+                        dataset_id=dataset_id,
+                        source_name=str(descriptor["filename"]),
+                        root=final,
+                        audit=audit,
+                    )
                     await self._set_meta(database, _ACTIVE_DATASET_META, descriptor)
                     await database.execute(
                         "DELETE FROM evaluation_meta WHERE key=?",
@@ -1962,6 +2280,7 @@ class EvaluationStore:
                 self.dataset_root = final
                 self._source_audit = audit
                 self._active_dataset = descriptor
+                self._active_dataset_version_id = str(dataset_version["dataset_id"])
                 self._pending_dataset = None
                 self._pending_audit = None
             else:
@@ -2036,7 +2355,8 @@ class EvaluationStore:
             else "benchmarks/RiyadBankConversation"
         )
         result["dataset_id"] = (
-            self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source"
+            self._active_dataset_version_id
+            or (self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source")
         )
         result["active"] = True
         return result
@@ -2055,17 +2375,58 @@ class EvaluationStore:
             else "benchmarks/RiyadBankConversation"
         )
         result["dataset_id"] = (
-            self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source"
+            self._active_dataset_version_id
+            or (self._active_dataset["dataset_id"] if self._active_dataset else "mounted-source")
         )
         result["active"] = True
         return result
 
-    async def get_conversation(self, conversation_id: str) -> dict[str, Any] | None:
-        """Return the actual parsed source transcript for one conversation."""
+    async def get_conversation(
+        self,
+        conversation_id: str,
+        *,
+        batch_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Return active source data or the immutable source bound to one batch."""
         if _SAFE_CONVERSATION_ID.fullmatch(conversation_id) is None:
             return None
         async with aiosqlite.connect(self.database_path) as database:
             database.row_factory = aiosqlite.Row
+            if batch_id is not None:
+                binding = await (
+                    await database.execute(
+                        """SELECT dataset_id,dataset_binding_status
+                           FROM evaluation_batches WHERE id=?""",
+                        (batch_id,),
+                    )
+                ).fetchone()
+                if binding is None:
+                    raise LookupError("Batch not found")
+                if (
+                    str(binding["dataset_binding_status"]) != "bound"
+                    or not binding["dataset_id"]
+                ):
+                    raise ValueError(
+                        "Historical batch is legacy_unbound; "
+                        "source-dependent reprocessing is blocked"
+                    )
+                versioned = await (
+                    await database.execute(
+                        """SELECT payload_json FROM evaluation_dataset_conversations
+                           WHERE dataset_id=? AND conversation_id=?""",
+                        (str(binding["dataset_id"]), conversation_id),
+                    )
+                ).fetchone()
+                if versioned is None:
+                    return None
+                payload = json.loads(str(versioned["payload_json"]))
+                payload["audio_url"] = (
+                    f"/api/evaluation/conversations/{conversation_id}/audio?batch_id={batch_id}"
+                )
+                payload["user_audio_url"] = (
+                    f"/api/evaluation/conversations/{conversation_id}/user-audio?batch_id={batch_id}"
+                )
+                return payload
             conversation = await (
                 await database.execute(
                     "SELECT * FROM evaluation_source_conversations WHERE conversation_id=?",
@@ -2176,6 +2537,8 @@ class EvaluationStore:
             "audit_report_type": row["report_type"] if audit_only else None,
             "result_disposition": "audit_only" if audit_only else "formal",
             "providers": json.loads(row["providers_json"]),
+            "dataset_id": row["dataset_id"],
+            "dataset_binding_status": row["dataset_binding_status"],
             "snapshot": snapshot,
             "created_at": row["created_at"],
             "updated_at": row["updated_at"],
@@ -2325,18 +2688,47 @@ class EvaluationStore:
                 assert row is not None
         return self._batch(row)
 
-    async def source_conversations(self) -> list[dict[str, Any]]:
-        """Return all valid source conversations in deterministic order."""
+    async def source_conversations(
+        self,
+        *,
+        batch_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return active or batch-frozen valid conversations in deterministic order."""
         async with aiosqlite.connect(self.database_path) as database:
-            rows = await (
-                await database.execute(
-                    """SELECT conversation_id FROM evaluation_source_conversations
-                       WHERE valid=1 ORDER BY conversation_id"""
-                )
-            ).fetchall()
+            if batch_id is None:
+                rows = await (
+                    await database.execute(
+                        """SELECT conversation_id FROM evaluation_source_conversations
+                           WHERE valid=1 ORDER BY conversation_id"""
+                    )
+                ).fetchall()
+            else:
+                binding = await (
+                    await database.execute(
+                        """SELECT dataset_id,dataset_binding_status
+                           FROM evaluation_batches WHERE id=?""",
+                        (batch_id,),
+                    )
+                ).fetchone()
+                if binding is None:
+                    raise LookupError("Batch not found")
+                if str(binding[1]) != "bound" or not binding[0]:
+                    raise ValueError(
+                        "Historical batch is legacy_unbound; "
+                        "source-dependent reprocessing is blocked"
+                    )
+                rows = await (
+                    await database.execute(
+                        """SELECT conversation_id FROM evaluation_dataset_conversations
+                           WHERE dataset_id=?
+                             AND json_extract(payload_json,'$.valid')=1
+                           ORDER BY conversation_id""",
+                        (str(binding[0]),),
+                    )
+                ).fetchall()
         result: list[dict[str, Any]] = []
         for row in rows:
-            conversation = await self.get_conversation(str(row[0]))
+            conversation = await self.get_conversation(str(row[0]), batch_id=batch_id)
             if conversation is not None:
                 result.append(conversation)
         return result
@@ -3105,6 +3497,58 @@ class EvaluationStore:
             result.append(item)
         return result
 
+    async def checkpoint_case_outcome(
+        self,
+        batch_id: str,
+        conversation_id: str,
+        event_id: str,
+        *,
+        status: str,
+        reason: str | None = None,
+        provider_status: dict[str, str] | None = None,
+    ) -> None:
+        """Persist the Case outcome independently from provider attempt failures."""
+        if status not in {"eligible", "excluded_insufficient_evidence"}:
+            raise ValueError("Unsupported Case outcome status")
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute(
+                """INSERT INTO evaluation_case_outcomes (
+                       batch_id,conversation_id,event_id,status,reason,
+                       provider_status_json,updated_at
+                   ) VALUES (?,?,?,?,?,?,?)
+                   ON CONFLICT(batch_id,conversation_id,event_id) DO UPDATE SET
+                       status=excluded.status,
+                       reason=excluded.reason,
+                       provider_status_json=excluded.provider_status_json,
+                       updated_at=excluded.updated_at""",
+                (
+                    batch_id,
+                    conversation_id,
+                    event_id,
+                    status,
+                    reason,
+                    _json(provider_status or {}),
+                    _utcnow(),
+                ),
+            )
+            await database.commit()
+
+    async def case_outcome_rows(self, batch_id: str) -> list[dict[str, Any]]:
+        """Return durable Case-level eligibility and exclusion outcomes."""
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            rows = await (
+                await database.execute(
+                    """SELECT * FROM evaluation_case_outcomes
+                       WHERE batch_id=? ORDER BY conversation_id,event_id""",
+                    (batch_id,),
+                )
+            ).fetchall()
+        result = [dict(row) for row in rows]
+        for item in result:
+            item["provider_status"] = json.loads(item.pop("provider_status_json"))
+        return result
+
     async def event_alignment_group_rows(self, batch_id: str) -> list[dict[str, Any]]:
         """Return Event Aligner checkpoints with decoded frozen membership."""
         async with aiosqlite.connect(self.database_path) as database:
@@ -3525,7 +3969,10 @@ class EvaluationStore:
                 result = row["result"]
                 conversation_id = str(row["conversation_id"])
                 event_id = str(row["event_id"])
-                conversation = await self.get_conversation(conversation_id)
+                conversation = await self.get_conversation(
+                    conversation_id,
+                    batch_id=batch_id,
+                )
                 if conversation is None:
                     continue
                 event = next(
@@ -3887,14 +4334,14 @@ class EvaluationStore:
         event_mapping: dict[str, Any],
     ) -> tuple[Path, dict[str, Any]]:
         """Create one stable event clip from full-call diarization consensus."""
-        conversation = await self.get_conversation(conversation_id)
+        conversation = await self.get_conversation(conversation_id, batch_id=batch_id)
         if conversation is None:
             raise LookupError("Conversation not found")
         issue_types = {str(issue.get("issue_type")) for issue in conversation.get("issues", [])}
         if "audio_timeline_mismatch" in issue_types:
             raise ValueError("Pure-user audio timeline is not aligned")
         events = list(conversation.get("events", []))
-        source = self.conversation_user_audio_path(conversation_id)
+        source = await self.batch_conversation_user_audio_path(batch_id, conversation_id)
         if source is None:
             raise FileNotFoundError("Pure-user WAV is unavailable")
         duration = float((conversation.get("user_audio") or {}).get("duration_s") or 0)
@@ -3944,7 +4391,7 @@ class EvaluationStore:
     ) -> tuple[Path, dict[str, Any]]:
         """Write the exact frozen audio island shared by evaluation and review."""
         conversation_id = str(case["conversation_id"])
-        source = self.conversation_user_audio_path(conversation_id)
+        source = await self.batch_conversation_user_audio_path(batch_id, conversation_id)
         if source is None:
             raise FileNotFoundError("Pure-user WAV is unavailable")
         start_s = float(case["start_s"])
@@ -3988,14 +4435,20 @@ class EvaluationStore:
             ).fetchone()
         if row is None or row["clip_status"] == "ready":
             return
-        source = self.conversation_user_audio_path(str(row["conversation_id"]))
         destination = self.benchmark_clip_root / f"{benchmark_id}.wav"
         error: str | None = None
         trace: dict[str, Any] = json.loads(str(row["trace_json"] or "{}"))
         try:
+            source = await self.batch_conversation_user_audio_path(
+                str(row["batch_id"]),
+                str(row["conversation_id"]),
+            )
             if source is None:
                 raise FileNotFoundError("Pure-user WAV is unavailable")
-            conversation = await self.get_conversation(str(row["conversation_id"]))
+            conversation = await self.get_conversation(
+                str(row["conversation_id"]),
+                batch_id=str(row["batch_id"]),
+            )
             issue_types = {
                 str(issue.get("issue_type")) for issue in (conversation or {}).get("issues", [])
             }
@@ -4047,6 +4500,7 @@ class EvaluationStore:
                 await database.execute(
                     """SELECT b.id FROM evaluation_batches b
                        WHERE b.status IN ('awaiting_review','completed','completed_partial')
+                         AND b.dataset_binding_status='bound'
                          AND COALESCE(
                              json_extract(b.snapshot_json,'$.result_disposition'),
                              'formal'
@@ -4238,6 +4692,10 @@ class EvaluationStore:
             for row in pass_two
             if row["status"] == "completed" and row.get("result")
         }
+        case_outcomes = {
+            (str(row["conversation_id"]), str(row["event_id"])): row
+            for row in await self.case_outcome_rows(batch_id)
+        }
         first_pass_candidate_count = len(candidates)
         for key in decisions:
             if key not in candidates:
@@ -4262,7 +4720,7 @@ class EvaluationStore:
         proposed: dict[str, dict[str, Any]] = {}
         cases: list[dict[str, Any]] = []
         for key, candidate in sorted(candidates.items()):
-            conversation = await self.get_conversation(key[0])
+            conversation = await self.get_conversation(key[0], batch_id=batch_id)
             if conversation is None:
                 continue
             event = next(
@@ -4317,6 +4775,10 @@ class EvaluationStore:
                     # transcript in every row obscures the event-level decision trail.
                     "evaluation_asr": evaluation_asr,
                     "evaluation_asr_failures": asr_failures_by_case.get(key, {}),
+                    "case_status": case_outcomes.get(key, {}).get(
+                        "status", "eligible" if decision else "excluded_insufficient_evidence"
+                    ),
+                    "exclusion_reason": case_outcomes.get(key, {}).get("reason"),
                     "decision": decision_name,
                     "reference_text": decision.get("reference_text"),
                     "scenario_tag": tag,
@@ -4333,7 +4795,18 @@ class EvaluationStore:
             )
         valid_events = int(batch["denominator"])
         source_user_events = int(batch["snapshot"].get("source_user_event_count", valid_events))
-        excluded_count = max(0, source_user_events - valid_events)
+        excluded_count = max(
+            0,
+            source_user_events - valid_events,
+            int(batch.get("excluded_count") or 0),
+        )
+        coverage = batch["snapshot"].get("coverage") or {
+            "eligible": len(cases),
+            "excluded": excluded_count,
+            "exclusion_reason": (
+                "pass_1_failed_or_unavailable" if excluded_count else None
+            ),
+        }
         completed_cases = [
             case
             for case in cases
@@ -4360,11 +4833,17 @@ class EvaluationStore:
             "valid_user_events": valid_events,
             "source_user_events": source_user_events,
             "excluded_count": excluded_count,
-            "excluded_reasons": (
-                [{"reason": "pass_1_failed_or_unavailable", "count": excluded_count}]
-                if excluded_count
-                else []
-            ),
+            "excluded_reasons": ([
+                {
+                    "reason": str(
+                        coverage.get("exclusion_reason")
+                        or "pass_1_failed_or_unavailable"
+                    ),
+                    "count": int(coverage.get("excluded") or excluded_count),
+                }
+            ] if excluded_count or coverage.get("excluded") else []),
+            "coverage": coverage,
+            "batch_lifecycle": batch["status"],
             "source_warning_counts": batch["snapshot"].get("source_warning_counts", {}),
             "candidate_count": first_pass_candidate_count,
             "evaluated_case_count": len(completed_cases),
@@ -4399,6 +4878,7 @@ class EvaluationStore:
             ],
             "asr_failures": asr_failures,
             "case_preparation_failures": case_preparation_failures,
+            "case_outcomes": list(case_outcomes.values()),
             "historical_turn_quality": historical_turn_quality,
             "cases": cases,
             "frozen_snapshot": batch["snapshot"],
@@ -4838,6 +5318,8 @@ class EvaluationStore:
         idempotency_key: str,
         batch_id: str,
         estimated_usd: float,
+        provider: str | None = None,
+        stage: str | None = None,
         pause_batch_on_rejection: bool = True,
     ) -> bool:
         """Atomically reserve one next external request without overspending."""
@@ -4857,17 +5339,25 @@ class EvaluationStore:
                 return False
             existing = await (
                 await database.execute(
-                    "SELECT 1 FROM evaluation_cost_reservations WHERE idempotency_key=?",
+                    """SELECT status FROM evaluation_cost_reservations
+                       WHERE idempotency_key=?""",
                     (idempotency_key,),
                 )
             ).fetchone()
-            if existing is not None:
+            if existing is not None and str(existing["status"]) != "released":
+                status = str(existing["status"])
                 await database.commit()
-                return True
+                if status == "reserved":
+                    return True
+                raise RuntimeError(
+                    "External request identity is already sent, settled, or usage-unknown; "
+                    "automatic redispatch is blocked"
+                )
             reserved_row = await (
                 await database.execute(
                     """SELECT SUM(estimated_usd) FROM evaluation_cost_reservations
-                       WHERE batch_id=?""",
+                       WHERE batch_id=?
+                         AND status IN ('reserved','sent','usage_unknown')""",
                     (batch_id,),
                 )
             ).fetchone()
@@ -4883,20 +5373,73 @@ class EvaluationStore:
                     )
                 await database.commit()
                 return False
+            now = _utcnow()
             await database.execute(
-                """INSERT INTO evaluation_cost_reservations
-                   (idempotency_key,batch_id,estimated_usd,created_at) VALUES(?,?,?,?)""",
-                (idempotency_key, batch_id, max(0, estimated_usd), _utcnow()),
+                """INSERT INTO evaluation_cost_reservations (
+                       idempotency_key,batch_id,estimated_usd,status,provider,stage,
+                       sent_at,settled_at,created_at,updated_at
+                   ) VALUES(?,?,?,'reserved',?,?,NULL,NULL,?,?)
+                   ON CONFLICT(idempotency_key) DO UPDATE SET
+                       batch_id=excluded.batch_id,
+                       estimated_usd=excluded.estimated_usd,
+                       status='reserved',
+                       provider=excluded.provider,
+                       stage=excluded.stage,
+                       sent_at=NULL,
+                       settled_at=NULL,
+                       updated_at=excluded.updated_at""",
+                (
+                    idempotency_key,
+                    batch_id,
+                    max(0, estimated_usd),
+                    provider,
+                    stage,
+                    now,
+                    now,
+                ),
             )
             await database.commit()
         return True
 
     async def release_budget(self, idempotency_key: str) -> None:
-        """Release a request reservation that did not produce billable usage."""
+        """Release only a reservation that provably never left the process."""
         async with aiosqlite.connect(self.database_path) as database:
             await database.execute(
-                "DELETE FROM evaluation_cost_reservations WHERE idempotency_key=?",
-                (idempotency_key,),
+                """UPDATE evaluation_cost_reservations
+                   SET status='released',updated_at=?
+                   WHERE idempotency_key=? AND status='reserved'""",
+                (_utcnow(), idempotency_key),
+            )
+            await database.commit()
+
+    async def mark_budget_sent(
+        self,
+        idempotency_key: str,
+        *,
+        provider: str,
+        stage: str,
+    ) -> None:
+        """Persist that an external request may now be billable."""
+        now = _utcnow()
+        async with aiosqlite.connect(self.database_path) as database:
+            cursor = await database.execute(
+                """UPDATE evaluation_cost_reservations
+                   SET status='sent',provider=?,stage=?,sent_at=?,updated_at=?
+                   WHERE idempotency_key=? AND status='reserved'""",
+                (provider, stage, now, now, idempotency_key),
+            )
+            if cursor.rowcount != 1:
+                raise RuntimeError("Cost reservation is unavailable before dispatch")
+            await database.commit()
+
+    async def mark_budget_unknown(self, idempotency_key: str) -> None:
+        """Retain a sent request estimate when provider usage is not observable."""
+        async with aiosqlite.connect(self.database_path) as database:
+            await database.execute(
+                """UPDATE evaluation_cost_reservations
+                   SET status='usage_unknown',updated_at=?
+                   WHERE idempotency_key=? AND status='sent'""",
+                (_utcnow(), idempotency_key),
             )
             await database.commit()
 
@@ -5008,8 +5551,10 @@ class EvaluationStore:
             )
             if reservation_key is not None:
                 await database.execute(
-                    "DELETE FROM evaluation_cost_reservations WHERE idempotency_key=?",
-                    (reservation_key,),
+                    """UPDATE evaluation_cost_reservations
+                       SET status='settled',settled_at=?,updated_at=?
+                       WHERE idempotency_key=?""",
+                    (_utcnow(), _utcnow(), reservation_key),
                 )
             batch_row = await (
                 await database.execute(
@@ -5063,7 +5608,19 @@ class EvaluationStore:
                     (batch_id,),
                 )
             ).fetchone()
+            reservation_rows = await (
+                await database.execute(
+                    """SELECT status,provider,stage,COUNT(*) AS calls,
+                              SUM(estimated_usd) AS estimated_usd
+                       FROM evaluation_cost_reservations
+                       WHERE batch_id=? AND status IN ('reserved','sent','usage_unknown')
+                       GROUP BY status,provider,stage
+                       ORDER BY status,provider,stage""",
+                    (batch_id,),
+                )
+            ).fetchall()
         items = [dict(row) for row in rows]
+        reservations = [dict(row) for row in reservation_rows]
         snapshot = json.loads(batch_row[0]) if batch_row else {}
         pricing_version = snapshot.get("pricing_version", {})
         fx_rates = pricing_version.get("fx_rates", {"USD": 1.0, "CNY": 0.14})
@@ -5072,13 +5629,27 @@ class EvaluationStore:
             rate = float(fx_rates.get(str(item["currency"]), 0))
             item["fx_to_usd"] = rate
             item["converted_usd"] = None if amount is None else float(amount) * rate
+        settled_total = sum(float(row.get("converted_usd") or 0) for row in items)
+        unknown_total = sum(
+            float(row.get("estimated_usd") or 0)
+            for row in reservations
+            if row["status"] == "usage_unknown"
+        )
+        committed_total = settled_total + sum(
+            float(row.get("estimated_usd") or 0) for row in reservations
+        )
         return {
             "batch_id": batch_id,
             "asr": [row for row in items if row["category"] == "asr"],
             "llm": [row for row in items if row["category"] == "llm"],
             "pricing_version": pricing_version,
-            "total_usd": sum(float(row.get("converted_usd") or 0) for row in items),
-            "money_status": "estimated_from_frozen_supplier_rates",
+            "total_usd": settled_total,
+            "committed_total_usd": committed_total,
+            "unknown_usage_usd": unknown_total,
+            "reservations": reservations,
+            "money_status": (
+                "usage_unknown" if unknown_total else "estimated_from_frozen_supplier_rates"
+            ),
         }
 
     async def record_telemetry(
@@ -5549,6 +6120,17 @@ class EvaluationStore:
                 "the affected files before starting an evaluation"
             )
         now = _utcnow()
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            dataset_row = await (
+                await database.execute(
+                    """SELECT dataset_id,manifest_hash,manifest_json
+                       FROM evaluation_dataset_versions WHERE dataset_id=?""",
+                    (source["dataset_id"],),
+                )
+            ).fetchone()
+        if dataset_row is None:
+            raise RuntimeError("Active dataset version is not persisted")
         batch_id = f"EV-{datetime.now(UTC):%Y%m%d}-{uuid.uuid4().hex[:4].upper()}"
         scenario_tags = [tag for tag in await self.list_scenario_tags() if tag["enabled"]]
         configuration = await self.context_snapshot(request.context_key)
@@ -5575,6 +6157,10 @@ class EvaluationStore:
             "pass_1_model": request.pass_1_model,
             "pass_2_model": request.pass_2_model,
             "source": source["source"],
+            "dataset_id": str(dataset_row["dataset_id"]),
+            "dataset_binding_status": "bound",
+            "dataset_manifest_hash": str(dataset_row["manifest_hash"]),
+            "dataset_manifest": json.loads(str(dataset_row["manifest_json"])),
             "source_counts": source["counts"],
             "source_event_count": source["event_count"],
             "source_user_event_count": source["user_event_count"],
@@ -5598,8 +6184,9 @@ class EvaluationStore:
                 """INSERT INTO evaluation_batches (
                     id,name,context_name,input_count,status,stage,progress,denominator,
                     excluded_count,cost,budget,providers_json,snapshot_json,
-                    simulation_started_at,created_at,updated_at,version
-                ) VALUES (?,?,?,?,'running','pass_1',21,?,0,0,?,?,?,NULL,?,?,1)""",
+                    simulation_started_at,created_at,updated_at,version,
+                    dataset_id,dataset_binding_status
+                ) VALUES (?,?,?,?,'running','pass_1',21,?,0,0,?,?,?,NULL,?,?,1,?,'bound')""",
                 (
                     batch_id,
                     request.name.strip(),
@@ -5611,6 +6198,7 @@ class EvaluationStore:
                     _json(snapshot),
                     now,
                     now,
+                    str(dataset_row["dataset_id"]),
                 ),
             )
             database.row_factory = aiosqlite.Row
@@ -5700,12 +6288,28 @@ class EvaluationStore:
                 raise LookupError("Batch not found")
             if row["version"] != request.expected_version:
                 raise RuntimeError("The batch changed; refresh before retrying")
+            retry_plan: dict[str, Any] | None = None
+            if request.action == "retry_failed":
+                if not request.retry_plan_hash:
+                    raise ValueError("A current retry plan is required")
+                plan_row = await (
+                    await database.execute(
+                        """SELECT payload_json,consumed_at FROM evaluation_retry_plans
+                           WHERE plan_hash=? AND batch_id=? AND batch_version=?""",
+                        (request.retry_plan_hash, batch_id, request.expected_version),
+                    )
+                ).fetchone()
+                if plan_row is None or plan_row["consumed_at"] is not None:
+                    raise RuntimeError("The retry plan is stale; refresh before retrying")
+                retry_plan = json.loads(str(plan_row["payload_json"]))
+                if not retry_plan.get("eligible_items"):
+                    raise ValueError("The retry plan contains no retryable work")
             allowed: dict[str, set[str]] = {
                 "start": {"data_ready"},
                 "pause": {"running"},
                 "resume": {"paused", "budget_paused"},
                 "stop": {"data_ready", "running", "paused", "budget_paused", "partially_failed"},
-                "retry_failed": {"partially_failed", "completed_partial"},
+                "retry_failed": {"failed", "partially_failed", "completed", "completed_partial"},
             }
             if row["status"] not in allowed[request.action]:
                 raise ValueError(f"Batch status {row['status']} cannot {request.action}")
@@ -5723,11 +6327,21 @@ class EvaluationStore:
                 if request.action == "start"
                 else row["stage"]
             )
+            snapshot = json.loads(str(row["snapshot_json"]))
+            if retry_plan is not None:
+                snapshot["retry_generation"] = int(retry_plan["generation"])
+                snapshot["latest_retry_plan_hash"] = str(request.retry_plan_hash)
+                snapshot["latest_retry_plan"] = retry_plan
             await database.execute(
-                """UPDATE evaluation_batches SET status=?,stage=?,updated_at=?,
+                """UPDATE evaluation_batches SET status=?,stage=?,snapshot_json=?,updated_at=?,
                    version=version+1 WHERE id=?""",
-                (target_status, target_stage, _utcnow(), batch_id),
+                (target_status, target_stage, _json(snapshot), _utcnow(), batch_id),
             )
+            if retry_plan is not None:
+                await database.execute(
+                    """UPDATE evaluation_retry_plans SET consumed_at=? WHERE plan_hash=?""",
+                    (_utcnow(), request.retry_plan_hash),
+                )
             updated = await (
                 await database.execute("SELECT * FROM evaluation_batches WHERE id=?", (batch_id,))
             ).fetchone()
@@ -5737,6 +6351,238 @@ class EvaluationStore:
             await self._audit(database, f"batch.{request.action}", batch_id, {})
             await database.commit()
         return response
+
+    @staticmethod
+    def _retryability(error: object) -> tuple[bool, str]:
+        """Classify persisted failures without retrying deterministic contracts."""
+        parsed: dict[str, Any] = {}
+        try:
+            candidate = json.loads(str(error or "{}"))
+            if isinstance(candidate, dict):
+                parsed = candidate
+        except json.JSONDecodeError:
+            pass
+        raw = str(error or "").strip().casefold()
+        category = str(parsed.get("category") or "unknown_failure")
+        if "retryable" in parsed:
+            return bool(parsed["retryable"]), category
+        deterministic = {
+            "authentication_failed",
+            "configuration_error",
+            "invalid_result",
+            "schema_error",
+            "request_too_large",
+            "output_too_large",
+            "empty_transcript",
+            "user_signal_validation_failed",
+        }
+        if category in deterministic:
+            return False, category
+        legacy_deterministic = {
+            "authentication_failed",
+            "bad_request",
+            "preflight_input_limit",
+            "preflight_output_limit",
+            "empty_transcript",
+        }
+        if raw in legacy_deterministic or raw.startswith(("schema_contract", "invalid_result")):
+            return False, raw.split(":", 1)[0]
+        legacy_retryable = (
+            "timeout",
+            "rate_limited",
+            "connection_error",
+            "network_error",
+            "provider_error",
+            "provider_job_failed",
+        )
+        if raw in legacy_retryable:
+            return True, raw
+        # Historical free-form errors are not safe enough to authorize another paid call.
+        return False, category
+
+    async def retry_plan(self, batch_id: str) -> dict[str, Any]:
+        """Freeze the exact retryable workset for one optimistic batch version."""
+        async with aiosqlite.connect(self.database_path) as database:
+            database.row_factory = aiosqlite.Row
+            batch = await (
+                await database.execute(
+                    "SELECT * FROM evaluation_batches WHERE id=?",
+                    (batch_id,),
+                )
+            ).fetchone()
+            if batch is None:
+                raise LookupError("Batch not found")
+            if (
+                str(batch["dataset_binding_status"]) != "bound"
+                or not batch["dataset_id"]
+            ):
+                raise ValueError(
+                    "Historical batch is legacy_unbound; source-dependent retry is blocked"
+                )
+            eligible: list[dict[str, Any]] = []
+            skipped: list[dict[str, Any]] = []
+            snapshot = json.loads(str(batch["snapshot_json"]))
+            canonical_case_keys = {
+                (str(key[0]), str(key[1]))
+                for key in snapshot.get("pass_2_canonical_case_keys", [])
+                if isinstance(key, (list, tuple)) and len(key) == 2
+            }
+            completed_case_evidence = {
+                (str(row[0]), str(row[1]))
+                for row in await (
+                    await database.execute(
+                        """SELECT DISTINCT conversation_id,event_id
+                           FROM evaluation_case_asr_runs
+                           WHERE batch_id=? AND status='completed'""",
+                        (batch_id,),
+                    )
+                ).fetchall()
+            }
+            candidate_conversations = {
+                conversation_id for conversation_id, _event_id in canonical_case_keys
+            }
+            candidate_conversations.update(
+                str(row[0])
+                for row in await (
+                    await database.execute(
+                        """SELECT DISTINCT conversation_id
+                           FROM evaluation_case_asr_runs WHERE batch_id=?""",
+                        (batch_id,),
+                    )
+                ).fetchall()
+            )
+            current_case_keys = set(canonical_case_keys)
+            current_case_keys.update(
+                (str(row[0]), str(row[1]))
+                for row in await (
+                    await database.execute(
+                        """SELECT DISTINCT conversation_id,event_id
+                           FROM evaluation_case_asr_runs WHERE batch_id=?""",
+                        (batch_id,),
+                    )
+                ).fetchall()
+            )
+            table_keys = (
+                ("evaluation_pass1_runs", ("conversation_id",)),
+                ("evaluation_asr_runs", ("provider", "conversation_id")),
+                ("evaluation_event_alignment_runs", ("conversation_id",)),
+                ("evaluation_case_asr_runs", ("provider", "conversation_id", "event_id")),
+                ("evaluation_pass2_runs", ("conversation_id", "event_id")),
+            )
+            for table, keys in table_keys:
+                rows = await (
+                    await database.execute(
+                        f"SELECT * FROM {table} WHERE batch_id=? AND status='failed'",
+                        (batch_id,),
+                    )
+                ).fetchall()
+                for row in rows:
+                    retryable, category = self._retryability(row["error"])
+                    row_key = tuple(str(row[key]) for key in keys)
+                    in_current_workset = True
+                    if table == "evaluation_pass2_runs":
+                        in_current_workset = tuple(row_key) in canonical_case_keys
+                    elif table == "evaluation_case_asr_runs":
+                        case_key = (row_key[1], row_key[2])
+                        in_current_workset = case_key not in completed_case_evidence
+                    elif table in {
+                        "evaluation_asr_runs",
+                        "evaluation_event_alignment_runs",
+                    }:
+                        conversation_id = row_key[-1]
+                        in_current_workset = conversation_id in candidate_conversations
+                        if table == "evaluation_asr_runs":
+                            conversation_cases = {
+                                key for key in current_case_keys if key[0] == conversation_id
+                            }
+                            if conversation_cases and conversation_cases.issubset(
+                                completed_case_evidence
+                            ):
+                                in_current_workset = False
+                    if not in_current_workset:
+                        retryable = False
+                        category = "superseded_or_satisfied"
+                    item = {
+                        "stage": table.removeprefix("evaluation_").removesuffix("_runs"),
+                        "key": list(row_key),
+                        "attempts": int(row["attempts"] or 0),
+                        "category": category,
+                    }
+                    (eligible if retryable else skipped).append(item)
+            reservations = await (
+                await database.execute(
+                    """SELECT status,SUM(estimated_usd) AS amount
+                       FROM evaluation_cost_reservations
+                       WHERE batch_id=? AND status IN ('reserved','sent','usage_unknown')
+                       GROUP BY status""",
+                    (batch_id,),
+                )
+            ).fetchall()
+            committed = sum(float(row["amount"] or 0) for row in reservations)
+            unknown = sum(
+                float(row["amount"] or 0)
+                for row in reservations
+                if str(row["status"]) == "usage_unknown"
+            )
+            generation = int(snapshot.get("retry_generation") or 0) + 1
+            remaining = max(
+                0.0,
+                float(batch["budget"]) - float(batch["cost"]) - committed,
+            )
+            payload = {
+                "batch_id": batch_id,
+                "batch_version": int(batch["version"]),
+                "generation": generation,
+                "eligible_items": sorted(
+                    eligible,
+                    key=lambda item: (str(item["stage"]), item["key"]),
+                ),
+                "skipped_items": sorted(
+                    skipped,
+                    key=lambda item: (str(item["stage"]), item["key"]),
+                ),
+                "unknown_usage_usd": unknown,
+                "hard_budget_remaining_usd": remaining,
+                "estimated_max_retry_cost_usd": remaining,
+                "stop_condition": "hard_batch_budget_or_retry_plan_exhausted",
+            }
+            plan_hash = sha256(_json(payload).encode("utf-8")).hexdigest()
+            payload["plan_hash"] = plan_hash
+            await database.execute(
+                """INSERT OR IGNORE INTO evaluation_retry_plans (
+                       plan_hash,batch_id,batch_version,generation,payload_json,created_at,consumed_at
+                   ) VALUES (?,?,?,?,?,?,NULL)""",
+                (
+                    plan_hash,
+                    batch_id,
+                    int(batch["version"]),
+                    generation,
+                    _json(payload),
+                    _utcnow(),
+                ),
+            )
+            await database.commit()
+        return payload
+
+    async def retry_item_allowed(
+        self,
+        batch_id: str,
+        stage: str,
+        key: tuple[str, ...],
+    ) -> bool:
+        """Enforce the consumed retry plan as the only redispatch authority."""
+        batch = await self.get_batch(batch_id)
+        if batch is None:
+            return False
+        snapshot = batch["snapshot"]
+        if int(snapshot.get("retry_generation") or 0) == 0:
+            return True
+        plan = snapshot.get("latest_retry_plan") or {}
+        allowed = {
+            (str(item.get("stage")), tuple(str(value) for value in item.get("key", [])))
+            for item in plan.get("eligible_items", [])
+        }
+        return (stage, tuple(str(value) for value in key)) in allowed
 
     async def delete_batch(
         self,
@@ -5891,7 +6737,10 @@ class EvaluationStore:
                     f"{item['issue_group_id']}/audio?audio_island_id="
                     f"{quote(str(evidence['audio_island_id']), safe='')}"
                 )
-            conversation = await self.get_conversation(str(item["conversation_id"]))
+            conversation = await self.get_conversation(
+                str(item["conversation_id"]),
+                batch_id=str(item["batch_id"]),
+            )
             source_ids = set(item["source_event_ids"])
             item["source_turns"] = [
                 {
@@ -6014,7 +6863,10 @@ class EvaluationStore:
         )
         if destination.is_file():
             return destination
-        source = self.conversation_user_audio_path(str(row[1]))
+        try:
+            source = await self.batch_conversation_user_audio_path(str(row[0]), str(row[1]))
+        except (FileNotFoundError, LookupError, RuntimeError, ValueError):
+            return None
         if source is None:
             return None
         await asyncio.to_thread(
@@ -6099,13 +6951,109 @@ class EvaluationStore:
         async with aiosqlite.connect(self.database_path) as database:
             row = await (
                 await database.execute(
-                    "SELECT payload_json FROM evaluation_reviews WHERE id=?", (review_id,)
+                    """SELECT batch_id,payload_json FROM evaluation_reviews WHERE id=?""",
+                    (review_id,),
                 )
             ).fetchone()
         if row is None:
             return None
-        conversation_id = json.loads(row[0])["conversation_id"]
-        return self.conversation_user_audio_path(conversation_id)
+        conversation_id = json.loads(row[1])["conversation_id"]
+        return await self.batch_conversation_user_audio_path(str(row[0]), conversation_id)
+
+    async def _batch_dataset_root(self, batch_id: str) -> Path:
+        """Resolve only a safely persisted immutable dataset root for one batch."""
+        async with aiosqlite.connect(self.database_path) as database:
+            row = await (
+                await database.execute(
+                    """SELECT b.dataset_binding_status,v.root_path
+                       FROM evaluation_batches b
+                       LEFT JOIN evaluation_dataset_versions v ON v.dataset_id=b.dataset_id
+                       WHERE b.id=?""",
+                    (batch_id,),
+                )
+            ).fetchone()
+        if row is None:
+            raise LookupError("Batch not found")
+        if str(row[0]) != "bound" or not row[1]:
+            raise ValueError(
+                "Historical batch is legacy_unbound; source-dependent reprocessing is blocked"
+            )
+        root = Path(str(row[1])).resolve()
+        allowed_roots = (self.seed_dataset_root.resolve(), self.upload_root.resolve())
+        if not any(root == allowed or root.is_relative_to(allowed) for allowed in allowed_roots):
+            raise RuntimeError("Persisted dataset root is outside the allowed evaluation roots")
+        if not root.is_dir():
+            raise FileNotFoundError("The batch's frozen dataset root is unavailable")
+        return root
+
+    async def batch_conversation_audio_path(
+        self,
+        batch_id: str,
+        conversation_id: str,
+    ) -> Path | None:
+        """Resolve full-call audio from the dataset frozen on one batch."""
+        if _SAFE_CONVERSATION_ID.fullmatch(conversation_id) is None:
+            return None
+        root = await self._batch_dataset_root(batch_id)
+        conversation = await self.get_conversation(conversation_id, batch_id=batch_id)
+        relative_path = str((conversation or {}).get("record_path") or "")
+        await self._verify_batch_file(batch_id, root, relative_path)
+        path = (root / relative_path).resolve()
+        return path if path.is_relative_to(root) and path.is_file() else None
+
+    async def batch_conversation_user_audio_path(
+        self,
+        batch_id: str,
+        conversation_id: str,
+    ) -> Path | None:
+        """Resolve pure-user audio from the dataset frozen on one batch."""
+        if _SAFE_CONVERSATION_ID.fullmatch(conversation_id) is None:
+            return None
+        root = await self._batch_dataset_root(batch_id)
+        conversation = await self.get_conversation(conversation_id, batch_id=batch_id)
+        relative_path = str((conversation or {}).get("user_record_path") or "")
+        await self._verify_batch_file(batch_id, root, relative_path)
+        path = (root / relative_path).resolve()
+        return path if path.is_relative_to(root) and path.is_file() else None
+
+    async def _verify_batch_file(
+        self,
+        batch_id: str,
+        root: Path,
+        relative_path: str,
+    ) -> None:
+        """Reject mutated or missing bytes instead of silently changing batch evidence."""
+        if not relative_path:
+            raise FileNotFoundError("Frozen dataset file path is unavailable")
+        async with aiosqlite.connect(self.database_path) as database:
+            row = await (
+                await database.execute(
+                    """SELECT v.manifest_json FROM evaluation_batches b
+                       JOIN evaluation_dataset_versions v ON v.dataset_id=b.dataset_id
+                       WHERE b.id=? AND b.dataset_binding_status='bound'""",
+                    (batch_id,),
+                )
+            ).fetchone()
+        if row is None:
+            raise ValueError("Batch dataset binding is unavailable")
+        manifest = json.loads(str(row[0]))
+        expected = next(
+            (
+                item
+                for item in manifest.get("files", [])
+                if str(item.get("path")) == relative_path
+            ),
+            None,
+        )
+        actual = await asyncio.to_thread(self._file_fingerprint, root, relative_path)
+        if (
+            expected is None
+            or actual is None
+            or expected.get("missing")
+            or actual.get("missing")
+            or str(expected.get("sha256")) != str(actual.get("sha256"))
+        ):
+            raise RuntimeError("Frozen dataset file integrity check failed")
 
     def conversation_audio_path(self, conversation_id: str) -> Path | None:
         """Resolve a source conversation to its real full-call MP3."""
@@ -6612,7 +7560,44 @@ class EvaluationStore:
         benchmarks = await self.list_benchmarks(limit=5000)
         benchmark_items = benchmarks["items"]
         source = self.fixture_status()
+        selected_report = (
+            {
+                "scope": "batch_report",
+                "batch_id": latest_evaluated["id"],
+                "dataset_id": latest_evaluated.get("dataset_id"),
+                "report_type": latest_evaluated["report_type"],
+                "suspected_numerator": latest_evaluated["suspected_numerator"],
+                "valid_user_events": latest_evaluated["denominator"],
+                "suspected_rate": round(
+                    latest_evaluated["suspected_numerator"]
+                    / latest_evaluated["denominator"]
+                    * 100,
+                    1,
+                ),
+            }
+            if latest_evaluated
+            else None
+        )
+        active_source = {
+            "scope": "active_source",
+            "dataset_id": source["dataset_id"],
+            "source": source["source"],
+            "conversation_count": source["conversation_count"],
+            "valid_conversations": source["valid_conversations"],
+            "user_event_count": source["user_event_count"],
+            "blocking_issue_count": source["blocking_issue_count"],
+            "warning_count": source["warning_count"],
+        }
+        benchmark_library = {
+            "scope": "global_benchmark_library",
+            "benchmark_count": benchmarks["total"],
+            "ai_count": sum(item["source"] == "ai" for item in benchmark_items),
+            "manual_count": sum(item["source"] == "manual" for item in benchmark_items),
+        }
         return {
+            "active_source": active_source,
+            "selected_report": selected_report,
+            "benchmark_library": benchmark_library,
             "batch_count": len(batches),
             "conversation_count": source["conversation_count"],
             "source_valid_conversations": source["valid_conversations"],
@@ -6623,8 +7608,8 @@ class EvaluationStore:
             "pending_reviews": len(reviews),
             "pending_conversations": len({review["conversation_id"] for review in reviews}),
             "benchmark_count": benchmarks["total"],
-            "benchmark_ai_count": sum(item["source"] == "ai" for item in benchmark_items),
-            "benchmark_manual_count": sum(item["source"] == "manual" for item in benchmark_items),
+            "benchmark_ai_count": benchmark_library["ai_count"],
+            "benchmark_manual_count": benchmark_library["manual_count"],
             "suspected_numerator": (
                 latest_evaluated["suspected_numerator"] if latest_evaluated else None
             ),
