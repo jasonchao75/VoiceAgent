@@ -23,11 +23,7 @@ RUN python -m nltk.downloader -d /usr/local/share/nltk_data punkt_tab
 COPY --chown=voiceagent:voiceagent src/ ./src/
 COPY --chown=voiceagent:voiceagent configs/runtime/ ./configs/runtime/
 COPY --chown=voiceagent:voiceagent scripts/deploy/verify_evaluation_production.py ./scripts/deploy/verify_evaluation_production.py
-COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md
-COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md
-COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md
-COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md
-COPY --chown=voiceagent:voiceagent openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md ./openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md
+COPY --chown=voiceagent:voiceagent openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/ ./openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/
 COPY --chown=voiceagent:voiceagent --from=frontend-builder /build/frontend/dist ./frontend/dist/
 
 # Named-volume target for the bot database; ownership survives first mount.

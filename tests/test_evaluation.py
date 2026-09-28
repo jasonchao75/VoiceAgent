@@ -605,11 +605,23 @@ def test_runtime_image_packages_active_prompt_fixtures() -> None:
     root = Path(__file__).resolve().parents[1]
     dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
     dockerignore = (root / ".dockerignore").read_text(encoding="utf-8")
-    assert "riyadbank-pass-1-system-prompt-v2.md" in dockerfile
-    assert "riyadbank-pass-2-system-prompt-v2.md" in dockerfile
-    assert "riyadbank-event-aligner-system-prompt-v1.md" in dockerfile
+    fixture_root = (
+        root
+        / "openspec"
+        / "changes"
+        / "archive"
+        / "2026-09-27-add-asr-automated-evaluation"
+        / "fixtures"
+    )
+    assert str(fixture_root.relative_to(root)) + "/" in dockerfile
+    for filename in (
+        "riyadbank-pass-1-system-prompt-v2.md",
+        "riyadbank-pass-2-system-prompt-v2.md",
+        "riyadbank-event-aligner-system-prompt-v1.md",
+    ):
+        assert (fixture_root / filename).is_file()
     assert (
-        "!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md"
+        "!openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/**"
         in dockerignore
     )
 

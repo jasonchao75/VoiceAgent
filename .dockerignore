@@ -7,12 +7,10 @@
 !src/**
 !openspec/
 !openspec/changes/
-!openspec/changes/add-asr-automated-evaluation/
-!openspec/changes/add-asr-automated-evaluation/fixtures/
-!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md
-!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md
-!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md
-!openspec/changes/add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md
+!openspec/changes/archive/
+!openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/
+!openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/
+!openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/**
 !scripts/
 !scripts/deploy/
 !scripts/deploy/verify_evaluation_production.py

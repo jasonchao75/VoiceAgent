@@ -541,6 +541,20 @@
       "status": "Resolved",
       "resolution": "The product owner explicitly authorized pushing the local main branch's three commits, including the 224-file dependency chain, to origin/main and triggering production deployment; the authorization is recorded as D-022.",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-074",
+      "summary": "GitHub Actions run 36425306747 passed repository safety, OpenSpec, backend, and frontend checks but failed while building the production Docker image, so deployment did not start.",
+      "status": "Resolved",
+      "resolution": "The failed log showed five Dockerfile COPY instructions and the allowlist-only .dockerignore still referenced the pre-archive evaluation fixture path. Replaced them with one archived-directory COPY, allowed that exact fixture subtree into the build context, and updated the packaging regression; the next GitHub CI production-image build is required to prove the fix before deployment completion.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-075",
+      "summary": "The local full Python regression rerun after the Dockerfile-only fix reported one failure despite the first release preflight and remote GitHub backend checks passing all 348 tests.",
+      "status": "Resolved",
+      "resolution": "The targeted run proved the packaging regression intentionally expected individual pre-archive filenames in Dockerfile and an old .dockerignore exception. Updated it to assert the archived directory COPY, exact build-context allowlist, and required fixture files on disk; no runtime behavior changed.",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
