@@ -40,6 +40,8 @@ class _TurnState:
     asr_final_reason: str | None = None
     interrupted_by_user: bool = False
     reasoning_tokens: int | None = None
+    context_applied: bool | None = None
+    context_failure_reason: str | None = None
 
 
 @dataclass(slots=True)
@@ -150,6 +152,21 @@ class CallCapture:
             HistoryTurn(sequence=len(self.turns), role="user", text=text, created_ms=elapsed)
         )
 
+    def record_context_update(self, turn_index: int, applied: bool, reason: str | None) -> None:
+        """Attach one safe AssemblyAI context result to its originating Turn."""
+        state = next(
+            (
+                candidate
+                for candidate in [*self._states, self._current]
+                if candidate.index == turn_index
+            ),
+            None,
+        )
+        if state is None:
+            return
+        state.context_applied = applied
+        state.context_failure_reason = None if applied else reason
+
     def finalize(self) -> tuple[list[HistoryTurn], list[TurnMetric]]:
         """Flush final assistant text and return immutable snapshots."""
         self._flush_assistant(self.elapsed_ms())
@@ -205,6 +222,8 @@ class CallCapture:
                     reasoning_tokens=state.reasoning_tokens,
                     reasoning_status=reasoning_status,
                     reasoning_control=control,
+                    context_applied=state.context_applied,
+                    context_failure_reason=state.context_failure_reason,
                 )
             )
         return metrics

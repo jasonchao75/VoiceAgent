@@ -324,6 +324,55 @@ def test_saved_keys_are_encrypted_and_never_returned(
     assert "encrypted_deepgram_key" not in created
 
 
+def test_bot_scoped_component_keys_support_mixed_providers_and_isolation(
+    client_with_keys: TestClient, tmp_path: Path
+) -> None:
+    """Two Bots may use different AssemblyAI keys with independent Deepgram TTS keys."""
+    assembly_config = {
+        **VALID_CONFIG,
+        "asr_provider": "assemblyai",
+        "asr_model": "universal-3-5-pro",
+        "turn_detection_source": "provider_native",
+        "asr_options": {"language_codes": ["ar", "en"]},
+        "save_keys": True,
+        "llm_api_key": LLM_KEY,
+    }
+    first_asr_key = "assemblyai-test-key-bot-0001"
+    second_asr_key = "assemblyai-test-key-bot-0002"
+    first = _create_bot(
+        client_with_keys,
+        **assembly_config,
+        asr_api_key=first_asr_key,
+        tts_api_key="test-deepgram-tts-key-bot-0001",
+    )
+    second = _create_bot(
+        client_with_keys,
+        **{**assembly_config, "name": "Second support bot"},
+        asr_api_key=second_asr_key,
+        tts_api_key="test-deepgram-tts-key-bot-0002",
+    )
+    assert first["has_saved_keys"] is True
+    assert second["has_saved_keys"] is True
+    assert first_asr_key not in str(first)
+    assert second_asr_key not in str(second)
+
+    db = sqlite3.connect(tmp_path / "bots.db")
+    rows = db.execute(
+        "SELECT id, asr_key_provider, encrypted_asr_key, tts_key_provider, "
+        "encrypted_tts_key FROM bots WHERE id IN (?, ?) ORDER BY id",
+        (first["id"], second["id"]),
+    ).fetchall()
+    db.close()
+    assert len(rows) == 2
+    assert all(row[1] == "assemblyai" and row[3] == "deepgram_flux" for row in rows)
+    assert rows[0][2] != rows[1][2]
+    assert rows[0][4] != rows[1][4]
+
+    for bot in (first, second):
+        session = client_with_keys.post("/api/sessions", json={"bot_id": bot["id"]}, headers=ORIGIN)
+        assert session.status_code == 201, session.text
+
+
 def test_update_key_tristate(client_with_keys: TestClient) -> None:
     created = _create_bot(
         client_with_keys,
@@ -364,13 +413,189 @@ def test_update_key_tristate(client_with_keys: TestClient) -> None:
     assert cleared.status_code == 200
     assert cleared.json()["has_saved_keys"] is False
 
-    # Keep semantics on a bot without keys is an error.
+    # A Bot may keep its non-secret configuration while credentials remain missing.
     response = client_with_keys.put(
         f"/api/bots/{created['id']}",
         json={**VALID_CONFIG, "save_keys": True},
         headers=ORIGIN,
     )
-    assert response.status_code == 400
+    assert response.status_code == 200
+    assert response.json()["has_saved_keys"] is False
+
+
+def test_account_asr_catalog_is_persisted_and_reused_by_bot_validation(
+    client_with_keys: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """One authenticated refresh governs later Bot saves without exposing its key."""
+
+    async def fake_discovery(
+        provider: str, api_key: str, *, timeout: float = 10.0
+    ) -> dict[str, object]:
+        assert provider == "speechmatics"
+        assert api_key in {
+            "test-speechmatics-key-0001",
+            "test-speechmatics-key-0002",
+        }
+        assert timeout == 10.0
+        return {
+            "id": "enhanced",
+            "name": "Realtime Enhanced",
+            "language_control": {
+                "kind": "single",
+                "values": ["en"],
+                "account_filtered": True,
+            },
+            "domains_by_language": {"en": ["finance"]},
+            "turn_sources": ["provider_native", "off"],
+            "default_turn_source": "provider_native",
+            "advanced_fields": [],
+        }
+
+    monkeypatch.setattr("src.api.discover_asr_model_catalog", fake_discovery)
+    bot = _create_bot(
+        client_with_keys,
+        asr_provider="speechmatics",
+        asr_model="enhanced",
+        asr_options={"language": "en", "domain": "finance"},
+        asr_api_key="test-speechmatics-key-0001",
+        tts_api_key=DEEPGRAM_KEY,
+        llm_api_key=LLM_KEY,
+        save_keys=True,
+    )
+    refreshed = client_with_keys.post(
+        "/api/asr/catalog",
+        json={"provider": "speechmatics", "bot_id": bot["id"]},
+        headers=ORIGIN,
+    )
+    assert refreshed.status_code == 200, refreshed.text
+    reloaded = client_with_keys.get(f"/api/bots/{bot['id']}", headers=ORIGIN).json()
+    assert reloaded["asr_account_catalog"]["language_control"]["values"] == ["en"]
+
+    inline = client_with_keys.post(
+        "/api/asr/catalog",
+        json={
+            "provider": "speechmatics",
+            "bot_id": bot["id"],
+            "api_key": "unsaved-replacement-key-0001",
+        },
+        headers=ORIGIN,
+    )
+    assert inline.status_code == 422
+    unchanged = client_with_keys.get(f"/api/bots/{bot['id']}", headers=ORIGIN).json()
+    assert unchanged["asr_account_catalog"]["language_control"]["values"] == ["en"]
+
+    replaced = client_with_keys.put(
+        f"/api/bots/{bot['id']}",
+        json={
+            **VALID_CONFIG,
+            "asr_provider": "speechmatics",
+            "asr_model": "enhanced",
+            "asr_options": {"language": "en", "domain": "finance"},
+            "asr_api_key": "test-speechmatics-key-0002",
+            "save_keys": True,
+        },
+        headers=ORIGIN,
+    )
+    assert replaced.status_code == 200, replaced.text
+    assert replaced.json()["asr_account_catalog"] is None
+    refreshed_replacement = client_with_keys.post(
+        "/api/asr/catalog",
+        json={"provider": "speechmatics", "bot_id": bot["id"]},
+        headers=ORIGIN,
+    )
+    assert refreshed_replacement.status_code == 200
+
+    invalid = client_with_keys.put(
+        f"/api/bots/{bot['id']}",
+        json={
+            **VALID_CONFIG,
+            "asr_provider": "speechmatics",
+            "asr_model": "enhanced",
+            "asr_options": {"language": "ar_en", "domain": "medical"},
+            "save_keys": True,
+        },
+        headers=ORIGIN,
+    )
+    assert invalid.status_code == 400
+    assert "unavailable for this Bot account" in invalid.json()["detail"]
+
+
+def test_update_replaces_only_selected_component_key(
+    client_with_keys: TestClient, tmp_path: Path
+) -> None:
+    """Changing ASR credentials preserves this Bot's TTS and LLM ciphertext."""
+    created = _create_bot(
+        client_with_keys,
+        save_keys=True,
+        deepgram_api_key=DEEPGRAM_KEY,
+        llm_api_key=LLM_KEY,
+    )
+    database_path = tmp_path / "bots.db"
+
+    def encrypted_components() -> tuple[str | None, str | None, str | None, str | None]:
+        with sqlite3.connect(database_path) as database:
+            row = database.execute(
+                "SELECT asr_key_provider, encrypted_asr_key, encrypted_tts_key, "
+                "encrypted_llm_key FROM bots WHERE id = ?",
+                (created["id"],),
+            ).fetchone()
+        assert row is not None
+        return row
+
+    before = encrypted_components()
+    assembly_config = {
+        **VALID_CONFIG,
+        "asr_provider": "assemblyai",
+        "asr_model": "universal-3-5-pro",
+        "turn_detection_source": "provider_native",
+        "asr_options": {"language_codes": ["ar", "en"]},
+        "save_keys": True,
+        "save_asr_key": True,
+        "save_tts_key": True,
+        "save_llm_key": True,
+        "asr_api_key": "assemblyai-replacement-key-0001",
+    }
+    replaced = client_with_keys.put(
+        f"/api/bots/{created['id']}", json=assembly_config, headers=ORIGIN
+    )
+    assert replaced.status_code == 200, replaced.text
+    assert replaced.json()["has_saved_keys"] is True
+    after = encrypted_components()
+    assert after[0] == "assemblyai"
+    assert after[1] != before[1]
+    assert after[2:] == before[2:]
+
+    # Switching again without a new ASR key clears only the mismatched ASR slot.
+    missing_asr = client_with_keys.put(
+        f"/api/bots/{created['id']}",
+        json={
+            **assembly_config,
+            "asr_provider": "soniox",
+            "asr_model": "stt-rt-v5",
+            "asr_options": {},
+            "asr_api_key": None,
+        },
+        headers=ORIGIN,
+    )
+    assert missing_asr.status_code == 200, missing_asr.text
+    state = missing_asr.json()
+    assert state["has_asr_key"] is False
+    assert state["has_tts_key"] is True
+    assert state["has_llm_key"] is True
+    assert state["has_saved_keys"] is False
+
+    web_call = client_with_keys.post(
+        "/api/sessions", json={"bot_id": created["id"]}, headers=ORIGIN
+    )
+    assert web_call.status_code == 422
+    assert "ASR" in web_call.json()["detail"]
+
+    chat_test = client_with_keys.post(
+        "/api/sessions",
+        json={"bot_id": created["id"], "session_type": "chat_test"},
+        headers=ORIGIN,
+    )
+    assert chat_test.status_code == 201, chat_test.text
 
 
 def test_diagnostic_reuses_saved_bot_key_for_another_catalog_model(

@@ -21,11 +21,12 @@ from pipecat.transports.websocket.fastapi import (
 )
 from pipecat.workers.runner import WorkerRunner
 
-from src.asr import create_flux_stt
+from src.asr import ASRProviderRegistry
 from src.config import RuntimeConfig
 from src.history.capture import CallCapture
 from src.llm import create_llm_service
 from src.observability import SessionEventBuffer, SessionTimingObserver
+from src.pipeline.assistant_context import AssistantContextBridge
 from src.pipeline.speed_control import SessionSpeedController
 from src.session import SessionLease
 from src.tts import TTSProviderRegistry
@@ -38,6 +39,7 @@ async def run_voice_agent_session(
     websocket: WebSocket,
     lease: SessionLease,
     runtime: RuntimeConfig,
+    asr_registry: ASRProviderRegistry,
     tts_registry: TTSProviderRegistry,
     allowed_origins: list[str],
     event_buffer: SessionEventBuffer,
@@ -49,17 +51,14 @@ async def run_voice_agent_session(
         websocket: Accepted browser WebSocket.
         lease: Single-use session lease containing BYOK credentials.
         runtime: Validated server runtime configuration.
+        asr_registry: Speech recognition registry used outside orchestration logic.
         tts_registry: Provider registry used outside orchestration logic.
         allowed_origins: Origins accepted by the transport.
         event_buffer: Non-secret timing buffer for UI telemetry.
     """
-    deepgram_key = lease.credentials.deepgram_api_key.get_secret_value()
+    asr_key = lease.credentials.asr_api_key.get_secret_value()
     llm_key = lease.credentials.llm_api_key.get_secret_value()
-    tts_key = (
-        lease.credentials.elevenlabs_api_key.get_secret_value()
-        if lease.config.tts.provider == "elevenlabs" and lease.credentials.elevenlabs_api_key
-        else deepgram_key
-    )
+    tts_key = lease.credentials.tts_api_key.get_secret_value()
 
     is_chat = lease.session_type == "chat_test"
     transport = FastAPIWebsocketTransport(
@@ -82,10 +81,14 @@ async def run_voice_agent_session(
     stt = (
         None
         if is_chat
-        else create_flux_stt(
-            api_key=deepgram_key,
-            config=lease.config.asr,
+        else asr_registry.create(
+            provider=lease.config.asr.provider,
+            model=lease.config.asr.model,
+            turn_detection_source=lease.config.asr.turn_detection_source,
+            options=lease.config.asr.options,
+            api_key=asr_key,
             audio=runtime.audio,
+            opening_script=lease.config.opening_script,
         )
     )
     llm = create_llm_service(
@@ -164,8 +167,16 @@ async def run_voice_agent_session(
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(context)
     processors = [transport.input()]
     if stt is not None:
-        processors.append(stt)
-    processors.extend([user_aggregator, llm, tts, transport.output(), assistant_aggregator])
+        processors.append(stt.processor)
+    processors.extend([user_aggregator, llm])
+    if stt is not None and stt.context_updates_enabled:
+        processors.append(
+            AssistantContextBridge(
+                stt.update_agent_context,
+                call_capture.record_context_update if call_capture is not None else None,
+            )
+        )
+    processors.extend([tts, transport.output(), assistant_aggregator])
     pipeline = Pipeline(processors)
     observer = SessionTimingObserver(
         session_id=lease.session_id,

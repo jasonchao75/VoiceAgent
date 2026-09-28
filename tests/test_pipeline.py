@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 from pipecat.frames.frames import TTSSpeakFrame
 
+from src.asr.factory import ASRService
 from src.config import LLMProviderCatalog, RuntimeConfig, VoiceCatalog
 from src.observability import SessionEventBuffer
 from src.pipeline import voice_agent
@@ -95,9 +96,11 @@ class _FakeRegistry:
 
     def __init__(self, marker: object) -> None:
         self.marker = marker
+        self.calls = 0
 
     def create(self, **_kwargs: Any) -> object:
         """Return the marker without a paid provider call."""
+        self.calls += 1
         return self.marker
 
 
@@ -137,19 +140,12 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
     stt, user_aggregator, llm, tts, assistant_aggregator = (object() for _ in range(5))
     captured_pipeline: list[object] = []
     captured_transport_params: list[Any] = []
-    stt_calls = 0
 
     def fake_transport_factory(**kwargs: Any) -> _FakeTransport:
         captured_transport_params.append(kwargs["params"])
         return fake_transport
 
-    def fake_stt_factory(**_kwargs: Any) -> object:
-        nonlocal stt_calls
-        stt_calls += 1
-        return stt
-
     monkeypatch.setattr(voice_agent, "FastAPIWebsocketTransport", fake_transport_factory)
-    monkeypatch.setattr(voice_agent, "create_flux_stt", fake_stt_factory)
     monkeypatch.setattr(voice_agent, "create_llm_service", lambda **_kwargs: llm)
     monkeypatch.setattr(voice_agent, "LLMContext", lambda: fake_context)
     monkeypatch.setattr(
@@ -165,11 +161,13 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
     monkeypatch.setattr(voice_agent, "PipelineWorker", lambda *_args, **_kwargs: fake_worker)
     monkeypatch.setattr(voice_agent, "WorkerRunner", _FakeRunner)
 
+    asr_registry = _FakeRegistry(ASRService(processor=stt))
     await voice_agent.run_voice_agent_session(
         websocket=object(),
         lease=lease,
         runtime=runtime_config,
-        tts_registry=_FakeRegistry(tts),  # type: ignore[arg-type]
+        asr_registry=asr_registry,
+        tts_registry=_FakeRegistry(tts),
         allowed_origins=["http://localhost:8000"],
         event_buffer=SessionEventBuffer(),
     )
@@ -186,7 +184,7 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
         expected_pipeline.insert(1, stt)
     assert captured_pipeline == expected_pipeline
     assert captured_transport_params[0].audio_in_enabled is expected_audio_input
-    assert stt_calls == expected_stt_calls
+    assert asr_registry.calls == expected_stt_calls
     assert len(fake_worker.queued) == expected_frames
     if opening_script:
         assert isinstance(fake_worker.queued[0], TTSSpeakFrame)

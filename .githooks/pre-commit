@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+found=0
+for manifest in openspec/changes/*/verification/delivery-status.json; do
+  if [ ! -f "$manifest" ]; then
+    continue
+  fi
+  found=1
+  change=${manifest#openspec/changes/}
+  change=${change%/verification/delivery-status.json}
+  python3 scripts/quality/verify_change.py "$change" --enforce-final-only
+done
+
+if [ "$found" -eq 0 ]; then
+  echo "OpenSpec delivery gate: no active Change manifest found"
+fi

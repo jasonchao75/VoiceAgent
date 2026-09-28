@@ -11,6 +11,7 @@ import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Literal, TypedDict
 from urllib.parse import parse_qsl, urlparse
 
 import httpx
@@ -22,6 +23,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from starlette.responses import Response
 
+from src.asr import create_default_asr_registry
+from src.asr.catalog import discover_asr_model_catalog
+from src.asr.config import asr_provider_catalog
 from src.auth import (
     AUTH_COOKIE,
     AuthSessionStore,
@@ -33,11 +37,12 @@ from src.bots.crypto import BotKeyCipher, StorageKeyError
 from src.bots.models import (
     BotConfigFields,
     BotCreateRequest,
+    BotRecord,
     BotResponse,
     BotUpdateRequest,
 )
 from src.bots.storage import BotStore
-from src.bots.validation import validate_bot_config
+from src.bots.validation import validate_asr_account_catalog, validate_bot_config
 from src.config import load_llm_provider_catalog, load_runtime_config, load_voice_catalog
 from src.evaluation import EvaluationStore, create_evaluation_router
 from src.evaluation.connections import ASRConnectionError, test_asr_connection
@@ -58,6 +63,7 @@ from src.pipeline import run_voice_agent_session
 from src.session import (
     BotSessionRequest,
     SessionCapacityError,
+    SessionLease,
     SessionRequest,
     SessionStore,
     SessionTokenError,
@@ -118,6 +124,34 @@ class SessionResponse(BaseModel):
     expires_in_seconds: int
 
 
+def _asr_language_snapshot(lease: SessionLease) -> str:
+    """Summarize the selected ASR language contract for call history."""
+    options = lease.config.asr.options
+    if lease.session_type == "chat_test":
+        return "not_applicable"
+    if lease.config.asr.model == "flux-general-en":
+        return "en"
+    language = options.get("language")
+    if isinstance(language, str) and language:
+        return language
+    hints = options.get("language_hints") or options.get("language_codes")
+    if isinstance(hints, list) and hints:
+        return ",".join(str(item) for item in hints)
+    return "automatic"
+
+
+def _asr_context_mode_snapshot(lease: SessionLease) -> Literal["off", "agent", "full"]:
+    """Describe the provider context features enabled for this call."""
+    if lease.session_type == "chat_test":
+        return "off"
+    options = lease.config.asr.options
+    if lease.config.asr.provider == "assemblyai":
+        if not options.get("agent_context_enabled", True):
+            return "off"
+        return "full" if options.get("user_context_carryover_enabled", True) else "agent"
+    return "off"
+
+
 class LoginRequest(BaseModel):
     """Credentials submitted by the product-owned login page."""
 
@@ -145,6 +179,28 @@ class VoiceDiscoveryRequest(BaseModel):
     search: str = Field(default="", max_length=100)
     page_token: str | None = Field(default=None, max_length=500)
     page_size: int = Field(default=30, ge=1, le=100)
+
+
+class ASRCatalogDiscoveryRequest(BaseModel):
+    """Credential source for one explicit account-catalog refresh."""
+
+    model_config = ConfigDict(extra="forbid")
+    provider: str = Field(pattern="^(speechmatics|soniox)$")
+    bot_id: str | None = Field(default=None, min_length=1, max_length=100)
+    api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+
+
+class EncryptedBotKeys(TypedDict):
+    """Exact encrypted columns shared by Bot create and update."""
+
+    encrypted_deepgram_key: str | None
+    llm_key_provider: str | None
+    encrypted_llm_key: str | None
+    encrypted_elevenlabs_key: str | None
+    asr_key_provider: str | None
+    encrypted_asr_key: str | None
+    tts_key_provider: str | None
+    encrypted_tts_key: str | None
 
 
 def _allowed_origins() -> list[str]:
@@ -189,6 +245,7 @@ def create_app() -> FastAPI:
         max_sessions=runtime.session.max_concurrent_sessions,
     )
     tts_registry = create_default_tts_registry()
+    asr_registry = create_default_asr_registry()
     bot_store = BotStore(_bot_data_dir() / "bots.db")
     bot_cipher = BotKeyCipher.from_env()
     event_buffers: dict[str, SessionEventBuffer] = {}
@@ -238,6 +295,7 @@ def create_app() -> FastAPI:
     app.state.session_store = store
     app.state.event_buffers = event_buffers
     app.state.tts_registry = tts_registry
+    app.state.asr_registry = asr_registry
     app.state.bot_store = bot_store
     app.state.bot_cipher = bot_cipher
     app.state.history_store = history_store
@@ -285,6 +343,7 @@ def create_app() -> FastAPI:
             "status": "ok",
             "pipecat": "1.8.1",
             "tts_providers": tts_registry.providers,
+            "asr_models": asr_registry.models,
             "pending_sessions": pending,
             "active_sessions": active,
         }
@@ -374,45 +433,59 @@ def create_app() -> FastAPI:
             },
             "flux_voices": voices.model_dump(),
             "llm_providers": llm_providers.model_dump(),
-            "asr_providers": {
-                "providers": [
-                    {
-                        "id": "deepgram_flux",
-                        "name": "Deepgram",
-                        "models": [
-                            {
-                                "id": "flux_asr",
-                                "name": "Flux ASR",
-                                "languages": [
-                                    {
-                                        "id": "english",
-                                        "name": "English",
-                                        "provider_model": "flux-general-en",
-                                    },
-                                    {
-                                        "id": "automatic",
-                                        "name": "Automatic",
-                                        "provider_model": "flux-general-multi",
-                                    },
-                                ],
-                                "language_hints": [
-                                    "en",
-                                    "es",
-                                    "fr",
-                                    "de",
-                                    "hi",
-                                    "ru",
-                                    "pt",
-                                    "ja",
-                                    "it",
-                                    "nl",
-                                ],
-                            }
-                        ],
-                    }
-                ]
-            },
+            "asr_providers": asr_provider_catalog(),
         }
+
+    @app.post("/api/asr/catalog")
+    async def discover_asr_catalog(request: ASRCatalogDiscoveryRequest) -> dict[str, object]:
+        """Return an account-filtered provider catalog without exposing its key."""
+        if request.api_key is not None:
+            raise HTTPException(
+                status_code=422,
+                detail="Save the Bot ASR key before refreshing its account catalog",
+            )
+        if request.bot_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Save the Bot before refreshing its account catalog",
+            )
+        record = await bot_store.get(request.bot_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        if record.asr_provider != request.provider:
+            raise HTTPException(
+                status_code=400,
+                detail="Save the selected ASR provider before refreshing its catalog",
+            )
+        if not record.has_asr_key:
+            raise HTTPException(
+                status_code=400,
+                detail="This Bot has no saved key for the selected ASR provider",
+            )
+        if bot_cipher is None or record.encrypted_asr_key is None:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Saved ASR key is unavailable because VOICE_AGENT_STORAGE_KEY is not configured"
+                ),
+            )
+        try:
+            key = bot_cipher.decrypt(record.encrypted_asr_key).get_secret_value()
+        except StorageKeyError:
+            raise HTTPException(
+                status_code=400, detail="Saved ASR key cannot be decrypted"
+            ) from None
+        try:
+            catalog = await discover_asr_model_catalog(request.provider, key)
+            await bot_store.set_asr_account_catalog(request.bot_id, catalog)
+            return catalog
+        except (httpx.HTTPError, RuntimeError, ValueError) as exc:
+            logger.warning(
+                "asr_catalog_discovery_failed provider=%s error_type=%s",
+                request.provider,
+                type(exc).__name__,
+            )
+            raise HTTPException(status_code=502, detail="ASR catalog discovery failed") from None
 
     def _config_fields(request: BotCreateRequest | BotUpdateRequest) -> BotConfigFields:
         """Strip write-only key fields before persistence."""
@@ -420,6 +493,11 @@ def create_app() -> FastAPI:
             request.model_dump(
                 exclude={
                     "save_keys",
+                    "save_asr_key",
+                    "save_tts_key",
+                    "save_llm_key",
+                    "asr_api_key",
+                    "tts_api_key",
                     "deepgram_api_key",
                     "llm_api_key",
                     "elevenlabs_api_key",
@@ -427,7 +505,9 @@ def create_app() -> FastAPI:
             )
         )
 
-    def _validate_bot_payload(config: BotConfigFields) -> None:
+    def _validate_bot_payload(
+        config: BotConfigFields, account_catalog: dict[str, object] | None = None
+    ) -> None:
         try:
             validate_bot_config(
                 config=config,
@@ -435,31 +515,84 @@ def create_app() -> FastAPI:
                 llm_catalog=llm_providers,
                 tts_providers=tts_registry.providers,
             )
+            validate_asr_account_catalog(config, account_catalog)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from None
 
-    def _encrypt_bot_keys(
-        request: BotCreateRequest | BotUpdateRequest,
-    ) -> tuple[str | None, str | None, str | None]:
-        """Encrypt submitted provider keys, or nulls when not saving keys."""
-        if not request.save_keys:
-            return None, None, None
+    def _encrypt_bot_key(value: SecretStr | None) -> str | None:
+        """Encrypt one submitted component key without exposing its value."""
+        if value is None:
+            return None
         if bot_cipher is None:
             raise HTTPException(
                 status_code=400,
                 detail="Saving API keys is disabled: VOICE_AGENT_STORAGE_KEY is not configured",
             )
-        assert request.deepgram_api_key is not None and request.llm_api_key is not None
-        encrypted_elevenlabs = (
-            bot_cipher.encrypt(request.elevenlabs_api_key)
-            if request.elevenlabs_api_key is not None
+        return bot_cipher.encrypt(value)
+
+    def _key_columns(
+        request: BotCreateRequest | BotUpdateRequest,
+        *,
+        existing: object | None = None,
+    ) -> EncryptedBotKeys:
+        """Resolve independent keep, replace, or clear state for every component."""
+        existing_record = existing if isinstance(existing, BotRecord) else None
+
+        def resolve(
+            *,
+            should_save: bool,
+            submitted: SecretStr | None,
+            provider: str,
+            previous_provider: str | None,
+            previous_ciphertext: str | None,
+        ) -> tuple[str | None, str | None]:
+            if not should_save:
+                return None, None
+            if submitted is not None:
+                return provider, _encrypt_bot_key(submitted)
+            if previous_provider == provider and previous_ciphertext is not None:
+                return previous_provider, previous_ciphertext
+            return None, None
+
+        asr_provider, encrypted_asr = resolve(
+            should_save=request.save_asr,
+            submitted=request.effective_asr_key,
+            provider=request.asr_provider,
+            previous_provider=existing_record.asr_key_provider if existing_record else None,
+            previous_ciphertext=existing_record.encrypted_asr_key if existing_record else None,
+        )
+        tts_provider, encrypted_tts = resolve(
+            should_save=request.save_tts,
+            submitted=request.effective_tts_key,
+            provider=request.tts_provider,
+            previous_provider=existing_record.tts_key_provider if existing_record else None,
+            previous_ciphertext=existing_record.encrypted_tts_key if existing_record else None,
+        )
+        llm_provider, encrypted_llm = resolve(
+            should_save=request.save_llm,
+            submitted=request.llm_api_key,
+            provider=request.llm_provider,
+            previous_provider=existing_record.llm_key_provider if existing_record else None,
+            previous_ciphertext=existing_record.encrypted_llm_key if existing_record else None,
+        )
+        encrypted_deepgram = (
+            encrypted_tts
+            if tts_provider == "deepgram_flux"
+            else encrypted_asr
+            if asr_provider == "deepgram"
             else None
         )
-        return (
-            bot_cipher.encrypt(request.deepgram_api_key),
-            bot_cipher.encrypt(request.llm_api_key),
-            encrypted_elevenlabs,
-        )
+        encrypted_elevenlabs = encrypted_tts if tts_provider == "elevenlabs" else None
+        return {
+            "encrypted_deepgram_key": encrypted_deepgram,
+            "llm_key_provider": llm_provider,
+            "encrypted_llm_key": encrypted_llm,
+            "encrypted_elevenlabs_key": encrypted_elevenlabs,
+            "asr_key_provider": asr_provider,
+            "encrypted_asr_key": encrypted_asr,
+            "tts_key_provider": tts_provider,
+            "encrypted_tts_key": encrypted_tts,
+        }
 
     @app.get("/api/bots", response_model=list[BotResponse])
     async def list_bots() -> list[BotResponse]:
@@ -468,14 +601,10 @@ def create_app() -> FastAPI:
     @app.post("/api/bots", response_model=BotResponse, status_code=201)
     async def create_bot(request: BotCreateRequest) -> BotResponse:
         _validate_bot_payload(request)
-        encrypted_deepgram_key, encrypted_llm_key, encrypted_elevenlabs_key = _encrypt_bot_keys(
-            request
-        )
+        encrypted_keys = _key_columns(request)
         record = await bot_store.create(
             config=_config_fields(request),
-            encrypted_deepgram_key=encrypted_deepgram_key,
-            encrypted_llm_key=encrypted_llm_key,
-            encrypted_elevenlabs_key=encrypted_elevenlabs_key,
+            **encrypted_keys,
         )
         return BotResponse.from_record(record)
 
@@ -491,37 +620,22 @@ def create_app() -> FastAPI:
         existing = await bot_store.get(bot_id)
         if existing is None:
             raise HTTPException(status_code=404, detail="Bot not found")
-        _validate_bot_payload(request)
-        if not request.save_keys:
-            encrypted_keys: tuple[str | None, str | None, str | None] = (None, None, None)
-        elif request.deepgram_api_key is None:
-            # No key fields means keep the stored ciphertext untouched.
-            if not existing.has_saved_keys:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "This bot has no saved keys to keep; "
-                        "provide both API keys or disable save_keys"
-                    ),
-                )
-            if request.tts_provider == "elevenlabs" and existing.encrypted_elevenlabs_key is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="This bot has no saved ElevenLabs key to keep",
-                )
-            encrypted_keys = (
-                existing.encrypted_deepgram_key,
-                existing.encrypted_llm_key,
-                existing.encrypted_elevenlabs_key,
-            )
-        else:
-            encrypted_keys = _encrypt_bot_keys(request)
+        preserved_catalog = (
+            existing.asr_account_catalog
+            if existing.asr_provider == request.asr_provider
+            and existing.asr_model == request.asr_model
+            and request.save_asr
+            and request.effective_asr_key is None
+            and existing.has_asr_key
+            else None
+        )
+        _validate_bot_payload(request, preserved_catalog)
+        encrypted_keys = _key_columns(request, existing=existing)
         record = await bot_store.update(
             bot_id,
             config=_config_fields(request),
-            encrypted_deepgram_key=encrypted_keys[0],
-            encrypted_llm_key=encrypted_keys[1],
-            encrypted_elevenlabs_key=encrypted_keys[2],
+            asr_account_catalog=preserved_catalog,
+            **encrypted_keys,
         )
         assert record is not None
         return BotResponse.from_record(record)
@@ -540,58 +654,78 @@ def create_app() -> FastAPI:
         record = await bot_store.get(request.bot_id)
         if record is None:
             raise HTTPException(status_code=404, detail="Bot not found")
-        if record.has_saved_keys:
-            if any(
-                key is not None
-                for key in (
-                    request.deepgram_api_key,
-                    request.llm_api_key,
-                    request.elevenlabs_api_key,
-                )
-            ):
-                raise HTTPException(
-                    status_code=422,
-                    detail="This bot already has saved keys; do not submit session keys",
-                )
-            if bot_cipher is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "This bot has saved keys but VOICE_AGENT_STORAGE_KEY is not configured"
-                    ),
-                )
-            assert (
-                record.encrypted_deepgram_key is not None and record.encrypted_llm_key is not None
-            )
-            try:
-                deepgram_key = bot_cipher.decrypt(record.encrypted_deepgram_key)
-                llm_key = bot_cipher.decrypt(record.encrypted_llm_key)
-                elevenlabs_key = (
-                    bot_cipher.decrypt(record.encrypted_elevenlabs_key)
-                    if record.encrypted_elevenlabs_key is not None
-                    else None
-                )
-            except StorageKeyError as exc:
-                raise HTTPException(status_code=400, detail=str(exc)) from None
+        try:
+            validate_asr_account_catalog(record, record.asr_account_catalog)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from None
+        inline_asr = request.asr_api_key or (
+            request.deepgram_api_key if record.asr_provider == "deepgram" else None
+        )
+        if request.tts_api_key is not None:
+            inline_tts = request.tts_api_key
+        elif record.tts_provider == "elevenlabs":
+            inline_tts = request.elevenlabs_api_key
         else:
-            if request.deepgram_api_key is None or request.llm_api_key is None:
+            inline_tts = request.deepgram_api_key
+
+        def resolve_component_key(
+            *,
+            label: str,
+            saved: bool,
+            ciphertext: str | None,
+            inline: SecretStr | None,
+            required: bool = True,
+        ) -> SecretStr | None:
+            if saved:
+                if inline is not None:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"This bot already has a saved {label} key",
+                    )
+                if bot_cipher is None or ciphertext is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            f"Saved {label} key is unavailable because "
+                            "VOICE_AGENT_STORAGE_KEY is not configured"
+                        ),
+                    )
+                try:
+                    return bot_cipher.decrypt(ciphertext)
+                except StorageKeyError as exc:
+                    raise HTTPException(status_code=400, detail=str(exc)) from None
+            if inline is None and required:
                 raise HTTPException(
                     status_code=422,
-                    detail="This bot has no saved keys; provide both API keys for this session",
+                    detail=f"Provide a {label} API key for this session",
                 )
-            deepgram_key = request.deepgram_api_key
-            llm_key = request.llm_api_key
-            elevenlabs_key = request.elevenlabs_api_key
-            if record.tts_provider == "elevenlabs" and elevenlabs_key is None:
-                raise HTTPException(
-                    status_code=422,
-                    detail="This bot uses ElevenLabs; provide an ElevenLabs API key",
-                )
+            return inline
+
+        asr_key = resolve_component_key(
+            label="ASR",
+            saved=record.has_asr_key,
+            ciphertext=record.encrypted_asr_key,
+            inline=inline_asr,
+            required=request.session_type != "chat_test",
+        )
+        tts_key = resolve_component_key(
+            label="TTS",
+            saved=record.has_tts_key,
+            ciphertext=record.encrypted_tts_key,
+            inline=inline_tts,
+        )
+        llm_key = resolve_component_key(
+            label="LLM",
+            saved=record.has_llm_key,
+            ciphertext=record.encrypted_llm_key,
+            inline=request.llm_api_key,
+        )
+        assert tts_key is not None and llm_key is not None
         return SessionRequest(
             session_type=request.session_type,
-            deepgram_api_key=deepgram_key,
+            asr_api_key=asr_key,
+            tts_api_key=tts_key,
             llm_api_key=llm_key,
-            elevenlabs_api_key=elevenlabs_key,
             llm_provider=record.llm_provider,
             llm_base_url=record.llm_base_url,
             llm_model=record.llm_model,
@@ -602,7 +736,10 @@ def create_app() -> FastAPI:
             system_prompt=record.system_prompt,
             opening_script=record.opening_script,
             fallback_script=record.fallback_script,
+            asr_provider=record.asr_provider,
             asr_model=record.asr_model,
+            turn_detection_source=record.turn_detection_source,
+            asr_options=record.asr_options,
             asr_language_hints=record.asr_language_hints,
             asr_eot_threshold=record.asr_eot_threshold,
             asr_eot_timeout_ms=record.asr_eot_timeout_ms,
@@ -638,10 +775,15 @@ def create_app() -> FastAPI:
             record = await bot_store.get(request.bot_id)
             if record is None:
                 raise HTTPException(status_code=404, detail="Bot not found")
-            if bot_cipher is None or record.encrypted_elevenlabs_key is None:
+            if (
+                not record.has_tts_key
+                or record.tts_provider != "elevenlabs"
+                or bot_cipher is None
+                or record.encrypted_tts_key is None
+            ):
                 raise HTTPException(status_code=422, detail="Provide an ElevenLabs API key")
             try:
-                api_key = bot_cipher.decrypt(record.encrypted_elevenlabs_key)
+                api_key = bot_cipher.decrypt(record.encrypted_tts_key)
             except StorageKeyError as exc:
                 raise HTTPException(status_code=400, detail=str(exc)) from None
         if api_key is None:
@@ -700,7 +842,7 @@ def create_app() -> FastAPI:
             if record is None:
                 raise HTTPException(status_code=404, detail="Bot not found")
             key = request.llm_api_key
-            if record.has_saved_keys:
+            if record.has_llm_key:
                 if key is not None:
                     raise HTTPException(
                         status_code=422,
@@ -1020,7 +1162,8 @@ def create_app() -> FastAPI:
             tts_text_aggregation=lease.config.tts.text_aggregation,
             asr_provider=lease.config.asr.provider,
             asr_model=lease.config.asr.model,
-            language=runtime.language,
+            language=_asr_language_snapshot(lease),
+            context_mode=_asr_context_mode_snapshot(lease),
             sample_rate=runtime.audio.input_sample_rate,
             channels=runtime.audio.channels,
         )
@@ -1117,6 +1260,7 @@ def create_app() -> FastAPI:
                 websocket=websocket,
                 lease=lease,
                 runtime=runtime,
+                asr_registry=asr_registry,
                 tts_registry=tts_registry,
                 allowed_origins=_allowed_origins(),
                 event_buffer=event_buffers[lease.session_id],

@@ -1,0 +1,66 @@
+{
+  "phase": "archived",
+  "product_acceptance": "accepted",
+  "archive_disposition": "D-001 accepts the delivered product with two explicitly disclosed evidence boundaries. D-002 treats the implemented login/session behavior and Deepgram Flux speed range as verified facts, not risks.",
+  "production_paths": [],
+  "allowed_mock_files": [],
+  "external_calls": [],
+  "ui_delivery": {
+    "model": "two-user-gates-three-engineering-checkpoints",
+    "fixture_uses_production_ui": true,
+    "production_routes": [
+      "frontend/index.html",
+      "frontend/src"
+    ],
+    "engineering_checkpoints": [
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "known_issues": [
+    {
+      "id": "KI-003",
+      "summary": "Post-merge strict validation found a placeholder Purpose and Chinese-only normative keywords in the three affected main specs.",
+      "status": "resolved",
+      "impact": "Runtime behavior is unaffected, but the merged bot-config, call-history, and voice-pipeline specs do not independently pass the current strict linter.",
+      "next_action": "Clarify the affected Purpose text and add RFC 2119 MUST keywords without changing behavior, then validate the three specs strictly.",
+      "resolution": "Updated only the merged Purpose and normative wording in bot-config, call-history, and voice-pipeline; all three affected main specs now pass strict validation.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-001",
+      "summary": "The voice-bot Playwright suite does not load its declared deterministic fixture and reproduces only 2/14 passing tests against an empty Bot database.",
+      "status": "resolved",
+      "impact": "Checkpoint A/C fixture evidence is not independently reproducible, so the Change cannot be archived on the historical 14/14 claim.",
+      "next_action": "Wire the existing non-secret fixture into the production route/data adapter used by the UI suite, rerun desktop/narrow tests, and request independent re-review.",
+      "resolution": "The suite now reads tests/ui/fixtures/voice-bot-editor.json and intercepts only Bot/history data while exercising the production route/components/DOM. Both desktop and narrow Chromium passed 14/14 against an empty isolated database.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-002",
+      "summary": "docs/engineering/english-flux-voice-agent.md still describes the public product entry as Basic Auth after D-002 established the product login page and Cookie session as current behavior.",
+      "status": "resolved",
+      "impact": "The reusable engineering documentation contradicts the accepted runtime and the main-spec merge target.",
+      "next_action": "Update only the stale authentication description to the accepted Cookie-session behavior and verify no contradictory current documentation remains.",
+      "resolution": "The engineering guide now describes the product login page and secure Cookie session while retaining the legacy environment-variable names as implementation detail.",
+      "disclosed_to_user": true
+    }
+  ],
+  "unverified_items": [
+    {
+      "id": "UV-001",
+      "summary": "Live-microphone WebCall acoustic barge-in lacks retained external-real evidence because the verification host had no microphone.",
+      "status": "excluded",
+      "reason": "The implementation and non-acoustic paths were tested; D-001 accepts this as a historical evidence boundary rather than a known product defect.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-002",
+      "summary": "The approved prototype was not preserved as immutable screenshot files with checksums and generated pixel-diff ratios.",
+      "status": "excluded",
+      "reason": "Functional checks and actual screenshots exist, but a baseline cannot be recreated retroactively and called immutable. D-001 accepts this historical evidence boundary.",
+      "disclosed_to_user": true
+    }
+  ]
+}

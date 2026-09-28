@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
+
+from src.asr.config import normalize_provider, validate_asr_options
 
 
 def _validate_optional_key(value: SecretStr | None) -> SecretStr | None:
@@ -24,8 +26,10 @@ class BotConfigFields(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(min_length=1, max_length=100)
-    asr_provider: str = Field(min_length=1, max_length=50)
-    asr_model: Literal["flux-general-en", "flux-general-multi"] = "flux-general-en"
+    asr_provider: str = Field(default="deepgram", min_length=1, max_length=50)
+    asr_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
+    turn_detection_source: Literal["provider_native", "off"] = "provider_native"
+    asr_options: dict[str, Any] = Field(default_factory=dict)
     asr_language_hints: list[
         Literal["en", "es", "fr", "de", "hi", "ru", "pt", "ja", "it", "nl"]
     ] = Field(default_factory=list, max_length=10)
@@ -60,6 +64,12 @@ class BotConfigFields(BaseModel):
     opening_script: str = Field(max_length=2000)
     fallback_script: str = Field(default="", max_length=2000)
 
+    @field_validator("asr_provider", mode="before")
+    @classmethod
+    def normalize_legacy_asr_provider(cls, value: object) -> object:
+        """Keep existing Deepgram Bots valid while adopting provider-level IDs."""
+        return normalize_provider(value) if isinstance(value, str) else value
+
     @field_validator("asr_keyterms")
     @classmethod
     def validate_keyterms(cls, value: list[str]) -> list[str]:
@@ -74,8 +84,25 @@ class BotConfigFields(BaseModel):
     @model_validator(mode="after")
     def validate_provider_dependencies(self) -> BotConfigFields:
         """Reject combinations unsupported by the selected ASR and TTS models."""
-        if self.asr_model == "flux-general-en" and self.asr_language_hints:
-            raise ValueError("Language hints require Automatic language detection")
+        if self.asr_provider not in {"deepgram", "speechmatics", "soniox", "assemblyai"}:
+            return self
+        options = self.asr_options
+        if not options and self.asr_provider == "deepgram" and self.asr_model.startswith("flux-"):
+            options = {
+                "language_hints": self.asr_language_hints,
+                "eot_threshold": self.asr_eot_threshold,
+                "eot_timeout_ms": self.asr_eot_timeout_ms,
+                "keyterms": self.asr_keyterms,
+                "profanity_filter": self.asr_profanity_filter,
+                "numerals": self.asr_numerals,
+                "redact": self.asr_redact,
+            }
+        self.asr_options = validate_asr_options(
+            provider=self.asr_provider,
+            model=self.asr_model,
+            turn_detection_source=self.turn_detection_source,
+            options=options,
+        )
         if self.tts_provider == "elevenlabs" and not 0.7 <= self.tts_speed <= 1.2:
             raise ValueError("ElevenLabs speed must be between 0.7 and 1.2")
         if self.tts_model == "eleven_v3" and self.tts_dynamic_speed_enabled:
@@ -87,11 +114,22 @@ class BotCreateRequest(BotConfigFields):
     """Create payload; keys are accepted only when save_keys is enabled."""
 
     save_keys: bool = False
+    save_asr_key: bool | None = None
+    save_tts_key: bool | None = None
+    save_llm_key: bool | None = None
+    asr_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    tts_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
-    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
+    @field_validator(
+        "asr_api_key",
+        "tts_api_key",
+        "deepgram_api_key",
+        "llm_api_key",
+        "elevenlabs_api_key",
+    )
     @classmethod
     def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Apply the same placeholder policy as session-level BYOK."""
@@ -99,16 +137,49 @@ class BotCreateRequest(BotConfigFields):
 
     @model_validator(mode="after")
     def keys_match_save_intent(self) -> BotCreateRequest:
-        """Require exactly both keys when saving and none when not."""
-        required = [self.deepgram_api_key, self.llm_api_key]
-        if self.tts_provider == "elevenlabs":
-            required.append(self.elevenlabs_api_key)
-        submitted = [self.deepgram_api_key, self.llm_api_key, self.elevenlabs_api_key]
-        if self.save_keys and any(key is None for key in required):
-            raise ValueError("All API keys required by the selected providers must be supplied")
-        if not self.save_keys and any(key is not None for key in submitted):
-            raise ValueError("API keys must not be submitted when save_keys is disabled")
+        """Validate each component's independent save intent."""
+        components = (
+            ("ASR", self.save_asr, self.effective_asr_key),
+            ("TTS", self.save_tts, self.effective_tts_key),
+            ("LLM", self.save_llm, self.llm_api_key),
+        )
+        for label, should_save, key in components:
+            if should_save and key is None:
+                raise ValueError(f"{label} API key is required when saving that component")
+            if not should_save and key is not None:
+                raise ValueError(f"{label} API key must not be submitted when saving is disabled")
         return self
+
+    @property
+    def save_asr(self) -> bool:
+        """Resolve explicit component intent with legacy global compatibility."""
+        return self.save_keys if self.save_asr_key is None else self.save_asr_key
+
+    @property
+    def save_tts(self) -> bool:
+        """Resolve explicit component intent with legacy global compatibility."""
+        return self.save_keys if self.save_tts_key is None else self.save_tts_key
+
+    @property
+    def save_llm(self) -> bool:
+        """Resolve explicit component intent with legacy global compatibility."""
+        return self.save_keys if self.save_llm_key is None else self.save_llm_key
+
+    @property
+    def effective_asr_key(self) -> SecretStr | None:
+        """Resolve the new component field with legacy Deepgram compatibility."""
+        return self.asr_api_key or (
+            self.deepgram_api_key if self.asr_provider == "deepgram" else None
+        )
+
+    @property
+    def effective_tts_key(self) -> SecretStr | None:
+        """Resolve the selected TTS provider key without crossing components."""
+        if self.tts_api_key is not None:
+            return self.tts_api_key
+        if self.tts_provider == "elevenlabs":
+            return self.elevenlabs_api_key
+        return self.deepgram_api_key
 
 
 class BotUpdateRequest(BotConfigFields):
@@ -119,28 +190,72 @@ class BotUpdateRequest(BotConfigFields):
     """
 
     save_keys: bool = False
+    save_asr_key: bool | None = None
+    save_tts_key: bool | None = None
+    save_llm_key: bool | None = None
+    asr_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    tts_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
-    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
+    @field_validator(
+        "asr_api_key",
+        "tts_api_key",
+        "deepgram_api_key",
+        "llm_api_key",
+        "elevenlabs_api_key",
+    )
     @classmethod
     def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Apply the same placeholder policy as session-level BYOK."""
         return _validate_optional_key(value)
 
     @model_validator(mode="after")
-    def keys_all_or_nothing(self) -> BotUpdateRequest:
-        """Accept keys only as a pair and only while save_keys is enabled."""
-        provided = [self.deepgram_api_key, self.llm_api_key, self.elevenlabs_api_key]
-        required = provided[:2] + ([provided[2]] if self.tts_provider == "elevenlabs" else [])
-        if any(key is not None for key in provided) and any(key is None for key in required):
-            raise ValueError(
-                "All API keys required by the selected providers must be provided together"
-            )
-        if any(key is not None for key in provided) and not self.save_keys:
-            raise ValueError("save_keys must be enabled when replacing stored keys")
+    def keys_follow_component_intent(self) -> BotUpdateRequest:
+        """Allow one component key to change without replacing the others."""
+        components = (
+            ("ASR", self.save_asr, self.effective_asr_key),
+            ("TTS", self.save_tts, self.effective_tts_key),
+            ("LLM", self.save_llm, self.llm_api_key),
+        )
+        for label, should_save, key in components:
+            if key is not None and not should_save:
+                raise ValueError(
+                    f"{label} key saving must be enabled when replacing that component key"
+                )
         return self
+
+    @property
+    def save_asr(self) -> bool:
+        """Resolve explicit component intent with legacy global compatibility."""
+        return self.save_keys if self.save_asr_key is None else self.save_asr_key
+
+    @property
+    def save_tts(self) -> bool:
+        """Resolve explicit component intent with legacy global compatibility."""
+        return self.save_keys if self.save_tts_key is None else self.save_tts_key
+
+    @property
+    def save_llm(self) -> bool:
+        """Resolve explicit component intent with legacy global compatibility."""
+        return self.save_keys if self.save_llm_key is None else self.save_llm_key
+
+    @property
+    def effective_asr_key(self) -> SecretStr | None:
+        """Resolve the new component field with legacy Deepgram compatibility."""
+        return self.asr_api_key or (
+            self.deepgram_api_key if self.asr_provider == "deepgram" else None
+        )
+
+    @property
+    def effective_tts_key(self) -> SecretStr | None:
+        """Resolve the selected TTS provider key without crossing components."""
+        if self.tts_api_key is not None:
+            return self.tts_api_key
+        if self.tts_provider == "elevenlabs":
+            return self.elevenlabs_api_key
+        return self.deepgram_api_key
 
 
 class BotRecord(BotConfigFields):
@@ -149,17 +264,35 @@ class BotRecord(BotConfigFields):
     id: str
     encrypted_deepgram_key: str | None
     encrypted_llm_key: str | None
+    llm_key_provider: str | None = None
     encrypted_elevenlabs_key: str | None
+    asr_key_provider: str | None = None
+    encrypted_asr_key: str | None = None
+    tts_key_provider: str | None = None
+    encrypted_tts_key: str | None = None
+    asr_account_catalog: dict[str, object] | None = None
     created_at: str
     updated_at: str
 
     @property
     def has_saved_keys(self) -> bool:
-        """Both columns move together; ASR and TTS share the Deepgram key."""
-        common = self.encrypted_deepgram_key is not None and self.encrypted_llm_key is not None
-        return common and (
-            self.tts_provider != "elevenlabs" or self.encrypted_elevenlabs_key is not None
-        )
+        """All selected Bot component credentials are present and provider-matched."""
+        return self.has_asr_key and self.has_tts_key and self.has_llm_key
+
+    @property
+    def has_asr_key(self) -> bool:
+        """Return whether the selected ASR provider has a Bot-scoped key."""
+        return self.encrypted_asr_key is not None and self.asr_key_provider == self.asr_provider
+
+    @property
+    def has_tts_key(self) -> bool:
+        """Return whether the selected TTS provider has a Bot-scoped key."""
+        return self.encrypted_tts_key is not None and self.tts_key_provider == self.tts_provider
+
+    @property
+    def has_llm_key(self) -> bool:
+        """Return whether the selected LLM provider has a Bot-scoped key."""
+        return self.encrypted_llm_key is not None and self.llm_key_provider == self.llm_provider
 
 
 class BotResponse(BotConfigFields):
@@ -167,6 +300,10 @@ class BotResponse(BotConfigFields):
 
     id: str
     has_saved_keys: bool
+    has_asr_key: bool
+    has_tts_key: bool
+    has_llm_key: bool
+    asr_account_catalog: dict[str, object] | None = None
     created_at: str
     updated_at: str
 
@@ -178,8 +315,16 @@ class BotResponse(BotConfigFields):
                 exclude={
                     "encrypted_deepgram_key",
                     "encrypted_llm_key",
+                    "llm_key_provider",
                     "encrypted_elevenlabs_key",
+                    "asr_key_provider",
+                    "encrypted_asr_key",
+                    "tts_key_provider",
+                    "encrypted_tts_key",
                 }
             ),
             has_saved_keys=record.has_saved_keys,
+            has_asr_key=record.has_asr_key,
+            has_tts_key=record.has_tts_key,
+            has_llm_key=record.has_llm_key,
         )

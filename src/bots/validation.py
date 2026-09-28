@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+from src.asr.config import validate_asr_options
 from src.bots.models import BotConfigFields
 from src.config import LLMConfig, LLMProviderCatalog, VoiceCatalog
-
-SUPPORTED_ASR_PROVIDERS: tuple[str, ...] = ("deepgram_flux",)
 
 
 def validate_bot_config(
@@ -29,12 +28,12 @@ def validate_bot_config(
     Raises:
         ValueError: With a user-readable message when a field is not allowed.
     """
-    if config.asr_provider not in SUPPORTED_ASR_PROVIDERS:
-        raise ValueError("Unsupported ASR provider")
-    if config.asr_model not in {"flux-general-en", "flux-general-multi"}:
-        raise ValueError("Unsupported Flux ASR model")
-    if config.asr_model == "flux-general-en" and config.asr_language_hints:
-        raise ValueError("Language hints require Automatic language detection")
+    validate_asr_options(
+        provider=config.asr_provider,
+        model=config.asr_model,
+        turn_detection_source=config.turn_detection_source,
+        options=config.asr_options,
+    )
     if config.tts_provider not in tts_providers:
         raise ValueError("Unsupported TTS provider")
     if config.tts_provider == "deepgram_flux":
@@ -71,3 +70,33 @@ def validate_bot_config(
         raise ValueError("Select an LLM model from the server catalog")
     # Reuse the canonical HTTPS endpoint validation instead of duplicating it.
     LLMConfig(provider=provider.id, base_url=base_url, model=config.llm_model.strip())
+
+
+def validate_asr_account_catalog(
+    config: BotConfigFields, catalog: dict[str, object] | None
+) -> None:
+    """Reject options no longer advertised by a persisted account catalog."""
+    if catalog is None:
+        return
+    if catalog.get("id") != config.asr_model:
+        raise ValueError("Refresh the ASR account catalog for the selected model")
+    language_control = catalog.get("language_control")
+    if not isinstance(language_control, dict):
+        raise ValueError("The saved ASR account catalog is invalid; refresh it")
+    allowed = language_control.get("values")
+    if not isinstance(allowed, list):
+        raise ValueError("The saved ASR account catalog is invalid; refresh it")
+    selected: list[object]
+    if config.asr_provider == "speechmatics":
+        selected = [config.asr_options.get("language")]
+    else:
+        selected = list(config.asr_options.get("language_hints") or [])
+    if any(value not in allowed for value in selected):
+        raise ValueError("The selected ASR language is unavailable for this Bot account")
+    if config.asr_provider == "speechmatics":
+        domain = config.asr_options.get("domain")
+        language = config.asr_options.get("language")
+        domains = catalog.get("domains_by_language") or {}
+        allowed_domains = domains.get(language, []) if isinstance(domains, dict) else []
+        if domain and domain not in allowed_domains:
+            raise ValueError("The selected ASR domain is unavailable for this Bot account")

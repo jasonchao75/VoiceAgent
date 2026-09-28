@@ -1,0 +1,30 @@
+{
+  "description": "VoiceAgent OpenSpec delivery guard for Codex.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/change_delivery_guard.py\" mark",
+            "timeout": 5,
+            "statusMessage": "Recording delivery work"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/change_delivery_guard.py\" stop",
+            "timeout": 30,
+            "statusMessage": "Checking OpenSpec delivery disclosure"
+          }
+        ]
+      }
+    ]
+  }
+}

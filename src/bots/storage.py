@@ -13,7 +13,8 @@ import aiosqlite
 from src.bots.models import BotConfigFields, BotRecord
 
 _COLUMNS = (
-    "id, name, asr_provider, asr_model, asr_language_hints, asr_eot_threshold, "
+    "id, name, asr_provider, asr_model, turn_detection_source, asr_options, "
+    "asr_language_hints, asr_eot_threshold, "
     "asr_eot_timeout_ms, asr_keyterms, asr_profanity_filter, asr_numerals, asr_redact, "
     "tts_provider, tts_voice, tts_model, tts_text_aggregation, tts_speed, "
     "tts_dynamic_speed_enabled, tts_speed_step, tts_expressivity, tts_stability, "
@@ -21,8 +22,11 @@ _COLUMNS = (
     "tts_style, tts_use_speaker_boost, tts_text_normalization, "
     "llm_provider, llm_base_url, llm_model, llm_temperature, "
     "reasoning_mode, llm_max_response_tokens, llm_request_timeout_seconds, "
-    "system_prompt, opening_script, fallback_script, encrypted_deepgram_key, encrypted_llm_key, "
-    "encrypted_elevenlabs_key, "
+    "system_prompt, opening_script, fallback_script, encrypted_deepgram_key, "
+    "llm_key_provider, encrypted_llm_key, "
+    "encrypted_elevenlabs_key, asr_key_provider, encrypted_asr_key, "
+    "tts_key_provider, encrypted_tts_key, "
+    "asr_account_catalog, "
     "created_at, updated_at"
 )
 
@@ -32,6 +36,8 @@ CREATE TABLE IF NOT EXISTS bots (
     name TEXT NOT NULL,
     asr_provider TEXT NOT NULL,
     asr_model TEXT NOT NULL DEFAULT 'flux-general-en',
+    turn_detection_source TEXT NOT NULL DEFAULT 'provider_native',
+    asr_options TEXT NOT NULL DEFAULT '{}',
     asr_language_hints TEXT NOT NULL DEFAULT '[]',
     asr_eot_threshold REAL NOT NULL DEFAULT 0.7,
     asr_eot_timeout_ms INTEGER NOT NULL DEFAULT 5000,
@@ -64,8 +70,14 @@ CREATE TABLE IF NOT EXISTS bots (
     opening_script TEXT NOT NULL,
     fallback_script TEXT NOT NULL DEFAULT '',
     encrypted_deepgram_key TEXT,
+    llm_key_provider TEXT,
     encrypted_llm_key TEXT,
     encrypted_elevenlabs_key TEXT,
+    asr_key_provider TEXT,
+    encrypted_asr_key TEXT,
+    tts_key_provider TEXT,
+    encrypted_tts_key TEXT,
+    asr_account_catalog TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 )
@@ -79,8 +91,13 @@ def _utcnow() -> str:
 def _row_to_record(row: Sequence[object]) -> BotRecord:
     keys = [column.strip() for column in _COLUMNS.split(",")]
     values = dict(zip(keys, row, strict=True))
-    for key in ("asr_language_hints", "asr_keyterms"):
+    for key in ("asr_options", "asr_language_hints", "asr_keyterms"):
         values[key] = json.loads(str(values[key]))
+    values["asr_account_catalog"] = (
+        json.loads(str(values["asr_account_catalog"]))
+        if values["asr_account_catalog"] is not None
+        else None
+    )
     return BotRecord.model_validate(values)
 
 
@@ -104,6 +121,8 @@ class BotStore:
                     "ALTER TABLE bots ADD COLUMN reasoning_mode TEXT NOT NULL "
                     "DEFAULT 'lowest_latency'"
                 )
+            if "asr_account_catalog" not in columns:
+                await db.execute("ALTER TABLE bots ADD COLUMN asr_account_catalog TEXT")
             if "tts_model" not in columns:
                 await db.execute(
                     "ALTER TABLE bots ADD COLUMN tts_model TEXT NOT NULL DEFAULT 'flux-general-en'"
@@ -112,6 +131,8 @@ class BotStore:
                 await db.execute("ALTER TABLE bots ADD COLUMN encrypted_elevenlabs_key TEXT")
             migrations = (
                 "asr_model TEXT NOT NULL DEFAULT 'flux-general-en'",
+                "turn_detection_source TEXT NOT NULL DEFAULT 'provider_native'",
+                "asr_options TEXT NOT NULL DEFAULT '{}'",
                 "asr_language_hints TEXT NOT NULL DEFAULT '[]'",
                 "asr_eot_threshold REAL NOT NULL DEFAULT 0.7",
                 "asr_eot_timeout_ms INTEGER NOT NULL DEFAULT 5000",
@@ -134,6 +155,11 @@ class BotStore:
                 "llm_temperature REAL NOT NULL DEFAULT 0.7",
                 "llm_request_timeout_seconds REAL NOT NULL DEFAULT 15.0",
                 "fallback_script TEXT NOT NULL DEFAULT ''",
+                "llm_key_provider TEXT",
+                "asr_key_provider TEXT",
+                "encrypted_asr_key TEXT",
+                "tts_key_provider TEXT",
+                "encrypted_tts_key TEXT",
             )
             for column_def in migrations:
                 if column_def.split()[0] not in columns:
@@ -148,6 +174,29 @@ class BotStore:
             )
             await db.execute(
                 "UPDATE bots SET reasoning_mode = 'minimal' WHERE reasoning_mode = 'lowest_latency'"
+            )
+            await db.execute(
+                "UPDATE bots SET asr_provider = 'deepgram' WHERE asr_provider = 'deepgram_flux'"
+            )
+            await db.execute(
+                """UPDATE bots
+                   SET llm_key_provider = llm_provider
+                   WHERE llm_key_provider IS NULL AND encrypted_llm_key IS NOT NULL"""
+            )
+            await db.execute(
+                """UPDATE bots
+                   SET asr_key_provider = 'deepgram',
+                       encrypted_asr_key = encrypted_deepgram_key
+                   WHERE encrypted_asr_key IS NULL AND encrypted_deepgram_key IS NOT NULL"""
+            )
+            await db.execute(
+                """UPDATE bots
+                   SET tts_key_provider = tts_provider,
+                       encrypted_tts_key = CASE
+                           WHEN tts_provider = 'elevenlabs' THEN encrypted_elevenlabs_key
+                           ELSE encrypted_deepgram_key
+                       END
+                   WHERE encrypted_tts_key IS NULL"""
             )
             await db.commit()
 
@@ -172,6 +221,12 @@ class BotStore:
         encrypted_deepgram_key: str | None,
         encrypted_llm_key: str | None,
         encrypted_elevenlabs_key: str | None,
+        llm_key_provider: str | None = None,
+        asr_key_provider: str | None = None,
+        encrypted_asr_key: str | None = None,
+        tts_key_provider: str | None = None,
+        encrypted_tts_key: str | None = None,
+        asr_account_catalog: dict[str, object] | None = None,
     ) -> BotRecord:
         """Insert one bot and return the stored record."""
         now = _utcnow()
@@ -179,15 +234,27 @@ class BotStore:
             id=str(uuid.uuid4()),
             **config.model_dump(),
             encrypted_deepgram_key=encrypted_deepgram_key,
+            llm_key_provider=llm_key_provider,
             encrypted_llm_key=encrypted_llm_key,
             encrypted_elevenlabs_key=encrypted_elevenlabs_key,
+            asr_key_provider=asr_key_provider,
+            encrypted_asr_key=encrypted_asr_key,
+            tts_key_provider=tts_key_provider,
+            encrypted_tts_key=encrypted_tts_key,
+            asr_account_catalog=asr_account_catalog,
             created_at=now,
             updated_at=now,
         )
         async with aiosqlite.connect(self._db_path) as db:
             values = record.model_dump()
+            values["asr_options"] = json.dumps(values["asr_options"])
             values["asr_language_hints"] = json.dumps(values["asr_language_hints"])
             values["asr_keyterms"] = json.dumps(values["asr_keyterms"])
+            values["asr_account_catalog"] = (
+                json.dumps(values["asr_account_catalog"])
+                if values["asr_account_catalog"] is not None
+                else None
+            )
             await db.execute(
                 f"INSERT INTO bots ({_COLUMNS}) VALUES "
                 f"({', '.join('?' for _ in _COLUMNS.split(','))})",
@@ -204,6 +271,12 @@ class BotStore:
         encrypted_deepgram_key: str | None,
         encrypted_llm_key: str | None,
         encrypted_elevenlabs_key: str | None,
+        llm_key_provider: str | None = None,
+        asr_key_provider: str | None = None,
+        encrypted_asr_key: str | None = None,
+        tts_key_provider: str | None = None,
+        encrypted_tts_key: str | None = None,
+        asr_account_catalog: dict[str, object] | None = None,
     ) -> BotRecord | None:
         """Replace one bot's mutable fields; None when the ID does not exist."""
         existing = await self.get(bot_id)
@@ -213,14 +286,26 @@ class BotStore:
             id=bot_id,
             **config.model_dump(),
             encrypted_deepgram_key=encrypted_deepgram_key,
+            llm_key_provider=llm_key_provider,
             encrypted_llm_key=encrypted_llm_key,
             encrypted_elevenlabs_key=encrypted_elevenlabs_key,
+            asr_key_provider=asr_key_provider,
+            encrypted_asr_key=encrypted_asr_key,
+            tts_key_provider=tts_key_provider,
+            encrypted_tts_key=encrypted_tts_key,
+            asr_account_catalog=asr_account_catalog,
             created_at=existing.created_at,
             updated_at=_utcnow(),
         )
         values = record.model_dump()
+        values["asr_options"] = json.dumps(values["asr_options"])
         values["asr_language_hints"] = json.dumps(values["asr_language_hints"])
         values["asr_keyterms"] = json.dumps(values["asr_keyterms"])
+        values["asr_account_catalog"] = (
+            json.dumps(values["asr_account_catalog"])
+            if values["asr_account_catalog"] is not None
+            else None
+        )
         mutable_columns = [
             column.strip() for column in _COLUMNS.split(",") if column.strip() != "id"
         ]
@@ -232,6 +317,18 @@ class BotStore:
             )
             await db.commit()
         return record
+
+    async def set_asr_account_catalog(
+        self, bot_id: str, catalog: dict[str, object]
+    ) -> BotRecord | None:
+        """Persist one normalized account catalog for restart-safe validation."""
+        async with aiosqlite.connect(self._db_path) as db:
+            cursor = await db.execute(
+                "UPDATE bots SET asr_account_catalog=?, updated_at=? WHERE id=?",
+                (json.dumps(catalog), _utcnow(), bot_id),
+            )
+            await db.commit()
+        return await self.get(bot_id) if cursor.rowcount else None
 
     async def delete(self, bot_id: str) -> bool:
         """Delete one bot; return whether a row was removed."""

@@ -26,6 +26,19 @@ const fileGuardPlugin: Plugin = async ({ $ }) => {
 
       const warnings: string[] = [];
 
+      // Give immediate feedback after edits; the shared verifier is the cross-client gate.
+      const changeMatch = filePath.match(/openspec\/changes\/([^/]+)\//);
+      if (changeMatch) {
+        try {
+          const res = await $`python3 scripts/quality/verify_change.py ${changeMatch[1]}`.nothrow().quiet();
+          if (res.exitCode !== 0) {
+            warnings.push(`[Change 交付门禁] ${changeMatch[1]} 当前不可交付：\n${res.text().trim()}`);
+          }
+        } catch (e: any) {
+          warnings.push(`[Change 门禁执行异常] ${e.message}`);
+        }
+      }
+
       // 检查 1: configs/vendor/*.json 格式检查
       if (filePath.includes("configs/vendor/") && filePath.endsWith(".json")) {
         try {

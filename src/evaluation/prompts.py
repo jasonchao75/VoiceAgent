@@ -138,7 +138,8 @@ _APPROVED_FIXTURE_ROOT = (
     Path(__file__).resolve().parents[2]
     / "openspec"
     / "changes"
-    / "add-asr-automated-evaluation"
+    / "archive"
+    / "2026-09-27-add-asr-automated-evaluation"
     / "fixtures"
 )
 

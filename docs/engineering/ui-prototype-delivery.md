@@ -6,13 +6,17 @@ Use this workflow for every Change that adds or materially changes a page, drawe
 
 Use OpenSpec annotations, a state matrix, deterministic fixtures, Playwright fixed-viewport screenshots and the Change-local UI checklist. Do not start with a hosted visual platform.
 
-## Gates
+## Two user gates and three engineering checkpoints
 
-1. Gate 1: approve Delta Specs, prototype, precise annotations, state matrix, fixture and baseline candidates.
-2. Gate 2: compare the static shell before full business wiring.
-3. Gate 3: run functional, accessibility and visual checks across required states, then request final product acceptance.
+1. **User Gate 1 — contract and baseline approval.** Approve Delta Specs, prototype, precise annotations, state matrix, deterministic fixtures and baseline candidates.
+2. **Engineering Checkpoint A — production UI with fixtures.** Build the real route and components, load deterministic fixture data through an explicit adapter, and compare structure and visuals with the frozen baseline.
+3. **Engineering Checkpoint B — real integration and resilience.** Keep the same UI code, connect real APIs and persistence, and verify loading, empty, failure, retry, partial, refresh and restart behavior.
+4. **Engineering Checkpoint C — independent verification.** Reconcile the state matrix, functional tests, accessibility checks, visual diffs and evidence through an independent verifier.
+5. **User Gate 2 — final product acceptance.** Present one consolidated result only after all three engineering checkpoints pass.
 
-Gate 1 is product scope approval, not final acceptance. Once the interactive prototype is approved, it becomes the frozen baseline and implementation drift must not trigger repeated product review of the same requirements. Gate 2 is owned by implementation and QA: compare the actual static page against that baseline and correct differences. Gate 3 is the product-facing final acceptance with functional and visual evidence.
+User Gate 1 freezes the product contract; User Gate 2 accepts the delivered product. The three checkpoints are engineering responsibilities, not extra user approvals. Implementation drift must be corrected by engineering instead of sending the user back through the same decision.
+
+Checkpoint A must use the production route, components and DOM that continue into Checkpoints B and C. Only the data source may switch between deterministic fixtures and real APIs through an explicit adapter. A separate static acceptance page or duplicated component tree is prohibited because it cannot prove what the integrated product will render.
 
 ## Evidence layout
 
@@ -33,4 +37,4 @@ Baseline updates are a review action, never a side effect of tests. Record brows
 - Medium: component matrix, desktop/narrow screenshots and diff.
 - High: full page matrix, deterministic fixture, all fixed viewports, functional/accessibility tests and visual diff.
 
-Screenshot comparison supplements rather than replaces functional tests, keyboard/accessibility checks and product acceptance.
+Screenshot comparison supplements rather than replaces functional tests, keyboard/accessibility checks and User Gate 2 product acceptance.

@@ -11,8 +11,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
+from src.asr.config import ASRProvider, TurnDetectionSource, validate_asr_options
 from src.config import (
-    ASRConfig,
     LLMConfig,
     LLMProviderCatalog,
     RuntimeConfig,
@@ -27,7 +27,9 @@ class SessionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     session_type: Literal["web_call", "chat_test"] = "web_call"
 
-    deepgram_api_key: SecretStr = Field(min_length=8, max_length=500)
+    asr_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    tts_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr = Field(min_length=8, max_length=500)
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_provider: str = Field(min_length=1, max_length=50)
@@ -40,7 +42,10 @@ class SessionRequest(BaseModel):
     system_prompt: str = Field(min_length=1, max_length=30000)
     opening_script: str = Field(max_length=2000)
     fallback_script: str = Field(default="", max_length=2000)
-    asr_model: Literal["flux-general-en", "flux-general-multi"] = "flux-general-en"
+    asr_provider: ASRProvider = "deepgram"
+    asr_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
+    turn_detection_source: TurnDetectionSource = "provider_native"
+    asr_options: dict[str, object] = Field(default_factory=dict)
     asr_language_hints: list[
         Literal["en", "es", "fr", "de", "hi", "ru", "pt", "ja", "it", "nl"]
     ] = Field(default_factory=list, max_length=10)
@@ -65,7 +70,13 @@ class SessionRequest(BaseModel):
     tts_use_speaker_boost: bool = False
     tts_text_normalization: Literal["auto", "on", "off"] = "auto"
 
-    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
+    @field_validator(
+        "asr_api_key",
+        "tts_api_key",
+        "deepgram_api_key",
+        "llm_api_key",
+        "elevenlabs_api_key",
+    )
     @classmethod
     def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Reject obvious placeholders without assuming a provider-specific key format."""
@@ -76,6 +87,31 @@ class SessionRequest(BaseModel):
         if not secret or "your_" in lowered or "api_key_here" in lowered:
             raise ValueError("Enter a real API key for this session")
         return SecretStr(secret)
+
+    @model_validator(mode="after")
+    def require_component_keys(self) -> SessionRequest:
+        """Require independent ASR and TTS credentials with legacy fallbacks."""
+        if self.session_type != "chat_test" and self.effective_asr_key is None:
+            raise ValueError("ASR API key is required")
+        if self.effective_tts_key is None:
+            raise ValueError("TTS API key is required")
+        return self
+
+    @property
+    def effective_asr_key(self) -> SecretStr | None:
+        """Resolve the selected ASR credential without cross-provider reuse."""
+        return self.asr_api_key or (
+            self.deepgram_api_key if self.asr_provider == "deepgram" else None
+        )
+
+    @property
+    def effective_tts_key(self) -> SecretStr | None:
+        """Resolve the selected TTS credential with legacy field compatibility."""
+        if self.tts_api_key is not None:
+            return self.tts_api_key
+        if self.tts_provider == "elevenlabs":
+            return self.elevenlabs_api_key
+        return self.deepgram_api_key
 
 
 class BotSessionRequest(BaseModel):
@@ -89,11 +125,19 @@ class BotSessionRequest(BaseModel):
 
     bot_id: str = Field(min_length=1, max_length=100)
     session_type: Literal["web_call", "chat_test"] = "web_call"
+    asr_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
+    tts_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     deepgram_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     llm_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
-    @field_validator("deepgram_api_key", "llm_api_key", "elevenlabs_api_key")
+    @field_validator(
+        "asr_api_key",
+        "tts_api_key",
+        "deepgram_api_key",
+        "llm_api_key",
+        "elevenlabs_api_key",
+    )
     @classmethod
     def reject_placeholder_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Apply the same placeholder policy as inline BYOK."""
@@ -105,13 +149,16 @@ class BotSessionRequest(BaseModel):
             raise ValueError("Enter a real API key for this session")
         return SecretStr(secret)
 
-    @model_validator(mode="after")
-    def keys_all_or_nothing(self) -> BotSessionRequest:
-        """Per-session BYOK keys are only valid as a pair."""
-        provided = [key is not None for key in (self.deepgram_api_key, self.llm_api_key)]
-        if any(provided) and not all(provided):
-            raise ValueError("Deepgram and LLM API keys must be provided together")
-        return self
+
+class ASRSessionConfig(BaseModel):
+    """Immutable provider selection and validated model-specific options."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    provider: ASRProvider
+    model: str
+    turn_detection_source: TurnDetectionSource
+    options: dict[str, object]
 
 
 class SessionConfig(BaseModel):
@@ -120,7 +167,7 @@ class SessionConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     llm: LLMConfig
-    asr: ASRConfig
+    asr: ASRSessionConfig
     tts: TTSConfig
     system_prompt: str
     opening_script: str
@@ -131,15 +178,20 @@ class SessionConfig(BaseModel):
 class SessionCredentials:
     """Mutable secret holder whose references are cleared deterministically."""
 
-    deepgram_api_key: SecretStr
+    asr_api_key: SecretStr
+    tts_api_key: SecretStr
     llm_api_key: SecretStr
-    elevenlabs_api_key: SecretStr | None = None
 
     def clear(self) -> None:
         """Drop references to provider keys after the session ends."""
-        self.deepgram_api_key = SecretStr("")
+        self.asr_api_key = SecretStr("")
+        self.tts_api_key = SecretStr("")
         self.llm_api_key = SecretStr("")
-        self.elevenlabs_api_key = None
+
+    @property
+    def deepgram_api_key(self) -> SecretStr:
+        """Expose a masked compatibility alias for legacy lifecycle tests."""
+        return self.asr_api_key
 
 
 @dataclass(slots=True, repr=False)
@@ -227,9 +279,9 @@ class SessionStore:
                 session_id=str(uuid.uuid4()),
                 token=token,
                 credentials=SessionCredentials(
-                    deepgram_api_key=request.deepgram_api_key,
+                    asr_api_key=request.effective_asr_key or SecretStr(""),
+                    tts_api_key=request.effective_tts_key,
                     llm_api_key=request.llm_api_key,
-                    elevenlabs_api_key=request.elevenlabs_api_key,
                 ),
                 config=session_config,
                 session_type=request.session_type,
@@ -328,7 +380,7 @@ def build_session_config(
         if not 0.5 <= request.tts_speed <= 1.5:
             raise ValueError("Deepgram Flux speed must be between 0.5 and 1.5")
     else:
-        if request.elevenlabs_api_key is None:
+        if request.effective_tts_key is None:
             raise ValueError("ElevenLabs API key is required for ElevenLabs TTS")
         if request.tts_model not in {
             "eleven_flash_v2_5",
@@ -342,8 +394,27 @@ def build_session_config(
         if request.tts_model == "eleven_v3" and request.tts_dynamic_speed_enabled:
             raise ValueError("Eleven v3 does not support conversational speed control")
 
-    if request.asr_model == "flux-general-en" and request.asr_language_hints:
-        raise ValueError("Language hints require Automatic language detection")
+    asr_options = request.asr_options
+    if (
+        not asr_options
+        and request.asr_provider == "deepgram"
+        and request.asr_model.startswith("flux-")
+    ):
+        asr_options = {
+            "language_hints": request.asr_language_hints,
+            "eot_threshold": request.asr_eot_threshold,
+            "eot_timeout_ms": request.asr_eot_timeout_ms,
+            "keyterms": request.asr_keyterms,
+            "profanity_filter": request.asr_profanity_filter,
+            "numerals": request.asr_numerals,
+            "redact": request.asr_redact,
+        }
+    validated_asr_options = validate_asr_options(
+        provider=request.asr_provider,
+        model=request.asr_model,
+        turn_detection_source=request.turn_detection_source,
+        options=asr_options,
+    )
 
     providers = {provider.id: provider for provider in llm_catalog.providers}
     provider = providers.get(request.llm_provider)
@@ -382,16 +453,11 @@ def build_session_config(
     )
     return SessionConfig(
         llm=llm,
-        asr=ASRConfig(
+        asr=ASRSessionConfig(
+            provider=request.asr_provider,
             model=request.asr_model,
-            language_hints=request.asr_language_hints,
-            eager_eot_threshold=None,
-            eot_threshold=request.asr_eot_threshold,
-            eot_timeout_ms=request.asr_eot_timeout_ms,
-            keyterms=request.asr_keyterms,
-            profanity_filter=request.asr_profanity_filter,
-            numerals=request.asr_numerals,
-            redact=request.asr_redact,
+            turn_detection_source=request.turn_detection_source,
+            options=validated_asr_options,
         ),
         tts=tts,
         system_prompt=request.system_prompt.strip(),

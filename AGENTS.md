@@ -144,9 +144,27 @@ voice-agent/
 - **原型可追溯与先确认**：`prototypes/README.md` 必须把原型区域映射到 Delta Requirement/Scenario，并标记确认状态。用户确认 Delta Spec 与原型前不得编写正式页面逻辑；确认后原型成为 UI baseline。
 - **规格与原型优先级**：行为、数据规则和异常契约以 Delta Spec 为准；视觉结构与交互细节以已确认原型为准。任何有意偏离必须先更新 Change 并重新获得确认。
 - **页面验收留证**：Change 必须包含 `verification/ui-checklist.md`，覆盖入口、主要状态、异常、响应式与兼容行为；实现后逐项核对并保存实际页面截图作为验收证据。
-- **UI 交付分级门禁**：页面 Change 在开发前必须完成原型精确标注、状态矩阵和固定 fixture。Gate 1（规格与基线确认）通过后才能开发；Gate 2（静态页面壳）先验收布局与视觉方向；Gate 3（业务状态、功能测试、可访问性检查和视觉回归）通过后才能提交最终验收。自动截图只能发现差异，不能替代用户验收。
+- **UI 交付采用 2 个用户 Gate + 3 个研发检查点**：User Gate 1（规格与基线确认）通过后才能开发；随后依次完成 Engineering Checkpoint A（正式页面代码加载固定 fixture，核对结构与视觉）、Checkpoint B（同一页面接入真实 API、持久化、刷新/重启及失败状态）、Checkpoint C（独立验收、功能测试、可访问性和视觉回归）；三项通过后才可提交 User Gate 2（最终产品验收）。研发检查点不是用户审批，不得要求用户重复确认已冻结需求。
+- **禁止另造静态页面壳**：Checkpoint A 必须复用将要交付的正式路由、组件和 DOM，仅允许通过明确的数据适配层切换 fixture/真实 API；不得维护一套“静态验收页”和一套“真实业务页”。自动截图只能发现差异，不能替代 User Gate 2。
 - **视觉基线不可静默更新**：已确认 baseline 必须保存在对应 Change 内。任何 baseline 更新或有意视觉偏离都必须记录原因、更新 Change 并重新获得用户确认；测试脚本不得在普通验证过程中覆盖 baseline。
 - **按风险复用 UI 验证**：低风险文案/颜色改动可使用定向截图；中风险组件/抽屉改动必须覆盖组件状态矩阵；高风险页面重构必须覆盖固定桌面/窄屏视口、完整状态矩阵、功能测试、可访问性检查和视觉 diff。公共模板见 `docs/engineering/templates/ui-delivery/`。
+- **开发期澄清记录强制启用**：每个需要 OpenSpec Change 的需求都必须在 `openspec/changes/{change-name}/decisions/` 维护 `open-questions.md`、`assumptions.md` 和 `decision-log.md`，模板见 `docs/engineering/templates/change-decisions/`。Agent 在开始实现前必须读取这三份文件，并在每个任务或里程碑完成前再次检查。
+- **必须暂停并咨询的条件**：开发中若发现 PRD、原型、Spec、真实数据或外部服务之间冲突，或者现有材料不能唯一决定用户流程、结果含义、数据真实性、计算口径、成本、延迟、隐私、留存、失败处理或 Mock/降级边界，Agent 必须先登记到 `open-questions.md`，暂停受影响部分，并向用户提供 2-3 个方案、影响和推荐项。不得以自行假设继续开发。
+- **允许自主处理的假设**：只有不改变可观察产品行为、可低成本回退的工程细节才可由 Agent 自主决定；必须记录到 `assumptions.md`，包含依据、影响范围和回退方式。无法明确判定为低风险时，按开放问题处理。
+- **决策闭环**：用户确认后，Agent 必须把结论写入 `decision-log.md`，关闭对应开放问题，并同步更新受影响的 Spec、design、tasks、原型或测试后才能恢复相关开发。聊天中的临时结论不得替代仓库内决策记录。
+- **交付门禁**：存在未关闭且影响当前交付范围的开放问题时，Agent 不得宣称对应任务、Gate 或 Change 完成；不得自行填写用户确认、产品验收或最终接受状态。
+- **双端交付 Skill**：Codex 使用 `.codex/skills/change-delivery-guard/`，OpenCode 使用 `.opencode/skills/change-delivery-guard/`；两者必须遵循同一份 `.opencode/skills/change-delivery-guard/SKILL.md`，不得维护两套不同标准。
+- **自动门禁命令**：实现前、每个里程碑结束时以及交付前，Agent 必须运行 `python3 scripts/quality/verify_change.py <change-name>`。门禁返回非零时只能报告阻塞，不得宣称对应 Gate 或 Change 完成。
+- **独立验收强制执行**：开发 Agent 不得验收自己的 Change。自动门禁通过后，Codex 必须委派独立子 Agent 加载 `.codex/skills/change-verifier/`，OpenCode 必须切换 `.opencode/agents/Verification-Engineer.md`；独立验收结果写入 `verification/independent-review.md`。只有结果为 `PASS` 时才可提交用户最终验收。
+- **产品决定必须可追溯**：`decision-log.md` 中每项产品决定必须包含确认日期、可定位的对话/消息来源和用户确认原话。只有用户明确作出的选择才能标记为 `Confirmed`；“根据用户反馈”“结合上下文推断”或 Agent 自己的建议均不得作为确认依据。证据不足时必须保留或降级为开放问题。
+- **问题、决定和工程缺陷严格分流**：`open-questions.md` 只能保存状态为 `Open` 的产品问题；用户确认后必须把结论迁入 `decision-log.md` 并从开放问题文件移除。可由工程自行修复的实现偏差、测试缺口和文档冲突写入 `tasks.md`，不得伪装成需要用户重新决策的问题。
+- **产品提问必须易于决策**：每个开放问题必须使用一句背景、2-3 个互斥选项、各自影响、Agent 推荐项和一个明确的用户问题。Token、日志、数据统计等技术论证写入独立证据文档并链接，不得要求用户从长篇分析中自行提炼决策点。
+- **冻结基线必须唯一可追溯**：确认后的原型必须记录唯一版本、SHA-256、确认日期和确认来源。同一 Change 出现多个冻结校验值、确认来源缺失或实际文件与校验值不符时立即阻塞；Agent 不得自行选择、覆盖或重新生成 baseline。
+- **真实外部调用必须逐次授权**：发送真实客户数据、调用付费 API 或执行可能产生费用的外部测试前，Agent 必须说明数据范围、接收方、预计费用上限和停止条件，并取得针对本次调用的明确授权。笼统的“测试一下”不得解释为不限数据、次数、厂商或费用的授权；授权记录必须写入 `decision-log.md` 和 `verification/delivery-status.json`。
+- **发现即登记、不得等用户追问**：开发、调试、测试或审阅中一旦发现缺陷、规格偏差、失败、风险或未验证范围，Agent 必须在继续其他工作前写入 `verification/delivery-status.json` 的 `known_issues` 或 `unverified_items`。不得只保留在推理、终端输出、聊天中间过程或 Agent 记忆中；不得因为“不阻塞当前编码”而延后披露。
+- **每轮工作结束必须主动披露**：只要本轮执行了实现、验证或审阅，最终回复必须简短说明“本轮完成、发现的问题、尚未验证、是否需要用户决定”四项；没有新增问题也要明确写“未发现新增问题”。所有仍为 Open 的 `known_issues` 和 `unverified_items` 必须标记 `disclosed_to_user: true` 后才能结束回合。用户未追问不构成隐瞒理由。
+- **未披露禁止完成声明**：任何 Open 问题或未验证项尚未向用户披露时，Agent 不得结束工作回合，也不得使用“完成”“已改好”“可验收”“全部通过”等表述。已披露但尚未解决的事项允许继续不受影响的工作，但在进入最终验收阶段前必须解决、明确排除出范围，或取得用户接受风险的确认。
+- **Codex 与 Git 自动触发**：Codex 项目 Hook 位于 `.codex/hooks.json`，仅在补丁修改 `src/`、`frontend/`、`tests/` 或 `scripts/` 代码目录的工作回合结束时自动运行交付门禁，并要求四项主动披露；仅修改 `openspec/`、`docs/` 或执行只读命令时不触发。首次加载或 Hook 内容变化后必须通过 Codex `/hooks` 审阅并信任。Git 使用项目内 `.githooks/pre-commit`，本地仓库必须设置 `core.hooksPath=.githooks`；两端都调用同一 `scripts/quality/verify_change.py`，不得另写一套判断标准。
 
 ---
 

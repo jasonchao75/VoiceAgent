@@ -1,0 +1,9 @@
+{
+  "phase": "developing",
+  "product_acceptance": "pending",
+  "production_paths": [],
+  "allowed_mock_files": [],
+  "external_calls": [],
+  "known_issues": [],
+  "unverified_items": []
+}

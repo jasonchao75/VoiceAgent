@@ -47,6 +47,8 @@ async def test_history_crud_persists_across_store_instances(tmp_path: Path) -> N
                 reasoning_tokens=0,
                 reasoning_status="confirmed_off",
                 reasoning_control="thinking_budget=0",
+                context_applied=False,
+                context_failure_reason="provider_update_failed:TimeoutError",
             )
         ],
         recording_path=recording,
@@ -65,6 +67,8 @@ async def test_history_crud_persists_across_store_instances(tmp_path: Path) -> N
     assert detail.tts_voice == "voice-1"
     assert detail.tts_text_aggregation == "sentence"
     assert detail.metrics[0].reasoning_status == "confirmed_off"
+    assert detail.metrics[0].context_applied is False
+    assert detail.metrics[0].context_failure_reason == "provider_update_failed:TimeoutError"
     assert await restarted.recording_path("call-1") == recording
 
     assert await restarted.delete_call("call-1") is True
@@ -144,6 +148,7 @@ async def test_legacy_metric_column_order_is_migrated_safely(tmp_path: Path) -> 
     assert detail.status == "completed"
     assert detail.metrics[0].asr_final_latency_ms == 10
     assert detail.metrics[0].reasoning_status == "unverified"
+    assert detail.metrics[0].context_applied is None
 
 
 @pytest.mark.asyncio

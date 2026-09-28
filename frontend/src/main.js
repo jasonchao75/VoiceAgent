@@ -66,10 +66,14 @@ app.innerHTML = `
         <section id="session-keys" class="session-keys" hidden>
           <div class="list-head"><h2>Session keys</h2></div>
           <p class="hint">This bot has no saved keys. Enter both keys for this session only — they are never saved.</p>
-          <label for="session-deepgram-key">Deepgram API key</label>
+          <label id="session-asr-key-label" for="session-deepgram-key">ASR API key</label>
           <div class="input-with-action">
             <input id="session-deepgram-key" type="password" autocomplete="new-password" />
             <button class="text-button reveal" type="button" data-target="session-deepgram-key">Show</button>
+          </div>
+          <div id="session-tts-key-field">
+            <label id="session-tts-key-label" for="session-tts-key">TTS API key</label>
+            <div class="input-with-action"><input id="session-tts-key" type="password" autocomplete="new-password" /><button class="text-button reveal" type="button" data-target="session-tts-key">Show</button></div>
           </div>
           <label for="session-llm-key">LLM API key</label>
           <div class="input-with-action">
@@ -109,7 +113,10 @@ app.innerHTML = `
                 <div id="bot-asr-hint-chips" class="language-grid" role="group" aria-label="Optional language hints"></div>
                 <p class="hint">Optional. Automatic detects English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian, and Dutch.</p>
               </div>
-              <details class="voice-advanced">
+              <label for="bot-turn-source">Turn detection source</label>
+              <select id="bot-turn-source"><option value="provider_native">Provider native</option><option value="off">Off</option></select>
+              <p id="bot-turn-source-hint" class="hint"></p>
+              <details id="bot-asr-advanced" class="voice-advanced">
                 <summary>ASR Advanced</summary>
                 <div class="voice-setting">
                   <div>
@@ -228,8 +235,16 @@ app.innerHTML = `
             <fieldset>
               <legend>API keys</legend>
               <div id="bot-key-fields">
+                <div id="bot-asr-key-field">
+                  <label for="bot-asr-key">ASR API key</label>
+                  <div class="input-with-action">
+                    <input id="bot-asr-key" type="password" autocomplete="new-password" />
+                    <button class="text-button reveal" type="button" data-target="bot-asr-key">Show</button>
+                  </div>
+                  <div class="field-help"><span>Encrypted for this Bot · never returned by the API</span><a id="bot-asr-key-link" href="#" target="_blank" rel="noreferrer">Get a key ↗</a></div>
+                </div>
                 <div id="bot-deepgram-key-field">
-                  <label for="bot-deepgram-key">Deepgram API key</label>
+                  <label for="bot-deepgram-key">Deepgram TTS API key</label>
                   <div class="input-with-action">
                     <input id="bot-deepgram-key" type="password" autocomplete="new-password" />
                     <button class="text-button reveal" type="button" data-target="bot-deepgram-key">Show</button>
@@ -469,6 +484,9 @@ const elements = {
   botAsrLanguage: document.querySelector("#bot-asr-language"),
   botAsrHintsField: document.querySelector("#bot-asr-hints-field"),
   botAsrHints: document.querySelector("#bot-asr-hints"),
+  botTurnSource: document.querySelector("#bot-turn-source"),
+  botTurnSourceHint: document.querySelector("#bot-turn-source-hint"),
+  botAsrAdvanced: document.querySelector("#bot-asr-advanced"),
   botAsrEotThreshold: document.querySelector("#bot-asr-eot-threshold"),
   botAsrEotThresholdValue: document.querySelector("#bot-asr-eot-threshold-value"),
   botAsrEotTimeout: document.querySelector("#bot-asr-eot-timeout"),
@@ -527,6 +545,9 @@ const elements = {
   botDiagnostic: document.querySelector("#bot-diagnostic-result"),
   botSaveKeys: document.querySelector("#bot-save-keys"),
   botKeyFields: document.querySelector("#bot-key-fields"),
+  botAsrKeyField: document.querySelector("#bot-asr-key-field"),
+  botAsrKey: document.querySelector("#bot-asr-key"),
+  botAsrKeyLink: document.querySelector("#bot-asr-key-link"),
   botDeepgramKeyField: document.querySelector("#bot-deepgram-key-field"),
   botDeepgramKey: document.querySelector("#bot-deepgram-key"),
   botLlmKeyField: document.querySelector("#bot-llm-key-field"),
@@ -538,6 +559,10 @@ const elements = {
   cancelBot: document.querySelector("#cancel-bot-button"),
   sessionKeys: document.querySelector("#session-keys"),
   sessionDeepgramKey: document.querySelector("#session-deepgram-key"),
+  sessionAsrKeyLabel: document.querySelector("#session-asr-key-label"),
+  sessionTtsKeyField: document.querySelector("#session-tts-key-field"),
+  sessionTtsKeyLabel: document.querySelector("#session-tts-key-label"),
+  sessionTtsKey: document.querySelector("#session-tts-key"),
   sessionLlmKey: document.querySelector("#session-llm-key"),
   sessionElevenlabsKeyField: document.querySelector("#session-elevenlabs-key-field"),
   sessionElevenlabsKey: document.querySelector("#session-elevenlabs-key"),
@@ -611,9 +636,11 @@ const elements = {
 };
 
 let catalogs;
+let baseAsrProviderCatalog;
 let bots = [];
 let selectedBotId;
 let editingBotId;
+let botKeySaveState = { asr: false, tts: false, llm: false };
 let discoveredVoices = [];
 let pendingVoice;
 let nextVoicePageToken;
@@ -650,6 +677,7 @@ function setFormLocked(locked) {
   }
   elements.newBot.disabled = locked;
   elements.sessionDeepgramKey.disabled = locked;
+  elements.sessionTtsKey.disabled = locked;
   elements.sessionLlmKey.disabled = locked;
   for (const button of elements.botList.querySelectorAll("button")) button.disabled = locked;
   elements.start.disabled = locked || !selectedBotId;
@@ -737,7 +765,7 @@ function initializeWebsiteSession() {
 function diagnosticPayload(kind) {
   if (kind === "bot") {
     const bot = editingBotId && bots.find((item) => item.id === editingBotId);
-    if (bot?.has_saved_keys && !elements.botLlmKey.value) {
+    if ((bot?.has_llm_key ?? bot?.has_saved_keys) && !elements.botLlmKey.value) {
       return {
         bot_id: bot.id,
         reasoning_mode: elements.botThinking.value,
@@ -762,43 +790,238 @@ function diagnosticPayload(kind) {
 }
 
 function loadAsrCatalog(bot) {
-  const provider = catalogs.asr_providers?.providers?.[0];
-  const model = provider?.models?.[0];
-  if (!provider || !model) {
+  if (baseAsrProviderCatalog) {
+    catalogs.asr_providers = JSON.parse(JSON.stringify(baseAsrProviderCatalog));
+  }
+  const providers = catalogs.asr_providers?.providers || [];
+  if (!providers.length) {
     elements.botAsrModel.disabled = true;
     elements.botAsrLanguage.disabled = true;
     showError("ASR capabilities could not be loaded. Reload to retry.");
     return;
   }
-  elements.botAsr.replaceChildren(new Option(provider.name, provider.id));
-  elements.botAsrModel.replaceChildren(new Option(model.name, model.id));
-  elements.botAsrLanguage.replaceChildren(
-    ...model.languages.map((language) => new Option(language.name, language.provider_model)),
-  );
-  elements.botAsrHints.replaceChildren(
-    ...model.language_hints.map((language) => new Option(language.toUpperCase(), language)),
-  );
+  if (bot?.asr_account_catalog) {
+    const provider = providers.find((item) => item.id === bot.asr_provider);
+    const index = provider?.models?.findIndex(
+      (item) => item.id === bot.asr_account_catalog.id,
+    );
+    if (provider && index >= 0) provider.models[index] = bot.asr_account_catalog;
+  }
+  elements.botAsr.replaceChildren(...providers.map((provider) => new Option(provider.name, provider.id)));
+  elements.botAsr.value = bot?.asr_provider || "deepgram";
+  if (![...elements.botAsr.options].some((option) => option.value === elements.botAsr.value)) {
+    elements.botAsr.value = "deepgram";
+  }
+  loadAsrModelCatalog(bot);
+}
+
+function selectedAsrProvider() {
+  return (catalogs.asr_providers?.providers || []).find((provider) => provider.id === elements.botAsr.value);
+}
+
+function selectedAsrModel() {
+  return selectedAsrProvider()?.models?.find((model) => model.id === elements.botAsrModel.value);
+}
+
+function loadAsrModelCatalog(bot = null) {
+  const provider = selectedAsrProvider();
+  const models = provider?.models || [];
+  elements.botAsrModel.replaceChildren(...models.map((model) => new Option(model.name, model.id)));
+  const requestedModel = bot?.asr_model;
+  elements.botAsrModel.value = models.some((model) => model.id === requestedModel)
+    ? requestedModel
+    : (models[0]?.id || "");
   elements.botAsrModel.disabled = false;
-  elements.botAsrLanguage.disabled = false;
-  elements.botAsrLanguage.value = bot?.asr_model || "flux-general-en";
-  const selectedHints = new Set(bot?.asr_language_hints || []);
+  renderAsrModelFields(bot);
+}
+
+function renderAsrModelFields(bot = null) {
+  const model = selectedAsrModel();
+  if (!model) return;
+  const language = model.language_control || { kind: "fixed", values: [] };
+  const options = bot?.asr_options || {};
+  const multiValues = options.language_hints || options.language_codes || bot?.asr_language_hints || [];
+  const selectedHints = new Set(multiValues);
+  const languageValues = language.values || [];
+  const languageLabels = language.labels || {};
+  const multi = language.kind === "hints" || language.kind === "steering";
+  const hintLabel = (value) => languageLabels[value]
+    ? `${value} (${languageLabels[value]})`
+    : value;
+  elements.botAsrLanguage.replaceChildren(...languageValues.map((value) => new Option(value, value)));
+  const selectedLanguage = options.language || languageValues[0] || "";
+  elements.botAsrLanguage.value = languageValues.includes(selectedLanguage) ? selectedLanguage : languageValues[0];
+  elements.botAsrLanguage.disabled = language.kind === "fixed";
+  elements.botAsrHints.replaceChildren(
+    ...languageValues.map((value) => new Option(hintLabel(value), value)),
+  );
   for (const option of elements.botAsrHints.options) option.selected = selectedHints.has(option.value);
   const hintChips = document.querySelector("#bot-asr-hint-chips");
+  let languageTools = document.querySelector("#bot-asr-language-tools");
+  if (!languageTools) {
+    languageTools = document.createElement("div");
+    languageTools.id = "bot-asr-language-tools";
+    languageTools.className = "language-tools";
+    languageTools.innerHTML = '<label for="bot-asr-language-search">Add language hint</label><div><input id="bot-asr-language-search" type="search" placeholder="Search catalog languages"><button id="bot-asr-language-clear" class="text-button" type="button">Clear all</button></div>';
+    hintChips.before(languageTools);
+  }
+  const search = languageTools.querySelector("input");
+  const clear = languageTools.querySelector("button");
+  search.value = "";
+  languageTools.hidden = elements.botAsr.value !== "soniox";
+  clear.onclick = () => {
+    for (const option of elements.botAsrHints.options) option.selected = false;
+    for (const checkbox of hintChips.querySelectorAll('input[type="checkbox"]')) checkbox.checked = false;
+  };
   hintChips.replaceChildren(...[...elements.botAsrHints.options].map((option) => {
     const chip = document.createElement("label");
     chip.className = "check-chip";
+    chip.dataset.language = `${option.value} ${languageLabels[option.value] || ""}`.toLowerCase();
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = option.selected;
-    checkbox.addEventListener("change", () => { option.selected = checkbox.checked; });
+    checkbox.setAttribute("aria-label", `Language ${option.textContent}`);
+    checkbox.addEventListener("change", () => {
+      const maximum = language.max_selected;
+      const selectedCount = hintChips.querySelectorAll('input[type="checkbox"]:checked').length;
+      if (maximum && selectedCount > maximum) {
+        checkbox.checked = false;
+        showError(`Select no more than ${maximum} language codes for this model.`);
+        return;
+      }
+      option.selected = checkbox.checked;
+    });
     chip.append(checkbox, document.createTextNode(option.textContent));
     return chip;
   }));
-  syncAsrLanguage();
+  search.oninput = () => {
+    const query = search.value.trim().toLowerCase();
+    for (const chip of hintChips.children) {
+      chip.hidden = Boolean(query) && !chip.dataset.language.includes(query);
+    }
+  };
+  elements.botAsrHintsField.hidden = !multi;
+  elements.botAsrLanguage.closest(".component-field").hidden = multi;
+  const languageHint = elements.botAsrHintsField.querySelector(".hint");
+  if (language.kind === "steering") {
+    languageHint.textContent = `Optional steering list. Leave empty for native code-switching; select up to ${language.max_selected || 10}.`;
+  } else if (elements.botAsr.value === "soniox") {
+    languageHint.textContent = "Optional catalog hints. Leave empty for automatic multilingual recognition.";
+  } else {
+    languageHint.textContent = "Optional catalog hints for the multilingual Flux model.";
+  }
+  const sources = model.turn_sources || [];
+  elements.botTurnSource.replaceChildren(...sources.map((source) => new Option(source === "off" ? "Off" : "Provider native", source)));
+  elements.botTurnSource.value = sources.includes(bot?.turn_detection_source)
+    ? bot.turn_detection_source
+    : model.default_turn_source;
+  elements.botTurnSource.disabled = sources.length === 1;
+  elements.botTurnSourceHint.textContent = elements.botTurnSource.value === "off"
+    ? "Semantic Turn Detection is off; the provider still closes the Turn with fixed silence."
+    : "The selected provider is the only final Turn authority for this session.";
+  renderAsrAdvanced(options);
+  syncAsrCredential();
 }
 
-function syncAsrLanguage() {
-  elements.botAsrHintsField.hidden = elements.botAsrLanguage.value !== "flux-general-multi";
+function nestedOptionValue(options, path, fallback) {
+  const value = path.split(".").reduce((current, part) => current?.[part], options);
+  return value ?? fallback;
+}
+
+function renderCatalogAdvancedField(field, options, model) {
+  const current = nestedOptionValue(options, field.name, field.default);
+  const help = field.help ? `<p class="hint">${escapeHtml(field.help)}</p>` : "";
+  if (field.kind === "boolean") {
+    return `<label class="switch-row"><span><b>${escapeHtml(field.label)}</b>${help}</span><input id="${field.id}" type="checkbox" ${current ? "checked" : ""}></label>`;
+  }
+  if (field.kind === "select") {
+    const choices = (field.options || []).map(([raw, label]) => {
+      const value = raw ?? "";
+      return `<option value="${escapeHtml(String(value))}" ${String(current ?? "") === String(value) ? "selected" : ""}>${escapeHtml(label)}</option>`;
+    }).join("");
+    const modeNote = field.id === "asr-assembly-mode" ? '<p id="asr-assembly-mode-note" class="hint">Preset loaded. You can edit the three populated Turn values.</p>' : "";
+    return `<label for="${field.id}">${escapeHtml(field.label)}</label><select id="${field.id}">${choices}</select>${modeNote}${help}`;
+  }
+  if (field.kind === "domain") {
+    const domains = model.domains_by_language?.[elements.botAsrLanguage.value] || [];
+    const choices = [["", "General · default"], ...domains.map((domain) => [domain, domain])]
+      .map(([value, label]) => `<option value="${escapeHtml(value)}" ${String(current ?? "") === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("");
+    return `<label for="${field.id}">${escapeHtml(field.label)}</label><select id="${field.id}">${choices}</select>${help}`;
+  }
+  if (field.kind === "vocabulary") {
+    const rows = (current || []).map((item) => `<div class="asr-vocabulary-row"><input class="asr-vocabulary-content" aria-label="Vocabulary phrase" value="${escapeHtml(item.content || "")}"><input class="asr-vocabulary-sounds-like" aria-label="Sounds like, comma separated" placeholder="Sounds like · comma separated" value="${escapeHtml((item.sounds_like || []).join(", "))}"><button class="asr-remove-vocabulary" type="button" aria-label="Remove vocabulary row">×</button></div>`).join("");
+    return `<label>${escapeHtml(field.label)}</label><div id="asr-vocabulary-rows">${rows}</div><button id="asr-add-vocabulary" type="button">Add vocabulary</button>${help}`;
+  }
+  if (field.kind === "marks") {
+    const custom = Array.isArray(current);
+    const marks = custom ? current : [];
+    return `<label for="${field.id}">${escapeHtml(field.label)}</label><select id="${field.id}"><option value="all" ${custom ? "" : "selected"}>All supported</option><option value="custom" ${custom ? "selected" : ""}>Custom subset</option></select><div id="asr-custom-marks-field"><label for="asr-custom-marks">Custom marks · one character per line</label><textarea id="asr-custom-marks">${escapeHtml(marks.join("\n"))}</textarea></div>${help}`;
+  }
+  let text = current ?? "";
+  if (field.kind === "lines") text = (current || []).join("\n");
+  if (field.kind === "key_values") text = (current || []).map((item) => `${item.key}=${item.value}`).join("\n");
+  if (["textarea", "lines", "key_values"].includes(field.kind)) {
+    return `<label for="${field.id}">${escapeHtml(field.label)}</label><textarea id="${field.id}">${escapeHtml(String(text))}</textarea>${help}`;
+  }
+  const attributes = ["min", "max", "step"].filter((name) => field[name] !== undefined)
+    .map((name) => `${name}="${field[name]}"`).join(" ");
+  const placeholder = field.placeholder ? `placeholder="${escapeHtml(field.placeholder)}"` : "";
+  return `<label for="${field.id}">${escapeHtml(field.label)}</label><input id="${field.id}" class="${field.class || ""}" type="${field.kind === "number" ? "number" : "text"}" ${attributes} ${placeholder} value="${escapeHtml(String(text))}">${help}`;
+}
+
+function renderAsrAdvanced(options = {}) {
+  const provider = elements.botAsr.value;
+  const catalogModel = selectedAsrModel();
+  if (!catalogModel?.advanced_fields?.length) {
+    elements.botAsrAdvanced.innerHTML = "<summary>Advanced unavailable</summary>";
+    elements.botAsrAdvanced.open = true;
+    return;
+  }
+  const activeBot = editingBotId && bots.find((item) => item.id === editingBotId);
+  const canRefresh = Boolean(
+    activeBot
+      && activeBot.asr_provider === provider
+      && (activeBot.has_asr_key ?? activeBot.has_saved_keys),
+  );
+  const refresh = ["speechmatics", "soniox"].includes(provider)
+    ? `<div class="catalog-refresh-action"><button id="asr-refresh-catalog" class="catalog-refresh-button" type="button" ${canRefresh ? "" : "disabled"}><span class="catalog-refresh-icon" aria-hidden="true">↻</span><span class="catalog-refresh-label">Refresh account catalog</span></button><p class="hint">${canRefresh ? "Uses this Bot's saved ASR key. Save a replacement key before refreshing." : "Save this Bot with its ASR key before refreshing the account catalog."}</p></div>`
+    : "";
+  elements.botAsrAdvanced.innerHTML = `<summary>Advanced · ${escapeHtml(catalogModel.advanced_title || catalogModel.name)}</summary>${refresh}${catalogModel.advanced_fields.map((field) => renderCatalogAdvancedField(field, options, catalogModel)).join("")}`;
+  elements.botAsrAdvanced.open = true;
+  syncAsrDependentFields();
+}
+
+function syncAsrDependentFields() {
+  const turnMode = document.querySelector("#asr-turn-mode");
+  if (turnMode) {
+    const fixed = elements.botTurnSource.value === "off";
+    if (fixed) turnMode.value = "fixed";
+    turnMode.disabled = fixed;
+  }
+  const silence = document.querySelector("#asr-silence-trigger");
+  const maximum = document.querySelector("#asr-max-eou-delay");
+  if (silence && maximum) maximum.min = String(Number(silence.value) + 0.01);
+  const punctuationMode = document.querySelector("#asr-punctuation-mode");
+  const customMarks = document.querySelector("#asr-custom-marks-field");
+  if (punctuationMode && customMarks) customMarks.hidden = punctuationMode.value !== "custom";
+  const voiceFocus = document.querySelector("#asr-voice-focus");
+  const voiceFocusThreshold = document.querySelector("#asr-voice-focus-threshold");
+  if (voiceFocus && voiceFocusThreshold) {
+    voiceFocusThreshold.disabled = !voiceFocus.value;
+    if (!voiceFocus.value) voiceFocusThreshold.value = "";
+  }
+}
+
+function syncAsrCredential() {
+  const provider = selectedAsrProvider();
+  const links = {
+    deepgram: "https://console.deepgram.com/",
+    speechmatics: "https://portal.speechmatics.com/",
+    soniox: "https://console.soniox.com/",
+    assemblyai: "https://www.assemblyai.com/dashboard/signup",
+  };
+  elements.botAsrKeyField.querySelector("label").textContent = `${provider?.name || "ASR"} API key`;
+  elements.botAsrKeyLink.href = links[elements.botAsr.value] || "#";
 }
 
 function initializeComponentEditor() {
@@ -839,8 +1062,9 @@ function initializeComponentEditor() {
     <p class="hint">Current WebCall input contract · fixed at 16 kHz.</p>
   `;
   asrInputGrid.append(asrLanguageField, asrAudioField);
-  panels.asr.append(asrInputGrid);
-  panels.asr.append(elements.botAsrHintsField, elements.botAsrRedact.closest("details"));
+  panels.asr.append(asrInputGrid, elements.botAsrHintsField);
+  move("bot-turn-source", panels.asr);
+  panels.asr.append(elements.botTurnSourceHint, elements.botAsrAdvanced);
   for (const id of ["bot-llm-provider", "bot-llm-base-url", "bot-llm-model"]) move(id, panels.llm);
   panels.llm.append(elements.botLlmTemperature.closest(".voice-setting"));
   panels.llm.append(elements.botModelOptions, elements.botThinking.closest("details"), elements.testBotLlm, elements.botDiagnostic);
@@ -897,9 +1121,8 @@ function initializeComponentEditor() {
     const credentialLegend = keyFieldset.querySelector("legend");
     credentialLegend.hidden = true;
     keyFieldset.setAttribute("aria-label", `${component.toUpperCase()} credentials`);
-    elements.botDeepgramKeyField.hidden = component !== "asr" && !(
-      component === "tts" && elements.botTts.value === "deepgram_flux"
-    );
+    elements.botAsrKeyField.hidden = component !== "asr";
+    elements.botDeepgramKeyField.hidden = component !== "tts" || elements.botTts.value !== "deepgram_flux";
     elements.botLlmKeyField.hidden = component !== "llm";
     elements.botElevenlabsKeyField.hidden = component !== "tts" || elements.botTts.value !== "elevenlabs";
     if (component === "tts") {
@@ -910,6 +1133,9 @@ function initializeComponentEditor() {
     } else {
       panels.asr.append(keyFieldset);
     }
+    elements.botSaveKeys.checked = botKeySaveState[component];
+    keyFieldset.querySelector(".save-key-row b").textContent = `Save ${component.toUpperCase()} API key`;
+    syncKeyFieldVisibility();
   };
   const close = () => {
     drawer.hidden = true;
@@ -984,10 +1210,14 @@ function updatePipelineSummaries(bot) {
   const asr = cards[0];
   const llm = cards[1];
   const tts = cards[2];
-  const automatic = bot.asr_model === "flux-general-multi";
-  asr.querySelector("h3").textContent = automatic ? "Flux General Multilingual" : "Flux General English";
-  asr.querySelector("p").textContent = `Deepgram · ${automatic ? "Automatic" : "English"}`;
-  asr.querySelector(".card-stats span:nth-child(2) b").textContent = automatic ? "Automatic" : "English";
+  const asrProvider = (catalogs.asr_providers?.providers || []).find((item) => item.id === bot.asr_provider);
+  const asrModel = asrProvider?.models?.find((item) => item.id === bot.asr_model);
+  const language = bot.asr_options?.language
+    || (bot.asr_options?.language_codes?.length ? `${bot.asr_options.language_codes.length} selected` : null)
+    || (bot.asr_options?.language_hints?.length ? `${bot.asr_options.language_hints.length} hints` : "Automatic");
+  asr.querySelector("h3").textContent = asrModel?.name || bot.asr_model;
+  asr.querySelector("p").textContent = `${asrProvider?.name || bot.asr_provider} · ${language}`;
+  asr.querySelector(".card-stats span:nth-child(2) b").textContent = language;
   llm.querySelector("h3").textContent = bot.llm_model;
   llm.querySelector("p").textContent = `${bot.llm_provider} · OpenAI-compatible`;
   llm.querySelector(".card-stats span:nth-child(2) b").textContent = (bot.reasoning_mode || "provider_default").replace("provider_default", "Default");
@@ -1323,7 +1553,8 @@ function syncTtsFields() {
   elements.fluxTuning.hidden = elevenlabs;
   elements.elevenlabsTuning.hidden = !elevenlabs;
   elements.sessionElevenlabsKeyField.hidden = !(
-    selectedBot()?.tts_provider === "elevenlabs" && !selectedBot()?.has_saved_keys
+    selectedBot()?.tts_provider === "elevenlabs"
+      && !(selectedBot()?.has_tts_key ?? selectedBot()?.has_saved_keys)
   );
   elements.manualVoicePanel.hidden = !elevenlabs;
   elements.voiceDiscoveryKeyField.hidden = true;
@@ -1339,8 +1570,10 @@ function syncTtsFields() {
 
 function syncTtsVoiceAvailability() {
   const requiresKey = elements.botTts.value === "elevenlabs";
+  const editingBot = editingBotId && bots.find((bot) => bot.id === editingBotId);
   const editingHasKeys = Boolean(
-    editingBotId && bots.find((bot) => bot.id === editingBotId)?.has_saved_keys,
+    editingBot && (editingBot.has_tts_key ?? editingBot.has_saved_keys)
+      && editingBot.tts_provider === elements.botTts.value,
   );
   const available = !requiresKey || Boolean(elements.botElevenlabsKey.value) || editingHasKeys;
   elements.chooseBotVoice.disabled = !available;
@@ -1483,7 +1716,7 @@ function selectVoice(voice) {
 async function loadElevenlabsVoices({ append = false } = {}) {
   const apiKey = elements.botElevenlabsKey.value || elements.voiceDiscoveryKey.value;
   const editingBot = bots.find((bot) => bot.id === editingBotId);
-  if (!apiKey && !editingBot?.has_saved_keys) {
+  if (!apiKey && !(editingBot?.has_tts_key ?? editingBot?.has_saved_keys)) {
     throw new Error("Enter the ElevenLabs API key before loading voices.");
   }
   const response = await apiRequest("/api/tts/elevenlabs/voices", {
@@ -1615,8 +1848,14 @@ function renderBotList() {
     );
   }
   elements.sessionKeys.hidden = !selectedBot() || selectedBot().has_saved_keys;
+  const selected = selectedBot();
+  const selectedAsrProvider = (catalogs.asr_providers?.providers || [])
+    .find((provider) => provider.id === selected?.asr_provider);
+  elements.sessionAsrKeyLabel.textContent = `${selectedAsrProvider?.name || "ASR"} ASR API key`;
+  elements.sessionTtsKeyField.hidden = selected?.tts_provider === "elevenlabs";
+  elements.sessionTtsKeyLabel.textContent = "Deepgram TTS API key";
   elements.sessionElevenlabsKeyField.hidden = !(
-    selectedBot()?.tts_provider === "elevenlabs" && !selectedBot()?.has_saved_keys
+    selected?.tts_provider === "elevenlabs" && !(selected?.has_tts_key ?? selected?.has_saved_keys)
   );
   elements.start.disabled = !selectedBotId;
 }
@@ -1639,18 +1878,25 @@ async function loadBots() {
 }
 
 function syncKeyFieldVisibility() {
+  const component = document.querySelector(".component-drawer")?.dataset.component || "asr";
   const saving = elements.botSaveKeys.checked;
-  const editingHasKeys = Boolean(
-    editingBotId && bots.find((bot) => bot.id === editingBotId)?.has_saved_keys,
-  );
+  botKeySaveState[component] = saving;
+  const bot = editingBotId && bots.find((item) => item.id === editingBotId);
+  const editingHasKeys = Boolean(component === "asr"
+    ? (bot?.has_asr_key ?? bot?.has_saved_keys) && bot?.asr_provider === elements.botAsr.value
+    : component === "tts"
+      ? (bot?.has_tts_key ?? bot?.has_saved_keys) && bot?.tts_provider === elements.botTts.value
+      : (bot?.has_llm_key ?? bot?.has_saved_keys) && bot?.llm_provider === elements.botProvider.value);
   elements.botKeyFields.hidden = false;
   elements.byokHint.hidden = saving;
   elements.keepKeysHint.hidden = !(saving && editingHasKeys);
   const keysOptional = saving && editingHasKeys;
-  elements.botDeepgramKey.required = saving && !keysOptional;
-  elements.botLlmKey.required = saving && !keysOptional;
+  elements.botAsrKey.required = component === "asr" && saving && !keysOptional;
+  elements.botDeepgramKey.required =
+    component === "tts" && saving && elements.botTts.value === "deepgram_flux" && !keysOptional;
+  elements.botLlmKey.required = component === "llm" && saving && !keysOptional;
   elements.botElevenlabsKey.required =
-    saving && elements.botTts.value === "elevenlabs" && !keysOptional;
+    component === "tts" && saving && elements.botTts.value === "elevenlabs" && !keysOptional;
 }
 
 function syncAsrAdvancedFields() {
@@ -1714,7 +1960,14 @@ function openEditor(bot) {
   elements.botOpeningScript.value = bot ? bot.opening_script : catalogs.defaults.opening_script;
   elements.botFallbackScript.value = bot?.fallback_script ?? "";
   syncAdvancedBotContext();
-  elements.botSaveKeys.checked = bot ? bot.has_saved_keys : false;
+  botKeySaveState = {
+    asr: Boolean(bot && (bot.has_asr_key ?? bot.has_saved_keys)),
+    tts: Boolean(bot && (bot.has_tts_key ?? bot.has_saved_keys)),
+    llm: Boolean(bot && (bot.has_llm_key ?? bot.has_saved_keys)),
+  };
+  const credentialComponent = document.querySelector(".component-drawer")?.dataset.component || "asr";
+  elements.botSaveKeys.checked = botKeySaveState[credentialComponent];
+  elements.botAsrKey.value = "";
   elements.botDeepgramKey.value = "";
   elements.botLlmKey.value = "";
   elements.botElevenlabsKey.value = "";
@@ -1724,7 +1977,8 @@ function openEditor(bot) {
   document.querySelector(".conversation-panel").hidden = true;
   document.querySelector(".history-panel").hidden = true;
   updatePipelineSummaries(bot || {
-    asr_model: "flux-general-en", llm_model: catalogs.defaults.llm_model,
+    asr_provider: "deepgram", asr_model: "flux-general-en", asr_options: {},
+    llm_model: catalogs.defaults.llm_model,
     llm_provider: catalogs.defaults.llm_provider, reasoning_mode: "provider_default",
     tts_voice: catalogs.defaults.flux_voice, tts_provider: "deepgram_flux",
     tts_model: "flux-general-en", tts_speed: 1, tts_dynamic_speed_enabled: false,
@@ -1749,21 +2003,49 @@ function syncAdvancedBotContext() {
   save.disabled = !bot;
 }
 
+function collectAsrOptions() {
+  const provider = elements.botAsr.value;
+  const model = elements.botAsrModel.value;
+  const lines = (id) => (document.querySelector(`#${id}`)?.value || "")
+    .split("\n").map((item) => item.trim()).filter(Boolean);
+  const number = (id) => Number(document.querySelector(`#${id}`)?.value);
+  const checked = (id) => Boolean(document.querySelector(`#${id}`)?.checked);
+  const selectedHints = [...elements.botAsrHints.selectedOptions].map((option) => option.value);
+  if (provider === "deepgram" && model.startsWith("flux-")) {
+    return { language_hints: selectedHints, eot_threshold: number("asr-eot-threshold"), eot_timeout_ms: number("asr-eot-timeout"), keyterms: lines("asr-keyterms"), profanity_filter: checked("asr-profanity"), numerals: checked("asr-numerals"), redact: document.querySelector("#asr-redact")?.value || null };
+  }
+  if (provider === "deepgram") {
+    return { language: elements.botAsrLanguage.value, endpointing_ms: number("asr-endpointing"), interim_results: checked("asr-interim"), vad_events: checked("asr-vad-events"), keyterms: lines("asr-keyterms"), smart_format: checked("asr-smart-format"), numerals: checked("asr-numerals"), profanity_filter: checked("asr-profanity"), redact: document.querySelector("#asr-redact")?.value || null, diarize_model: document.querySelector("#asr-diarize-model")?.value.trim() || null };
+  }
+  if (provider === "speechmatics") {
+    const punctuationMode = document.querySelector("#asr-punctuation-mode")?.value;
+    const vocabulary = [...document.querySelectorAll(".asr-vocabulary-row")].map((row) => ({
+      content: row.querySelector(".asr-vocabulary-content")?.value.trim() || "",
+      sounds_like: (row.querySelector(".asr-vocabulary-sounds-like")?.value || "")
+        .split(",").map((item) => item.trim()).filter(Boolean),
+    })).filter((item) => item.content);
+    return { language: elements.botAsrLanguage.value, domain: document.querySelector("#asr-domain")?.value.trim() || null, max_delay: number("asr-max-delay"), include_partials: checked("asr-include-partials"), emit_sentences: checked("asr-emit-sentences"), turn_detection_mode: elements.botTurnSource.value === "off" ? "fixed" : document.querySelector("#asr-turn-mode")?.value, end_of_utterance_silence_trigger: number("asr-silence-trigger"), end_of_utterance_max_delay: number("asr-max-eou-delay"), additional_vocab: vocabulary, punctuation_overrides: { sensitivity: number("asr-punctuation-sensitivity"), permitted_marks: punctuationMode === "custom" ? lines("asr-custom-marks") : "all" } };
+  }
+  if (provider === "soniox") {
+    return { language_hints: selectedHints, language_hints_strict: checked("asr-strict-hints"), enable_language_identification: checked("asr-language-id"), endpoint_sensitivity: number("asr-endpoint-sensitivity"), endpoint_latency_adjustment_level: number("asr-latency-level"), max_endpoint_delay_ms: number("asr-max-endpoint-delay"), context_general: lines("asr-context-general").map((row) => { const [key, ...rest] = row.split("="); return { key: key.trim(), value: rest.join("=").trim() }; }).filter((item) => item.key && item.value), context_text: document.querySelector("#asr-context-text")?.value || "", context_terms: lines("asr-context-terms") };
+  }
+  const focus = document.querySelector("#asr-voice-focus")?.value || null;
+  const thresholdText = document.querySelector("#asr-voice-focus-threshold")?.value;
+  return { language_codes: selectedHints, mode: document.querySelector("#asr-assembly-mode")?.value, prompt: document.querySelector("#asr-prompt")?.value || "", keyterms_prompt: lines("asr-keyterms-prompt"), continuous_partials: checked("asr-continuous-partials"), min_turn_silence: number("asr-min-silence"), max_turn_silence: number("asr-max-silence"), vad_threshold: number("asr-vad-threshold"), interruption_delay: number("asr-interruption-delay"), agent_context_enabled: checked("asr-agent-context"), user_context_carryover_enabled: checked("asr-user-context"), previous_context_n_turns: number("asr-previous-context"), voice_focus: focus, voice_focus_threshold: focus && thresholdText !== "" ? Number(thresholdText) : null, speaker_labels: checked("asr-speaker-labels") };
+}
+
 async function saveBot(event) {
   event.preventDefault();
   clearError();
-  const saving = elements.botSaveKeys.checked;
-  const deepgramKey = elements.botDeepgramKey.value;
+  const saving = Object.values(botKeySaveState).some(Boolean);
+  const asrKey = elements.botAsrKey.value;
+  const ttsKey = elements.botTts.value === "elevenlabs"
+    ? (elements.botElevenlabsKey.value || elements.voiceDiscoveryKey.value)
+    : elements.botDeepgramKey.value;
   const llmKey = elements.botLlmKey.value;
   const elevenlabsKey = elements.botElevenlabsKey.value || elements.voiceDiscoveryKey.value;
   if (saving && elevenlabsKey && !elements.botElevenlabsKey.value) {
     elements.botElevenlabsKey.value = elevenlabsKey;
-  }
-  const requiredKeys = [deepgramKey, llmKey];
-  if (elements.botTts.value === "elevenlabs") requiredKeys.push(elevenlabsKey);
-  if (saving && requiredKeys.some(Boolean) && !requiredKeys.every(Boolean)) {
-    showError("Enter all API keys required by the selected providers, or leave them blank to keep saved keys.");
-    return;
   }
   if (!elements.botVoice.value) {
     showError("Choose a TTS voice before saving the bot.");
@@ -1774,14 +2056,9 @@ async function saveBot(event) {
   const payload = {
     name: elements.botName.value.trim(),
     asr_provider: elements.botAsr.value,
-    asr_model: elements.botAsrLanguage.value,
-    asr_language_hints: [...elements.botAsrHints.selectedOptions].map((option) => option.value),
-    asr_eot_threshold: Number(elements.botAsrEotThreshold.value),
-    asr_eot_timeout_ms: Number(elements.botAsrEotTimeout.value),
-    asr_keyterms: elements.botAsrKeyterms.value.split("\n").map((term) => term.trim()).filter(Boolean),
-    asr_profanity_filter: elements.botAsrProfanity.checked,
-    asr_numerals: elements.botAsrNumerals.checked,
-    asr_redact: elements.botAsrRedact.value || null,
+    asr_model: elements.botAsrModel.value,
+    turn_detection_source: elements.botTurnSource.value,
+    asr_options: collectAsrOptions(),
     tts_provider: elements.botTts.value,
     tts_voice: elements.botVoice.value,
     tts_model: elements.botTtsModel.value,
@@ -1807,22 +2084,25 @@ async function saveBot(event) {
     opening_script: elements.botOpeningScript.value,
     fallback_script: elements.botFallbackScript.value,
     save_keys: saving,
+    save_asr_key: botKeySaveState.asr,
+    save_tts_key: botKeySaveState.tts,
+    save_llm_key: botKeySaveState.llm,
   };
-  if (saving && deepgramKey && llmKey) {
-    payload.deepgram_api_key = deepgramKey;
-    payload.llm_api_key = llmKey;
-    if (elevenlabsKey) payload.elevenlabs_api_key = elevenlabsKey;
-  }
+  if (botKeySaveState.asr && asrKey) payload.asr_api_key = asrKey;
+  if (botKeySaveState.tts && ttsKey) payload.tts_api_key = ttsKey;
+  if (botKeySaveState.llm && llmKey) payload.llm_api_key = llmKey;
 
   try {
     const saved = editingBotId
       ? await apiRequest(`/api/bots/${editingBotId}`, { method: "PUT", body: payload })
       : await apiRequest("/api/bots", { method: "POST", body: payload });
+    elements.botAsrKey.value = "";
     elements.botDeepgramKey.value = "";
     elements.botLlmKey.value = "";
     elements.botElevenlabsKey.value = "";
     elements.voiceDiscoveryKey.value = "";
-    payload.deepgram_api_key = "";
+    payload.asr_api_key = "";
+    payload.tts_api_key = "";
     payload.llm_api_key = "";
     payload.elevenlabs_api_key = "";
     closeEditor();
@@ -2103,19 +2383,16 @@ async function startBotSession() {
   if (!ensureSecureContext()) return;
   const payload = { bot_id: bot.id, session_type: testMode };
   if (!bot.has_saved_keys) {
-    if (!elements.sessionDeepgramKey.value || !elements.sessionLlmKey.value) {
-      showError("This bot has no saved keys. Enter both API keys for this session.");
+    const ttsKey = bot.tts_provider === "elevenlabs"
+      ? elements.sessionElevenlabsKey.value
+      : elements.sessionTtsKey.value;
+    if (!elements.sessionDeepgramKey.value || !ttsKey || !elements.sessionLlmKey.value) {
+      showError("This bot has no saved keys. Enter its ASR, TTS, and LLM keys for this session.");
       return;
     }
-    payload.deepgram_api_key = elements.sessionDeepgramKey.value;
+    payload.asr_api_key = elements.sessionDeepgramKey.value;
+    payload.tts_api_key = ttsKey;
     payload.llm_api_key = elements.sessionLlmKey.value;
-    if (bot.tts_provider === "elevenlabs") {
-      if (!elements.sessionElevenlabsKey.value) {
-        showError("This bot uses ElevenLabs. Enter its API key for this session.");
-        return;
-      }
-      payload.elevenlabs_api_key = elements.sessionElevenlabsKey.value;
-    }
   }
 
   resetLiveTestView();
@@ -2129,9 +2406,11 @@ async function startBotSession() {
   try {
     const session = await apiRequest("/api/sessions", { method: "POST", body: payload });
     elements.sessionDeepgramKey.value = "";
+    elements.sessionTtsKey.value = "";
     elements.sessionLlmKey.value = "";
     elements.sessionElevenlabsKey.value = "";
-    payload.deepgram_api_key = "";
+    payload.asr_api_key = "";
+    payload.tts_api_key = "";
     payload.llm_api_key = "";
     await connectSession(session);
   } catch (error) {
@@ -2298,9 +2577,88 @@ elements.botElevenlabsKey.addEventListener("input", syncTtsVoiceAvailability);
 elements.botTts.addEventListener("change", () => {
   elements.botVoice.replaceChildren();
   syncTtsFields();
+  syncKeyFieldVisibility();
 });
 elements.botTtsModel.addEventListener("change", syncElevenlabsSettings);
-elements.botAsrLanguage.addEventListener("change", syncAsrLanguage);
+elements.botAsr.addEventListener("change", () => {
+  loadAsrModelCatalog();
+  syncKeyFieldVisibility();
+});
+elements.botAsrModel.addEventListener("change", () => renderAsrModelFields());
+elements.botAsrLanguage.addEventListener("change", () => {
+  if (elements.botAsr.value === "speechmatics") renderAsrAdvanced(collectAsrOptions());
+});
+elements.botTurnSource.addEventListener("change", () => {
+  elements.botTurnSourceHint.textContent = elements.botTurnSource.value === "off"
+    ? "Semantic Turn Detection is off; the provider still closes the Turn with fixed silence."
+    : "The selected provider is the only final Turn authority for this session.";
+  syncAsrDependentFields();
+});
+elements.botAsrAdvanced.addEventListener("change", (event) => {
+  if (event.target.id === "asr-assembly-mode") {
+    const presets = {
+      min_latency: [128, 640, 0],
+      balanced: [128, 1280, 500],
+      max_accuracy: [512, 2560, 500],
+    };
+    const [minimum, maximum, interruption] = presets[event.target.value];
+    document.querySelector("#asr-min-silence").value = minimum;
+    document.querySelector("#asr-max-silence").value = maximum;
+    document.querySelector("#asr-interruption-delay").value = interruption;
+    document.querySelector("#asr-assembly-mode-note").textContent = "Preset loaded. You can edit the three populated Turn values.";
+  }
+  syncAsrDependentFields();
+});
+elements.botAsrAdvanced.addEventListener("click", (event) => {
+  const refreshButton = event.target.closest?.("#asr-refresh-catalog");
+  if (refreshButton) {
+    const button = refreshButton;
+    const label = button.querySelector(".catalog-refresh-label");
+    const provider = elements.botAsr.value;
+    const bot = editingBotId && bots.find((item) => item.id === editingBotId);
+    const inlineKey = elements.botAsrKey.value.trim();
+    if (inlineKey) {
+      showError("Save the replacement ASR key before refreshing its account catalog.");
+      return;
+    }
+    const body = { provider, bot_id: bot?.id };
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    if (label) label.textContent = "Refreshing catalog…";
+    apiRequest("/api/asr/catalog", { method: "POST", body }).then((model) => {
+      const providerEntry = selectedAsrProvider();
+      const index = providerEntry.models.findIndex((item) => item.id === model.id);
+      if (index >= 0) providerEntry.models[index] = model;
+      if (bot) bot.asr_account_catalog = model;
+      renderAsrModelFields({
+        asr_model: model.id,
+        asr_options: collectAsrOptions(),
+        turn_detection_source: elements.botTurnSource.value,
+      });
+    }).catch((error) => showError(error.message)).finally(() => {
+      button.disabled = false;
+      button.setAttribute("aria-busy", "false");
+      if (label) label.textContent = "Refresh account catalog";
+    });
+  }
+  if (event.target.id === "asr-add-vocabulary") {
+    document.querySelector("#asr-vocabulary-rows")?.insertAdjacentHTML("beforeend", `
+      <div class="asr-vocabulary-row">
+        <input class="asr-vocabulary-content" aria-label="Vocabulary phrase">
+        <input class="asr-vocabulary-sounds-like" aria-label="Sounds like, comma separated" placeholder="Sounds like · comma separated">
+        <button class="asr-remove-vocabulary" type="button" aria-label="Remove vocabulary row">×</button>
+      </div>`);
+  }
+  if (event.target.classList.contains("asr-remove-vocabulary")) {
+    event.target.closest(".asr-vocabulary-row")?.remove();
+  }
+});
+elements.botAsrAdvanced.addEventListener("input", (event) => {
+  if (event.target.classList.contains("asr-assembly-mode-value")) {
+    document.querySelector("#asr-assembly-mode-note").textContent = "Selected Mode · modified values";
+  }
+  syncAsrDependentFields();
+});
 elements.botAsrEotThreshold.addEventListener("input", syncAsrAdvancedFields);
 elements.botLlmTemperature.addEventListener("input", () => {
   elements.botLlmTemperatureValue.value = Number(elements.botLlmTemperature.value).toFixed(1);
@@ -2335,7 +2693,10 @@ elements.useManualVoice.addEventListener("click", () => {
     renderVoicePicker();
   }
 });
-elements.botProvider.addEventListener("change", () => applyProviderPreset(botProviderRefs));
+elements.botProvider.addEventListener("change", () => {
+  applyProviderPreset(botProviderRefs);
+  syncKeyFieldVisibility();
+});
 elements.botVoice.addEventListener("change", () =>
   updateVoiceCard(elements.botVoice, elements.botVoiceCard),
 );
@@ -2364,6 +2725,7 @@ async function boot() {
   initializePrototypeLayout();
   try {
     catalogs = await apiRequest("/api/catalogs");
+    baseAsrProviderCatalog = JSON.parse(JSON.stringify(catalogs.asr_providers));
   } catch {
     showError("The local Voice Agent server is unavailable. Start the backend and reload.");
     elements.start.disabled = true;

@@ -289,3 +289,26 @@ def test_missing_flux_word_timing_is_not_reported_as_zero(capture: CallCapture) 
 
     assert metrics[0].asr_final_latency_ms is None
     assert metrics[0].asr_final_reason == "word_timing_unavailable"
+
+
+def test_context_update_result_is_attached_to_the_active_turn(capture: CallCapture) -> None:
+    """AssemblyAI context status remains provider-neutral and safe in history."""
+    capture.chat_text("hello")
+    capture.record_context_update(0, False, "provider_update_failed:RuntimeError")
+
+    metrics = capture.metrics_snapshot()
+
+    assert metrics[0].context_applied is False
+    assert metrics[0].context_failure_reason == "provider_update_failed:RuntimeError"
+
+
+def test_late_context_result_does_not_attach_to_the_next_turn(capture: CallCapture) -> None:
+    """A delayed provider callback must update its originating Turn by index."""
+    capture.chat_text("first")
+    capture.chat_text("second")
+
+    capture.record_context_update(0, True, None)
+    metrics = capture.metrics_snapshot()
+
+    assert metrics[0].context_applied is True
+    assert metrics[1].context_applied is None

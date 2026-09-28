@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -38,6 +40,8 @@ class TurnMetric(BaseModel):
     reasoning_tokens: int | None = None
     reasoning_status: str = "unverified"
     reasoning_control: str | None = None
+    context_applied: bool | None = None
+    context_failure_reason: str | None = None
 
 
 class CallSummary(BaseModel):
@@ -69,6 +73,7 @@ class CallDetail(CallSummary):
     asr_provider: str
     asr_model: str
     language: str
+    context_mode: Literal["off", "agent", "full"] = "off"
     audio_format: str
     sample_rate: int
     channels: int

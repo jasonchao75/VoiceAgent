@@ -8,6 +8,7 @@ import shutil
 import sqlite3
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Literal
 
 import aiosqlite
 
@@ -58,6 +59,7 @@ class HistoryStore:
                     asr_provider TEXT NOT NULL,
                     asr_model TEXT NOT NULL,
                     language TEXT NOT NULL,
+                    context_mode TEXT NOT NULL DEFAULT 'off',
                     audio_format TEXT NOT NULL,
                     sample_rate INTEGER NOT NULL,
                     channels INTEGER NOT NULL,
@@ -91,6 +93,8 @@ class HistoryStore:
                     reasoning_tokens INTEGER,
                     reasoning_status TEXT NOT NULL,
                     reasoning_control TEXT,
+                    context_applied INTEGER,
+                    context_failure_reason TEXT,
                     PRIMARY KEY (call_id, turn_index)
                 );
                 CREATE INDEX IF NOT EXISTS idx_calls_started_at ON calls(started_at DESC);
@@ -98,6 +102,10 @@ class HistoryStore:
             )
             await self._migrate_turn_metrics(database)
             await self._migrate_calls(database)
+            await database.execute(
+                "UPDATE calls SET context_mode='off' "
+                "WHERE context_mode NOT IN ('off', 'agent', 'full')"
+            )
             await database.execute(
                 """UPDATE calls
                    SET ended_at = COALESCE(ended_at, ?), status = 'failed',
@@ -115,6 +123,7 @@ class HistoryStore:
             "tts_model TEXT NOT NULL DEFAULT 'flux-general-en'",
             "tts_voice TEXT NOT NULL DEFAULT ''",
             "tts_text_aggregation TEXT NOT NULL DEFAULT 'token'",
+            "context_mode TEXT NOT NULL DEFAULT 'off'",
         ):
             try:
                 await database.execute(f"ALTER TABLE calls ADD COLUMN {column_def}")
@@ -131,6 +140,8 @@ class HistoryStore:
             "playback_ms REAL",
             "asr_final_reason TEXT",
             "incomplete_reason TEXT",
+            "context_applied INTEGER",
+            "context_failure_reason TEXT",
         ]
         for column_def in new_columns:
             try:
@@ -155,6 +166,7 @@ class HistoryStore:
         asr_provider: str,
         asr_model: str,
         language: str,
+        context_mode: Literal["off", "agent", "full"] = "off",
         sample_rate: int,
         channels: int,
     ) -> None:
@@ -164,8 +176,9 @@ class HistoryStore:
                 """INSERT INTO calls (
                     id, bot_id, bot_name, session_type, started_at, status, llm_provider, llm_model,
                     tts_provider, tts_model, tts_voice, tts_text_aggregation,
-                    asr_provider, asr_model, language, audio_format, sample_rate, channels
-                ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'flac', ?, ?)""",
+                    asr_provider, asr_model, language, context_mode, audio_format,
+                    sample_rate, channels
+                ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'flac', ?, ?)""",
                 (
                     call_id,
                     bot_id,
@@ -181,6 +194,7 @@ class HistoryStore:
                     asr_provider,
                     asr_model,
                     language,
+                    context_mode,
                     sample_rate,
                     channels,
                 ),
@@ -234,8 +248,9 @@ class HistoryStore:
                        llm_request_splicing_ms, llm_first_token_ms, tts_initial_ms,
                        tts_first_audio_ms, playback_ms, server_to_playback_ms,
                        turn_to_playback_ms, asr_final_reason, incomplete_reason,
-                       reasoning_tokens, reasoning_status, reasoning_control
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       reasoning_tokens, reasoning_status, reasoning_control,
+                       context_applied, context_failure_reason
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     (
                         call_id,
@@ -253,6 +268,8 @@ class HistoryStore:
                         item.reasoning_tokens,
                         item.reasoning_status,
                         item.reasoning_control,
+                        item.context_applied,
+                        item.context_failure_reason,
                     )
                     for item in metrics
                 ],
@@ -304,6 +321,7 @@ class HistoryStore:
             asr_provider=row["asr_provider"],
             asr_model=row["asr_model"],
             language=row["language"],
+            context_mode=row["context_mode"],
             audio_format=row["audio_format"],
             sample_rate=row["sample_rate"],
             channels=row["channels"],
