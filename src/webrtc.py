@@ -189,9 +189,7 @@ class SessionBoundSmallWebRTCHandler:
         if answer is None:
             raise RuntimeError("WebRTC restart negotiation failed")
         answer_pc_id = answer.get("pc_id", "")
-        if not answer_pc_id or not secrets.compare_digest(
-            answer_pc_id, binding.connection.pc_id
-        ):
+        if not answer_pc_id or not secrets.compare_digest(answer_pc_id, binding.connection.pc_id):
             raise RuntimeError("WebRTC peer registration mismatch")
         async with self._lock:
             current = self._bindings.get(capability)

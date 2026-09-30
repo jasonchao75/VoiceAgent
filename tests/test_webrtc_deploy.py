@@ -51,9 +51,7 @@ def test_preflight_reports_only_safe_deployment_facts(tmp_path: Path) -> None:
         ),
     ],
 )
-def test_preflight_fails_closed(
-    tmp_path: Path, environment: dict[str, str], message: str
-) -> None:
+def test_preflight_fails_closed(tmp_path: Path, environment: dict[str, str], message: str) -> None:
     """Reject deployment when any first-release network invariant is missing."""
     port_range = tmp_path / "ip_local_port_range"
     port_range.write_text("32768 60999\n", encoding="utf-8")
@@ -66,11 +64,11 @@ def test_preflight_fails_closed(
 
 def test_deploy_rollback_supports_revisions_before_webrtc_override() -> None:
     """Keep rollback usable when the previous revision has only compose.yaml."""
-    script = (
-        Path(__file__).parents[1] / "scripts/deploy/platform_voiceagent.sh"
-    ).read_text(encoding="utf-8")
+    script = (Path(__file__).parents[1] / "scripts/deploy/platform_voiceagent.sh").read_text(
+        encoding="utf-8"
+    )
     assert "if [[ -f compose.webrtc.yaml ]]" in script
-    assert 'compose_files+=(-f compose.webrtc.yaml)' in script
+    assert "compose_files+=(-f compose.webrtc.yaml)" in script
     assert "Production WebRTC Compose override is missing" in script
 
 

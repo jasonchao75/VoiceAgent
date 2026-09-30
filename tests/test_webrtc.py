@@ -356,9 +356,7 @@ async def test_real_local_offer_patch_and_sensitive_logs_are_suppressed(
             capability=token,
             request=SmallWebRTCPatchRequest(
                 pc_id=answer["pc_id"],
-                candidates=[
-                    IceCandidate(candidate="", sdp_mid="0", sdp_mline_index=0)
-                ],
+                candidates=[IceCandidate(candidate="", sdp_mid="0", sdp_mline_index=0)],
             ),
         )
         restart_client = RTCPeerConnection()
@@ -378,15 +376,11 @@ async def test_real_local_offer_patch_and_sensitive_logs_are_suppressed(
         )
         assert restart_answer["pc_id"] != answer["pc_id"]
         await restart_client.setRemoteDescription(
-            RTCSessionDescription(
-                sdp=restart_answer["sdp"], type=restart_answer["type"]
-            )
+            RTCSessionDescription(sdp=restart_answer["sdp"], type=restart_answer["type"])
         )
         await adapter.patch(
             capability=token,
-            request=SmallWebRTCPatchRequest(
-                pc_id=restart_answer["pc_id"], candidates=[]
-            ),
+            request=SmallWebRTCPatchRequest(pc_id=restart_answer["pc_id"], candidates=[]),
         )
         with pytest.raises(PermissionError, match="authorization"):
             await adapter.patch(
@@ -399,9 +393,7 @@ async def test_real_local_offer_patch_and_sensitive_logs_are_suppressed(
             voices=voice_catalog,
             llms=llm_catalog,
         )
-        malformed_adapter = SessionBoundSmallWebRTCHandler(
-            session_store=malformed_store
-        )
+        malformed_adapter = SessionBoundSmallWebRTCHandler(session_store=malformed_store)
         sentinel = "sentinel-private-type"
         with pytest.raises(ValueError, match="type"):
             await malformed_adapter.offer(

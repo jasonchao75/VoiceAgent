@@ -247,6 +247,12 @@
       "summary": "GitHub VoiceAgent CI failed for deployment commit 9292b9f, so automatic CD was correctly skipped; the failing job must be diagnosed and fixed before production deployment.",
       "status": "Open",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-034",
+      "summary": "The Python 3.11 dependency marker fix allowed CI installation and safety gates to pass for commit 1be3eb6, but the backend-check step then failed before frontend/image build; the new failure requires diagnosis before CD can resume.",
+      "status": "Open",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [

@@ -229,9 +229,12 @@ class BrowserEvent(BaseModel):
     network_type: Literal["slow-2g", "2g", "3g", "4g", "unknown"] | None = None
     end_reason: Literal["user", "disconnect", "provider", "connection"] | None = None
     stage: Literal["permission", "session", "signaling", "live"] | None = None
-    safe_error_category: Literal[
-        "microphone_unavailable", "session_unavailable", "connection_failed", "call_interrupted"
-    ] | None = None
+    safe_error_category: (
+        Literal[
+            "microphone_unavailable", "session_unavailable", "connection_failed", "call_interrupted"
+        ]
+        | None
+    ) = None
 
     @model_validator(mode="after")
     def text_is_only_allowed_for_chat(self) -> BrowserEvent:
@@ -326,9 +329,7 @@ def _allowed_origins() -> list[str]:
 def _ice_server_urls() -> list[str]:
     """Load explicit STUN URLs while preserving the no-TURN product decision."""
     urls = [
-        item.strip()
-        for item in os.getenv("VOICE_AGENT_STUN_URLS", "").split(",")
-        if item.strip()
+        item.strip() for item in os.getenv("VOICE_AGENT_STUN_URLS", "").split(",") if item.strip()
     ]
     if any(not url.startswith(("stun:", "stuns:")) for url in urls):
         raise RuntimeError("VOICE_AGENT_STUN_URLS accepts only stun: or stuns: URLs")
@@ -1482,9 +1483,7 @@ def create_app() -> FastAPI:
         if (event.event == "mobile_mic_permission") != (event.result is not None):
             raise HTTPException(status_code=422, detail="Event result is invalid")
         client = http_request.client.host if http_request.client else "unknown"
-        if not public_event_limiter.allow(
-            scope="event", public_id=public_id, client=client
-        ):
+        if not public_event_limiter.allow(scope="event", public_id=public_id, client=client):
             raise HTTPException(status_code=429, detail="Too many events")
         demo_ref = hashlib.sha256(public_id.encode("utf-8")).hexdigest()[:12]
         logger.info(
@@ -1514,9 +1513,7 @@ def create_app() -> FastAPI:
         if demo is None or not demo.active:
             raise HTTPException(status_code=404, detail="Demo not found")
         client = http_request.client.host if http_request.client else "unknown"
-        if not public_session_limiter.allow(
-            scope="session", public_id=public_id, client=client
-        ):
+        if not public_session_limiter.allow(scope="session", public_id=public_id, client=client):
             raise HTTPException(status_code=429, detail="Too many call attempts")
         resolved = _published_session_request(demo)
         try:
@@ -1623,9 +1620,7 @@ def create_app() -> FastAPI:
                 status_code=503, detail="Voice connection could not start"
             ) from None
         except TimeoutError:
-            raise HTTPException(
-                status_code=504, detail="Voice connection timed out"
-            ) from None
+            raise HTTPException(status_code=504, detail="Voice connection timed out") from None
 
     @app.patch("/api/public/webrtc/{capability}", status_code=204)
     async def webrtc_patch(

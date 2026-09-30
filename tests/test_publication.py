@@ -315,9 +315,7 @@ def test_link_disable_enable_delete_and_restart_persist(
         disabled = client.post(f"/api/bots/{bot['id']}/share/disable", headers=ORIGIN)
         assert disabled.status_code == 200
         assert disabled.json()["active"] is False
-        denied = client.post(
-            f"/api/public/demos/{public_id}/sessions", json={}, headers=ORIGIN
-        )
+        denied = client.post(f"/api/public/demos/{public_id}/sessions", json={}, headers=ORIGIN)
         assert denied.status_code == 404
 
     with TestClient(create_app()) as restarted:
@@ -360,9 +358,9 @@ def test_referenced_key_rotation_clear_and_restore_follow_bot(
         headers=ORIGIN,
     )
     assert cleared.status_code == 200, cleared.text
-    assert keyed_client.get(f"/api/bots/{bot_id}/share", headers=ORIGIN).json()[
-        "available"
-    ] is False
+    assert (
+        keyed_client.get(f"/api/bots/{bot_id}/share", headers=ORIGIN).json()["available"] is False
+    )
     unavailable = keyed_client.post(
         f"/api/public/demos/{share['public_id']}/sessions", json={}, headers=ORIGIN
     )
@@ -380,9 +378,7 @@ def test_referenced_key_rotation_clear_and_restore_follow_bot(
         headers=ORIGIN,
     )
     assert restored.status_code == 200, restored.text
-    assert keyed_client.get(f"/api/bots/{bot_id}/share", headers=ORIGIN).json()[
-        "available"
-    ] is True
+    assert keyed_client.get(f"/api/bots/{bot_id}/share", headers=ORIGIN).json()["available"] is True
 
     switched = keyed_client.put(
         f"/api/bots/{bot_id}",
