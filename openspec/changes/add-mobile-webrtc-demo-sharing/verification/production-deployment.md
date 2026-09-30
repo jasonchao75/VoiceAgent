@@ -4,9 +4,10 @@
 
 - Date: 2026-09-30
 - Evidence level: `external-real` for deployment/runtime configuration; no paid Provider call
-- Commit: `7166ad9eabd7ab4f2053560374d4d1dc6c1f64ba`
-- CI run: `36702783573` — PASS
-- CD run: `36703049940` — PASS
+- Deployment baseline commit: `7166ad9eabd7ab4f2053560374d4d1dc6c1f64ba`
+- Accessibility repair commit: `43ee1d03bb1a636c38000d2b774b99ab594aafd5`
+- Latest CI run: `36705082129` — PASS
+- Latest CD run: `36705391988` — PASS
 - Public origin: `https://platform.voiceagentdemo.org`
 
 ## Verified runtime facts
@@ -19,6 +20,7 @@
 - Evaluation verification preserves 8 batches, 12 reports, 29 reviews and 153 benchmarks.
 - The unauthenticated product root redirects to the product login page; a mobile demo route serves over HTTPS; missing public metadata returns 404; the admin Bot API returns 401 without a Basic-auth challenge.
 - Local desktop/narrow browser regression confirms inactive mobile screens are `aria-hidden` and inert, while the active call retains a semantic page title; 24 mobile UI checks pass.
+- A post-deployment 390×844 production-browser check confirms no horizontal overflow and an accessibility tree containing only `Demo unavailable`, its safe message and `Try again`; all four inactive screens report `aria-hidden=true` and `inert=true`.
 
 ## Data-safety evidence
 
