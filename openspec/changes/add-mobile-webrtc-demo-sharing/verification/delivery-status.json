@@ -274,6 +274,12 @@
       "summary": "Post-deployment inspection found the healthy production container still attached to voiceagent-platform_default instead of Linux host networking; the in-container WebRTC preflight correctly failed, so the mobile media path is not deployable despite the green workflow and HTTP health check.",
       "status": "Open",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-038",
+      "summary": "The first CD run that attempted to synchronize the verified deployment entrypoint failed before switching the production container; the existing service remained healthy and the workflow log must be diagnosed before retrying.",
+      "status": "Open",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
