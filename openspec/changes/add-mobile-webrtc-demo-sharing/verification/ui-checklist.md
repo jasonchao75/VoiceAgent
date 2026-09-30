@@ -1,10 +1,10 @@
 # UI Verification Checklist
 
 - Change: `add-mobile-webrtc-demo-sharing`
-- Gate: User Gate 1 approved 2026-09-29; Engineering A/B and C local evidence complete; Q-005/external-real pending
+- Gate: User Gate 1 approved 2026-09-29; Engineering A/B and C local evidence complete; production deployment/preflight pass; Provider key re-entry and external-real call matrix pending
 - Browsers: Chromium fixture; iOS Safari/Android Chrome external-real pending
 - Viewports: Admin 1440×1000, 1024×1000, 390×844; Mobile 320×700, 375×812, 390×844, 430×932
-- Fixture revision: production-route fixtures in `frontend/tests/ui/`; 28 focused desktop/narrow checks passed, plus 2 real-API Share checks
+- Fixture revision: production-route fixtures in `frontend/tests/ui/`; 24 mobile desktop/narrow checks passed after accessibility-state repair, plus the previously completed Share/API matrix
 - Baseline approval: D-010; frozen SHA pair recorded in `prototypes/README.md`
 
 | Scenario | Baseline | Actual | Diff | Ratio | Functional | Accessibility | Known deviation | Decision |

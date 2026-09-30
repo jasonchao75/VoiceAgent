@@ -120,4 +120,9 @@ test("all unavailable metadata states use one safe visitor message", async ({ pa
   await page.goto("/demo.html");
   await expect(page.getByRole("heading", { name: "Demo unavailable" })).toBeVisible();
   await expect(page.getByText("This demo is no longer available.", { exact: true })).toBeVisible();
+  await expect(page.locator('[data-screen="error"]')).toHaveAttribute("aria-hidden", "false");
+  await expect(page.locator('[data-screen="error"]')).toHaveJSProperty("inert", false);
+  await expect(page.locator('[data-screen="ready"]')).toHaveAttribute("aria-hidden", "true");
+  await expect(page.locator('[data-screen="ready"]')).toHaveJSProperty("inert", true);
+  await expect(page.getByRole("button", { name: "Start voice call" })).toHaveCount(0);
 });

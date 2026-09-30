@@ -56,7 +56,8 @@
     {
       "id": "KI-001",
       "summary": "Current deployment exposes only TCP 8000; public UDP/ICE reachability for Small WebRTC through Docker and the DigitalOcean firewall is not configured or proven.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "Production now uses Linux host networking, configures one STUN server, and allows the verified Linux ephemeral range 32768-60999/udp in UFW for IPv4 and IPv6. Actual public ICE reachability remains explicitly tracked as UV-002/UV-008.",
       "disclosed_to_user": true
     },
     {
@@ -246,7 +247,8 @@
     {
       "id": "KI-031",
       "summary": "DigitalOcean production preflight confirmed that VOICE_AGENT_STUN_URLS is unset and active UFW permits only SSH/Nginx; the host ephemeral UDP range is 32768-60999, so the fail-closed WebRTC deployment cannot start until a STUN endpoint is selected and UDP ingress is authorized.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "D-014 configured one Cloudflare STUN endpoint and authorized the matching UFW IPv4/IPv6 UDP range; the successful production container preflight reports host networking, one STUN server and 32768-60999.",
       "disclosed_to_user": true
     },
     {
@@ -287,7 +289,8 @@
     {
       "id": "KI-037",
       "summary": "Post-deployment inspection found the healthy production container still attached to voiceagent-platform_default instead of Linux host networking; the in-container WebRTC preflight correctly failed, so the mobile media path is not deployable despite the green workflow and HTTP health check.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "After refreshing the root-managed deployment entrypoint, CD run 36703049940 loaded compose.webrtc.yaml successfully. Independent host inspection confirms Docker network mode=host and the in-container WebRTC preflight passes.",
       "disclosed_to_user": true
     },
     {
@@ -302,6 +305,27 @@
       "summary": "The WebRTC-aware deployment failed closed because the existing dedicated Evaluation volume contains 8 batches, 12 reports, 29 reviews and 153 benchmarks but has no production provenance marker; none of the five known local acceptance batch IDs were present, and Q-007 now requires a product decision before any metadata or data change.",
       "status": "Resolved",
       "resolution": "D-015 selected preservation. A verified same-host SQLite backup was created, both production provenance markers were committed atomically, integrity remained ok, and all protected result-table counts stayed unchanged.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-040",
+      "summary": "Production browser verification rendered only the safe unavailable state, but the accessibility tree still exposed controls from every inactive screen because opacity and pointer-events did not remove them from assistive navigation.",
+      "status": "Resolved",
+      "resolution": "Every mobile screen now synchronizes active state with aria-hidden and inert. A regression check proves that the unavailable state is the only accessible state and the inactive Start voice call control is absent from the accessibility tree.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-041",
+      "summary": "After making inactive mobile screens inert, eight responsive Live-state checks stopped finding the expected accessible title; the prior tests had falsely matched the transparent Ready heading because the visual call title was a strong element rather than a semantic heading.",
+      "status": "Resolved",
+      "resolution": "The active call title is now a semantic h1 with the existing compact visual treatment. All 24 desktop/narrow mobile UI checks pass, including four overflow widths in both projects.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-042",
+      "summary": "A Share-page regression rerun was invoked against the frontend-only preview while its test configuration requires the full application at 127.0.0.1:8000; all four cases failed at navigation with connection refused before any product assertion ran.",
+      "status": "Resolved",
+      "resolution": "The full local FastAPI application was started and the same four Share-page desktop/narrow checks passed, confirming the earlier result was only a test-environment startup failure.",
       "disclosed_to_user": true
     }
   ],
@@ -339,12 +363,19 @@
     {
       "id": "UV-006",
       "summary": "The merged production Compose configuration and deploy-script syntax pass, but the final Docker image build and in-container Linux WebRTC preflight were not executed because the local Docker daemon is not running.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "GitHub CI built the production image successfully and CD run 36703049940 completed the Linux host-network deployment plus in-container WebRTC and Evaluation preflights.",
       "disclosed_to_user": true
     },
     {
       "id": "UV-007",
       "summary": "Both DigitalOcean Bots retain their definitions, but their saved ASR/TTS/LLM Provider API Keys cannot be decrypted after the authorized Storage Key rotation and must be re-entered by the user before saved-key calls and external-real Provider verification can resume.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-008",
+      "summary": "The host and UFW are configured for WebRTC UDP, but DigitalOcean Cloud Firewall control-plane rules cannot be inspected from the VM; cloud-level UDP reachability remains unproven until the firewall is confirmed or a real ICE call succeeds.",
       "status": "Open",
       "disclosed_to_user": true
     }

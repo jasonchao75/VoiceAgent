@@ -21,16 +21,16 @@ const fixtureTurns = [
 app.innerHTML = `
   <main class="demo-page">
     <section class="phone-shell" aria-label="VoiceAgent mobile demo">
-      <section class="screen active" data-screen="ready" aria-labelledby="ready-title">
+      <section class="screen active" data-screen="ready" aria-labelledby="ready-title" aria-hidden="false">
         <header class="topline"><span class="brand"><i></i><i></i><i></i><b>VoiceAgent</b></span><span class="secure">⌾ Private call</span></header>
         <div class="ready-content"><div class="avatar-wrap"><div class="avatar">V</div></div><p class="eyebrow">Ready to talk</p><h1 id="ready-title">Voice demo</h1><p id="demo-description" class="description"></p><div class="chips"><span>● Live voice</span><span>● Natural interruption</span><span>● English</span></div></div>
         <footer><button id="start-call" class="primary" type="button">Start voice call</button><p class="privacy"><strong>Before you start:</strong> your voice is stored for 7 days; transcripts and call metrics for 30 days.</p></footer>
       </section>
 
-      <section class="screen" data-screen="connecting" aria-live="polite"><header class="topline"><span class="brand"><i></i><i></i><i></i><b>VoiceAgent</b></span><span class="secure">WebRTC</span></header><div class="center-state"><div class="loader"><span></span></div><h2>Connecting your call</h2><p>Preparing secure audio and checking your microphone. This usually takes a few seconds.</p></div><p class="privacy">Keep this page open while the call connects.</p></section>
+      <section class="screen" data-screen="connecting" aria-live="polite" aria-hidden="true" inert><header class="topline"><span class="brand"><i></i><i></i><i></i><b>VoiceAgent</b></span><span class="secure">WebRTC</span></header><div class="center-state"><div class="loader"><span></span></div><h2>Connecting your call</h2><p>Preparing secure audio and checking your microphone. This usually takes a few seconds.</p></div><p class="privacy">Keep this page open while the call connects.</p></section>
 
-      <section class="screen call-screen" data-screen="live" aria-labelledby="call-title">
-        <header class="call-header"><button id="transcript-top" class="icon" type="button" aria-label="Open transcript">≡</button><div><strong id="call-title">Voice guide</strong><span><i></i><b id="timer">00:00</b></span></div><span></span></header>
+      <section class="screen call-screen" data-screen="live" aria-labelledby="call-title" aria-hidden="true" inert>
+        <header class="call-header"><button id="transcript-top" class="icon" type="button" aria-label="Open transcript">≡</button><div><h1 id="call-title">Voice guide</h1><span><i></i><b id="timer">00:00</b></span></div><span></span></header>
         <div class="call-stage"><div id="live-orb" class="live-orb" data-mode="listening"><span></span></div><p id="mode-label" class="mode-label">Listening</p><p id="mode-hint" class="mode-hint">Go ahead — your guide can hear you.</p>
           <article class="caption-card"><div class="caption-meta"><span>Live captions</span><button id="view-transcript" type="button">View transcript</button></div><div class="caption-window"><div id="caption-history" class="caption-history"></div></div></article>
           <div id="quality-banner" class="quality" hidden>△ Network is unstable. Reconnecting…</div>
@@ -38,8 +38,8 @@ app.innerHTML = `
         <footer class="call-controls"><button id="mute" type="button" aria-pressed="false"><span>♩</span>Mute</button><button id="end" class="end" type="button"><span>⌕</span>End</button><button id="captions" type="button" aria-pressed="true"><span>▤</span>Captions</button></footer>
       </section>
 
-      <section class="screen" data-screen="ended"><div class="center-state"><div class="result">✓</div><h2>Call ended</h2><p>Your conversation has been saved to the Bot’s session history.</p><div class="stats"><div><span>Duration</span><strong id="final-duration">00:00</strong></div><div><span>Connection</span><strong>WebRTC</strong></div></div></div><button id="call-again" class="primary" type="button">Call again</button></section>
-      <section class="screen" data-screen="error"><div class="center-state"><div class="result error">!</div><h2 id="error-title">Couldn’t connect</h2><p id="error-copy">Check microphone access and your network, then try again.</p></div><button id="retry" class="primary" type="button">Try again</button></section>
+      <section class="screen" data-screen="ended" aria-hidden="true" inert><div class="center-state"><div class="result">✓</div><h2>Call ended</h2><p>Your conversation has been saved to the Bot’s session history.</p><div class="stats"><div><span>Duration</span><strong id="final-duration">00:00</strong></div><div><span>Connection</span><strong>WebRTC</strong></div></div></div><button id="call-again" class="primary" type="button">Call again</button></section>
+      <section class="screen" data-screen="error" aria-hidden="true" inert><div class="center-state"><div class="result error">!</div><h2 id="error-title">Couldn’t connect</h2><p id="error-copy">Check microphone access and your network, then try again.</p></div><button id="retry" class="primary" type="button">Try again</button></section>
 
       <div id="sheet-backdrop" class="sheet-backdrop"></div><aside id="transcript-sheet" class="sheet" aria-label="Full transcript" aria-hidden="true"><div class="handle"></div><header><h3>Transcript</h3><button id="close-transcript" type="button">Close</button></header><div id="messages" class="messages"></div></aside>
     </section>
@@ -63,7 +63,12 @@ const unavailableCopy = "This demo is no longer available.";
 const pageLoadedAt = performance.now();
 
 function showScreen(name) {
-  document.querySelectorAll("[data-screen]").forEach((screen) => screen.classList.toggle("active", screen.dataset.screen === name));
+  document.querySelectorAll("[data-screen]").forEach((screen) => {
+    const active = screen.dataset.screen === name;
+    screen.classList.toggle("active", active);
+    screen.setAttribute("aria-hidden", String(!active));
+    screen.inert = !active;
+  });
 }
 
 function renderTurns() {
