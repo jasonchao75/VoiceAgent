@@ -245,12 +245,20 @@
     {
       "id": "KI-033",
       "summary": "GitHub VoiceAgent CI failed for deployment commit 9292b9f, so automatic CD was correctly skipped; the failing job must be diagnosed and fixed before production deployment.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "The Python 3.11 dependency markers were corrected; the next two CI runs completed dependency installation and safety gates successfully.",
       "disclosed_to_user": true
     },
     {
       "id": "KI-034",
       "summary": "The Python 3.11 dependency marker fix allowed CI installation and safety gates to pass for commit 1be3eb6, but the backend-check step then failed before frontend/image build; the new failure requires diagnosis before CD can resume.",
+      "status": "Resolved",
+      "resolution": "Ruff formatted the six affected Python files; the following CI run passed formatting, lint and type checks.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-035",
+      "summary": "CI for formatted commit ce439c0 reached backend tests but the product-auth test assumed frontend/dist had already been built, while CI intentionally runs backend checks before the frontend build; the isolated backend environment therefore returned the expected routing 404 for the otherwise-public demo URL.",
       "status": "Open",
       "disclosed_to_user": true
     }
