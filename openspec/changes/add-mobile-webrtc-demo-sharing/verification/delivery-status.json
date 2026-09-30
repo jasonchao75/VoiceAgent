@@ -241,6 +241,12 @@
       "status": "Resolved",
       "resolution": "The dotenv update was rerun with an explicit list append/set branch and atomic replacement; a read-only check confirmed exactly one Cloudflare STUN entry, while the previously added UFW IPv4/IPv6 media rules remained active.",
       "disclosed_to_user": false
+    },
+    {
+      "id": "KI-033",
+      "summary": "GitHub VoiceAgent CI failed for deployment commit 9292b9f, so automatic CD was correctly skipped; the failing job must be diagnosed and fixed before production deployment.",
+      "status": "Open",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [

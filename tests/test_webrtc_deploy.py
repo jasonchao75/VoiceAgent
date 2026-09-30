@@ -72,3 +72,10 @@ def test_deploy_rollback_supports_revisions_before_webrtc_override() -> None:
     assert "if [[ -f compose.webrtc.yaml ]]" in script
     assert 'compose_files+=(-f compose.webrtc.yaml)' in script
     assert "Production WebRTC Compose override is missing" in script
+
+
+def test_webrtc_lock_supports_runtime_python_311() -> None:
+    """Keep aiortc's pyee dependency installable in the Python 3.11 image."""
+    lock = (Path(__file__).parents[1] / "requirements.lock").read_text(encoding="utf-8")
+    assert 'pyee==13.0.1 ; python_version < "3.12"' in lock
+    assert 'pyee==14.0.0 ; python_version >= "3.12"' in lock

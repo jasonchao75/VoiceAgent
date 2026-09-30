@@ -81,7 +81,8 @@ proto-plus==1.28.4
 propcache==0.5.2
 protobuf==6.33.6
 pycparser==3.0
-pyee==14.0.0
+pyee==13.0.1 ; python_version < "3.12"
+pyee==14.0.0 ; python_version >= "3.12"
 pyasn1==0.6.4
 pyasn1_modules==0.4.2
 pydantic==2.13.5
