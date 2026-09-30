@@ -2,7 +2,7 @@
 
 ## Status
 
-- Recorded decisions: 14
+- Recorded decisions: 15
 - Last reviewed: 2026-09-30
 
 ## Decisions
@@ -202,3 +202,17 @@
 - Consequences: 依赖 Cloudflare 公共 STUN；严格 NAT、企业网或部分大陆移动网络仍可能直连失败。若 DigitalOcean Cloud Firewall 已启用，还需同步开放媒体 UDP 范围。
 - Updated artifacts: assumptions、design、deployment documentation、delivery status。
 - Verification: 生产启动预检、UFW 状态、STUN 地址数量、WebRTC offer/PATCH，以及 iOS/Android 的 Wi-Fi/移动网短通话矩阵。
+
+### D-015：保留并确认现有 Evaluation 卷为生产数据
+
+- Status: Confirmed
+- Date: 2026-09-30
+- Source question: Q-007
+- Decision owner: Product owner
+- Source thread/message: `codex://threads/01a0eafe-96b8-7852-ab43-84923e45ca53`，当前用户消息
+- Confirmation quote: “选 A，保留并确认为生产数据”
+- Decision: 在服务器内先备份现有 Evaluation SQLite 数据库，然后只写入 `deployment.provenance=production` 与 `deployment.empty_history_verified=true`；保留现有 8 个批次、12 份报告、29 条评审和 153 条基准结果。
+- Reason: 这些记录位于专用生产卷，且未命中仓库记录的已知本地验收批次；产品方明确选择保留。
+- Consequences: 既有评测历史继续在线可见；部署预检将把该卷作为生产数据接受，不会执行空历史清理。
+- Updated artifacts: open-questions、decision log、delivery status、production deployment evidence。
+- Verification: 备份与原库完整性检查通过；标记写入后数据行数不变；部署预检和容器内 verify 通过。

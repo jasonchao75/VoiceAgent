@@ -37,6 +37,19 @@
       "stop_condition": "Stop on invalid configuration, failed UFW validation, failed production preflight or unhealthy service; retain no TURN fallback.",
       "authorization_source": "2026-09-30 user message: ‘那就先选A吧，用Cloudflare STUN，先试试’",
       "status": "Authorized"
+    },
+    {
+      "id": "EXT-003",
+      "action": "Back up the existing DigitalOcean Evaluation database, then mark the preserved records as accepted production data without deleting or rewriting evaluation results.",
+      "provider": "User-controlled DigitalOcean host and production SQLite volume",
+      "authorization_decision_id": "D-015",
+      "data_scope": "Existing Evaluation metadata and result tables on the dedicated production volume; the mutation is limited to two deployment metadata keys after a same-host SQLite backup.",
+      "recipient": "Existing user-controlled DigitalOcean host only; no data is sent to a third party.",
+      "cost_ceiling": "No paid API calls and no new infrastructure; only existing VM storage for one database backup.",
+      "stop_condition": "Stop if SQLite integrity, backup verification, pre-mutation row counts, metadata transaction, or post-mutation row-count equality fails.",
+      "authorization_source": "2026-09-30 user message: ‘选 A，保留并确认为生产数据’",
+      "status": "Completed",
+      "result": "A verified SQLite backup was saved at /home/deploy/apps/voiceagent-platform/backups/evaluation-before-provenance-d015-20260930.db with SHA-256 168a355e8b129eaf5d44f1065fa88e53ffe1bb75e9a6e6fa2197b7c20a51eadb. Source and backup integrity checks passed, the two deployment markers were committed atomically, and all four protected result-table counts remained unchanged."
     }
   ],
   "known_issues": [
@@ -226,7 +239,8 @@
     {
       "id": "KI-030",
       "summary": "Pre-deployment dependency review found that pyproject.toml enables Pipecat WebRTC and pins aiortc, but the Docker-consumed requirements.lock does not yet contain aiortc or its WebRTC transitive dependencies; the production image would fail at import/runtime if deployed as-is.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "The lock now includes aiortc and Python-version-correct WebRTC dependencies; repeated GitHub CI production-image builds completed successfully on Python 3.11.",
       "disclosed_to_user": true
     },
     {
@@ -259,7 +273,8 @@
     {
       "id": "KI-035",
       "summary": "CI for formatted commit ce439c0 reached backend tests but the product-auth test assumed frontend/dist had already been built, while CI intentionally runs backend checks before the frontend build; the isolated backend environment therefore returned the expected routing 404 for the otherwise-public demo URL.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "The auth-boundary test now accepts the backend-only 404 while rejecting redirects; subsequent full CI runs passed backend checks, frontend build and production image build.",
       "disclosed_to_user": true
     },
     {
@@ -278,7 +293,15 @@
     {
       "id": "KI-038",
       "summary": "The first CD run that attempted to synchronize the verified deployment entrypoint failed before switching the production container; the existing service remained healthy and the workflow log must be diagnosed before retrying.",
-      "status": "Open",
+      "status": "Resolved",
+      "resolution": "The attempted workflow-side install was removed to preserve the restricted sudo boundary. The root-managed entrypoint was updated through the authorized administrator channel and its SHA-256 now matches the verified repository script.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-039",
+      "summary": "The WebRTC-aware deployment failed closed because the existing dedicated Evaluation volume contains 8 batches, 12 reports, 29 reviews and 153 benchmarks but has no production provenance marker; none of the five known local acceptance batch IDs were present, and Q-007 now requires a product decision before any metadata or data change.",
+      "status": "Resolved",
+      "resolution": "D-015 selected preservation. A verified same-host SQLite backup was created, both production provenance markers were committed atomically, integrity remained ok, and all protected result-table counts stayed unchanged.",
       "disclosed_to_user": true
     }
   ],

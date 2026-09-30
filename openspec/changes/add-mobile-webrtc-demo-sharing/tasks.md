@@ -59,6 +59,7 @@
 - [x] 增加生产 host-network Compose 覆盖、STUN/host-network fail-closed 校验与无敏感信息部署预检；本地 bridge 保持不变。
 - [x] 增加公开访问/开始/麦克风结果及 Session 连接/结束/安全失败分类埋点；只记录哈希 Demo 引用、枚举网络信息和耗时。
 - [x] 按 D-012 轮换本地与 DigitalOcean Storage Key，保留数据并输出不含密钥的 Bot/Provider 重新录入清单。
+- [x] 按 D-015 备份并确认现有 Evaluation 卷为生产数据，保留全部既有评测历史。
 - [ ] 在当前 DigitalOcean 部署验证 UDP/ICE、Docker/host network 与防火墙；不伪造 TURN 覆盖。
 - [ ] 在取得逐次授权后执行 iOS Safari/Android Chrome、Wi-Fi/移动网 external-real 短通话矩阵。
 - [ ] 记录连接成功率、connect_ms、candidate 类型、失败分类和资源占用；不记录敏感内容。
