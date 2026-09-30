@@ -1,5 +1,7 @@
 import { PipecatClient } from "@pipecat-ai/client-js";
 import { WavMediaManager, WebSocketTransport } from "@pipecat-ai/websocket-transport";
+import encodeQR from "qr";
+import { svgToPng } from "qr/dom.js";
 import "./styles.css";
 
 class OutputOnlyMediaManager extends WavMediaManager {
@@ -21,6 +23,7 @@ class OutputOnlyMediaManager extends WavMediaManager {
 }
 
 const app = document.querySelector("#app");
+const shareFixtureMode = new URLSearchParams(window.location.search).get("share_fixture") === "1";
 
 app.innerHTML = `
   <main class="shell">
@@ -34,6 +37,7 @@ app.innerHTML = `
     </header>
     <nav class="product-tabs" aria-label="VoiceAgent sections">
       <button class="active" type="button" data-page="settings">Bot settings</button>
+      <button type="button" data-page="share">Share</button>
       <button type="button" data-page="sessions">Sessions</button>
       <button type="button" data-page="advanced">Advanced</button>
     </nav>
@@ -45,6 +49,11 @@ app.innerHTML = `
       <textarea id="bot-fallback-script" rows="4" maxlength="2000" placeholder="Sorry, I’m having trouble responding right now. Please try again."></textarea>
       <p class="hint">Played through TTS when the LLM does not complete before its configured request timeout.</p>
       <button id="save-advanced-settings" class="primary-button" type="button">Save advanced settings</button>
+    </section>
+    <section id="share-page" class="share-page" hidden>
+      <header class="share-heading"><div><p class="eyebrow">Demo access</p><h1 id="share-title">Share this Bot</h1><p>Invite someone to call this Bot from their phone. The QR code and Web Link open the same published demo.</p></div><a id="share-preview" class="share-preview" target="_blank" rel="noreferrer">Open demo page ↗</a></header>
+      <article class="share-card share-profile"><header><div><h2>Public demo profile</h2><p>Choose what visitors see before they start the call.</p></div><span class="share-status">Published</span></header><div class="share-copy-grid"><label>Public title<input id="share-public-title" maxlength="80" /><small>Initially filled from the Bot name. Changing it does not rename the Bot.</small></label><label>Public description · Optional<textarea id="share-public-description" maxlength="240" rows="3"></textarea><small>Shown on the mobile Ready page. Leave blank to hide it.</small></label></div><div class="share-publish-row"><div><strong>Published version is live</strong><p>Edits stay private until you publish updates.</p></div><button id="share-publish" class="primary-button" type="button">Publish updates</button></div></article>
+      <div class="share-grid"><article class="share-card"><header><div><h2>QR code</h2><p>Best for presenting in person or on another screen.</p></div><span class="share-status">Active</span></header><div id="share-qr" class="share-qr" aria-label="QR code for the public demo link"></div><p class="share-caption">Visitors scan this code to open the mobile call page. No sign-in required.</p><div class="share-actions"><button id="share-download" class="primary-button" type="button">Download QR</button><button id="share-copy-qr" class="secondary-button" type="button">Copy link</button></div></article><article class="share-card"><header><div><h2>Web Link</h2><p>Send this link in a message, email, or presentation.</p></div></header><label>Public demo link</label><div class="share-link-row"><input id="share-link" readonly /><button id="share-copy-link" type="button">Copy</button></div><p class="hint">Anyone with this link can start a demo call while it is active.</p><div class="share-note"><span>⌁</span><p><strong>One destination, two ways to share</strong><br>The QR code encodes this exact Web Link. Disabling the link also disables the QR code.</p></div><dl class="share-details"><div><dt>Bot</dt><dd id="share-bot-name">—</dd></div><div><dt>Access</dt><dd>No sign-in</dd></div><div><dt>Audio</dt><dd>WebRTC</dd></div><div><dt>Concurrent calls</dt><dd>Shared limit · 3</dd></div></dl><div class="share-management"><div><strong>Link management</strong><p>Disable this link without deleting the Bot.</p></div><button id="share-toggle" class="share-danger" type="button">Disable link</button></div></article></div>
     </section>
 
     <section class="workspace">
@@ -1847,7 +1856,8 @@ function renderBotList() {
       }),
     );
   }
-  elements.sessionKeys.hidden = !selectedBot() || selectedBot().has_saved_keys;
+  const activePage = document.querySelector(".product-tabs button.active")?.dataset.page;
+  elements.sessionKeys.hidden = activePage !== "settings" || !selectedBot() || selectedBot().has_saved_keys;
   const selected = selectedBot();
   const selectedAsrProvider = (catalogs.asr_providers?.providers || [])
     .find((provider) => provider.id === selected?.asr_provider);
@@ -1868,7 +1878,13 @@ function selectBot(botId) {
   selectedBotId = botId;
   renderBotList();
   const bot = selectedBot();
-  if (bot) openEditor(bot);
+  const activePage = document.querySelector(".product-tabs button.active")?.dataset.page;
+  if (activePage === "share") {
+    elements.editor.hidden = true;
+    renderSharePage();
+  } else if (bot) {
+    openEditor(bot);
+  }
 }
 
 async function loadBots() {
@@ -2479,6 +2495,102 @@ async function endSession({ preserveError = false } = {}) {
   await loadHistory().catch(() => {});
 }
 
+function shareFixtureForSelectedBot() {
+  const bot = selectedBot();
+  if (!bot) return undefined;
+  const publicId = bot.id || "demo";
+  return {
+    public_id: publicId,
+    public_url: `${window.location.origin}/demo/${encodeURIComponent(publicId)}`,
+    title: `${bot.name} · Voice guide`,
+    description: "A responsive voice guide for natural, real-time conversations.",
+    active: true,
+    published: true,
+    available: true,
+    unpublished_changes: false,
+  };
+}
+
+let currentShare;
+
+function applyShareState(bot, share) {
+  currentShare = share;
+  const link = share.public_url || "";
+  document.querySelector("#share-title").textContent = `Share ${bot.name}`;
+  document.querySelector("#share-public-title").value = share.title || bot.name;
+  document.querySelector("#share-public-description").value = share.description || "";
+  document.querySelector("#share-link").value = link;
+  document.querySelector("#share-preview").href = link || "#";
+  document.querySelector("#share-preview").hidden = !link;
+  document.querySelector("#share-bot-name").textContent = share.title || bot.name;
+  const statuses = document.querySelectorAll("#share-page .share-status");
+  statuses[0].textContent = share.published
+    ? (share.unpublished_changes ? "Unpublished changes" : "Published")
+    : "Not published";
+  statuses[1].textContent = share.active ? "Active" : "Disabled";
+  const publish = document.querySelector("#share-publish");
+  publish.textContent = share.published ? "Publish updates" : "Publish demo";
+  const toggle = document.querySelector("#share-toggle");
+  toggle.disabled = !share.published;
+  toggle.dataset.disabled = String(!share.active);
+  toggle.textContent = share.active ? "Disable link" : "Enable link";
+  const qr = document.querySelector("#share-qr");
+  qr.replaceChildren();
+  qr.classList.toggle("disabled", !share.active || !share.available);
+  delete qr.dataset.link;
+  if (link) {
+    qr.innerHTML = encodeQR(link, "svg", { ecc: "medium", border: 3 });
+    qr.dataset.link = link;
+  }
+  document.querySelector("#share-download").disabled = !link;
+  document.querySelector("#share-copy-qr").disabled = !link;
+  document.querySelector("#share-copy-link").disabled = !link;
+}
+
+async function renderSharePage() {
+  const bot = selectedBot();
+  const page = document.querySelector("#share-page");
+  const controls = page.querySelectorAll("button, input, textarea, a");
+  controls.forEach((control) => { control.disabled = true; });
+  if (!bot) {
+    document.querySelector("#share-title").textContent = "Select a Bot to share";
+    document.querySelector("#share-qr").replaceChildren();
+    return;
+  }
+  let share;
+  try {
+    share = shareFixtureMode
+      ? shareFixtureForSelectedBot()
+      : await apiRequest(`/api/bots/${encodeURIComponent(bot.id)}/share`);
+  } catch (error) {
+    document.querySelector("#share-title").textContent = `Share ${bot.name}`;
+    document.querySelector("#share-qr").replaceChildren();
+    showError(error instanceof Error ? error.message : "Could not load this Bot’s share settings.");
+    return;
+  }
+  controls.forEach((control) => { control.disabled = false; });
+  applyShareState(bot, share);
+}
+
+async function copyShareLink() {
+  const link = document.querySelector("#share-link").value;
+  if (!link) return;
+  await navigator.clipboard.writeText(link);
+  const button = document.querySelector("#share-copy-link");
+  button.textContent = "Copied";
+  window.setTimeout(() => { button.textContent = "Copy"; }, 1400);
+}
+
+async function downloadShareQr() {
+  const qr = document.querySelector("#share-qr");
+  if (!qr.dataset.link) return;
+  const png = await svgToPng(encodeQR(qr.dataset.link, "svg", { ecc: "medium", border: 3 }), 768, 768);
+  const anchor = document.createElement("a");
+  anchor.href = png;
+  anchor.download = `${selectedBot()?.name || "voiceagent"}-demo-qr.png`;
+  anchor.click();
+}
+
 // --- Wiring -------------------------------------------------------------------
 
 elements.toggleProductRail.addEventListener("click", () => {
@@ -2498,12 +2610,75 @@ document.querySelectorAll(".product-tabs button").forEach((button) => {
     const page = button.dataset.page;
     document.querySelector(".workspace").hidden = false;
     document.querySelector("#advanced-empty").hidden = page !== "advanced";
+    document.querySelector("#share-page").hidden = page !== "share";
     document.querySelector(".history-panel").hidden = page !== "sessions";
     elements.editor.hidden = page !== "settings" || elements.editor.dataset.open !== "true";
+    elements.sessionKeys.hidden = page !== "settings" || !selectedBot() || selectedBot().has_saved_keys;
     document.querySelector(".conversation-panel").hidden = true;
     if (page === "advanced") syncAdvancedBotContext();
+    if (page === "share") renderSharePage();
     if (page === "sessions") loadHistory().catch((error) => showError(error.message));
   });
+});
+
+document.querySelector("#share-copy-link").addEventListener("click", copyShareLink);
+document.querySelector("#share-copy-qr").addEventListener("click", copyShareLink);
+document.querySelector("#share-download").addEventListener("click", downloadShareQr);
+["#share-public-title", "#share-public-description"].forEach((selector) => {
+  document.querySelector(selector).addEventListener("input", () => {
+    if (!currentShare?.published) return;
+    currentShare = { ...currentShare, unpublished_changes: true };
+    document.querySelectorAll("#share-page .share-status")[0].textContent = "Unpublished changes";
+  });
+});
+document.querySelector("#share-publish").addEventListener("click", async (event) => {
+  const bot = selectedBot();
+  if (!bot) return;
+  if (shareFixtureMode) {
+    currentShare = {
+      ...currentShare,
+      title: document.querySelector("#share-public-title").value.trim(),
+      description: document.querySelector("#share-public-description").value.trim(),
+      unpublished_changes: false,
+    };
+    applyShareState(bot, currentShare);
+    return;
+  }
+  event.currentTarget.disabled = true;
+  clearError();
+  try {
+    const share = await apiRequest(`/api/bots/${encodeURIComponent(bot.id)}/publish`, {
+      method: "POST",
+      body: {
+        public_title: document.querySelector("#share-public-title").value.trim(),
+        public_description: document.querySelector("#share-public-description").value.trim(),
+      },
+    });
+    applyShareState(bot, share);
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Could not publish this Bot.");
+  } finally {
+    event.currentTarget.disabled = false;
+  }
+});
+document.querySelector("#share-toggle").addEventListener("click", async (event) => {
+  const bot = selectedBot();
+  if (!bot || !currentShare?.published) return;
+  if (shareFixtureMode) {
+    applyShareState(bot, { ...currentShare, active: !currentShare.active });
+    return;
+  }
+  event.currentTarget.disabled = true;
+  clearError();
+  const action = currentShare.active ? "disable" : "enable";
+  try {
+    const share = await apiRequest(`/api/bots/${encodeURIComponent(bot.id)}/share/${action}`, { method: "POST" });
+    applyShareState(bot, share);
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Could not update this link.");
+  } finally {
+    event.currentTarget.disabled = false;
+  }
 });
 
 function selectTestMode(mode) {

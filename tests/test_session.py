@@ -67,6 +67,8 @@ async def test_expired_pending_token_clears_credentials(
     )
     lease.expires_at = 0
     assert await store.purge_expired() == 1
+    assert await store.drain_expired_session_ids() == [lease.session_id]
+    assert await store.drain_expired_session_ids() == []
     assert lease.closed is True
     with pytest.raises(SessionTokenError):
         await store.claim(lease.token)

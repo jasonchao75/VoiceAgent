@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoiceAgent · Share Bot Prototype</title>
+    <style>
+      :root {
+        color: #edf2ef;
+        background: #0a0d0c;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --panel: #151817;
+        --panel-soft: #111514;
+        --line: #29302d;
+        --line-strong: #39423e;
+        --muted: #8f9a95;
+        --quiet: #66716b;
+        --accent: #78f0b3;
+        --accent-soft: #10261d;
+        --danger: #ff9a9a;
+      }
+
+      * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      body { min-width: 320px; min-height: 100vh; margin: 0; background: radial-gradient(circle at 75% 8%, #13241c 0, #0a0d0c 32%); }
+      button, input, textarea { font: inherit; }
+      button, a { -webkit-tap-highlight-color: transparent; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+
+      .shell { min-height: 100vh; padding-left: 318px; }
+      .product-rail { position: fixed; z-index: 30; inset: 0 auto 0 0; width: 48px; padding: 14px 7px; border-right: 1px solid var(--line); background: #090b0a; }
+      .rail-menu, .product-switch, .avatar { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--muted); }
+      .rail-menu { border-color: var(--line); }
+      .product-switch { margin-top: 16px; font-weight: 800; }
+      .product-switch.active { border-color: #315843; background: #10241b; color: var(--accent); }
+      .avatar { position: absolute; bottom: 14px; border-color: #315843; border-radius: 50%; background: #153c2c; color: var(--accent); font-weight: 800; }
+
+      .bot-sidebar { position: fixed; z-index: 20; top: 0; bottom: 0; left: 48px; width: 270px; padding: 0 12px; border-right: 1px solid var(--line); background: #0d100f; }
+      .side-title { display: flex; height: 52px; align-items: center; padding: 0 5px; border-bottom: 1px solid var(--line); font-weight: 700; }
+      .side-title small { margin-left: 6px; color: #646b68; font-weight: 400; }
+      .create-bot { width: 100%; height: 40px; margin: 12px 0 10px; border: 1px solid #1e7652; border-radius: 7px; background: #0b2118; color: var(--accent); font-weight: 700; }
+      .search { display: flex; height: 36px; align-items: center; gap: 8px; padding: 0 12px; border-radius: 7px; background: #242726; color: #747d78; font-size: 12px; }
+      .bot-card { position: relative; margin-top: 14px; padding: 11px 13px; border-left: 2px solid var(--accent); border-radius: 7px; background: var(--accent-soft); }
+      .bot-card strong { display: block; font-size: 13px; }
+      .bot-card p { margin: 4px 34px 0 0; overflow: hidden; color: #87908b; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+      .bot-card span { position: absolute; top: 9px; right: 9px; padding: 2px 6px; border: 1px solid #187654; border-radius: 999px; color: var(--accent); font-size: 8px; }
+
+      .topbar { position: fixed; z-index: 15; top: 0; right: 0; left: 318px; display: flex; height: 52px; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--line); background: rgba(11, 13, 12, .96); }
+      .title-block b { display: block; font-size: 16px; }
+      .title-block span { color: #757d79; font-size: 11px; }
+      .published-pill { display: inline-flex; min-height: 28px; align-items: center; gap: 7px; margin-left: auto; padding: 0 10px; border: 1px solid #315843; border-radius: 999px; color: var(--accent); font-size: 10px; }
+      .published-pill::before { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); content: ""; box-shadow: 0 0 8px rgba(120, 240, 179, .5); }
+
+      .product-tabs { position: fixed; z-index: 15; top: 52px; right: 0; left: 318px; display: flex; height: 42px; align-items: stretch; gap: 25px; padding: 0 24px; border-bottom: 1px solid var(--line); background: #0b0d0c; }
+      .product-tabs button { padding: 0; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-size: 12px; }
+      .product-tabs button.active { border-bottom-color: var(--accent); color: var(--accent); }
+
+      main { max-width: 1120px; margin: 0 auto; padding: 126px 28px 56px; }
+      .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+      .eyebrow { margin: 0 0 7px; color: var(--accent); font-size: 10px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+      h1 { margin: 0; font-size: 26px; letter-spacing: -.025em; }
+      .page-heading p:last-child { max-width: 620px; margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+      .preview-button { display: inline-flex; min-height: 38px; flex: 0 0 auto; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: #151918; color: #d8dfdb; font-size: 11px; font-weight: 700; }
+
+      .share-grid { display: grid; grid-template-columns: minmax(290px, .85fr) minmax(420px, 1.45fr); gap: 16px; }
+      .card { min-width: 0; padding: 20px; border: 1px solid #202522; border-radius: 12px; background: rgba(21, 24, 23, .94); }
+      .public-copy-card { margin-bottom: 16px; }
+      .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+      .card-head h2 { margin: 0; font-size: 14px; }
+      .card-head p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+      .status { flex: 0 0 auto; padding: 4px 8px; border: 1px solid #315843; border-radius: 999px; color: var(--accent); font-size: 9px; font-weight: 700; }
+
+      .copy-grid { display: grid; grid-template-columns: minmax(220px, .75fr) minmax(320px, 1.25fr); gap: 14px; margin-top: 18px; }
+      .copy-field { min-width: 0; }
+      .copy-field .field-label { margin-top: 0; }
+      .copy-field input, .copy-field textarea { width: 100%; min-width: 0; border: 1px solid #313a36; border-radius: 8px; outline: none; background: #0c100f; color: #e3e9e6; font-size: 11px; }
+      .copy-field input { height: 42px; padding: 0 12px; }
+      .copy-field textarea { min-height: 78px; padding: 11px 12px; resize: vertical; line-height: 1.5; }
+      .copy-field input:focus, .copy-field textarea:focus { border-color: #4b8d6b; box-shadow: 0 0 0 3px rgba(120, 240, 179, .08); }
+      .publication-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+      .publication-row strong { display: block; font-size: 11px; }
+      .publication-row p { margin: 4px 0 0; color: var(--quiet); font-size: 10px; line-height: 1.45; }
+      .publish-button { min-height: 40px; flex: 0 0 auto; padding: 0 15px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent); color: #07110c; font-size: 11px; font-weight: 750; }
+
+      .qr-frame { display: grid; width: min(100%, 242px); aspect-ratio: 1; margin: 26px auto 18px; place-items: center; border: 1px solid #324039; border-radius: 18px; background: #f1f8f4; box-shadow: 0 18px 45px rgba(0, 0, 0, .22); }
+      .qr-frame svg { width: 82%; height: 82%; color: #0b1610; }
+      .qr-caption { margin: 0; color: #aab4af; font-size: 11px; line-height: 1.5; text-align: center; }
+      .card-actions { display: flex; gap: 8px; margin-top: 18px; }
+      .primary, .secondary, .danger-button { min-height: 40px; border-radius: 8px; padding: 0 14px; font-size: 11px; font-weight: 750; }
+      .primary { flex: 1; border: 1px solid var(--accent); background: var(--accent); color: #07110c; }
+      .secondary { border: 1px solid var(--line-strong); background: transparent; color: #d5dcd8; }
+      .danger-button { border: 1px solid #563535; background: #231616; color: var(--danger); }
+
+      .field-label { display: block; margin: 24px 0 8px; color: #cbd3cf; font-size: 11px; font-weight: 700; }
+      .link-field { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+      .link-field input { min-width: 0; height: 42px; padding: 0 12px; overflow: hidden; border: 1px solid #313a36; border-radius: 8px; outline: none; background: #0c100f; color: #bdc8c2; font-size: 11px; text-overflow: ellipsis; }
+      .link-field button { min-width: 82px; border: 1px solid #315843; border-radius: 8px; background: #10261d; color: var(--accent); font-size: 11px; font-weight: 750; }
+      .helper { margin: 7px 0 0; color: var(--quiet); font-size: 10px; line-height: 1.45; }
+      .share-note { display: flex; gap: 10px; margin-top: 18px; padding: 12px; border: 1px solid #2d3833; border-radius: 9px; background: #111614; color: #9ca7a1; font-size: 10px; line-height: 1.5; }
+      .share-note span { color: var(--accent); font-size: 15px; }
+
+      .details { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 20px; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+      .detail { min-width: 0; padding: 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .detail:nth-child(2n) { border-right: 0; }
+      .detail:nth-last-child(-n+2) { border-bottom: 0; }
+      .detail span { display: block; margin-bottom: 4px; color: var(--quiet); font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }
+      .detail strong { display: block; overflow: hidden; font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .management { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+      .management strong { display: block; font-size: 11px; }
+      .management p { margin: 4px 0 0; color: var(--quiet); font-size: 10px; }
+
+      .state-dock { position: fixed; z-index: 50; right: 18px; bottom: 18px; width: 174px; padding: 11px; border: 1px solid var(--line); border-radius: 11px; background: rgba(15, 19, 17, .94); box-shadow: 0 16px 45px rgba(0,0,0,.42); }
+      .state-dock strong { display: block; margin-bottom: 4px; font-size: 10px; }
+      .state-dock p { margin: 0 0 8px; color: var(--quiet); font-size: 8px; }
+      .state-dock button { width: 100%; margin-top: 4px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: #171c1a; color: #b9c2bd; font-size: 9px; text-align: left; }
+      .state-dock button.active { border-color: #41785d; background: #10261d; color: var(--accent); }
+      .toast { position: fixed; z-index: 80; bottom: 24px; left: 50%; padding: 10px 14px; border: 1px solid #315843; border-radius: 8px; background: #14251c; color: #c9f8df; font-size: 11px; opacity: 0; pointer-events: none; transform: translate(-50%, 8px); transition: .18s; }
+      .toast.show { opacity: 1; transform: translate(-50%, 0); }
+      body[data-state="disabled"] .link-card .status, body[data-state="disabled"] .published-pill { border-color: #5b5037; color: #f0d392; }
+      body[data-state="disabled"] .published-pill::before { background: #e7bd62; box-shadow: none; }
+      body[data-state="disabled"] .link-card .status::after { content: "Disabled"; }
+      body[data-state="disabled"] .link-card .status { font-size: 0; }
+      body[data-state="disabled"] .link-card .status::after { font-size: 9px; }
+      body[data-state="disabled"] .qr-frame, body[data-state="disabled"] .link-field { opacity: .4; filter: grayscale(1); }
+      body[data-state="draft"] .copy-status, body[data-state="draft"] .published-pill { border-color: #6e5d32; color: #f2d17b; }
+      body[data-state="draft"] .published-pill::before { background: #e7bd62; box-shadow: none; }
+      body[data-state="draft"] .copy-status::after { content: "Unpublished changes"; }
+      body[data-state="draft"] .copy-status { font-size: 0; }
+      body[data-state="draft"] .copy-status::after { font-size: 9px; }
+      body[data-state="draft"] .published-pill, body[data-state="disabled"] .published-pill, body[data-state="unpublished"] .published-pill { font-size: 0; }
+      body[data-state="draft"] .published-pill::after { content: "Unpublished changes"; font-size: 10px; }
+      body[data-state="disabled"] .published-pill::after { content: "Link disabled"; font-size: 10px; }
+      body[data-state="unpublished"] .published-pill::after { content: "Not published"; font-size: 10px; }
+      body[data-state="unpublished"] .link-card { opacity: .32; pointer-events: none; }
+      body[data-state="unpublished"] .copy-status, body[data-state="unpublished"] .published-pill { border-color: #604646; color: #efb7b7; }
+      body[data-state="unpublished"] .published-pill::before { background: #d97979; box-shadow: none; }
+      body[data-state="unpublished"] .copy-status::after { content: "Not published"; }
+      body[data-state="unpublished"] .copy-status { font-size: 0; }
+      body[data-state="unpublished"] .copy-status::after { font-size: 9px; }
+      .unpublished-banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; padding: 12px 14px; border: 1px solid #604646; border-radius: 9px; background: #291919; color: #efb7b7; font-size: 11px; }
+
+      @media (max-width: 980px) {
+        .share-grid { grid-template-columns: 1fr; }
+        .state-dock { display: none; }
+      }
+      @media (max-width: 760px) {
+        .shell { padding-left: 0; }
+        .product-rail, .bot-sidebar { display: none; }
+        .topbar, .product-tabs { left: 0; }
+        main { padding: 116px 14px 32px; }
+        .page-heading { align-items: flex-start; flex-direction: column; }
+        .preview-button { width: 100%; justify-content: center; }
+        .share-grid { grid-template-columns: minmax(0, 1fr); }
+        .copy-grid { grid-template-columns: 1fr; }
+        .card { padding: 16px; }
+        .details { grid-template-columns: 1fr; }
+        .detail, .detail:nth-child(2n), .detail:nth-last-child(-n+2) { border-right: 0; border-bottom: 1px solid var(--line); }
+        .detail:last-child { border-bottom: 0; }
+        .management { align-items: stretch; flex-direction: column; }
+        .publication-row { align-items: stretch; flex-direction: column; }
+        .publish-button { width: 100%; }
+        .danger-button { width: 100%; }
+      }
+      @media (max-width: 420px) {
+        .product-tabs { gap: 17px; overflow-x: auto; }
+        .product-tabs button { flex: 0 0 auto; }
+        .link-field { grid-template-columns: 1fr; }
+        .link-field button { min-height: 40px; }
+        .card-actions { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body data-state="active">
+    <div class="shell">
+      <aside class="product-rail" aria-label="Product navigation">
+        <button class="rail-menu" type="button" aria-label="Collapse product rail">☰</button>
+        <a class="product-switch active" href="#" aria-label="VoiceAgent Demo">V</a>
+        <button class="avatar" type="button" aria-label="User menu">V</button>
+      </aside>
+
+      <aside class="bot-sidebar" aria-label="Voice bots">
+        <div class="side-title">Voice bots <small>1</small></div>
+        <button class="create-bot" type="button">Create bot</button>
+        <div class="search">⌕&nbsp; Search bots</div>
+        <article class="bot-card"><strong>Maya</strong><p>Deepgram · Gemini · ElevenLabs</p><span>Published</span></article>
+      </aside>
+
+      <header class="topbar">
+        <div class="title-block"><b>Maya</b><span>Voice guide · Saved just now</span></div>
+        <span class="published-pill">Published</span>
+      </header>
+
+      <nav class="product-tabs" aria-label="VoiceAgent sections">
+        <button type="button">Bot settings</button>
+        <button class="active" type="button">Share</button>
+        <button type="button">Sessions</button>
+        <button type="button">Advanced</button>
+      </nav>
+
+      <main>
+        <div id="unpublished-banner" class="unpublished-banner" hidden><span>This Bot must be published before visitors can use its demo link.</span></div>
+        <header class="page-heading">
+          <div><p class="eyebrow">Demo access</p><h1>Share Maya</h1><p>Invite someone to call this Bot from their phone. The QR code and Web Link always open the same published demo.</p></div>
+          <a class="preview-button" href="index.html" target="_blank" rel="noreferrer">Open demo page ↗</a>
+        </header>
+
+        <article class="card public-copy-card">
+          <header class="card-head"><div><h2>Public demo profile</h2><p>Choose what visitors see before they start the call.</p></div><span class="status copy-status">Published</span></header>
+          <div class="copy-grid">
+            <div class="copy-field"><label class="field-label" for="public-title">Public title</label><input id="public-title" value="Maya · Voice guide" maxlength="80" /><p class="helper">Initially filled from the Bot name. Changing it does not rename the Bot.</p></div>
+            <div class="copy-field"><label class="field-label" for="public-description">Public description <span style="color: var(--quiet); font-weight: 500;">· Optional</span></label><textarea id="public-description" maxlength="240">A responsive voice guide for natural, real-time conversations.</textarea><p class="helper">Shown on the mobile Ready page. Leave blank to hide it.</p></div>
+          </div>
+          <div class="publication-row"><div><strong id="publication-title">Published version is live</strong><p id="publication-help">Edits stay private until you publish updates.</p></div><button id="publish-updates" class="publish-button" type="button">Publish updates</button></div>
+        </article>
+
+        <section class="share-grid link-card">
+          <article class="card">
+            <header class="card-head"><div><h2>QR code</h2><p>Best for presenting in person or on another screen.</p></div><span class="status">Active</span></header>
+            <div class="qr-frame" aria-label="Prototype QR code">
+              <svg viewBox="0 0 29 29" role="img" aria-label="QR code preview">
+                <rect width="29" height="29" fill="currentColor" opacity="0" />
+                <path fill="currentColor" d="M1 1h9v9H1zm2 2v5h5V3zm16-2h9v9h-9zm2 2v5h5V3zM1 19h9v9H1zm2 2v5h5v-5zM12 1h2v3h-2zm4 0h1v5h-2V4h1zM12 6h4v2h-4zm0 4h2v2h-2zm3-1h3v3h-2v-1h-1zm5 3h2v2h-2zm3-1h4v2h-2v2h-3v-1h1zM1 12h3v2H1zm5-1h4v3H8v-1H6zm5 3h3v2h-3zm5 0h3v3h-2v-1h-1zM1 16h2v2H1zm4 0h5v2H5zm7 2h2v4h-2zm3 0h3v2h-1v2h-2zm5-2h3v3h-2v-1h-1zm5 0h3v2h-3zM11 24h3v4h-2v-2h-1zm5 0h2v2h3v2h-5zm4-3h3v2h-3zm5-1h3v3h-2v-1h-1zm-1 5h4v3h-2v-1h-2z" />
+              </svg>
+            </div>
+            <p class="qr-caption">Visitors scan this code to open Maya’s mobile call page. No sign-in required.</p>
+            <div class="card-actions"><button id="download-qr" class="primary" type="button">Download QR</button><button id="copy-qr-link" class="secondary" type="button">Copy link</button></div>
+          </article>
+
+          <article class="card">
+            <header class="card-head"><div><h2>Web Link</h2><p>Send this link in a message, email, or presentation.</p></div></header>
+            <label class="field-label" for="demo-link">Public demo link</label>
+            <div class="link-field"><input id="demo-link" readonly value="https://demo.voiceagent.app/call/maya-a7k9" /><button id="copy-link" type="button">Copy</button></div>
+            <p class="helper">Anyone with this link can start a demo call while it is active.</p>
+
+            <div class="share-note"><span>⌁</span><div><strong>One destination, two ways to share</strong><br />The QR code encodes this exact Web Link. Disabling the link also disables the QR code.</div></div>
+
+            <div class="details">
+              <div class="detail"><span>Bot</span><strong>Maya · Voice guide</strong></div>
+              <div class="detail"><span>Access</span><strong>Public · No sign-in</strong></div>
+              <div class="detail"><span>Availability</span><strong>Active until disabled</strong></div>
+              <div class="detail"><span>Session limit</span><strong>3 simultaneous calls</strong></div>
+            </div>
+
+            <div class="management"><div><strong>Disable demo access</strong><p>The existing link and QR code will immediately stop starting new calls.</p></div><button id="disable-link" class="danger-button" type="button">Disable link</button></div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <aside class="state-dock" aria-label="Prototype states"><strong>Prototype states</strong><p>Review only · not product UI</p><button class="active" data-state="active" type="button">01 · Published</button><button data-state="draft" type="button">02 · Unpublished changes</button><button data-state="disabled" type="button">03 · Link disabled</button><button data-state="unpublished" type="button">04 · Bot not published</button></aside>
+    <div id="toast" class="toast" role="status">Link copied</div>
+
+    <script>
+      const demoLink = document.querySelector("#demo-link");
+      const toast = document.querySelector("#toast");
+      const disabledButton = document.querySelector("#disable-link");
+      const publishButton = document.querySelector("#publish-updates");
+      const publicationTitle = document.querySelector("#publication-title");
+      const publicationHelp = document.querySelector("#publication-help");
+      const unpublishedBanner = document.querySelector("#unpublished-banner");
+      let toastHandle;
+
+      function notify(message) {
+        window.clearTimeout(toastHandle);
+        toast.textContent = message;
+        toast.classList.add("show");
+        toastHandle = window.setTimeout(() => toast.classList.remove("show"), 1600);
+      }
+
+      async function copyLink() {
+        try {
+          await navigator.clipboard.writeText(demoLink.value);
+          notify("Link copied");
+        } catch {
+          demoLink.select();
+          notify("Link selected — copy it manually");
+        }
+      }
+
+      function setState(state) {
+        document.body.dataset.state = state;
+        unpublishedBanner.hidden = state !== "unpublished";
+        disabledButton.textContent = state === "disabled" ? "Enable link" : "Disable link";
+        publishButton.textContent = state === "unpublished" ? "Publish Bot" : "Publish updates";
+        publicationTitle.textContent = state === "draft" ? "Updates are not public yet" : state === "unpublished" ? "Ready to publish" : "Published version is live";
+        publicationHelp.textContent = state === "draft" ? "Visitors still see the last published title, description, and Bot configuration." : state === "unpublished" ? "Publishing creates the stable Demo Link and its first configuration snapshot." : "Edits stay private until you publish updates.";
+        document.querySelectorAll("[data-state]").forEach((button) => button.classList.toggle("active", button.dataset.state === state));
+      }
+
+      document.querySelector("#copy-link").addEventListener("click", copyLink);
+      document.querySelector("#copy-qr-link").addEventListener("click", copyLink);
+      document.querySelector("#download-qr").addEventListener("click", () => notify("QR download simulated"));
+      document.querySelector("#public-title").addEventListener("input", () => setState("draft"));
+      document.querySelector("#public-description").addEventListener("input", () => setState("draft"));
+      publishButton.addEventListener("click", () => { setState("active"); notify("Published demo updated"); });
+      disabledButton.addEventListener("click", () => setState(document.body.dataset.state === "disabled" ? "active" : "disabled"));
+      document.querySelectorAll("[data-state]").forEach((button) => button.addEventListener("click", () => setState(button.dataset.state)));
+    </script>
+  </body>
+</html>

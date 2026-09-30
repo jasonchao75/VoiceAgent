@@ -111,3 +111,47 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000 --no-access-log
 - LLM 报错：检查 Key、余额、model 权限，以及 Custom endpoint 是否真正兼容流式 Chat Completions。
 - Flux 报错：检查 Deepgram Key 是否有权限、额度是否可用、voice 是否来自页面 Catalog。
 - 页面连接失败：先访问 `/health`，再确认 8000 端口未被占用。
+
+## Mobile WebRTC 部署前检查
+
+移动 Demo 与现有 WebSocket 共用 FastAPI、Bot、Pipeline 和 3 路并发限制，但媒体改走
+WebRTC/UDP。生产环境需要同时满足：
+
+- `VOICE_AGENT_ALLOWED_ORIGINS` 包含公开 HTTPS 域名；
+- `VOICE_AGENT_STUN_URLS` 配置一个可从中国大陆测试网络访问的 `stun:`/`stuns:` 地址；
+- Linux 宿主机让 aiortc 能发布可达的主机候选。当前 Docker 仅映射 TCP 8000 时，优先在
+  测试部署使用 `compose.webrtc.yaml` 的 host networking；生产部署脚本已固定叠加该文件，
+  HTTP 服务继续监听宿主机 `127.0.0.1:8020` 供 Nginx 反向代理；
+- DigitalOcean Cloud Firewall 与主机防火墙放行本次测试所需的 UDP 入站。aiortc 默认使用
+  系统临时端口；未收窄端口范围前，不应把“只开放 TCP 8000”视为 WebRTC 已部署；
+- 首版不支持 TURN。若 Wi-Fi/移动网矩阵达不到目标成功率，应暂停扩大测试并重新决策
+  TURN/媒体网关，不得把失败网络静默降级成 WebSocket。
+
+部署后先发布一个专用测试 Bot，再用 iOS Safari 与 Android Chrome 各执行 Wi-Fi、移动网
+短通话。验收至少记录连接是否成功、连接耗时、最终 ICE candidate 类型和失败分类；日志
+不得保存 SDP、candidate 地址、Provider Key 或音频内容。
+
+### DigitalOcean 一次性配置
+
+1. 在服务器仓库 `.env` 增加 `VOICE_AGENT_STUN_URLS=stun:stun.cloudflare.com:3478`。首版只接受
+   `stun:`/`stuns:`，缺失或配置 TURN 时生产进程会拒绝启动。STUN 服务必须先从中国大陆
+   Wi-Fi 和移动网验证可达，仓库不内置第三方公共 STUN。
+2. 在 Droplet 上读取实际动态 UDP 范围：
+
+   ```bash
+   cat /proc/sys/net/ipv4/ip_local_port_range
+   ```
+
+   DigitalOcean Cloud Firewall 与 UFW 必须同时放行输出范围的 UDP 入站。不要照抄示例范围；
+   以目标 Droplet 的输出为准。TCP 8020 不对公网开放，只由本机 Nginx 访问。
+3. 静默验证 Compose，避免输出环境变量或密钥：
+
+   ```bash
+   docker compose -f compose.yaml -f compose.webrtc.yaml config --quiet
+   ```
+
+4. 部署脚本会在健康检查后运行 `verify_webrtc_production.py`，确认容器确实收到 STUN、
+   host-network 声明并能读取 Linux UDP 范围。该检查不能替代 Cloud Firewall 与真机验证。
+
+任何时候都不要运行会打印完整 Compose 配置的 `docker compose config`；它会展开 `.env`
+中的敏感变量。只使用 `config --quiet`。

@@ -1,0 +1,23 @@
+services:
+  voice-agent:
+    # aiortc allocates media sockets from the Linux ephemeral UDP range. Host
+    # networking preserves reachable host candidates without exposing Docker's
+    # private bridge addresses. This file is production-only.
+    network_mode: host
+    ports: !reset []
+    command:
+      - uvicorn
+      - src.api:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8020"
+      - --no-access-log
+    environment:
+      VOICE_AGENT_WEBRTC_HOST_NETWORK: "true"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/health', timeout=3)

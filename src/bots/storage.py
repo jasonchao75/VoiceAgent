@@ -333,6 +333,7 @@ class BotStore:
     async def delete(self, bot_id: str) -> bool:
         """Delete one bot; return whether a row was removed."""
         async with aiosqlite.connect(self._db_path) as db:
+            await db.execute("PRAGMA foreign_keys = ON")
             cursor = await db.execute("DELETE FROM bots WHERE id = ?", (bot_id,))
             await db.commit()
             return cursor.rowcount > 0

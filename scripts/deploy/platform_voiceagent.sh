@@ -11,6 +11,14 @@ readonly EVALUATION_VOLUME="voiceagent-evaluation-production-data"
 readonly LEGACY_DATA_VOLUME="${COMPOSE_PROJECT}_voiceagent-data"
 export VOICE_AGENT_DEPLOYMENT_ENVIRONMENT=production
 
+docker_compose() {
+  local compose_files=(-f compose.yaml)
+  if [[ -f compose.webrtc.yaml ]]; then
+    compose_files+=(-f compose.webrtc.yaml)
+  fi
+  docker compose --project-name "${COMPOSE_PROJECT}" "${compose_files[@]}" "$@"
+}
+
 if [[ $# -ne 0 ]]; then
   echo "This command accepts the commit SHA on standard input only" >&2
   exit 2
@@ -64,7 +72,7 @@ rollback() {
   git_as_deploy checkout --quiet --detach "${PREVIOUS_SHA}" || true
   if [[ "${had_previous_image}" == "true" ]]; then
     docker image tag "${ROLLBACK_IMAGE}" "${IMAGE_NAME}" || true
-    docker compose --project-name "${COMPOSE_PROJECT}" up -d --force-recreate || true
+    docker_compose up -d --force-recreate || true
   fi
   exit "${exit_code}"
 }
@@ -72,7 +80,11 @@ trap rollback ERR
 
 git_as_deploy checkout --quiet --detach "${DEPLOY_SHA}"
 cd "${REPO_DIR}"
-docker compose --project-name "${COMPOSE_PROJECT}" config --quiet
+if [[ ! -f compose.webrtc.yaml ]]; then
+  echo "Production WebRTC Compose override is missing" >&2
+  exit 4
+fi
+docker_compose config --quiet
 
 if docker volume inspect "${EVALUATION_VOLUME}" >/dev/null 2>&1; then
   readonly EVALUATION_DATA_MOUNT="$(docker volume inspect "${EVALUATION_VOLUME}" --format '{{ .Mountpoint }}')"
@@ -85,12 +97,12 @@ if docker image inspect "${IMAGE_NAME}" >/dev/null 2>&1; then
   had_previous_image=true
 fi
 
-docker compose --project-name "${COMPOSE_PROJECT}" build
-docker compose \
-  --project-name "${COMPOSE_PROJECT}" \
-  up -d --remove-orphans --wait --wait-timeout 120
+docker_compose build
+docker_compose up -d --remove-orphans --wait --wait-timeout 120
 curl --fail --show-error --silent --retry 5 --retry-delay 2 "${HEALTH_URL}" >/dev/null
-docker compose --project-name "${COMPOSE_PROJECT}" exec -T voice-agent \
+docker_compose exec -T voice-agent \
+  python /app/scripts/deploy/verify_webrtc_production.py
+docker_compose exec -T voice-agent \
   python /app/scripts/deploy/verify_evaluation_production.py \
   verify /evaluation-data/evaluation.db --mark-verified
 

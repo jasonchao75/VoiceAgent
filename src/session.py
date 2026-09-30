@@ -20,12 +20,14 @@ from src.config import (
     VoiceCatalog,
 )
 
+SessionType = Literal["web_call", "chat_test", "mobile_web_call"]
+
 
 class SessionRequest(BaseModel):
     """Initial session request; secret values are masked in repr and serialization."""
 
     model_config = ConfigDict(extra="forbid")
-    session_type: Literal["web_call", "chat_test"] = "web_call"
+    session_type: SessionType = "web_call"
 
     asr_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     tts_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
@@ -202,7 +204,7 @@ class SessionLease:
     token: str
     credentials: SessionCredentials
     config: SessionConfig
-    session_type: Literal["web_call", "chat_test"]
+    session_type: SessionType
     created_at: float
     expires_at: float
     claimed: bool = False
@@ -238,6 +240,7 @@ class SessionStore:
         self._max_sessions = max_sessions
         self._pending: dict[str, SessionLease] = {}
         self._active: dict[str, SessionLease] = {}
+        self._expired_session_ids: list[str] = []
         self._lock = asyncio.Lock()
 
     async def create(
@@ -339,6 +342,13 @@ class SessionStore:
         async with self._lock:
             return self._purge_expired_locked(time.monotonic())
 
+    async def drain_expired_session_ids(self) -> list[str]:
+        """Return session IDs expired since the previous drain."""
+        async with self._lock:
+            session_ids = self._expired_session_ids
+            self._expired_session_ids = []
+            return session_ids
+
     async def close_all(self) -> None:
         """Clear every credential reference during application shutdown."""
         async with self._lock:
@@ -359,7 +369,9 @@ class SessionStore:
             token for token, lease in self._pending.items() if lease.expires_at <= now
         ]
         for token in expired_tokens:
-            self._pending.pop(token).close()
+            lease = self._pending.pop(token)
+            self._expired_session_ids.append(lease.session_id)
+            lease.close()
         return len(expired_tokens)
 
 

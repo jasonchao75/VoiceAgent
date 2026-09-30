@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="VoiceAgent Mobile Web Call concept prototype" />
+    <title>VoiceAgent · Mobile Web Call Prototype</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080b0a;
+        --panel: #101412;
+        --panel-2: #151a18;
+        --line: #29302d;
+        --line-soft: #202622;
+        --text: #edf2ef;
+        --muted: #8f9a95;
+        --quiet: #65716b;
+        --accent: #78f0b3;
+        --accent-soft: #153c2c;
+        --accent-deep: #0d251a;
+        --danger: #ff7171;
+        --warning: #ffd580;
+        --shadow: 0 34px 90px rgba(0, 0, 0, 0.55);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-width: 320px; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 70% 8%, rgba(31, 92, 65, .22), transparent 34%),
+          radial-gradient(circle at 20% 80%, rgba(29, 72, 53, .13), transparent 32%),
+          var(--bg);
+      }
+      button { font: inherit; -webkit-tap-highlight-color: transparent; }
+      button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+      [hidden] { display: none !important; }
+
+      .page {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+      }
+
+      .phone-shell {
+        position: relative;
+        width: min(100%, 390px);
+        height: min(844px, calc(100vh - 56px));
+        min-height: 640px;
+        overflow: hidden;
+        border: 1px solid #303834;
+        border-radius: 38px;
+        background:
+          radial-gradient(circle at 80% 12%, rgba(120, 240, 179, .10), transparent 28%),
+          linear-gradient(180deg, #0c100f 0%, #080b0a 100%);
+        box-shadow: var(--shadow);
+      }
+
+      .phone-shell::before {
+        content: "";
+        position: absolute;
+        z-index: 20;
+        top: 9px;
+        left: 50%;
+        width: 108px;
+        height: 26px;
+        transform: translateX(-50%);
+        border-radius: 999px;
+        background: #050706;
+      }
+
+      .screen {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        padding: max(54px, env(safe-area-inset-top)) 22px max(22px, env(safe-area-inset-bottom));
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(10px);
+        transition: opacity .26s ease, transform .26s ease;
+      }
+      .screen.active { opacity: 1; pointer-events: auto; transform: none; }
+
+      .topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
+      .brand { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 13px; font-weight: 750; }
+      .brand-mark {
+        display: flex;
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        border: 1px solid #345044;
+        border-radius: 10px;
+        background: #122019;
+      }
+      .brand-mark i { width: 3px; border-radius: 2px; background: var(--accent); }
+      .brand-mark i:nth-child(1) { height: 8px; }
+      .brand-mark i:nth-child(2) { height: 17px; }
+      .brand-mark i:nth-child(3) { height: 11px; }
+      .secure { display: flex; align-items: center; gap: 6px; color: var(--quiet); font-size: 10px; }
+      .secure svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+
+      .ready-content { display: flex; flex: 1; min-height: 0; flex-direction: column; justify-content: center; padding: 20px 0 12px; }
+      .avatar-wrap { position: relative; width: 118px; height: 118px; margin: 0 auto 30px; }
+      .avatar-halo { position: absolute; inset: 0; border: 1px solid rgba(120, 240, 179, .18); border-radius: 50%; }
+      .avatar-halo::before { content: ""; position: absolute; inset: 12px; border: 1px solid rgba(120, 240, 179, .28); border-radius: inherit; }
+      .avatar {
+        position: absolute;
+        inset: 25px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 28%, #d8ffea, #72edaf 34%, #1b5d40 70%, #0b2418);
+        box-shadow: 0 0 54px rgba(105, 231, 166, .24);
+        color: #062014;
+        font-size: 21px;
+        font-weight: 900;
+      }
+      .online-dot { position: absolute; right: 20px; bottom: 20px; width: 15px; height: 15px; border: 3px solid #0a0e0c; border-radius: 50%; background: var(--accent); }
+      .eyebrow { margin: 0 0 9px; color: var(--accent); font-size: 10px; font-weight: 750; letter-spacing: .14em; text-align: center; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(29px, 8vw, 36px); line-height: 1.08; letter-spacing: -.035em; text-align: center; }
+      .description { max-width: 310px; margin: 14px auto 0; color: #aab4af; font-size: 13px; line-height: 1.55; text-align: center; }
+      .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 22px; }
+      .chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16, 20, 18, .7); color: #aab4af; font-size: 10px; }
+      .chip span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+      .primary-button {
+        width: 100%; min-height: 54px; border: 1px solid var(--accent); border-radius: 15px;
+        background: var(--accent); color: #07110c; font-weight: 800; cursor: pointer;
+        box-shadow: 0 12px 30px rgba(120, 240, 179, .12);
+      }
+      .primary-button:active { transform: scale(.985); }
+      .privacy { margin: 11px 7px 0; color: var(--quiet); font-size: 9px; line-height: 1.5; text-align: center; }
+      .privacy strong { color: #87928c; font-weight: 650; }
+
+      .center-state { display: flex; flex: 1; min-height: 0; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .state-loader { position: relative; width: 130px; height: 130px; margin-bottom: 30px; }
+      .state-loader::before, .state-loader::after { content: ""; position: absolute; border-radius: 50%; }
+      .state-loader::before { inset: 0; border: 1px solid rgba(120, 240, 179, .15); }
+      .state-loader::after { inset: 16px; border: 1px solid rgba(120, 240, 179, .35); border-top-color: var(--accent); animation: rotate 1.5s linear infinite; }
+      .loader-core { position: absolute; inset: 43px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #caffdf, #60d99a 43%, #173b2c); box-shadow: 0 0 34px rgba(105, 231, 166, .23); }
+      .center-state h2 { margin: 0; font-size: 24px; letter-spacing: -.02em; }
+      .center-state p { max-width: 270px; margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+      .progress { display: flex; gap: 6px; margin-top: 22px; }
+      .progress i { width: 6px; height: 6px; border-radius: 50%; background: #2d3531; }
+      .progress i:first-child, .progress i:nth-child(2) { background: var(--accent); }
+
+      .call-screen { padding-left: 18px; padding-right: 18px; }
+      .call-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
+      .call-heading { min-width: 0; text-align: center; }
+      .call-heading strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+      .call-heading span { display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; color: var(--muted); font-size: 10px; }
+      .call-heading span::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px rgba(120, 240, 179, .6); }
+      .icon-button { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: rgba(18, 22, 20, .72); color: #bdc6c1; cursor: pointer; }
+      .icon-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .icon-button.empty { visibility: hidden; }
+
+      .call-stage { display: flex; flex: 1; min-height: 0; flex-direction: column; align-items: center; justify-content: center; padding: 12px 4px 8px; }
+      .live-orb { position: relative; display: grid; width: 178px; height: 178px; place-items: center; }
+      .live-orb::before, .live-orb::after { content: ""; position: absolute; border-radius: 50%; transition: .35s ease; }
+      .live-orb::before { inset: 2px; border: 1px solid rgba(120, 240, 179, .12); }
+      .live-orb::after { inset: 22px; border: 1px solid rgba(120, 240, 179, .26); }
+      .orb-core { position: relative; z-index: 2; width: 84px; height: 84px; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #d7ffea, #69e7a6 38%, #163b2b 73%); box-shadow: 0 0 58px rgba(105, 231, 166, .25); }
+      .live-orb[data-mode="listening"] .orb-core { animation: breathe 1.8s ease-in-out infinite; }
+      .live-orb[data-mode="thinking"]::after { border-top-color: var(--accent); animation: rotate 1.8s linear infinite; }
+      .live-orb[data-mode="speaking"] .orb-core { animation: speak 1s ease-in-out infinite; }
+      .live-orb[data-mode="reconnecting"] .orb-core { filter: saturate(.2); opacity: .7; }
+      .live-orb[data-mode="reconnecting"]::after { border-color: rgba(255, 213, 128, .25); border-top-color: var(--warning); animation: rotate 1.2s linear infinite; }
+      .mode-label { margin: 13px 0 0; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      .mode-hint { min-height: 18px; margin: 7px 0 0; color: var(--muted); font-size: 11px; }
+
+      .caption-card { position: relative; width: 100%; min-width: 0; margin-top: 21px; padding: 13px 15px 14px; overflow: hidden; border: 1px solid var(--line-soft); border-radius: 15px; background: rgba(16, 20, 18, .82); }
+      .caption-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--quiet); font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+      .caption-meta button { display: inline-flex; min-height: 36px; align-items: center; justify-content: center; padding: 0 13px; border: 1px solid #345442; border-radius: 999px; background: rgba(30, 63, 46, .5); color: #a9eac8; font-size: 10px; font-weight: 750; letter-spacing: .03em; text-transform: none; cursor: pointer; }
+      .caption-meta button:hover, .caption-meta button:focus-visible { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); outline: none; }
+      .caption-window {
+        position: relative;
+        max-height: 168px;
+        margin-top: 8px;
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.34) 0, rgba(0,0,0,.76) 22%, #000 42%, #000 100%);
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,.34) 0, rgba(0,0,0,.76) 22%, #000 42%, #000 100%);
+      }
+      .caption-history { display: flex; flex-direction: column; gap: 6px; }
+      .caption-turn { min-width: 0; padding-top: 6px; border-top: 1px solid rgba(58, 68, 63, .48); transition: opacity .2s ease; }
+      .caption-turn:first-child { border-top: 0; }
+      .caption-turn:nth-last-child(4) { opacity: .38; }
+      .caption-turn:nth-last-child(3) { opacity: .52; }
+      .caption-turn:nth-last-child(2) { opacity: .72; }
+      .caption-turn:last-child { opacity: 1; }
+      .caption-turn small { display: block; margin-bottom: 2px; color: #718078; font-size: 8px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
+      .caption-turn p { display: -webkit-box; margin: 0; overflow: hidden; overflow-wrap: anywhere; color: #dbe3de; font-size: 10.5px; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+      .caption-turn:last-child p { font-size: 12px; }
+      .caption-turn:last-child p { -webkit-line-clamp: 2; }
+
+      .quality-banner { display: flex; width: 100%; min-width: 0; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 12px; border: 1px solid #5c5032; border-radius: 12px; background: rgba(52, 43, 19, .72); color: #f0deb4; font-size: 10px; }
+      .quality-banner svg { width: 16px; height: 16px; flex: 0 0 auto; fill: none; stroke: var(--warning); stroke-width: 1.8; }
+
+      .call-controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 13px; padding: 8px 13px 0; }
+      .control { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 7px; border: 0; background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; }
+      .control-circle { display: grid; width: 54px; height: 54px; place-items: center; border: 1px solid #343c38; border-radius: 50%; background: #171c1a; color: #d6ddd9; transition: .16s ease; }
+      .control-circle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .control[aria-pressed="true"] .control-circle { border-color: #4d6b5c; background: var(--accent-soft); color: var(--accent); }
+      .control.end .control-circle { border-color: #773737; background: #5b2525; color: #fff; transform: rotate(135deg); }
+      .control.end { color: #d89b9b; }
+
+      .result-icon { display: grid; width: 86px; height: 86px; margin-bottom: 26px; place-items: center; border: 1px solid #315843; border-radius: 50%; background: var(--accent-deep); color: var(--accent); }
+      .result-icon.error { border-color: #613636; background: #2c1717; color: var(--danger); }
+      .result-icon svg { width: 35px; height: 35px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .result-stats { display: grid; width: 100%; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 26px; }
+      .result-stats div { padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+      .result-stats span { display: block; color: var(--quiet); font-size: 9px; text-transform: uppercase; }
+      .result-stats strong { display: block; margin-top: 5px; font-size: 14px; }
+      .secondary-button { width: 100%; min-height: 50px; margin-top: 10px; border: 1px solid var(--line); border-radius: 14px; background: transparent; color: #cbd3cf; font-weight: 700; cursor: pointer; }
+
+      .sheet-backdrop { position: absolute; z-index: 30; inset: 0; background: rgba(0, 0, 0, .58); opacity: 0; pointer-events: none; transition: opacity .2s; }
+      .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+      .sheet { position: absolute; z-index: 31; right: 0; bottom: 0; left: 0; max-height: 78%; overflow: hidden; border: 1px solid var(--line); border-bottom: 0; border-radius: 24px 24px 0 0; background: #101412; transform: translateY(102%); transition: transform .25s ease; }
+      .sheet.open { transform: none; }
+      .sheet-handle { width: 42px; height: 4px; margin: 10px auto 5px; border-radius: 4px; background: #3c4540; }
+      .sheet header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+      .sheet h3 { margin: 0; font-size: 14px; }
+      .sheet header button { border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+      .messages { max-height: 470px; overflow-y: auto; overscroll-behavior: contain; padding: 18px; }
+      .message { max-width: 88%; margin-bottom: 14px; }
+      .message.agent { margin-right: auto; }
+      .message.user { margin-left: auto; }
+      .message small { display: block; margin-bottom: 4px; color: var(--quiet); font-size: 8px; text-transform: uppercase; }
+      .message.user small { text-align: right; }
+      .message p { margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 13px 13px 13px 4px; background: #191e1c; color: #d6ded9; font-size: 12px; line-height: 1.5; }
+      .message.user p { border-color: #285940; border-radius: 13px 13px 4px 13px; background: var(--accent-soft); }
+
+      .review-dock { position: fixed; z-index: 80; top: 50%; right: 24px; width: 182px; padding: 12px; transform: translateY(-50%); border: 1px solid var(--line); border-radius: 14px; background: rgba(15, 19, 17, .92); box-shadow: 0 18px 50px rgba(0, 0, 0, .4); backdrop-filter: blur(14px); }
+      .review-dock strong { display: block; margin-bottom: 3px; font-size: 11px; }
+      .review-dock p { margin: 0 0 10px; color: var(--quiet); font-size: 9px; line-height: 1.45; }
+      .review-dock button { width: 100%; margin-top: 5px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; background: #171c1a; color: #b9c2bd; font-size: 10px; text-align: left; cursor: pointer; }
+      .review-dock button:hover, .review-dock button.active { border-color: #41785d; background: var(--accent-deep); color: var(--accent); }
+
+      .prototype-note { position: fixed; left: 22px; bottom: 18px; max-width: 220px; color: #56615b; font-size: 9px; line-height: 1.5; }
+
+      @keyframes rotate { to { transform: rotate(360deg); } }
+      @keyframes breathe { 50% { transform: scale(1.07); box-shadow: 0 0 70px rgba(105, 231, 166, .38); } }
+      @keyframes speak { 25% { transform: scale(1.08); } 55% { transform: scale(.96); } 80% { transform: scale(1.04); } }
+
+      @media (max-width: 760px) {
+        .page { display: block; padding: 0; }
+        .phone-shell { width: 100%; height: 100vh; height: 100dvh; min-height: 620px; border: 0; border-radius: 0; box-shadow: none; }
+        .phone-shell::before, .review-dock, .prototype-note { display: none; }
+        .screen { padding-top: max(22px, env(safe-area-inset-top)); }
+      }
+
+      @media (max-height: 700px) {
+        .ready-content { padding-top: 8px; }
+        .avatar-wrap { width: 96px; height: 96px; margin-bottom: 20px; }
+        .avatar { inset: 21px; }
+        .online-dot { right: 15px; bottom: 15px; }
+        .chips { margin-top: 14px; }
+        .live-orb { width: 132px; height: 132px; }
+        .orb-core { width: 67px; height: 67px; }
+        .caption-card { margin-top: 10px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="phone-shell" aria-label="VoiceAgent mobile prototype">
+        <section id="ready-screen" class="screen active" aria-labelledby="ready-title">
+          <header class="topline">
+            <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>VoiceAgent</span></div>
+            <span class="secure"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Private call</span>
+          </header>
+
+          <div class="ready-content">
+            <div class="avatar-wrap" aria-hidden="true"><div class="avatar-halo"></div><div class="avatar">M</div><span class="online-dot"></span></div>
+            <p class="eyebrow">Ready to talk</p>
+            <h1 id="ready-title">Meet Maya</h1>
+            <p class="description">A real-time AI voice guide. Ask a question, interrupt naturally, or request a faster speaking pace.</p>
+            <div class="chips" aria-label="Demo capabilities">
+              <span class="chip"><span></span>Live voice</span>
+              <span class="chip"><span></span>Natural interruption</span>
+              <span class="chip"><span></span>English</span>
+            </div>
+          </div>
+
+          <footer>
+            <button id="start-call" class="primary-button" type="button">Start voice call</button>
+            <p class="privacy"><strong>Before you start:</strong> your voice is stored for 7 days; transcripts and call metrics for 30 days.</p>
+          </footer>
+        </section>
+
+        <section id="connecting-screen" class="screen" aria-labelledby="connecting-title" aria-live="polite">
+          <header class="topline">
+            <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>VoiceAgent</span></div>
+            <span class="secure">WebRTC</span>
+          </header>
+          <div class="center-state">
+            <div class="state-loader" aria-hidden="true"><div class="loader-core"></div></div>
+            <h2 id="connecting-title">Connecting your call</h2>
+            <p id="connecting-copy">Preparing secure audio and checking your microphone. This usually takes a few seconds.</p>
+            <div class="progress" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          <p class="privacy">Keep this page open while the call connects.</p>
+        </section>
+
+        <section id="call-screen" class="screen call-screen" aria-labelledby="call-title">
+          <header class="call-header">
+            <button id="open-transcript-top" class="icon-button" type="button" aria-label="Open transcript">
+              <svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h9"/></svg>
+            </button>
+            <div class="call-heading"><strong id="call-title">Maya · Voice guide</strong><span><time id="call-timer">00:00</time></span></div>
+            <button class="icon-button empty" type="button" tabindex="-1" aria-hidden="true"></button>
+          </header>
+
+          <div class="call-stage">
+            <div id="live-orb" class="live-orb" data-mode="listening" aria-hidden="true"><div class="orb-core"></div></div>
+            <p id="mode-label" class="mode-label">Listening</p>
+            <p id="mode-hint" class="mode-hint">Go ahead — Maya can hear you.</p>
+
+            <article id="caption-card" class="caption-card">
+              <div class="caption-meta"><span>Recent conversation</span><button id="open-transcript" type="button">View transcript</button></div>
+              <div class="caption-window">
+                <div id="caption-history" class="caption-history">
+                  <div class="caption-turn"><small>Maya</small><p>Hi, I’m Maya. What would you like to explore today?</p></div>
+                  <div class="caption-turn"><small>You</small><p>Can I interrupt while you’re talking?</p></div>
+                  <div class="caption-turn"><small>Maya</small><p>Yes — just start speaking and I’ll pause right away.</p></div>
+                  <div class="caption-turn"><small>You</small><p>What makes this voice agent feel responsive?</p></div>
+                </div>
+              </div>
+            </article>
+
+            <div id="quality-banner" class="quality-banner" hidden>
+              <svg viewBox="0 0 24 24"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4m0 3h.01"/></svg>
+              <span>Your network is unstable. Reconnecting audio…</span>
+            </div>
+          </div>
+
+          <footer class="call-controls" aria-label="Call controls">
+            <button id="mute-control" class="control" type="button" aria-pressed="false">
+              <span class="control-circle"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg></span>
+              <span>Mute</span>
+            </button>
+            <button id="end-control" class="control end" type="button">
+              <span class="control-circle"><svg viewBox="0 0 24 24"><path d="M6 8.5c4-2 8-2 12 0l2 3-3 2-2-2.2a9 9 0 0 0-6 0L7 13.5l-3-2 2-3Z"/></svg></span>
+              <span>End</span>
+            </button>
+            <button id="caption-control" class="control" type="button" aria-pressed="true">
+              <span class="control-circle"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 10h3m4 0h3M7 14h4m3 0h3"/></svg></span>
+              <span>Captions</span>
+            </button>
+          </footer>
+        </section>
+
+        <section id="ended-screen" class="screen" aria-labelledby="ended-title">
+          <header class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>VoiceAgent</span></div></header>
+          <div class="center-state">
+            <div class="result-icon"><svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-9"/></svg></div>
+            <p class="eyebrow">Demo complete</p>
+            <h2 id="ended-title">Thanks for calling</h2>
+            <p>Your conversation with Maya has ended.</p>
+            <div class="result-stats"><div><span>Duration</span><strong id="result-duration">01:24</strong></div><div><span>Status</span><strong>Completed</strong></div></div>
+          </div>
+          <footer><button id="call-again" class="primary-button" type="button">Call again</button><button id="done-button" class="secondary-button" type="button">Done</button></footer>
+        </section>
+
+        <section id="error-screen" class="screen" aria-labelledby="error-title">
+          <header class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>VoiceAgent</span></div></header>
+          <div class="center-state">
+            <div class="result-icon error"><svg viewBox="0 0 24 24"><path d="M12 8v5m0 3h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <p class="eyebrow" style="color:var(--danger)">Call not connected</p>
+            <h2 id="error-title">Let’s try that again</h2>
+            <p>Check your connection and microphone permission, then retry the call.</p>
+          </div>
+          <footer><button id="retry-call" class="primary-button" type="button">Retry</button><button id="error-done" class="secondary-button" type="button">Back to start</button></footer>
+        </section>
+
+        <div id="sheet-backdrop" class="sheet-backdrop"></div>
+        <aside id="transcript-sheet" class="sheet" aria-labelledby="transcript-title" aria-hidden="true">
+          <div class="sheet-handle"></div>
+          <header><h3 id="transcript-title">Live transcript</h3><button id="close-transcript" type="button">Close</button></header>
+          <div class="messages">
+            <article class="message agent"><small>Maya</small><p>Hi, I’m Maya. What would you like to explore today?</p></article>
+            <article class="message user"><small>You</small><p>Can I interrupt while you’re talking?</p></article>
+            <article class="message agent"><small>Maya</small><p>Yes — just start speaking and I’ll pause right away.</p></article>
+            <article class="message user"><small>You</small><p>What makes this voice agent feel responsive?</p></article>
+            <article class="message agent"><small>Maya</small><p>It streams each stage, so listening, reasoning, and speaking can overlap instead of waiting for the whole response.</p></article>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <aside class="review-dock" aria-label="Prototype state controls">
+      <strong>Prototype states</strong>
+      <p>Review only · not part of the product UI</p>
+      <button type="button" data-review-state="ready" class="active">01 · Ready</button>
+      <button type="button" data-review-state="connecting">02 · Connecting</button>
+      <button type="button" data-review-state="live">03 · Live call</button>
+      <button type="button" data-review-state="weak">04 · Weak network</button>
+      <button type="button" data-review-state="error">05 · Error</button>
+      <button type="button" data-review-state="ended">06 · Ended</button>
+    </aside>
+    <p class="prototype-note">Concept prototype · No real microphone, WebRTC, or provider calls are made.</p>
+
+    <script>
+      const screens = {
+        ready: document.querySelector("#ready-screen"),
+        connecting: document.querySelector("#connecting-screen"),
+        live: document.querySelector("#call-screen"),
+        ended: document.querySelector("#ended-screen"),
+        error: document.querySelector("#error-screen"),
+      };
+      const orb = document.querySelector("#live-orb");
+      const modeLabel = document.querySelector("#mode-label");
+      const modeHint = document.querySelector("#mode-hint");
+      const captionHistory = document.querySelector("#caption-history");
+      const captionCard = document.querySelector("#caption-card");
+      const qualityBanner = document.querySelector("#quality-banner");
+      const timer = document.querySelector("#call-timer");
+      const transcriptSheet = document.querySelector("#transcript-sheet");
+      const sheetBackdrop = document.querySelector("#sheet-backdrop");
+      let activeState = "ready";
+      let timerSeconds = 0;
+      let timerHandle = null;
+      let conversationHandle = null;
+
+      const conversation = [
+        {
+          mode: "listening",
+          label: "Listening",
+          hint: "Go ahead — Maya can hear you.",
+          turns: [
+            ["Maya", "Hi, I’m Maya. What would you like to explore today?"],
+            ["You", "Can I interrupt while you’re talking?"],
+            ["Maya", "Yes — just start speaking and I’ll pause right away."],
+            ["You", "What makes this voice agent feel responsive?"],
+          ],
+        },
+        {
+          mode: "thinking",
+          label: "Thinking",
+          hint: "Understanding your request…",
+          turns: [
+            ["Maya", "Hi, I’m Maya. What would you like to explore today?"],
+            ["You", "Can I interrupt while you’re talking?"],
+            ["Maya", "Yes — just start speaking and I’ll pause right away."],
+            ["You", "What makes this voice agent feel responsive?"],
+          ],
+        },
+        {
+          mode: "speaking",
+          label: "Maya is speaking",
+          hint: "You can interrupt at any time.",
+          turns: [
+            ["You", "Can I interrupt while you’re talking?"],
+            ["Maya", "Yes — just start speaking and I’ll pause right away."],
+            ["You", "What makes this voice agent feel responsive?"],
+            ["Maya", "It streams each stage, so listening, reasoning, and speaking can overlap naturally."],
+          ],
+        },
+      ];
+      let conversationIndex = 0;
+
+      function formatTime(seconds) {
+        const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const remainder = String(seconds % 60).padStart(2, "0");
+        return `${minutes}:${remainder}`;
+      }
+
+      function stopTimers() {
+        window.clearInterval(timerHandle);
+        window.clearInterval(conversationHandle);
+        timerHandle = null;
+        conversationHandle = null;
+      }
+
+      function startLiveTimers() {
+        stopTimers();
+        timerHandle = window.setInterval(() => {
+          timerSeconds += 1;
+          timer.textContent = formatTime(timerSeconds);
+        }, 1000);
+        conversationHandle = window.setInterval(() => {
+          conversationIndex = (conversationIndex + 1) % conversation.length;
+          applyConversationState(conversation[conversationIndex]);
+        }, 3600);
+      }
+
+      function applyConversationState(item) {
+        orb.dataset.mode = item.mode;
+        modeLabel.textContent = item.label;
+        modeHint.textContent = item.hint;
+        captionHistory.replaceChildren(...item.turns.map(([speaker, copy]) => {
+          const turn = document.createElement("div");
+          turn.className = "caption-turn";
+          const label = document.createElement("small");
+          label.textContent = speaker;
+          const text = document.createElement("p");
+          text.textContent = copy;
+          turn.append(label, text);
+          return turn;
+        }));
+      }
+
+      function setScreen(name, options = {}) {
+        const baseName = name === "weak" ? "live" : name;
+        Object.values(screens).forEach((screen) => screen.classList.remove("active"));
+        screens[baseName].classList.add("active");
+        activeState = name;
+        closeTranscript();
+        document.querySelectorAll("[data-review-state]").forEach((button) => button.classList.toggle("active", button.dataset.reviewState === name));
+
+        if (baseName === "live") {
+          if (!options.preserveTimer && timerHandle === null) startLiveTimers();
+          const weak = name === "weak";
+          qualityBanner.hidden = !weak;
+          if (weak) {
+            orb.dataset.mode = "reconnecting";
+            modeLabel.textContent = "Reconnecting";
+            modeHint.textContent = "Keep this page open.";
+          } else {
+            applyConversationState(conversation[conversationIndex]);
+          }
+        } else {
+          qualityBanner.hidden = true;
+          stopTimers();
+        }
+      }
+
+      function beginConnection() {
+        setScreen("connecting");
+        window.setTimeout(() => {
+          if (activeState === "connecting") {
+            timerSeconds = 0;
+            timer.textContent = "00:00";
+            conversationIndex = 0;
+            setScreen("live");
+          }
+        }, 1500);
+      }
+
+      function endCall() {
+        document.querySelector("#result-duration").textContent = formatTime(Math.max(timerSeconds, 1));
+        setScreen("ended");
+      }
+
+      function openTranscript() {
+        transcriptSheet.classList.add("open");
+        sheetBackdrop.classList.add("open");
+        transcriptSheet.setAttribute("aria-hidden", "false");
+      }
+
+      function closeTranscript() {
+        transcriptSheet.classList.remove("open");
+        sheetBackdrop.classList.remove("open");
+        transcriptSheet.setAttribute("aria-hidden", "true");
+      }
+
+      document.querySelector("#start-call").addEventListener("click", beginConnection);
+      document.querySelector("#retry-call").addEventListener("click", beginConnection);
+      document.querySelector("#call-again").addEventListener("click", beginConnection);
+      document.querySelector("#done-button").addEventListener("click", () => setScreen("ready"));
+      document.querySelector("#error-done").addEventListener("click", () => setScreen("ready"));
+      document.querySelector("#end-control").addEventListener("click", endCall);
+      document.querySelector("#open-transcript").addEventListener("click", openTranscript);
+      document.querySelector("#open-transcript-top").addEventListener("click", openTranscript);
+      document.querySelector("#close-transcript").addEventListener("click", closeTranscript);
+      sheetBackdrop.addEventListener("click", closeTranscript);
+
+      document.querySelector("#mute-control").addEventListener("click", (event) => {
+        const button = event.currentTarget;
+        const pressed = button.getAttribute("aria-pressed") === "true";
+        button.setAttribute("aria-pressed", String(!pressed));
+        button.lastElementChild.textContent = pressed ? "Mute" : "Muted";
+        modeHint.textContent = pressed ? "Go ahead — Maya can hear you." : "Your microphone is muted.";
+      });
+
+      document.querySelector("#caption-control").addEventListener("click", (event) => {
+        const button = event.currentTarget;
+        const pressed = button.getAttribute("aria-pressed") === "true";
+        button.setAttribute("aria-pressed", String(!pressed));
+        captionCard.hidden = pressed;
+      });
+
+      document.querySelectorAll("[data-review-state]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const state = button.dataset.reviewState;
+          if (state === "live" || state === "weak") {
+            if (timerSeconds === 0) timerSeconds = 24;
+            timer.textContent = formatTime(timerSeconds);
+          }
+          setScreen(state);
+        });
+      });
+    </script>
+  </body>
+</html>

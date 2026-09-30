@@ -15,6 +15,9 @@ from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.serializers.protobuf import ProtobufFrameSerializer
 from pipecat.services.llm_service import FunctionCallParams
+from pipecat.transports.base_transport import BaseTransport, TransportParams
+from pipecat.transports.smallwebrtc.connection import SmallWebRTCConnection
+from pipecat.transports.smallwebrtc.transport import SmallWebRTCTransport
 from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketParams,
     FastAPIWebsocketTransport,
@@ -45,7 +48,7 @@ async def run_voice_agent_session(
     event_buffer: SessionEventBuffer,
     call_capture: CallCapture | None = None,
 ) -> None:
-    """Run a complete Browser → Flux STT → LLM → Flux TTS session.
+    """Run one WebSocket-backed browser voice-agent session.
 
     Args:
         websocket: Accepted browser WebSocket.
@@ -55,11 +58,8 @@ async def run_voice_agent_session(
         tts_registry: Provider registry used outside orchestration logic.
         allowed_origins: Origins accepted by the transport.
         event_buffer: Non-secret timing buffer for UI telemetry.
+        call_capture: Optional non-blocking history and recording sink.
     """
-    asr_key = lease.credentials.asr_api_key.get_secret_value()
-    llm_key = lease.credentials.llm_api_key.get_secret_value()
-    tts_key = lease.credentials.tts_api_key.get_secret_value()
-
     is_chat = lease.session_type == "chat_test"
     transport = FastAPIWebsocketTransport(
         websocket=websocket,
@@ -78,6 +78,71 @@ async def run_voice_agent_session(
             ws_close_timeout=1.0,
         ),
     )
+    await run_voice_agent_pipeline(
+        transport=transport,
+        lease=lease,
+        runtime=runtime,
+        asr_registry=asr_registry,
+        tts_registry=tts_registry,
+        event_buffer=event_buffer,
+        call_capture=call_capture,
+    )
+
+
+def create_small_webrtc_transport(
+    *,
+    connection: SmallWebRTCConnection,
+    runtime: RuntimeConfig,
+) -> SmallWebRTCTransport:
+    """Create a Small WebRTC transport using the pipeline audio contract.
+
+    Args:
+        connection: Negotiated Pipecat peer connection.
+        runtime: Validated runtime audio configuration.
+
+    Returns:
+        A transport that uses the same raw audio contract as WebSocket.
+    """
+    return SmallWebRTCTransport(
+        webrtc_connection=connection,
+        params=TransportParams(
+            audio_in_enabled=True,
+            audio_out_enabled=True,
+            audio_in_sample_rate=runtime.audio.input_sample_rate,
+            audio_out_sample_rate=runtime.audio.output_sample_rate,
+            audio_in_channels=runtime.audio.channels,
+            audio_out_channels=runtime.audio.channels,
+            audio_out_write_timeout_secs=10.0,
+        ),
+    )
+
+
+async def run_voice_agent_pipeline(
+    *,
+    transport: BaseTransport,
+    lease: SessionLease,
+    runtime: RuntimeConfig,
+    asr_registry: ASRProviderRegistry,
+    tts_registry: TTSProviderRegistry,
+    event_buffer: SessionEventBuffer,
+    call_capture: CallCapture | None = None,
+) -> None:
+    """Run the shared ASR → LLM → TTS pipeline over an injected transport.
+
+    Args:
+        transport: Connected WebSocket or Small WebRTC transport.
+        lease: Single-use session lease containing credentials and configuration.
+        runtime: Validated server runtime configuration.
+        asr_registry: Speech-recognition provider registry.
+        tts_registry: Speech-synthesis provider registry.
+        event_buffer: Non-secret timing buffer for UI telemetry.
+        call_capture: Optional non-blocking history and recording sink.
+    """
+    asr_key = lease.credentials.asr_api_key.get_secret_value()
+    llm_key = lease.credentials.llm_api_key.get_secret_value()
+    tts_key = lease.credentials.tts_api_key.get_secret_value()
+
+    is_chat = lease.session_type == "chat_test"
     stt = (
         None
         if is_chat

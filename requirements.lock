@@ -2,6 +2,8 @@
 # audioop-lts is only needed after stdlib audioop was removed in Python 3.13.
 agent-detector==1.1.0
 aiofiles==25.1.0
+aioice==0.10.2
+aiortc==1.15.0
 aiohappyeyeballs==2.7.1
 aiohttp==3.14.3
 aiosignal==1.4.0
@@ -10,6 +12,7 @@ annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.14.2
 attrs==26.1.0
+av==17.1.0
 audioop-lts==0.2.2 ; python_version >= "3.13"
 certifi==2026.7.22
 cffi==2.1.1
@@ -37,6 +40,7 @@ google-api-core==2.34.0
 google-auth==2.57.0
 google-cloud-speech==2.40.0
 google-cloud-texttospeech==2.37.0
+google-crc32c==1.9.0
 google-genai==2.22.0
 googleapis-common-protos==1.75.2
 grpcio==1.83.1
@@ -48,6 +52,7 @@ httpx==0.28.1
 huggingface_hub==0.36.2
 httptools==0.8.0
 idna==3.19
+ifaddr==0.2.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
 jiter==0.16.0
@@ -76,6 +81,7 @@ proto-plus==1.28.4
 propcache==0.5.2
 protobuf==6.33.6
 pycparser==3.0
+pyee==14.0.0
 pyasn1==0.6.4
 pyasn1_modules==0.4.2
 pydantic==2.13.5
@@ -83,6 +89,8 @@ pydantic_core==2.46.5
 pydantic-extra-types==2.11.1
 pydantic-settings==2.15.0
 Pygments==2.21.0
+pylibsrtp==1.0.0
+pyOpenSSL==26.4.0
 python-dotenv==1.2.3
 python-multipart==0.0.32
 PyYAML==6.0.3

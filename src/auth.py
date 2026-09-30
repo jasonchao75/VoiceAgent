@@ -134,13 +134,42 @@ class ProductAuthMiddleware(BaseHTTPMiddleware):
     @staticmethod
     def _is_public(path: str) -> bool:
         """Return whether a route is intentionally available before login."""
-        return path.startswith("/assets/") or path in {
-            "/health",
-            "/login",
-            "/login.html",
-            "/api/auth/login",
-            "/api/evaluation/webhooks/elevenlabs",
-        }
+        parts = path.strip("/").split("/")
+        is_demo_page = len(parts) == 2 and parts[0] == "demo" and bool(parts[1])
+        is_public_demo_api = (
+            len(parts) == 4 and parts[:3] == ["api", "public", "demos"] and bool(parts[3])
+        )
+        is_public_session_api = (
+            len(parts) == 5
+            and parts[:3] == ["api", "public", "demos"]
+            and bool(parts[3])
+            and parts[4] == "sessions"
+        )
+        is_public_demo_event_api = (
+            len(parts) == 5
+            and parts[:3] == ["api", "public", "demos"]
+            and bool(parts[3])
+            and parts[4] == "events"
+        )
+        is_public_webrtc_api = (
+            len(parts) == 4 and parts[:3] == ["api", "public", "webrtc"] and bool(parts[3])
+        )
+        return (
+            path.startswith("/assets/")
+            or is_demo_page
+            or is_public_demo_api
+            or is_public_session_api
+            or is_public_demo_event_api
+            or is_public_webrtc_api
+            or path
+            in {
+                "/health",
+                "/login",
+                "/login.html",
+                "/api/auth/login",
+                "/api/evaluation/webhooks/elevenlabs",
+            }
+        )
 
     @staticmethod
     def _uses_call_bearer(path: str) -> bool:

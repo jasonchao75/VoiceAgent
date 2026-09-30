@@ -104,6 +104,35 @@ class _FakeRegistry:
         return self.marker
 
 
+def test_small_webrtc_transport_uses_shared_audio_contract(
+    monkeypatch: pytest.MonkeyPatch,
+    runtime_config: RuntimeConfig,
+) -> None:
+    """Build Small WebRTC with the exact PCM rates consumed by the shared pipeline."""
+    captured: dict[str, object] = {}
+
+    def fake_transport_factory(**kwargs: Any) -> object:
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(voice_agent, "SmallWebRTCTransport", fake_transport_factory)
+    connection = object()
+    transport = voice_agent.create_small_webrtc_transport(
+        connection=connection,  # type: ignore[arg-type]
+        runtime=runtime_config,
+    )
+
+    assert transport is not None
+    assert captured["webrtc_connection"] is connection
+    params = captured["params"]
+    assert params.audio_in_enabled is True
+    assert params.audio_out_enabled is True
+    assert params.audio_in_sample_rate == runtime_config.audio.input_sample_rate
+    assert params.audio_out_sample_rate == runtime_config.audio.output_sample_rate
+    assert params.audio_in_channels == runtime_config.audio.channels
+    assert params.audio_out_channels == runtime_config.audio.channels
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("opening_script, expected_frames", [("Hello there.", 1), ("", 0)])
 @pytest.mark.parametrize(

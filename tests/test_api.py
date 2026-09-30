@@ -124,6 +124,7 @@ def test_product_login_protects_routes_without_native_auth_challenge(
 
     with TestClient(create_app(), base_url="https://testserver") as client:
         health = client.get("/health")
+        public_demo = client.get("/demo/maya-a7k9")
         first_visit = client.get("/", follow_redirects=False)
         unauthorized = client.get("/api/catalogs")
         protected_audio = client.get("/api/evaluation/conversations/1030000000091506/audio")
@@ -137,6 +138,8 @@ def test_product_login_protects_routes_without_native_auth_challenge(
         session = client.get("/api/auth/session")
 
     assert health.status_code == 200
+    assert public_demo.status_code == 200
+    assert "VoiceAgent · Mobile demo" in public_demo.text
     assert first_visit.headers["location"] == "/login?next=%2F"
     assert unauthorized.status_code == 401
     assert protected_audio.status_code == 401

@@ -3,24 +3,31 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 import os
 import secrets
 import time
 import uuid
-from collections.abc import AsyncIterator
+from collections import deque
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import Any, Literal, TypedDict, cast
 from urllib.parse import parse_qsl, urlparse
 
 import httpx
+from aiortc import RTCIceServer
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field, SecretStr
+from pipecat.transports.smallwebrtc.request_handler import (
+    SmallWebRTCPatchRequest,
+    SmallWebRTCRequest,
+)
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 from starlette.responses import Response
 
 from src.asr import create_default_asr_registry
@@ -59,7 +66,12 @@ from src.llm.diagnostics import (
 )
 from src.llm.qwen_dashscope import is_qwen_dashscope_host, validate_qwen_base_url
 from src.observability import SessionEventBuffer
-from src.pipeline import run_voice_agent_session
+from src.pipeline import (
+    create_small_webrtc_transport,
+    run_voice_agent_pipeline,
+    run_voice_agent_session,
+)
+from src.publication import DemoPublicationStore, PublishedDemo, ShareState
 from src.session import (
     BotSessionRequest,
     SessionCapacityError,
@@ -69,6 +81,7 @@ from src.session import (
     SessionTokenError,
 )
 from src.tts import create_default_tts_registry
+from src.webrtc import SessionBoundSmallWebRTCHandler
 
 
 def _azure_deployment_from_url(value: str) -> str:
@@ -124,6 +137,48 @@ class SessionResponse(BaseModel):
     expires_in_seconds: int
 
 
+class PublishRequest(BaseModel):
+    """Public copy saved with one immutable Bot publication."""
+
+    model_config = ConfigDict(extra="forbid")
+    public_title: str = Field(min_length=1, max_length=80)
+    public_description: str = Field(default="", max_length=240)
+
+    @field_validator("public_title")
+    @classmethod
+    def title_must_not_be_blank(cls, value: str) -> str:
+        """Normalize public copy while rejecting whitespace-only titles."""
+        title = value.strip()
+        if not title:
+            raise ValueError("Public title is required")
+        return title
+
+
+class PublicSessionRequest(BaseModel):
+    """Zero-configuration admission body for a public mobile call."""
+
+    model_config = ConfigDict(extra="forbid")
+    protocol_version: Literal["1"] = "1"
+
+
+class PublicSessionResponse(BaseModel):
+    """Short-lived capability used only for Small WebRTC signaling."""
+
+    session_id: str
+    connection_url: str
+    ice_servers: list[dict[str, str]]
+    expires_in_seconds: int
+
+
+class PublicDemoEvent(BaseModel):
+    """Non-identifying pre-session funnel event from one active demo page."""
+
+    model_config = ConfigDict(extra="forbid")
+    event: Literal["mobile_demo_view", "mobile_call_start_click", "mobile_mic_permission"]
+    elapsed_ms: float = Field(ge=0, le=600_000)
+    result: Literal["granted", "denied", "unavailable"] | None = None
+
+
 def _asr_language_snapshot(lease: SessionLease) -> str:
     """Summarize the selected ASR language contract for call history."""
     options = lease.config.asr.options
@@ -165,9 +220,66 @@ class BrowserEvent(BaseModel):
     """Whitelisted browser playback event used for interruption timing."""
 
     model_config = ConfigDict(extra="forbid")
-    event: str = Field(pattern="^(first_playback|audio_stopped|browser_interruption|chat_text)$")
+    event: str = Field(
+        pattern="^(first_playback|audio_stopped|browser_interruption|chat_text|mobile_webrtc_connected|mobile_call_end|mobile_call_error)$"
+    )
     elapsed_ms: float = Field(ge=0, le=7_200_000)
     text: str | None = Field(default=None, max_length=10000)
+    candidate_type: Literal["host", "srflx", "prflx", "relay", "unknown"] | None = None
+    network_type: Literal["slow-2g", "2g", "3g", "4g", "unknown"] | None = None
+    end_reason: Literal["user", "disconnect", "provider", "connection"] | None = None
+    stage: Literal["permission", "session", "signaling", "live"] | None = None
+    safe_error_category: Literal[
+        "microphone_unavailable", "session_unavailable", "connection_failed", "call_interrupted"
+    ] | None = None
+
+    @model_validator(mode="after")
+    def text_is_only_allowed_for_chat(self) -> BrowserEvent:
+        """Prevent mobile telemetry from carrying transcript or arbitrary text."""
+        if self.event.startswith("mobile_") and self.text is not None:
+            raise ValueError("Mobile telemetry cannot include text")
+        return self
+
+
+class ShortWindowRateLimiter:
+    """Bound public traffic with opaque, automatically pruned client buckets."""
+
+    def __init__(
+        self,
+        *,
+        limit: int,
+        window_seconds: float = 60,
+        clock: Callable[[], float] = time.monotonic,
+        salt: bytes | None = None,
+    ) -> None:
+        """Initialize one process-local limiter without retaining raw identifiers."""
+        self._limit = limit
+        self._window_seconds = window_seconds
+        self._clock = clock
+        self._salt = salt or secrets.token_bytes(32)
+        self._buckets: dict[bytes, deque[float]] = {}
+
+    @property
+    def active_bucket_count(self) -> int:
+        """Return the number of currently retained short-window buckets."""
+        return len(self._buckets)
+
+    def allow(self, *, scope: str, public_id: str, client: str) -> bool:
+        """Consume one attempt after pruning every expired opaque bucket."""
+        now = self._clock()
+        cutoff = now - self._window_seconds
+        for bucket_key, timestamps in list(self._buckets.items()):
+            while timestamps and timestamps[0] <= cutoff:
+                timestamps.popleft()
+            if not timestamps:
+                self._buckets.pop(bucket_key, None)
+        material = f"{scope}\0{public_id}\0{client}".encode()
+        key = hashlib.sha256(self._salt + material).digest()
+        attempts = self._buckets.setdefault(key, deque())
+        if len(attempts) >= self._limit:
+            return False
+        attempts.append(now)
+        return True
 
 
 class VoiceDiscoveryRequest(BaseModel):
@@ -211,6 +323,28 @@ def _allowed_origins() -> list[str]:
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
+def _ice_server_urls() -> list[str]:
+    """Load explicit STUN URLs while preserving the no-TURN product decision."""
+    urls = [
+        item.strip()
+        for item in os.getenv("VOICE_AGENT_STUN_URLS", "").split(",")
+        if item.strip()
+    ]
+    if any(not url.startswith(("stun:", "stuns:")) for url in urls):
+        raise RuntimeError("VOICE_AGENT_STUN_URLS accepts only stun: or stuns: URLs")
+    return urls
+
+
+def _validate_webrtc_deployment(ice_server_urls: list[str]) -> None:
+    """Fail closed when production would advertise an unreachable WebRTC path."""
+    if os.getenv("VOICE_AGENT_DEPLOYMENT_ENVIRONMENT", "local") != "production":
+        return
+    if not ice_server_urls:
+        raise RuntimeError("production WebRTC requires VOICE_AGENT_STUN_URLS")
+    if os.getenv("VOICE_AGENT_WEBRTC_HOST_NETWORK", "").lower() != "true":
+        raise RuntimeError("production WebRTC requires Linux host networking")
+
+
 def _validate_session_origin(request: Request, allowed_origins: list[str]) -> None:
     """Permit loopback HTTP for local acceptance and require HTTPS everywhere else."""
     origin = request.headers.get("Origin", "")
@@ -247,7 +381,14 @@ def create_app() -> FastAPI:
     tts_registry = create_default_tts_registry()
     asr_registry = create_default_asr_registry()
     bot_store = BotStore(_bot_data_dir() / "bots.db")
+    publication_store = DemoPublicationStore(_bot_data_dir() / "bots.db")
     bot_cipher = BotKeyCipher.from_env()
+    ice_server_urls = _ice_server_urls()
+    _validate_webrtc_deployment(ice_server_urls)
+    webrtc_handler = SessionBoundSmallWebRTCHandler(
+        session_store=store,
+        ice_servers=[RTCIceServer(urls=url) for url in ice_server_urls] or None,
+    )
     event_buffers: dict[str, SessionEventBuffer] = {}
     call_captures: dict[str, CallCapture] = {}
     history_store = HistoryStore(_bot_data_dir())
@@ -259,10 +400,13 @@ def create_app() -> FastAPI:
     website_auth = _basic_auth_credentials()
     auth_sessions = AuthSessionStore()
     login_limiter = LoginAttemptLimiter()
+    public_session_limiter = ShortWindowRateLimiter(limit=10)
+    public_event_limiter = ShortWindowRateLimiter(limit=60)
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         await bot_store.initialize()
+        await publication_store.initialize()
         await history_store.initialize()
         await evaluation_store.initialize()
         await evaluation_runner.resume_pending()
@@ -275,6 +419,17 @@ def create_app() -> FastAPI:
                     await asyncio.wait_for(stop.wait(), timeout=15.0)
                 except TimeoutError:
                     await store.purge_expired()
+                    for session_id in await store.drain_expired_session_ids():
+                        event_buffers.pop(session_id, None)
+                        await history_store.finish_call(
+                            call_id=session_id,
+                            status="expired",
+                            duration_ms=0,
+                            turns=[],
+                            metrics=[],
+                            recording_path=None,
+                            recording_status="not_started",
+                        )
                     await history_store.cleanup()
 
         task = asyncio.create_task(purge_loop(), name="session-token-purge")
@@ -283,6 +438,7 @@ def create_app() -> FastAPI:
         finally:
             stop.set()
             await task
+            await webrtc_handler.close()
             await store.close_all()
             await evaluation_runner.close()
             event_buffers.clear()
@@ -297,6 +453,8 @@ def create_app() -> FastAPI:
     app.state.tts_registry = tts_registry
     app.state.asr_registry = asr_registry
     app.state.bot_store = bot_store
+    app.state.publication_store = publication_store
+    app.state.webrtc_handler = webrtc_handler
     app.state.bot_cipher = bot_cipher
     app.state.history_store = history_store
     app.state.evaluation_store = evaluation_store
@@ -307,7 +465,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=_allowed_origins(),
         allow_credentials=False,
-        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Content-Type", "Authorization"],
     )
     if website_auth is not None:
@@ -530,7 +688,7 @@ def create_app() -> FastAPI:
             )
         return bot_cipher.encrypt(value)
 
-    def _key_columns(
+    async def _key_columns(
         request: BotCreateRequest | BotUpdateRequest,
         *,
         existing: object | None = None,
@@ -538,8 +696,9 @@ def create_app() -> FastAPI:
         """Resolve independent keep, replace, or clear state for every component."""
         existing_record = existing if isinstance(existing, BotRecord) else None
 
-        def resolve(
+        async def resolve(
             *,
+            component: Literal["asr", "tts", "llm"],
             should_save: bool,
             submitted: SecretStr | None,
             provider: str,
@@ -552,23 +711,32 @@ def create_app() -> FastAPI:
                 return provider, _encrypt_bot_key(submitted)
             if previous_provider == provider and previous_ciphertext is not None:
                 return previous_provider, previous_ciphertext
+            if existing_record is not None:
+                stored = await publication_store.get_credential(
+                    existing_record.id, component, provider
+                )
+                if stored is not None:
+                    return provider, stored
             return None, None
 
-        asr_provider, encrypted_asr = resolve(
+        asr_provider, encrypted_asr = await resolve(
+            component="asr",
             should_save=request.save_asr,
             submitted=request.effective_asr_key,
             provider=request.asr_provider,
             previous_provider=existing_record.asr_key_provider if existing_record else None,
             previous_ciphertext=existing_record.encrypted_asr_key if existing_record else None,
         )
-        tts_provider, encrypted_tts = resolve(
+        tts_provider, encrypted_tts = await resolve(
+            component="tts",
             should_save=request.save_tts,
             submitted=request.effective_tts_key,
             provider=request.tts_provider,
             previous_provider=existing_record.tts_key_provider if existing_record else None,
             previous_ciphertext=existing_record.encrypted_tts_key if existing_record else None,
         )
-        llm_provider, encrypted_llm = resolve(
+        llm_provider, encrypted_llm = await resolve(
+            component="llm",
             should_save=request.save_llm,
             submitted=request.llm_api_key,
             provider=request.llm_provider,
@@ -594,6 +762,41 @@ def create_app() -> FastAPI:
             "encrypted_tts_key": encrypted_tts,
         }
 
+    async def _sync_selected_credentials(
+        bot_id: str,
+        request: BotCreateRequest | BotUpdateRequest,
+        encrypted_keys: EncryptedBotKeys,
+    ) -> None:
+        """Persist selected provider credentials without deleting other providers."""
+        changes = (
+            (
+                "asr",
+                request.asr_provider,
+                request.save_asr,
+                encrypted_keys["encrypted_asr_key"],
+            ),
+            (
+                "tts",
+                request.tts_provider,
+                request.save_tts,
+                encrypted_keys["encrypted_tts_key"],
+            ),
+            (
+                "llm",
+                request.llm_provider,
+                request.save_llm,
+                encrypted_keys["encrypted_llm_key"],
+            ),
+        )
+        for component, provider, should_save, encrypted_key in changes:
+            await publication_store.sync_credential(
+                bot_id=bot_id,
+                component=cast(Literal["asr", "tts", "llm"], component),
+                provider=provider,
+                should_save=should_save,
+                encrypted_key=encrypted_key,
+            )
+
     @app.get("/api/bots", response_model=list[BotResponse])
     async def list_bots() -> list[BotResponse]:
         return [BotResponse.from_record(record) for record in await bot_store.list()]
@@ -601,11 +804,12 @@ def create_app() -> FastAPI:
     @app.post("/api/bots", response_model=BotResponse, status_code=201)
     async def create_bot(request: BotCreateRequest) -> BotResponse:
         _validate_bot_payload(request)
-        encrypted_keys = _key_columns(request)
+        encrypted_keys = await _key_columns(request)
         record = await bot_store.create(
             config=_config_fields(request),
             **encrypted_keys,
         )
+        await _sync_selected_credentials(record.id, request, encrypted_keys)
         return BotResponse.from_record(record)
 
     @app.get("/api/bots/{bot_id}", response_model=BotResponse)
@@ -630,7 +834,7 @@ def create_app() -> FastAPI:
             else None
         )
         _validate_bot_payload(request, preserved_catalog)
-        encrypted_keys = _key_columns(request, existing=existing)
+        encrypted_keys = await _key_columns(request, existing=existing)
         record = await bot_store.update(
             bot_id,
             config=_config_fields(request),
@@ -638,12 +842,86 @@ def create_app() -> FastAPI:
             **encrypted_keys,
         )
         assert record is not None
+        await _sync_selected_credentials(record.id, request, encrypted_keys)
         return BotResponse.from_record(record)
 
     @app.delete("/api/bots/{bot_id}", status_code=204)
     async def delete_bot(bot_id: str) -> None:
         if not await bot_store.delete(bot_id):
             raise HTTPException(status_code=404, detail="Bot not found")
+
+    def _share_payload(state: ShareState, http_request: Request) -> dict[str, object]:
+        """Serialize a protected share state without leaking its snapshot."""
+        public_id = state.public_id
+        public_url = (
+            f"{str(http_request.base_url).rstrip('/')}/demo/{public_id}" if public_id else None
+        )
+        return {
+            "bot_id": state.bot_id,
+            "bot_name": state.bot_name,
+            "public_id": public_id,
+            "public_url": public_url,
+            "title": state.title,
+            "description": state.description,
+            "active": state.active,
+            "published": state.published,
+            "available": bool(state.available and bot_cipher is not None),
+            "revision": state.revision,
+            "published_at": state.published_at,
+            "unpublished_changes": state.unpublished_changes,
+        }
+
+    @app.get("/api/bots/{bot_id}/share")
+    async def get_bot_share(bot_id: str, http_request: Request) -> dict[str, object]:
+        """Return protected publication state for the formal Share page."""
+        record = await bot_store.get(bot_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        return _share_payload(await publication_store.share_state(record), http_request)
+
+    @app.post("/api/bots/{bot_id}/publish")
+    async def publish_bot(
+        bot_id: str, payload: PublishRequest, http_request: Request
+    ) -> dict[str, object]:
+        """Publish an immutable Bot snapshot and stable public locator."""
+        record = await bot_store.get(bot_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        _validate_bot_payload(record, record.asr_account_catalog)
+        if bot_cipher is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Publishing requires VOICE_AGENT_STORAGE_KEY",
+            )
+        try:
+            state = await publication_store.publish(
+                record,
+                title=payload.public_title.strip(),
+                description=payload.public_description.strip(),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from None
+        return _share_payload(state, http_request)
+
+    async def _set_share_active(
+        bot_id: str, active: bool, http_request: Request
+    ) -> dict[str, object]:
+        record = await bot_store.get(bot_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        if not await publication_store.set_active(bot_id, active):
+            raise HTTPException(status_code=409, detail="Publish this Bot before sharing it")
+        return _share_payload(await publication_store.share_state(record), http_request)
+
+    @app.post("/api/bots/{bot_id}/share/enable")
+    async def enable_bot_share(bot_id: str, http_request: Request) -> dict[str, object]:
+        """Enable an existing stable public link."""
+        return await _set_share_active(bot_id, True, http_request)
+
+    @app.post("/api/bots/{bot_id}/share/disable")
+    async def disable_bot_share(bot_id: str, http_request: Request) -> dict[str, object]:
+        """Disable new calls without changing the public locator."""
+        return await _set_share_active(bot_id, False, http_request)
 
     async def _resolve_session_request(
         request: SessionRequest | BotSessionRequest,
@@ -1126,6 +1404,243 @@ def create_app() -> FastAPI:
         )
         return {**result, "connection": saved, "capability": capability}
 
+    def _published_session_request(demo: PublishedDemo) -> SessionRequest:
+        """Resolve one immutable snapshot with the Bot's current referenced keys."""
+        if not demo.available or bot_cipher is None:
+            raise HTTPException(status_code=409, detail="This demo is temporarily unavailable")
+        try:
+            config = BotConfigFields.model_validate_json(demo.config_json)
+            asr_key = bot_cipher.decrypt(demo.encrypted_asr_key or "")
+            tts_key = bot_cipher.decrypt(demo.encrypted_tts_key or "")
+            llm_key = bot_cipher.decrypt(demo.encrypted_llm_key or "")
+        except (StorageKeyError, ValueError):
+            raise HTTPException(
+                status_code=409, detail="This demo is temporarily unavailable"
+            ) from None
+        payload = config.model_dump()
+        payload.pop("name")
+        payload["flux_voice"] = payload.pop("tts_voice")
+        return SessionRequest(
+            **payload,
+            session_type="mobile_web_call",
+            asr_api_key=asr_key,
+            tts_api_key=tts_key,
+            llm_api_key=llm_key,
+        )
+
+    async def _start_history(
+        lease: SessionLease, *, bot_id: str | None, bot_name: str | None
+    ) -> None:
+        """Create one history row using the shared transport-independent lease."""
+        await history_store.start_call(
+            call_id=lease.session_id,
+            bot_id=bot_id,
+            bot_name=bot_name,
+            session_type=lease.session_type,
+            llm_provider=lease.config.llm.provider,
+            llm_model=lease.config.llm.model,
+            tts_provider=lease.config.tts.provider,
+            tts_model=lease.config.tts.model,
+            tts_voice=lease.config.tts.voice,
+            tts_text_aggregation=lease.config.tts.text_aggregation,
+            asr_provider=lease.config.asr.provider,
+            asr_model=lease.config.asr.model,
+            language=_asr_language_snapshot(lease),
+            context_mode=_asr_context_mode_snapshot(lease),
+            sample_rate=runtime.audio.input_sample_rate,
+            channels=runtime.audio.channels,
+        )
+
+    @app.get("/api/public/demos/{public_id}")
+    async def get_public_demo(public_id: str) -> Response:
+        """Return only safe display metadata for one public locator."""
+        demo = await publication_store.get_public(public_id)
+        if demo is None:
+            raise HTTPException(status_code=404, detail="Demo not found")
+        return JSONResponse(
+            {
+                "public_id": demo.public_id,
+                "title": demo.title,
+                "description": demo.description,
+                "active": demo.active,
+                "available": demo.available and bot_cipher is not None,
+            },
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.post("/api/public/demos/{public_id}/events", status_code=204)
+    async def public_demo_event(
+        public_id: str,
+        event: PublicDemoEvent,
+        http_request: Request,
+    ) -> Response:
+        """Record a bounded, non-identifying pre-session funnel event."""
+        _validate_session_origin(http_request, _allowed_origins())
+        demo = await publication_store.get_public(public_id)
+        if demo is None or not demo.active:
+            raise HTTPException(status_code=404, detail="Demo not found")
+        if (event.event == "mobile_mic_permission") != (event.result is not None):
+            raise HTTPException(status_code=422, detail="Event result is invalid")
+        client = http_request.client.host if http_request.client else "unknown"
+        if not public_event_limiter.allow(
+            scope="event", public_id=public_id, client=client
+        ):
+            raise HTTPException(status_code=429, detail="Too many events")
+        demo_ref = hashlib.sha256(public_id.encode("utf-8")).hexdigest()[:12]
+        logger.info(
+            "public_demo_event demo_ref=%s event=%s elapsed_ms=%.1f result=%s",
+            demo_ref,
+            event.event,
+            event.elapsed_ms,
+            event.result or "none",
+        )
+        return Response(status_code=204, headers={"Cache-Control": "no-store"})
+
+    @app.post(
+        "/api/public/demos/{public_id}/sessions",
+        response_model=PublicSessionResponse,
+        status_code=201,
+    )
+    async def create_public_session(
+        public_id: str,
+        _payload: PublicSessionRequest,
+        http_request: Request,
+        response: Response,
+    ) -> PublicSessionResponse:
+        """Create a zero-configuration mobile call from the published snapshot."""
+        response.headers["Cache-Control"] = "no-store"
+        _validate_session_origin(http_request, _allowed_origins())
+        demo = await publication_store.get_public(public_id)
+        if demo is None or not demo.active:
+            raise HTTPException(status_code=404, detail="Demo not found")
+        client = http_request.client.host if http_request.client else "unknown"
+        if not public_session_limiter.allow(
+            scope="session", public_id=public_id, client=client
+        ):
+            raise HTTPException(status_code=429, detail="Too many call attempts")
+        resolved = _published_session_request(demo)
+        try:
+            lease = await store.create(
+                request=resolved,
+                runtime=runtime,
+                voice_catalog=voices,
+                llm_catalog=llm_providers,
+            )
+        except SessionCapacityError as exc:
+            raise HTTPException(status_code=429, detail=str(exc)) from None
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from None
+        event_buffers[lease.session_id] = SessionEventBuffer()
+        await _start_history(lease, bot_id=demo.bot_id, bot_name=demo.bot_name)
+        return PublicSessionResponse(
+            session_id=lease.session_id,
+            connection_url=f"/api/public/webrtc/{lease.token}",
+            ice_servers=[{"urls": url} for url in ice_server_urls],
+            expires_in_seconds=runtime.session.pending_token_ttl_seconds,
+        )
+
+    async def _run_mobile_connection(lease: SessionLease, connection: Any) -> None:
+        """Own recording, history, and cleanup for one negotiated mobile call."""
+        recording_path = history_store.recordings_dir / f"{uuid.uuid4()}.flac"
+        recorder = AudioRecorder(recording_path, sample_rate=runtime.audio.input_sample_rate)
+        await recorder.start()
+        capture = CallCapture(
+            provider=lease.config.llm.provider,
+            model=lease.config.llm.model,
+            recorder=recorder,
+            chat_mode=False,
+        )
+        call_captures[lease.session_id] = capture
+        status = "completed"
+        error_category = None
+        diagnostic_id = None
+        try:
+            transport = create_small_webrtc_transport(connection=connection, runtime=runtime)
+            await run_voice_agent_pipeline(
+                transport=transport,
+                lease=lease,
+                runtime=runtime,
+                asr_registry=asr_registry,
+                tts_registry=tts_registry,
+                event_buffer=event_buffers[lease.session_id],
+                call_capture=capture,
+            )
+        except asyncio.CancelledError:
+            status = "disconnected"
+            raise
+        except Exception as exc:
+            status = "failed"
+            error_category, _, _ = classify_llm_failure(exc)
+            diagnostic_id = str(uuid.uuid4())
+            logger.error(
+                "mobile_session_failed session_id=%s diagnostic_id=%s category=%s error_type=%s",
+                lease.session_id,
+                diagnostic_id,
+                error_category,
+                type(exc).__name__,
+            )
+            raise
+        finally:
+            await recorder.stop()
+            turns, metrics = capture.finalize()
+            await history_store.finish_call(
+                call_id=lease.session_id,
+                status=status,
+                duration_ms=(time.monotonic() - capture.started) * 1000,
+                turns=turns,
+                metrics=metrics,
+                recording_path=recording_path,
+                recording_status=recorder.status,
+                error_category=error_category,
+                diagnostic_id=diagnostic_id,
+            )
+            await store.close(lease.session_id)
+            event_buffers.pop(lease.session_id, None)
+            call_captures.pop(lease.session_id, None)
+
+    @app.post("/api/public/webrtc/{capability}")
+    async def webrtc_offer(
+        capability: str,
+        payload: SmallWebRTCRequest,
+        http_request: Request,
+        response: Response,
+    ) -> dict[str, str]:
+        """Negotiate one offer after atomically claiming its session capability."""
+        response.headers["Cache-Control"] = "no-store"
+        _validate_session_origin(http_request, _allowed_origins())
+        try:
+            return await webrtc_handler.offer(
+                capability=capability,
+                request=payload,
+                run_connection=_run_mobile_connection,
+            )
+        except SessionTokenError:
+            raise HTTPException(
+                status_code=401, detail="Session authorization is invalid"
+            ) from None
+        except RuntimeError:
+            raise HTTPException(
+                status_code=503, detail="Voice connection could not start"
+            ) from None
+        except TimeoutError:
+            raise HTTPException(
+                status_code=504, detail="Voice connection timed out"
+            ) from None
+
+    @app.patch("/api/public/webrtc/{capability}", status_code=204)
+    async def webrtc_patch(
+        capability: str, payload: SmallWebRTCPatchRequest, http_request: Request
+    ) -> Response:
+        """Apply ICE candidates only to the capability-bound peer."""
+        _validate_session_origin(http_request, _allowed_origins())
+        try:
+            await webrtc_handler.patch(capability=capability, request=payload)
+        except PermissionError:
+            raise HTTPException(
+                status_code=401, detail="Session authorization is invalid"
+            ) from None
+        return Response(status_code=204)
+
     @app.post("/api/sessions", response_model=SessionResponse, status_code=201)
     async def create_session(
         request: SessionRequest | BotSessionRequest, http_request: Request
@@ -1149,24 +1664,7 @@ def create_app() -> FastAPI:
         if bot_id is not None:
             bot_record = await bot_store.get(bot_id)
             bot_name = bot_record.name if bot_record is not None else None
-        await history_store.start_call(
-            call_id=lease.session_id,
-            bot_id=bot_id,
-            bot_name=bot_name,
-            session_type=lease.session_type,
-            llm_provider=lease.config.llm.provider,
-            llm_model=lease.config.llm.model,
-            tts_provider=lease.config.tts.provider,
-            tts_model=lease.config.tts.model,
-            tts_voice=lease.config.tts.voice,
-            tts_text_aggregation=lease.config.tts.text_aggregation,
-            asr_provider=lease.config.asr.provider,
-            asr_model=lease.config.asr.model,
-            language=_asr_language_snapshot(lease),
-            context_mode=_asr_context_mode_snapshot(lease),
-            sample_rate=runtime.audio.input_sample_rate,
-            channels=runtime.audio.channels,
-        )
+        await _start_history(lease, bot_id=bot_id, bot_name=bot_name)
         return SessionResponse(
             session_id=lease.session_id,
             session_token=lease.token,
@@ -1193,10 +1691,16 @@ def create_app() -> FastAPI:
             else:
                 capture.browser_event(event.event, event.elapsed_ms)
         logger.info(
-            "browser_event session_id=%s event=%s elapsed_ms=%.1f",
+            "browser_event session_id=%s event=%s elapsed_ms=%.1f candidate_type=%s "
+            "network_type=%s end_reason=%s stage=%s safe_error_category=%s",
             lease.session_id,
             event.event,
             event.elapsed_ms,
+            event.candidate_type or "none",
+            event.network_type or "none",
+            event.end_reason or "none",
+            event.stage or "none",
+            event.safe_error_category or "none",
         )
 
     @app.get("/api/sessions/{session_id}/events")
@@ -1340,6 +1844,8 @@ def create_app() -> FastAPI:
 
         @app.get("/{path:path}", include_in_schema=False)
         async def spa_fallback(path: str) -> FileResponse:
+            if path.startswith("demo/") and len(path.split("/")) == 2:
+                return FileResponse(FRONTEND_DIST / "demo.html")
             candidate = FRONTEND_DIST / path
             if path and candidate.is_file() and FRONTEND_DIST in candidate.resolve().parents:
                 return FileResponse(candidate)

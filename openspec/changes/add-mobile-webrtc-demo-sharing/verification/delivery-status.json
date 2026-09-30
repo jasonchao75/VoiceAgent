@@ -1,0 +1,299 @@
+{
+  "phase": "implementation",
+  "product_acceptance": "pending",
+  "production_paths": [
+    "/?page=share",
+    "/demo/{public_id}",
+    "/api/public/demos/{public_id}",
+    "/api/public/demos/{public_id}/sessions",
+    "Small WebRTC offer/ICE endpoint"
+  ],
+  "allowed_mock_files": [
+    "openspec/changes/add-mobile-webrtc-demo-sharing/prototypes/mobile-call.html",
+    "openspec/changes/add-mobile-webrtc-demo-sharing/prototypes/admin-share.html",
+    "future deterministic production-route fixtures under tests/ui/fixtures"
+  ],
+  "external_calls": [
+    {
+      "id": "EXT-001",
+      "action": "Deploy the confirmed VoiceAgent build to the existing DigitalOcean production host without invoking paid Providers.",
+      "provider": "DigitalOcean and GitHub",
+      "authorization_decision_id": "D-013",
+      "data_scope": "Application source, Docker image, existing encrypted application database and non-secret health/preflight signals; no API Key values are read or transmitted by the verification steps.",
+      "recipient": "Existing user-controlled DigitalOcean host 104.248.46.112 and configured GitHub remote for the deployment commit.",
+      "cost_ceiling": "No paid Provider API calls; use only the existing VM and repository infrastructure.",
+      "stop_condition": "Stop and roll back on build, migration, preflight or health-check failure; do not continue to Provider calls until the user re-enters credentials.",
+      "authorization_source": "2026-09-30 user message: ‘可以，你部署吧’",
+      "status": "Authorized"
+    },
+    {
+      "id": "EXT-002",
+      "action": "Configure Cloudflare public STUN for the production WebRTC demo and allow the host media UDP range in UFW.",
+      "provider": "Cloudflare public STUN and DigitalOcean host firewall",
+      "authorization_decision_id": "D-014",
+      "data_scope": "ICE address-discovery packets and firewall configuration only; no transcript, audio recording, Provider credential or customer dataset is sent by this setup step.",
+      "recipient": "Cloudflare public STUN endpoint and the existing user-controlled DigitalOcean host.",
+      "cost_ceiling": "No paid Provider or TURN calls; use the public STUN endpoint and existing VM only.",
+      "stop_condition": "Stop on invalid configuration, failed UFW validation, failed production preflight or unhealthy service; retain no TURN fallback.",
+      "authorization_source": "2026-09-30 user message: ‘那就先选A吧，用Cloudflare STUN，先试试’",
+      "status": "Authorized"
+    }
+  ],
+  "known_issues": [
+    {
+      "id": "KI-001",
+      "summary": "Current deployment exposes only TCP 8000; public UDP/ICE reachability for Small WebRTC through Docker and the DigitalOcean firewall is not configured or proven.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-002",
+      "summary": "The locked Pipecat 1.8.1 environment does not currently install the webrtc extra/aiortc, and the frontend does not contain the Small WebRTC transport package.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-003",
+      "summary": "Static review of Pipecat 1.8.1 found that the upstream SmallWebRTC request handler can return an SDP answer after the connection callback fails, while upstream debug paths can include SDP/signaling/candidate details; a session-bound wrapper and log filtering are required before production use.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-004",
+      "summary": "Initial dependency sync failed because the host has no uv executable and the default npm cache contains root-owned files. No package was installed by the failed commands; use the project virtual environment installer and an isolated temporary npm cache, then verify lockfiles explicitly.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-005",
+      "summary": "Runtime import verification showed Pipecat 1.8.1 has no SmallWebRTCParams class; SmallWebRTCTransport accepts the shared TransportParams contract. Implementation and compatibility tests must use TransportParams and the evidence document must not claim a transport-specific params class.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-006",
+      "summary": "The first mobile Checkpoint A Playwright run used a broad hasText selector for the speaker label 'You', which also matched dialogue containing the word 'you'; the product rendered correctly but the assertion produced four false-positive matches instead of two.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-007",
+      "summary": "The first Share fixture test supplied a presentation-only catalog fragment instead of the production /api/catalogs contract, so application bootstrap intentionally disabled Bot controls and the Share fixture had no selected Bot.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-008",
+      "summary": "One combined local verification command invoked npm from the repository root, where no package.json exists; backend checks passed and the frontend build was rerun from frontend/.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-009",
+      "summary": "The Checkpoint B Playwright rerun could not launch Chromium inside the filesystem sandbox because macOS denied the browser Mach rendezvous service; the same suite must be rerun with GUI execution permission.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-010",
+      "summary": "The first authorized UI rerun exposed a fixture-only regression: the real API adapter expected public_url/published fields and bypassed local enable/disable behavior. The fixture adapter was updated without changing production API behavior; all 22 desktop/narrow tests then passed.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-011",
+      "summary": "Repository-wide mypy stops in the installed NumPy stub because the project targets Python 3.11 while that stub uses Python 3.12 type-statement syntax. All changed Python modules pass targeted mypy; runtime, lint and the full pytest suite remain independently verified.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-012",
+      "summary": "Mobile startCall created the public Session before microphone permission completed, so denial/retry could leave pending leases and history rows and consume the shared three-session capacity.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-013",
+      "summary": "The production mobile page ended immediately on onDisconnected and only relabeled a connecting state, so it did not implement the bounded short-network recovery shown by the confirmed reconnecting state.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-014",
+      "summary": "The mobile transcript listened to Bot LLM text only; the pipeline Opening Message is emitted directly as TTS and could be spoken without appearing in captions/transcript.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-015",
+      "summary": "Editing Public title/description after publication did not immediately show the required Unpublished changes state before the next publish.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-016",
+      "summary": "Inactive and credential-unavailable public demos used different visitor-facing reason text instead of the frozen unified safe unavailable copy.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-017",
+      "summary": "Expired or abandoned public sessions released their SessionStore lease but did not finalize the pending history row or remove the in-memory event buffer; fatal mobile errors also did not reliably disconnect partial clients and release microphone media.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-018",
+      "summary": "The Share fixture browser test hard-coded the previous Vite preview port 4173, causing false failures when the same production DOM was verified through the backend on port 8000; the assertion now follows the active page origin.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-019",
+      "summary": "A real local aiortc restart showed Pipecat rotates pc_id when restart_pc is true; the first recovery adapter incorrectly required the answer to retain the old pc_id. Authorization now validates the request against the old binding and atomically rebinds the returned pc_id to the same capability and pipeline.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-020",
+      "summary": "A local `docker compose ... config` validation expanded VOICE_AGENT_STORAGE_KEY from the developer environment into the command tool output. The key was not written to repository files or committed, but it must be treated as exposed and rotated before deployment; future Compose checks must use `config --quiet` or sanitized environment values.",
+      "status": "Resolved",
+      "resolution": "D-012 authorized full rotation. The local and DigitalOcean dotenv files were atomically assigned separate new Fernet-compatible keys without logging either value; the production service was recreated healthy with the new key, both Bot rows remain, and a non-secret Provider re-entry checklist was recorded.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-021",
+      "summary": "The first production telemetry browser check showed Pipecat wraps a browser NotAllowedError during initDevices, causing an explicit microphone denial to be classified as unavailable. No Session was created, but the permission-result metric needs corrected classification.",
+      "status": "Resolved",
+      "resolution": "The mobile page now obtains and releases a permission-only microphone stream before Pipecat device initialization, classifies NotAllowedError/SecurityError as denied, and still creates no public Session before permission succeeds. Both desktop and narrow Chromium regression tests pass.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-022",
+      "summary": "Repository-wide Playwright verification passed all 30 mobile-demo/share tests but 10 unrelated login/evaluation tests failed across desktop and narrow projects. The failures reflect missing auth test environment and existing evaluation implementation/test expectation drift outside this Change; 140 tests passed and 4 pre-existing Turn-review tests remained skipped.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-023",
+      "summary": "Independent telemetry review found that the public event and public Session rate-limit maps retain complete client-IP keys for the process lifetime after their 60-second deques become empty, while BrowserEvent accepts a text field for mobile_* telemetry events. The normal mobile client does not send transcript text and the logger omits both values, but the server-side boundary does not yet satisfy the confirmed no-transcript/no-complete-IP-or-fingerprint contract.",
+      "status": "Resolved",
+      "resolution": "Public rate limits now use salted opaque in-memory keys and prune expired buckets; mobile telemetry rejects text at Pydantic validation. Independent review reproduced both boundaries and the focused regression suite passes.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-024",
+      "summary": "Microphone denial is now classified as denied before any public Session is created, but the production error page forwards the browser error message instead of the required browser-settings guidance, so the denial recovery copy remains out of contract.",
+      "status": "Resolved",
+      "resolution": "Denied permission now renders browser-settings and Microphone guidance while preserving Retry; desktop and narrow Chromium tests pass, and independent static/fixture-path review confirms Session creation remains after permission success.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-025",
+      "summary": "The production rollback function checks out PREVIOUS_SHA before invoking the fixed two-file Compose helper. On the first deployment that introduces compose.webrtc.yaml, the previous revision does not contain that file, so a failed deployment cannot reliably recreate the previous container from the rollback image.",
+      "status": "Resolved",
+      "resolution": "The Compose helper now includes the WebRTC override only when present after checkout, while the target deployment fails closed if the override is missing. Independent review reproduced script syntax, merged Compose, and rollback regression checks.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-026",
+      "summary": "The DigitalOcean read-only credential inventory initially targeted the documented container name `voiceagent-platform`, but that container does not currently exist; the active Compose service/container must be resolved before rotation and restart.",
+      "status": "Resolved",
+      "resolution": "Read-only Docker inventory identified the healthy Compose container as `voiceagent-platform-voice-agent-1`; subsequent checks use the resolved service container and no unrelated container was touched.",
+      "disclosed_to_user": false
+    },
+    {
+      "id": "KI-027",
+      "summary": "The first focused lint run for the storage-key rotation utility reported import-order violations in the script and its test.",
+      "status": "Resolved",
+      "resolution": "Ruff applied the import-only fix; the focused utility tests and lint then passed.",
+      "disclosed_to_user": false
+    },
+    {
+      "id": "KI-028",
+      "summary": "The pre-deployment focused Playwright run was blocked by the macOS sandbox Mach rendezvous policy; two non-browser static tests ran, while 28 browser-launch cases could not start Chromium.",
+      "status": "Resolved",
+      "resolution": "Chromium launched after rerunning with authorized GUI execution; the remaining run failure was separately classified as a missing local HTTP test server rather than a browser sandbox failure.",
+      "disclosed_to_user": false
+    },
+    {
+      "id": "KI-029",
+      "summary": "The first authorized pre-deployment Playwright rerun reached Chromium but the configured test base URL at 127.0.0.1:8000 had no running local backend, so 28 navigation/API cases returned connection refused while two static tests passed.",
+      "status": "Resolved",
+      "resolution": "An isolated local FastAPI process with a temporary database and generated test-only Storage Key was started outside the bind-restricted sandbox; all 30 focused desktop/narrow mobile-demo and Share tests then passed, and the temporary process was stopped.",
+      "disclosed_to_user": false
+    },
+    {
+      "id": "KI-030",
+      "summary": "Pre-deployment dependency review found that pyproject.toml enables Pipecat WebRTC and pins aiortc, but the Docker-consumed requirements.lock does not yet contain aiortc or its WebRTC transitive dependencies; the production image would fail at import/runtime if deployed as-is.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-031",
+      "summary": "DigitalOcean production preflight confirmed that VOICE_AGENT_STUN_URLS is unset and active UFW permits only SSH/Nginx; the host ephemeral UDP range is 32768-60999, so the fail-closed WebRTC deployment cannot start until a STUN endpoint is selected and UDP ingress is authorized.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-032",
+      "summary": "The first authorized production setup command added the UFW media rules successfully, but its inline dotenv update evaluated an empty-list index before appending the missing STUN entry, so VOICE_AGENT_STUN_URLS remained unset and deployment did not start.",
+      "status": "Resolved",
+      "resolution": "The dotenv update was rerun with an explicit list append/set branch and atomic replacement; a read-only check confirmed exactly one Cloudflare STUN entry, while the previously added UFW IPv4/IPv6 media rules remained active.",
+      "disclosed_to_user": false
+    }
+  ],
+  "unverified_items": [
+    {
+      "id": "UV-001",
+      "summary": "Q-001/Q-002 are resolved and synchronized, but User Gate 1 is not yet approved: the updated Share prototype and its single candidate hash pair still require explicit product confirmation.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-002",
+      "summary": "No real mobile browser, microphone, WebRTC, DigitalOcean network, iOS Safari or Android Chrome path has been verified; the no-TURN connection-success target remains unproven.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-003",
+      "summary": "Backend Pipecat/aiortc offer-answer and PATCH are proven locally, but the exact browser-side compatibility of @pipecat-ai/client-js 1.13.0 with @pipecat-ai/small-webrtc-transport 1.10.7 still needs a production-route offer/PATCH/data-message exchange.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-004",
+      "summary": "The synchronized Share prototype passed static HTML parsing and file consistency checks, but desktop/narrow visual and overflow verification was not executed because browser automation was blocked by the local file URL security policy; this remains required at Checkpoint A.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-005",
+      "summary": "Publication credential rotation and revocation semantics are unresolved in Q-004, so publication storage and public-session credential resolution cannot be finalized safely.",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-006",
+      "summary": "The merged production Compose configuration and deploy-script syntax pass, but the final Docker image build and in-container Linux WebRTC preflight were not executed because the local Docker daemon is not running.",
+      "status": "Open",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UV-007",
+      "summary": "Both DigitalOcean Bots retain their definitions, but their saved ASR/TTS/LLM Provider API Keys cannot be decrypted after the authorized Storage Key rotation and must be re-entered by the user before saved-key calls and external-real Provider verification can resume.",
+      "status": "Open",
+      "disclosed_to_user": true
+    }
+  ],
+  "ui_delivery": {
+    "model": "two-user-gates-three-engineering-checkpoints",
+    "fixture_uses_production_ui": true,
+    "production_routes": [
+      "/?page=share",
+      "/demo/{public_id}"
+    ],
+    "engineering_checkpoints": ["A", "B", "C"]
+  }
+}
