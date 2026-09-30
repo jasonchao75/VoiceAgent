@@ -261,6 +261,19 @@
       "summary": "CI for formatted commit ce439c0 reached backend tests but the product-auth test assumed frontend/dist had already been built, while CI intentionally runs backend checks before the frontend build; the isolated backend environment therefore returned the expected routing 404 for the otherwise-public demo URL.",
       "status": "Open",
       "disclosed_to_user": true
+    },
+    {
+      "id": "KI-036",
+      "summary": "The first post-deployment read-only SSH verification stopped at Git's dubious-ownership protection because the diagnostic connected as root while the deployment checkout belongs to the deploy user; no service or repository setting was changed.",
+      "status": "Resolved",
+      "resolution": "The verification reran with a command-scoped safe.directory value and confirmed the deployed commit without changing repository or global Git configuration.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "KI-037",
+      "summary": "Post-deployment inspection found the healthy production container still attached to voiceagent-platform_default instead of Linux host networking; the in-container WebRTC preflight correctly failed, so the mobile media path is not deployable despite the green workflow and HTTP health check.",
+      "status": "Open",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [

@@ -49,6 +49,12 @@ jobs:
           fi
           echo "sha=${deploy_sha}" >> "${GITHUB_OUTPUT}"
 
+      - name: Checkout verified deployment entrypoint
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.revision.outputs.sha }}
+          persist-credentials: false
+
       - name: Configure pinned SSH identity
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -66,6 +72,15 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
+          remote_script="/tmp/voiceagent-platform-deploy-${DEPLOY_SHA}"
+          scp \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -i "${HOME}/.ssh/voiceagent_deploy" \
+            scripts/deploy/platform_voiceagent.sh \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${remote_script}"
           printf '%s\n' "${DEPLOY_SHA}" | ssh \
             -o BatchMode=yes \
             -o ConnectTimeout=15 \
@@ -75,7 +90,7 @@ jobs:
             -o StrictHostKeyChecking=yes \
             -i "${HOME}/.ssh/voiceagent_deploy" \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "sudo /usr/local/sbin/deploy-voiceagent-platform"
+            "sudo install -o root -g root -m 0755 '${remote_script}' /usr/local/sbin/deploy-voiceagent-platform && rm -f '${remote_script}' && sudo /usr/local/sbin/deploy-voiceagent-platform"
 
       - name: Verify public health endpoint
         run: curl --fail --show-error --silent --retry 5 --retry-delay 3 https://platform.voiceagentdemo.org/health

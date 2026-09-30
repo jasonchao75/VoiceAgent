@@ -72,6 +72,18 @@ def test_deploy_rollback_supports_revisions_before_webrtc_override() -> None:
     assert "Production WebRTC Compose override is missing" in script
 
 
+def test_cd_installs_entrypoint_from_the_verified_commit() -> None:
+    """Prevent a stale host-installed script from bypassing new deploy checks."""
+    workflow = (Path(__file__).parents[1] / ".github/workflows/deploy-platform.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "Checkout verified deployment entrypoint" in workflow
+    assert "ref: ${{ steps.revision.outputs.sha }}" in workflow
+    assert "scripts/deploy/platform_voiceagent.sh" in workflow
+    assert "sudo install -o root -g root -m 0755" in workflow
+    assert "/usr/local/sbin/deploy-voiceagent-platform" in workflow
+
+
 def test_webrtc_lock_supports_runtime_python_311() -> None:
     """Keep aiortc's pyee dependency installable in the Python 3.11 image."""
     lock = (Path(__file__).parents[1] / "requirements.lock").read_text(encoding="utf-8")

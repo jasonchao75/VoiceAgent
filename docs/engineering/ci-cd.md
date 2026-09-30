@@ -24,6 +24,8 @@ DigitalOcean 上的 `deploy` 用户不加入 Docker group。GitHub Actions 只�
 
 当前公网目标是 `https://platform.voiceagentdemo.org`。仓库已配置 `DEPLOY_HOST`、`DEPLOY_USER`、`DEPLOY_SSH_KEY`、`DEPLOY_KNOWN_HOSTS` 四个加密 Secret；Secret 只允许按名称检查，不得读取或输出值。首次受限 CD 与公网健康检查已通过。
 
+部署工作流会检出已经通过 CI 的目标提交，并先把该提交内的部署入口同步到服务器，再执行构建、启动与预检。服务器上的 `/usr/local/sbin/deploy-voiceagent-platform` 不再作为可能陈旧的独立事实源。
+
 移动 WebRTC 发布时，生产脚本同时加载 `compose.yaml` 与 `compose.webrtc.yaml`：容器使用
 Linux host networking，Uvicorn 监听宿主机 8020，Nginx/HTTPS 入口保持不变。部署前服务器
 `.env` 必须配置 `VOICE_AGENT_STUN_URLS`，并由运维在 Cloud Firewall 与 UFW 放行该 Droplet
