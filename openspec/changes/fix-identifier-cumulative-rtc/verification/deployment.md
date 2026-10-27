@@ -39,3 +39,10 @@
 - 公开td-rtp-candidate-worker-XmC5jSd4.js与本地验证build字节哈希一致：fd780a28b996e91d32db6f8ce14c4790a08b824a600d2661a628dbea1f13fa4c。初次Python3.13请求因本机CA库失败，改用系统curl正常TLS验证成功，未关闭证书校验。下载证据/tmp/voiceagent-public-worker-2514614.js。
 - 无数据库/配置修改，无收费调用。回退点2f25841（会恢复误超时缺陷）。18871/18872隔离服务已停止；本地证据见matched-packet-repair.md，不提交测试DB/日志。
 - 限定已复现worker缺陷修复上线；手机两次唯一首因和真实硬件未验，模拟麦克风启动未定位、CI线程清理warning均保留Open，不声称整体Gate完成。部署后记录留本地避免仅文档再触发部署。
+
+## 静音缺包、关闭清理与首错诊断上线
+- 提交685e33a7586d7e93b73379b0af4ad6d836414138，CI40511527612及CD40511983242成功；公开health ok、pending/active均0。
+- 生产公开worker-CMWK8wxh（SHA256 25798002adaed63c6bca9892d46e1f66307a86ddf7e215bbe0c6ed7919efbac4）、demo-zJdFaotf（9562524a2e47327c52df4ab6fae9252cad4d66415085f2a85acdcd8cfc92a115）、clock-CGaqwDA0（e4a83b2d1a56e1244525a254b80aac686d68a186fff5c9119f7832ab1dc0953b）均与验证构建逐字节一致。
+- 810后端/41前端单元通过；138旧逻辑红测、新逻辑绿测及失败清理通过，153桌面/窄屏通过，独立审核packet-silence-review.md为PASS。未改变超时或身份校验。
+- 未迁移数据库/修改机器人配置/调用收费服务；回退2514614会恢复静音误判与关闭重启缺陷。
+- 本地18871/18872测试服务已停止，/tmp/voiceagent-silence-*证据/隔离库保留本地不提交。原手机64e3e81e内部缺包类型仍不可追溯；下一次真实通话首错有安全队列诊断及构建名可关联。

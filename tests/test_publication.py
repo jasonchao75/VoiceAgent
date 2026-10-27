@@ -513,6 +513,9 @@ def test_failure_during_claimed_offer_finishes_history_without_capture(keyed_cli
         {"client_build": "https://private/token"},
         {"worker_build": "x" * 101},
         {"head_state": "arbitrary text"},
+        {"native_lost": -1},
+        {"native_received": "12"},
+        {"max_decode_ms": 7_200_001},
     ],
 )
 def test_playback_diagnostics_rejects_unbounded_or_private_data(diagnostics):
@@ -523,3 +526,18 @@ def test_playback_diagnostics_rejects_unbounded_or_private_data(diagnostics):
 
     with pytest.raises(ValidationError):
         BrowserEvent(event="mobile_call_error", elapsed_ms=1, playback_diagnostics=diagnostics)
+
+
+def test_playback_receive_diagnostics_accepts_bounded_counters():
+    """Receive evidence is numeric only and remains optional for old clients."""
+    from src.api import BrowserEvent
+
+    values = {
+        "native_received": 110,
+        "native_lost": 3,
+        "native_stats_age_ms": 400,
+        "max_decode_ms": 90,
+        "max_intake_gap_ms": 50,
+    }
+    event = BrowserEvent(event="mobile_call_error", elapsed_ms=1, playback_diagnostics=values)
+    assert event.playback_diagnostics.model_dump(exclude_none=True) == values

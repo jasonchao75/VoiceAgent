@@ -307,6 +307,12 @@ class PlaybackDiagnostics(BaseModel):
     target_kind: Literal["unknown", "silence", "task"] | None = None
     target_has_packet: bool | None = Field(default=None, strict=True)
     target_has_mapping: bool | None = Field(default=None, strict=True)
+    native_received: int | None = Field(default=None, ge=0, le=10_000_000, strict=True)
+    native_lost: int | None = Field(default=None, ge=0, le=10_000_000, strict=True)
+    native_discarded: int | None = Field(default=None, ge=0, le=10_000_000, strict=True)
+    native_stats_age_ms: int | None = Field(default=None, ge=0, le=7_200_000, strict=True)
+    max_decode_ms: int | None = Field(default=None, ge=0, le=7_200_000, strict=True)
+    max_intake_gap_ms: int | None = Field(default=None, ge=0, le=7_200_000, strict=True)
 
 
 class BrowserEvent(BaseModel):

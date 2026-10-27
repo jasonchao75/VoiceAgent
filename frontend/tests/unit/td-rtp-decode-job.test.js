@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const workerPath=new URL('../../src/td-rtp-candidate-worker.js',import.meta.url);
 
-async function replay({badExtent=false,drop=0,silent=false,reorder=false,packetsFirst=false,decodeDelay=0,omitMappings=false,missingSilentIndex=-1}={}) {
+async function replay({badExtent=false,drop=0,silent=false,reorder=false,packetsFirst=false,decodeDelay=0,omitMappings=false,missingSilentIndex=-1,liveQueue=false,oldIntake=false}={}) {
   const events=[];
   const source=await readFile(workerPath,'utf8');
   let PacketDecoder;
@@ -37,7 +37,9 @@ async function replay({badExtent=false,drop=0,silent=false,reorder=false,packets
     }},crypto:webcrypto,performance,TransformStream,ReadableStream,WritableStream,
     setTimeout:(...args)=>{const timer=setTimeout(...args);timer.unref();return timer;},clearTimeout,
   });
-  vm.runInContext(source.replace(/^import .*;\n/gm,''),context);
+  let workerSource=source.replace(/^import .*;\n/gm,'');
+  if(oldIntake) workerSource=workerSource.replace('void deliver();\n        // The native','await deliver();\n        // The native');
+  vm.runInContext(workerSource,context);
   const packets=[],mappingMessages=[];
   for(let index=0;index<14;index++) {
     const data=new Uint8Array([index,123]).buffer;
@@ -50,7 +52,20 @@ async function replay({badExtent=false,drop=0,silent=false,reorder=false,packets
   }
   if(!packetsFirst && !omitMappings) for(const message of mappingMessages) await context.self.onmessage(message);
   context.self.onrtctransform({transformer:{
-    readable:new ReadableStream({start(controller){for(const packet of (reorder?[packets[1],packets[0],...packets.slice(2)]:packets.slice(drop).filter((_,i)=>i+drop!==missingSilentIndex)))controller.enqueue(packet);controller.close();}}),
+    readable:new ReadableStream({start(controller){
+      const input=reorder?[packets[1],packets[0],...packets.slice(2)]:packets.slice(drop).filter((_,i)=>i+drop!==missingSilentIndex);
+      if(!liveQueue) {for(const packet of input)controller.enqueue(packet);controller.close();return;}
+      // A bounded live producer models receiver discard under backpressure; it is not a browser implementation.
+      let index=0;
+      const tick=()=>{
+        if(index===input.length){controller.close();return;}
+        const packet=input[index++];
+        if(controller.desiredSize>0) controller.enqueue(packet);
+        else events.push({event:'fixture_receiver_discard',rtp_timestamp:packet.timestamp});
+        setTimeout(tick,20);
+      };
+      tick();
+    }}, {highWaterMark:2}),
     writable:new WritableStream({write(){}}),
   }});
   if(packetsFirst && !omitMappings) {
@@ -98,6 +113,28 @@ test('out of order RTP is decoded in reliable source order',async()=>{
 
 test('already matched packets waiting for ordered decode are not missing mappings',async()=>{
   const events=await replay({packetsFirst:true,decodeDelay:90});
+  assert.equal(events.filter(e=>e.event==='mapping_failed').length,0);
+  assert.equal(events.filter(e=>e.event==='decoded').length,14);
+});
+
+test('mapping-first audio intake does not wait for earlier decode jobs',async()=>{
+  const events=await replay({decodeDelay:90});
+  assert.equal(events.find(e=>e.event==='mapping_failed')?.reason,undefined);
+  assert.equal(events.filter(e=>e.event==='decoded').length,14);
+});
+
+test('bounded live receiver can discard task packets when old intake waits on decode',async()=>{
+  const events=await replay({liveQueue:true,oldIntake:true,decodeDelay:90});
+  assert.ok(events.some(e=>e.event==='fixture_receiver_discard'));
+  const failure=events.find(e=>e.event==='mapping_failed');
+  assert.equal(failure?.reason,'packet_deadline');
+  assert.equal(failure.details.head_state,'missing_task');
+  assert.equal(failure.details.decoding,false);
+});
+
+test('decoupled intake drains a bounded live receiver without discarding task packets',async()=>{
+  const events=await replay({liveQueue:true,decodeDelay:90});
+  assert.equal(events.filter(e=>e.event==='fixture_receiver_discard').length,0);
   assert.equal(events.filter(e=>e.event==='mapping_failed').length,0);
   assert.equal(events.filter(e=>e.event==='decoded').length,14);
 });

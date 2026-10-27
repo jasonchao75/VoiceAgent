@@ -140,6 +140,30 @@
       "status": "Resolved",
       "summary": "本地红测复现：已证明为静音的缺包位于慢解码队列非队首时，旧定时器误触发packet_deadline；关闭后sampler重启红测亦失败。待修复。 红绿及真实138/153回归通过，独立专项PASS。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "POST-685E33A-MISSING-TASK",
+      "status": "Open",
+      "summary": "手机facc564a加载当前685e33a构建，packet_deadline，decoding=false/head_state=missing_task/target_has_packet=false/target_has_mapping=true。证明失败时任务包未进入应用队列；不能区分网络丢包或此前接收背压导致原生丢弃。接收阻塞修复不是此通话根因的充分证明。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RTP-INTAKE-BACKPRESSURE",
+      "status": "Resolved",
+      "summary": "离线mapping先到+90ms解码复现packet_deadline：transform等待deliver阻塞后续读取。拆分接收与有序解码，避免应用引入接收背压；不等于已证明手机实际丢包根因。 新增测试旧代码红/修复绿，10worker测试与Chrome138真实本机组合播放通过；独立只读审核未发现补丁阻塞缺陷。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RTP-RETRANSMIT-LEDGER",
+      "status": "Open",
+      "summary": "独立审核确认Opus默认无NACK协商；发送包装每次发送都会消费ledger编码证据，原包重传会报RTP payload has no codec evidence。尚未实现可验证丢包恢复，不能直接开启NACK。不是已证实的facc564a根因。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RECEIVE-STATS-LATE-PEER",
+      "status": "Resolved",
+      "summary": "独立审核发现close后迟到createPeerConnection仍可启动新的getStats采样器，需在原始peer创建前拒绝已关闭播放器并补回归。 已在创建原始peer前拒绝closed状态，16项RTC entry测试通过，独立复核通过。",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
@@ -164,13 +188,11 @@
   ],
   "external_calls": [],
   "deployment": {
-    "commit": "2514614217b48559463e6ce201f736ff44a2c1ae",
-    "ci_run": 40507816291,
-    "deploy_run": 40508237040,
+    "commit": "685e33a7586d7e93b73379b0af4ad6d836414138",
+    "ci_run": 40511527612,
+    "deploy_run": 40511983242,
     "health": "ok",
-    "container": "running healthy",
-    "server_head_verified": true,
-    "public_worker_sha256": "fd780a28b996e91d32db6f8ce14c4790a08b824a600d2661a628dbea1f13fa4c",
+    "public_assets_match_verified_build": true,
     "pending_sessions": 0,
     "active_sessions": 0
   }

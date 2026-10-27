@@ -5,6 +5,7 @@ const skippedSilence = new Set(), expiredSilence = new Set();
 let mappedEnd = null;
 let failed = false, decoder, draining = false, nextSource = null;
 const counts={packets:0,mappings:0,decoded:0};
+let maxDecodeMs=0,lastReceivedAt=null,maxIntakeGapMs=0;
 const emit = data => self.postMessage(data);
 function fail(reason,targetId) {
   const head=mappings.entries().next().value;
@@ -14,6 +15,7 @@ function fail(reason,targetId) {
     head_state:head?(packets.has(head[0])?'matched':isSilent(head[1])?'missing_silence':'missing_task'):'empty',
     target_kind:target?(isSilent(target)?'silence':'task'):'unknown',
     target_has_packet:packets.has(targetId),target_has_mapping:mappings.has(targetId),
+    max_decode_ms:maxDecodeMs,max_intake_gap_ms:maxIntakeGapMs,
     worker_build:self.location?.pathname?.split('/').pop() || 'unit-test'};
   if (failed) return;
   failed = true;
@@ -66,6 +68,7 @@ async function decodePacket(id) {
   const timer=setTimeout(()=>fail('decode_deadline'),1000);
   try {
     const output=await decoder.decodePacket(packet.data,map.samples,timestamp);
+    maxDecodeMs=Math.max(maxDecodeMs,Math.min(7200000,Math.round(performance.now()-decodeStarted)));
     if(failed) return;
     emit({event:'packet_bound',rtp_timestamp:map.rtp_timestamp,ssrc:map.ssrc,
       payload_sha256:hash,source_start:map.source_start,spans:map.spans,
@@ -117,6 +120,9 @@ function attachEncodedStream(transformer) {
       async transform(frame, controller) {
         if (failed) return;
         counts.packets++;
+        const receivedAt=performance.now();
+        if(lastReceivedAt!==null) maxIntakeGapMs=Math.max(maxIntakeGapMs,Math.min(7200000,Math.round(receivedAt-lastReceivedAt)));
+        lastReceivedAt=receivedAt;
         const metadata = frame.getMetadata();
         if (!Number.isInteger(metadata.synchronizationSource)) return fail('missing_ssrc');
         const id = key(metadata.synchronizationSource,frame.timestamp);
@@ -125,7 +131,9 @@ function attachEncodedStream(transformer) {
         packets.set(id,{data:frame.data.slice(0),receivedAt:performance.now()});
         // A matched packet can wait behind an in-flight decode job; that is not missing evidence.
         setTimeout(()=>{if(packets.has(id) && !mappings.has(id)) fail('mapping_deadline',id);},1000);
-        await deliver(id);
+        // Intake must never wait for WebCodecs: receiver queues can discard live audio
+        // under backpressure. The bounded application queue drains in source order.
+        void deliver();
         // The native receiver stays pulling through a muted sink, never double plays.
         controller.enqueue(frame);
       },

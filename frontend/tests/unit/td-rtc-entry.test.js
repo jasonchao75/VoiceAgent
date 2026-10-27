@@ -1,6 +1,35 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {playbackReceipt} from '../../src/td-rtc-entry.js';
+import {observeReceiveStats} from '../../src/td-rtc-entry.js';
+
+test('receiver diagnostics whitelist native counters and preserve unknown values',async()=>{
+ const stats=observeReceiveStats({getStats:async()=>new Map([['audio',{
+  type:'inbound-rtp',kind:'audio',packetsReceived:110,packetsLost:3,
+  packetsDiscarded:undefined,trackIdentifier:'private',ssrc:123,
+ }]])});
+ try {
+  await new Promise(resolve=>setImmediate(resolve));
+  const result=stats.read();
+  assert.equal(result.native_received,110);assert.equal(result.native_lost,3);
+  assert.equal('native_discarded' in result,false);assert.equal('ssrc' in result,false);
+  assert.ok(Number.isInteger(result.native_stats_age_ms));
+ } finally {stats.close();}
+});
+
+test('closing diagnostics never waits for a hung native stats request or accepts late results',async()=>{
+ let resolve;const stats=observeReceiveStats({getStats:()=>new Promise(done=>{resolve=done;})});
+ stats.close();
+ resolve(new Map([['a',{type:'inbound-rtp',kind:'audio',packetsReceived:1}]]));
+ await new Promise(done=>setImmediate(done));
+ assert.deepEqual(stats.read(),{});
+});
+
+test('failed or unavailable native counters are not fabricated',async()=>{
+ const stats=observeReceiveStats({getStats:async()=>{throw Error('fixture');}});
+ try {await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(stats.read(),{});}
+ finally {stats.close();}
+});
 test('renderer-only state does not escape strict API receipt schema',()=>{
  const result=playbackReceipt({event:'task_stopped',playback_id:'a'.repeat(32),started:true,rendered_samples:128,elapsed_ms:10,render_clock_id:'b'.repeat(32),render_frame:200,render_sample_rate:48000});
  assert.equal('started' in result,false);
@@ -149,6 +178,7 @@ test('late datachannel messages after close cannot restart playback or clock req
   const playback=await prepareRTCPlayback(transport,{sessionId:'s',token:'inert',onFailure(){}});
   transport.createPeerConnection().createDataChannel();
   await playback.close();await playback.close();const before=posts;
+  assert.throws(()=>transport.createPeerConnection(),/Playback is closed/);
   received({data:JSON.stringify({label:'voice-agent-playback',event:'mapping',mapping:{}})});
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(requests,0);assert.equal(posts,before);

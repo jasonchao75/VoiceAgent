@@ -18,6 +18,36 @@ export function rtcTransformMode(scope=globalThis) {
   return null;
 }
 
+export function observeReceiveStats(peer) {
+  let closed=false,busy=false,snapshot={},observedAt=null;
+  const fields={packetsReceived:'native_received',packetsLost:'native_lost',packetsDiscarded:'native_discarded'};
+  async function sample() {
+    if(closed || busy) return;
+    busy=true;
+    const requestedAt=performance.now();
+    try {
+      const reports=await peer.getStats();
+      const audio=[...reports.values()].filter(item=>item.type==='inbound-rtp' && item.kind==='audio');
+      if(closed || audio.length!==1) return;
+      const next={};
+      for(const [field,key] of Object.entries(fields)) {
+        const value=audio[0][field];
+        // Missing native counters remain unknown; never turn unavailable evidence into zero loss.
+        if(Number.isSafeInteger(value) && value>=0 && value<=10000000) next[key]=value;
+      }
+      // Include collection latency so a slow native call cannot make old evidence look fresh.
+      snapshot=next;observedAt=requestedAt;
+    } catch { /* Diagnostics must not affect playback or cleanup. */ }
+    finally {busy=false;}
+  }
+  const timer=typeof peer.getStats==='function'?setInterval(()=>void sample(),500):null;
+  if(timer!==null) void sample();
+  return {
+    read:()=>observedAt===null?{}:{...snapshot,native_stats_age_ms:Math.min(7200000,Math.max(0,Math.round(performance.now()-observedAt)))},
+    close(){closed=true;if(timer!==null)clearInterval(timer);},
+  };
+}
+
 function bindEncodedStream(endpoint,worker,Transform) {
   if(Transform) {endpoint.transform=new Transform(worker);return;}
   const {readable,writable}=endpoint.createEncodedStreams();
@@ -58,12 +88,12 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
   };
   player.connect(context.destination);
   await context.resume();
-  let clockSampler,closed=false;
+  let clockSampler,receiveStats,closed=false;
   const receipts=new PlaybackReceiptSender({sessionId,token,
     onFailure:reason=>bridge.fail(reason)});
   const bridge=new RTPCandidatePlayback({worker,player,evidence,
     onClockSample:data=>clockSampler?.observe(data),send(message){
-    if(message.event==='candidate_failed') { onFailure(message.reason,{...message.details,client_build:new URL(import.meta.url).pathname.split('/').pop()});return; }
+    if(message.event==='candidate_failed') { onFailure(message.reason,{...message.details,...receiveStats?.read(),client_build:new URL(import.meta.url).pathname.split('/').pop()});return; }
     if(message.event!=='receipt') return;
     if(message.receipt.event==='task_started') clockSampler?.pulse();
     void receipts.enqueue(playbackReceipt(message.receipt));
@@ -79,7 +109,9 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
   bindRTCTransform(transport,worker,globalThis.RTCRtpScriptTransform,inputWorker);
   const original=transport.createPeerConnection.bind(transport);
   transport.createPeerConnection=()=>{
+    if(closed) throw new Error('Playback is closed');
     const peer=original();
+    receiveStats?.close();receiveStats=observeReceiveStats(peer);
     peer.addEventListener('datachannel',event=>{
       event.channel.addEventListener('message',({data})=>{
         try { const message=JSON.parse(data);if(message.label==='voice-agent-playback') control(message); } catch { bridge.fail('invalid_playback_control'); }
@@ -97,7 +129,7 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
     };
     return peer;
   };
-  return {async close(){if(closed)return;closed=true;receipts.close();clockSampler.close();sourceUploader.close();worker.terminate();inputWorker.terminate();player.disconnect();await context.close();}};
+  return {async close(){if(closed)return;closed=true;receiveStats?.close();receipts.close();clockSampler.close();sourceUploader.close();worker.terminate();inputWorker.terminate();player.disconnect();await context.close();}};
   } catch(error) {
     sourceUploader?.close();
     worker?.terminate();
