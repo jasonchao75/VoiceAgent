@@ -364,3 +364,56 @@ def test_registry_rejects_duplicate_registration() -> None:
     registry.register("deepgram", "nova-3", inert)
     with pytest.raises(ValueError, match="already registered"):
         registry.register("deepgram", "nova-3", inert)
+
+
+async def test_nova_diagnostics_observe_empty_results_without_payload(
+    runtime_config: RuntimeConfig, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Distinguish empty native ASR output from adapter loss without recording text."""
+    service = create_default_asr_registry().create(
+        provider="deepgram",
+        model="nova-3",
+        turn_detection_source="self_developed",
+        options={},
+        api_key="test-inert-key",
+        audio=runtime_config.audio,
+    )
+    processor = service.processor
+    events = []
+    processor._td_diagnostic_sink = lambda kind, **fields: events.append((kind, fields))
+    received = []
+
+    async def native(self, message):
+        received.append(message)
+
+    monkeypatch.setattr(DeepgramSTTService, "_on_message", native)
+    for text in ("", "private utterance"):
+        message = ListenV1Results.model_construct(
+            type="Results",
+            start=1.0,
+            duration=0.3,
+            is_final=False,
+            speech_final=False,
+            channel=ListenV1ResultsChannel(
+                alternatives=[
+                    ListenV1ResultsChannelAlternativesItem(
+                        transcript=text, confidence=0.9, words=[], languages=["en"]
+                    )
+                ]
+            ).model_dump(),
+        )
+        await processor._on_message(message)
+    assert len(received) == 2
+    assert [fields["text_chars"] for _, fields in events] == [0, 17]
+    assert "private utterance" not in str(events)
+
+    class Connection:
+        async def send_media(self, audio):
+            assert len(audio) == 32000
+
+    processor._connection = Connection()
+    frames = [frame async for frame in processor.run_stt(bytes(32000))]
+    assert frames == [None]
+    assert events[-1][0] == "asr_audio_ingress"
+    assert events[-1][1]["total_bytes"] == 32000
+    assert events[-1][1]["remote_receipt_verified"] is False

@@ -200,3 +200,25 @@ async def test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline(
     await td.advance(3500)
     assert errors == ["asr_source_evidence_unavailable"]
     assert td.responses.user_submission_count == 0
+
+
+def test_source_diagnostics_are_bounded_and_do_not_break_stream():
+    """A broken evidence sink cannot change ASR behavior or grow without bound."""
+    source = Source()
+    events = []
+    source._td_diagnostic_sink = lambda kind, **fields: events.append((kind, fields))
+    for _ in range(700):
+        source.record_source_diagnostic("asr_audio_ingress", total_bytes=32000)
+    assert len(events) == 601
+    assert events[-1] == ("asr_diagnostic_limit", {"limit": 600})
+    source._td_diagnostic_count = 0
+
+    def broken(kind, **fields):
+        raise RuntimeError("test storage unavailable")
+
+    source._td_diagnostic_sink = broken
+    source.record_source_diagnostic("asr_audio_ingress", total_bytes=32000)
+    source._td_source_mode = False
+    source._td_diagnostic_sink = lambda kind, **fields: events.append((kind, fields))
+    source.record_source_diagnostic("asr_audio_ingress", total_bytes=32000)
+    assert len(events) == 601

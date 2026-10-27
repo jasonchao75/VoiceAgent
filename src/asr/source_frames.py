@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
@@ -44,10 +45,27 @@ class SourceOwnedASRMixin:
         """Keep immutable receive-task provenance separate from the current connection."""
         self._td_stream_epoch = -1
         self._td_claimed_epoch: int | None = None
+        self._td_diagnostic_sink: Callable[..., None] | None = None
+        self._td_diagnostic_count = 0
         self._td_source_epoch: ContextVar[int | None] = ContextVar(
             f"asr_source_epoch_{id(self)}", default=None
         )
         super().__init__(**kwargs)
+
+    def record_source_diagnostic(self, kind: str, **fields: Any) -> None:
+        """Keep bounded, metadata-only evidence without affecting recognition."""
+        if not self._td_source_mode or self._td_diagnostic_sink is None:
+            return
+        if self._td_diagnostic_count >= 600:
+            return
+        self._td_diagnostic_count += 1
+        try:
+            self._td_diagnostic_sink(kind, epoch=self._td_source_epoch.get(), **fields)
+            if self._td_diagnostic_count == 600:
+                self._td_diagnostic_sink("asr_diagnostic_limit", limit=600)
+        except Exception:
+            # Evidence storage must never break the voice stream.
+            return
 
     async def _begin_source_epoch(self) -> None:
         """Announce a namespace before the SDK creates receiver/callback tasks."""
@@ -102,6 +120,11 @@ class SourceOwnedASRMixin:
             if isinstance(frame, _BOUNDARIES):
                 return
             if isinstance(frame, (TranscriptionFrame, InterimTranscriptionFrame)):
+                self.record_source_diagnostic(
+                    "asr_text_frame",
+                    text_chars=len(frame.text),
+                    final=isinstance(frame, TranscriptionFrame),
+                )
                 frame.metadata["td_source_only"] = True
                 epoch = self._td_source_epoch.get()
                 # A missing receive context is not evidence for the current socket.

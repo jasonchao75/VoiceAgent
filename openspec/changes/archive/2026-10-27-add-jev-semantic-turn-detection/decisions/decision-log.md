@@ -733,3 +733,24 @@
 - Source thread/message: codex://threads/01a15c6b-12a0-7103-8ac7-8d41556c6731；本地收尾报告后用户明确发布指令。
 - Confirmation quote: 我拍板通过了，这几项我没法在测试环境测。直接上线吧。我去线上测试
 - Decision: 用户通过Gate2并授权发布当前已审核实现至既有线上环境，接受收尾清单中的真实模型组合、设备声学/手机弱网、RTC性能兼容及完整界面覆盖尚未验证的风险，将这些验证移至上线后由用户主导。此为用户明确接受风险，不把未测项改成技术PASS；不授权Agent自行运行付费厂商测试，不改变RTC默认传输或采用开发候选。部署继续遵循现有CI/健康检查/失败回退，排除无关工作区与敏感产物。
+
+### D-089：授权原服务器数据库备份
+- Status: Confirmed
+- Date: 2026-10-27
+- Source thread/message: codex://threads/01a15c6b-12a0-7103-8ac7-8d41556c6731；备份范围解释后当前用户消息。
+- Confirmation quote: 可以创建备份
+- Decision: 仅在原服务器 /home/deploy/backups/jev-20261027-pre-release 备份 bots.db、history.db，不复制录音、不传出服务器，目录700、文件600。最初自动审批因未明确授权额外数据复制拒绝执行；本次获明确授权后执行。检查发现自动CD已先完成，因此实际为上线后快照，已向用户披露，不能声称具备上线前数据回退能力。
+
+### D-090：补齐Hello排查诊断
+- Status: Confirmed
+- Date: 2026-10-27
+- Source thread/message: codex://threads/01a15c6b-12a0-7103-8ac7-8d41556c6731；说明缺少ASR原始事件与打断来源之后的用户指令。
+- Confirmation quote: 那就补齐啊
+- Decision: 补齐用于排查的ASR原始事件元数据及本地VAD打断来源；不改变识别/话轮/打断策略，不重新调用收费接口。沿用既有会话证据存储与留存，不额外保存全文、密钥或音频。旧会话无法追溯恢复未记录数据。此次生产更新须在补丁审核后明确确认。
+
+### D-091：上线Hello诊断补丁
+- Status: Confirmed
+- Date: 2026-10-27
+- Source thread/message: codex://threads/01a15c6b-12a0-7103-8ac7-8d41556c6731；明确询问诊断补丁部署后用户答复。
+- Confirmation quote: 部署。
+- Decision: 授权把D-090已本地验证及独立审核的诊断补丁部署既有线上环境；不更改识别/打断策略，不授权Agent发起收费通话或模型请求。

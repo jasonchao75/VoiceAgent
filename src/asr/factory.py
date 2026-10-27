@@ -259,11 +259,43 @@ def _build_deepgram_nova3(
             """Initialize Nova-3 and remember the last closed provider Turn."""
             super().__init__(**kwargs)
             self._last_speech_final_key: tuple[float, float] | None = None
+            self._diagnostic_audio_bytes = 0
+            self._diagnostic_next_bytes = 32000
             # Nova retries within one SDK task, outside _connect/_websocket_connect.
             connector = self._client.listen.v1
             connector.connect = self._source_context_connector(connector.connect)
 
+        async def run_stt(self, audio):  # type: ignore[no-untyped-def]
+            """Observe SDK ingress; socket presence is not a remote receipt."""
+            self._diagnostic_audio_bytes += len(audio)
+            connected_before = self._connection is not None
+            async for frame in super().run_stt(audio):
+                yield frame
+            if self._diagnostic_audio_bytes >= self._diagnostic_next_bytes:
+                self._diagnostic_next_bytes = self._diagnostic_audio_bytes + 32000
+                self.record_source_diagnostic(
+                    "asr_audio_ingress",
+                    total_bytes=self._diagnostic_audio_bytes,
+                    connected_before=connected_before,
+                    connected_after=self._connection is not None,
+                    remote_receipt_verified=False,
+                )
+
         async def _on_message(self, message):  # type: ignore[no-untyped-def]
+            if isinstance(message, ListenV1Results):
+                alternatives = message.channel.alternatives if message.channel else []
+                first = alternatives[0] if alternatives else None
+                self.record_source_diagnostic(
+                    "asr_native_result",
+                    provider="deepgram",
+                    start_seconds=message.start,
+                    duration_seconds=message.duration,
+                    is_final=message.is_final,
+                    speech_final=message.speech_final,
+                    text_chars=len(first.transcript or "") if first else 0,
+                    word_count=len(first.words or []) if first else 0,
+                    confidence=first.confidence if first else None,
+                )
             await super()._on_message(message)
             if not isinstance(message, ListenV1Results) or not message.speech_final:
                 return

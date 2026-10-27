@@ -144,3 +144,9 @@ M0由当前评审Codex与用户完成，研发在Gate 1完整通过后从M1接�
 
 ### Gate2 独立复验：超位历史展示缺陷（2026-10-26）
 - [x] G2-02-OVERFLOW-HISTORY（P2，研发修复并独立复审关闭）：修复frontend/src/td-history.js:125-128对无conversation_utterance的编号轮次清空问题。已有identifier_local_processed、identifier_reminder和关联播放回执时，历史应显示编号与提醒事实；保持旧历史及无归属证据兼容，不伪造普通TD提交。补齐未满位/超位且从未提交普通对话的正式历史回归。复现：verification/gate2-intake/identifier/browser-playback-review.md；保持现有独立失败断言。
+
+## 上线后Hello诊断补充（D-090）
+- [x] 增加Nova原始Results元数据与SDK音频入口计数，避免新增全文/凭证记录。
+- [x] 增加VAD状态转换与本地打断提议来源；保持原有行为。
+- [x] 专项独立审查及新增事件本地验证收尾；127项通过，独立74项通过，专项PASS（仅本地补丁）。
+- 后续：生产部署确认后，利用用户下一通测试采集；不是旧会话根因已闭环。

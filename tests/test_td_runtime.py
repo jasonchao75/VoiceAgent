@@ -185,18 +185,23 @@ async def test_bundled_silero_real_silence_and_pcm_validation():
     from pipecat.processors.frame_processor import FrameDirection
 
     from src.pipeline.custom_td import prepare_custom_td
+    from tests.test_td_source_frames import Source
 
+    events = []
     source = ASRService(
-        processor=None, source_normalizer=SourceNormalizer("deepgram", "flux-general-en")
+        processor=Source(), source_normalizer=SourceNormalizer("deepgram", "flux-general-en")
     )
     audio, td, client = await asyncio.wait_for(
         prepare_custom_td(
             asr=source,
             settings=CustomTDSettings.model_validate(td_settings()),
             api_key="test-fixture-not-sent",
+            evidence_sink=events.append,
         ),
         10,
     )
+    source.processor.record_source_diagnostic("asr_native_result", text_chars=0)
+    assert events[-1]["event"] == "asr_native_result"
     forwarded = []
 
     async def push(frame, *args, **kwargs):
@@ -1412,3 +1417,44 @@ async def test_incomplete_cross_range_final_never_restarts_with_a_missing_negati
     )
     assert not any(isinstance(f, TDResponseRestartFrame) for f in frames)
     assert td.ledger.view().missing_reason == "cross_commit_word_timing_incomplete"
+
+
+async def test_new_vad_diagnostics_cannot_block_audio_on_sink_failure():
+    """Additional state evidence is best effort even when its sink fails."""
+    from pipecat.audio.vad.vad_analyzer import VADState
+    from pipecat.frames.frames import InputAudioRawFrame
+    from pipecat.processors.frame_processor import FrameDirection
+
+    from src.pipeline.custom_td import CustomTDAudioInput
+
+    events = []
+
+    def broken(event):
+        events.append(event)
+        raise RuntimeError("test evidence storage unavailable")
+
+    class StartingVAD:
+        async def analyze_audio(self, data):
+            return VADState.STARTING
+
+        async def cleanup(self):
+            pass
+
+    td = coordinator(evidence_sink=broken)
+    audio = CustomTDAudioInput(td, StartingVAD())
+    forwarded = []
+
+    async def push(frame, *args, **kwargs):
+        forwarded.append(frame)
+
+    audio.push_frame = push
+    frame = InputAudioRawFrame(bytes(640), sample_rate=16000, num_channels=1)
+    try:
+        await audio.process_frame(frame, FrameDirection.DOWNSTREAM)
+        assert forwarded == [frame]
+        assert events[0]["event"] == "vad_state_changed"
+        assert events[0]["trigger"] == "local_vad"
+        assert events[0]["input_audio_ms"] == 20
+    finally:
+        await audio.cleanup()
+        await td.cleanup()

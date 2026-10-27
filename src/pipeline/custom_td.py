@@ -27,7 +27,7 @@ from pipecat.processors.frame_processor import FrameCallback, FrameDirection, Fr
 from pipecat.utils.time import time_now_iso8601
 
 from src.asr.factory import ASRService
-from src.asr.source_frames import ASRStreamEpochFrame
+from src.asr.source_frames import ASRStreamEpochFrame, SourceOwnedASRMixin
 from src.asr.td_config import CustomTDSettings
 from src.asr.transcript import (
     ASRSourceEvidenceError,
@@ -89,6 +89,7 @@ class CustomTDCoordinator(FrameProcessor):
         )
         self._decide = decide
         self._sink = evidence_sink
+        self._diagnostic_count = 0
         self._lock = asyncio.Lock()
         self._candidate: CandidateToken | None = None
         self._speaking = False
@@ -216,6 +217,19 @@ class CustomTDCoordinator(FrameProcessor):
         """Set only the latest ordinary assistant reply, never a rule echo."""
         self._assistant = text
 
+    def record_diagnostic(self, kind: str, **fields: Any) -> None:
+        """Bound additional evidence and isolate storage failures from live audio."""
+        if self._diagnostic_count >= 2400:
+            return
+        self._diagnostic_count += 1
+        try:
+            self.record(kind, **fields)
+            if self._diagnostic_count == 2400:
+                self.record("td_diagnostic_limit", limit=2400)
+        except Exception:
+            # Optional diagnostics must not become a new interruption cause.
+            return
+
     def _invalidate_cleared_input(self) -> None:
         """Consume pre-clear candidates before late ASR can collect or submit them again."""
         rules = self.identifier_rules
@@ -254,7 +268,8 @@ class CustomTDCoordinator(FrameProcessor):
             self._revised_local_snapshot = None
             if self._decision:
                 self._decision.cancel()
-            self.record("speech_resumed")
+            self.record("speech_resumed", trigger="local_vad")
+            self.record_diagnostic("interruption_proposed", trigger="local_vad")
             await self.push_frame(ProposedUserStartedSpeakingFrame())
 
     async def speech_stopped(self, speech_end_ms: float) -> None:
@@ -872,6 +887,14 @@ class CustomTDAudioInput(FrameProcessor):
                 self.coordinator._audio_processing += 1
                 try:
                     state = await self.vad.analyze_audio(frame.audio)
+                    if state != self._state:
+                        self.coordinator.record_diagnostic(
+                            "vad_state_changed",
+                            previous=self._state.name,
+                            state=state.name,
+                            input_audio_ms=self._audio_ms,
+                            trigger="local_vad",
+                        )
                     self.coordinator._suspected = state == VADState.STARTING
                     if state == VADState.SPEAKING and self._state != VADState.SPEAKING:
                         await self.coordinator.speech_started()
@@ -951,4 +974,6 @@ async def prepare_custom_td(
         identifier_output=identifier_output,
         identifier_observe=identifier_observe,
     )
+    if isinstance(asr.processor, SourceOwnedASRMixin):
+        asr.processor._td_diagnostic_sink = coordinator.record_diagnostic
     return CustomTDAudioInput(coordinator, vad), coordinator, client

@@ -1,5 +1,5 @@
 {
-  "phase": "release_preparing",
+  "phase": "deployed_followup",
   "product_acceptance": "accepted",
   "ui_change": true,
   "external_calls": [
@@ -2042,8 +2042,80 @@
     },
     {
       "id": "RELEASE-CI-40470550369",
+      "status": "Resolved",
+      "summary": "测试冷启动预算修正后，CI40470975860成功；自动部署40471311923成功，线上SHA与发布版本一致。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "JEV-CUSTOM-OPTION-CONFLICT",
       "status": "Open",
-      "summary": "CI测试限时0.3s包含SDK冷启动，初始化阶段超时，未进入上游错误断言。仅测试改为3s并断言错误确实发出；生产超时不变，本地4项通过，等待新CI确认。",
+      "summary": "src/pipeline/turn_detection.py 强冲突保护硬编码complete/incomplete/holding_floor；用户自定义holding参与加权等待但不参与未完成概率合计。此前关于标识任意且改名不影响行为的说明不准确。需修复自定义标识与冲突语义映射一致性。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PUBLISH-FEEDBACK-HIDDEN",
+      "status": "Open",
+      "summary": "线上只读复核DeepgramNovaTD：publication_count=0；当前provider凭证表仅有llm/custom和tts/deepgram_flux，缺asr/deepgram，构成确定发布阻塞；Jev端点匹配。未复发发布请求，未验证音频manifest，因此不声称这是唯一阻塞。顶栏/Share发布错误位于隐藏通话面板，截图还显示未发布时固定文案Published version is live。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "QWEN-NATIVE-RTC-404",
+      "status": "Open",
+      "summary": "线上会话816d7955-58ab-433d-82bc-a0087625fd70：Jev成功173.56ms并semantic_final提交；ScopedOpenAILLMService向DashScope原生/api/v1拼接/chat/completions返回404，pipeline判定LLM不可用取消会话。此前宣称项目适配原生接口未区分诊断和实时链路，不准确。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "SESSION-FAILED-MARKED-COMPLETED",
+      "status": "Open",
+      "summary": "同一会话LLM 404终止后calls.status=completed且error_category/diagnostic_id为空，页面未揭示实际失败原因。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "BOT-LIST-HARDCODED-V1",
+      "status": "Open",
+      "summary": "frontend/src/main.js:1918 Bot列表版本徽标硬编码v1。线上DeepgramNovaTD实际已发布revision4，分享链接active且current_revision=4；revision2/3/4均含修正后的compatible-mode/v1地址。页面版本未接真实发布版本，误导用户重复发布。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "NOVA-IDENTIFIER-CROSS-COMMIT",
+      "status": "Open",
+      "summary": "线上538f0871-edb4-4840-bd60-aab9577868a9：1,2先被本地消费，累计Partial1..6及Final123456789随后持续cross_commit_word_timing_incomplete，4秒静音截止以asr_source_evidence_unavailable终止。需复现来源边界/词时间覆盖判定，不能直接归咎厂商。首次跟读因136.36WPM高于90被抑制，关键词已命中。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "IDENTIFIER-WORD-VALUE-CONFIG",
+      "status": "Open",
+      "summary": "同次发布配置将数字规范value设为one/two等，记录collected=onetwo；需核对规范值与播报文本是否混用以及11位计数影响，尚未完成验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "HELLO-SPARSE-ASR-INTERRUPT",
+      "status": "Open",
+      "summary": "线上1b72ddd3-b6a6-49e6-bff3-5ce958263185：VAD多次开口/停顿但仅两组Hello转写；TD事件约14s/34s收到文字，首次产生LLM回复及TTS音频，第二次提交约0.57秒后触发interruption且无回复。Jev两次200/197ms和161ms，Qwen首次200。客户端最终end_reason=user。未检查录音和原始厂商事件，不能区分真实重复说话/回声/噪声，不能确认ASR前端或厂商漏字原因；实际首播无回执证据。 离线分析57.999秒录音非全静音；Silero0.8/0.7均有短开口事件，固定分块重放未逐事件复现；未完成人工听辨，缺少原始ASR返回/客户端首播证据，根因尚未闭环。证据见hello-session-20261027.md。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "DUPLICATE-OPENING-CONTEXT",
+      "status": "Open",
+      "summary": "该会话LLM上下文包含两次近似相同开场白，需检查上下文聚合；尚不能关联到Hello稀疏识别主因。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "HELLO-DIAGNOSTIC-TEST-FIXTURE",
+      "status": "Resolved",
+      "summary": "新增SDK测试fixture嵌套对象改为SDK要求的字典后通过；不改生产处理逻辑。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "DIAGNOSTIC-VAD-SINK-FAILURE",
+      "status": "Resolved",
+      "summary": "独立复核发现新增VAD诊断sink异常阻断音频；已改为record_diagnostic安全隔离、2400条上限。新增故障sink回归证明音频仍转发，独立74项通过。测试假VAD cleanup遗漏亦已修复。",
+      "disclosed_to_user": false
+    },
+    {
+      "id": "HELLO-DIAGNOSTIC-SINK-ISOLATION",
+      "status": "Resolved",
+      "summary": "专项审查发现新增VAD诊断sink异常可阻断音频；已改为安全有界record_diagnostic，故障sink回归证明音频继续转发。测试替身cleanup遗漏也已补齐。",
       "disclosed_to_user": true
     }
   ],
@@ -2395,6 +2467,12 @@
       "verification_status": "unverified",
       "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
       "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "RELEASE-PREDEPLOY-SNAPSHOT",
+      "status": "Open",
+      "summary": "未取得本次上线前数据库快照；本次备份发生在自动部署成功之后，不能作为迁移前数据恢复点。",
+      "disclosed_to_user": true
     }
   ],
   "ui_delivery": {
@@ -3355,5 +3433,36 @@
     "mypy": "79 source files PASS",
     "safety": "PASS clean staged export",
     "unrelated_changes": "not staged"
+  },
+  "release_result": {
+    "date": "2026-10-27",
+    "sha": "af8300b47ab095da604604e2f134d2cdd433d4f9",
+    "ci_run": 40470975860,
+    "deploy_run": 40471311923,
+    "health": "ok",
+    "backup": {
+      "decision": "D-089",
+      "path": "/home/deploy/backups/jev-20261027-pre-release",
+      "files": [
+        "bots.db",
+        "history.db"
+      ],
+      "quick_check": "ok",
+      "timing": "post_deployment",
+      "limitation": "自动CD在用户授权备份前已完成，备份不能恢复上线前的数据状态。目录名称沿用授权路径，metadata明确实际时间。"
+    }
+  },
+  "hello_diagnostics": {
+    "status": "deploying",
+    "authority": "D-090",
+    "production_deployed": false,
+    "paid_calls": false,
+    "new_data": "metadata_only; no additional transcript/audio/key retention",
+    "tests": "127 passed",
+    "lint": "passed",
+    "mypy": "3 source files passed",
+    "remaining": "production authorization and new user test call; historical root cause remains open",
+    "independent_review": "PASS (local patch only), 74 tests",
+    "deployment_authority": "D-091"
   }
 }
