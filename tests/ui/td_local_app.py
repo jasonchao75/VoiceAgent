@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import ipaddress
 import math
 import os
@@ -188,6 +189,8 @@ class IdentifierASR(FrameProcessor):
                     (6.5, 7.45, "No, clear that number."),
                 ]
             ):
+                offset = float(os.environ.get("VOICE_AGENT_TD_INPUT_DELAY", "0"))
+                start, end = start + offset, end + offset
                 if self.audio_ms < end * 1000 or index in self.sent:
                     continue
                 self.sent.add(index)
@@ -220,7 +223,9 @@ class LocalVAD:
         """Return one speaking interval followed by sustained quiet."""
         self.samples += len(audio) // 2
         if identifier_scenario():
-            seconds = self.samples / 16000
+            seconds = self.samples / 16000 - float(
+                os.environ.get("VOICE_AGENT_TD_INPUT_DELAY", "0")
+            )
             speaking = any(
                 start <= seconds <= end
                 for start, end in [
@@ -248,6 +253,9 @@ class LocalSynth(ResponseScopedTTSMixin, TTSService):
         ):
             yield ErrorFrame(error="Offline fixture unit synthesis failed")
             return
+        if text == "Please say your identifier.":
+            # Model provider startup latency while keeping all audio local and synthetic.
+            await asyncio.sleep(float(os.environ.get("VOICE_AGENT_TD_OPENING_DELAY", "0")))
         count = 120000 if "partial" in text else 12000 if "final" in text else 2400
         if (
             os.environ.get("VOICE_AGENT_TD_LOCAL_SCENARIO") == "identifier_cache_repair"
@@ -372,6 +380,19 @@ def create_local_app(
     }:
         raise ValueError("Unknown offline scenario")
     os.environ["VOICE_AGENT_TD_LOCAL_SCENARIO"] = scenario
+    handshake_delay = float(os.environ.get("VOICE_AGENT_TD_SCTP_DELAY", "0"))
+    if handshake_delay:
+        from aiortc.rtcsctptransport import InitAckChunk, InitChunk, RTCSctpTransport
+
+        original_send_chunk = RTCSctpTransport._send_chunk
+
+        async def delayed_send_chunk(self: Any, chunk: Any) -> None:
+            """Delay only initial SCTP setup; real RTP still takes its native path."""
+            if isinstance(chunk, (InitChunk, InitAckChunk)):
+                await asyncio.sleep(handshake_delay)
+            await original_send_chunk(self, chunk)
+
+        RTCSctpTransport._send_chunk = delayed_send_chunk
     LocalASR.ingress_proofs = []
     LocalASR.source_diagnostics = []
     if os.environ.get("VOICE_AGENT_TD_RTC_SOURCE_DIAGNOSTIC") == "1":

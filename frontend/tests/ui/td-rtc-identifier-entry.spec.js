@@ -4,11 +4,12 @@ const evidence=process.env.VOICE_AGENT_TD_UI_EVIDENCE || "../test-results/td-web
 mkdirSync(evidence,{recursive:true});
 const enabled=process.env.VOICE_AGENT_TD_LOCAL_RUNTIME==="1";
 test.skip(!enabled,"Requires the loopback-only disposable TD application");
-test.use({permissions:["microphone"],launchOptions:{executablePath:process.env.VOICE_AGENT_TEST_BROWSER,args:["--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream","--autoplay-policy=no-user-gesture-required"]}});
-test.afterEach(async({page},info)=>{
-  const diagnostics=await page.evaluate(async()=>({browser:navigator.userAgent,scriptTransform:typeof RTCRtpScriptTransform,legacyTransform:typeof RTCRtpReceiver.prototype.createEncodedStreams,audioDecoder:typeof AudioDecoder,workerEvents:window.__rtcWorkerEvents,samples:window.__rtcSamples,tracks:window.__rtcTracks,
+test.use({permissions:["microphone"],launchOptions:{executablePath:process.env.VOICE_AGENT_TEST_BROWSER,args:["--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream"]}});
+test.afterEach(async({page,browser},info)=>{
+  const diagnostics=await page.evaluate(async()=>({browser:navigator.userAgent,scriptTransform:typeof RTCRtpScriptTransform,legacyTransform:typeof RTCRtpReceiver.prototype.createEncodedStreams,audioDecoder:typeof AudioDecoder,workerEvents:window.__rtcWorkerEvents,manifests:window.__rtcManifests,samples:window.__rtcSamples,tracks:window.__rtcTracks,
     stats:await Promise.all((window.__rtcConnections||[]).map(async pc=>[...(await pc.getStats()).values()]
       .filter(s=>s.type==="inbound-rtp" && s.kind==="audio")))})).catch(()=>({closed:true}));
+  diagnostics.engineVersion=browser.version();
   writeFileSync(`${evidence}/rtc-probe-diagnostics.${info.project.name}.json`,JSON.stringify(diagnostics,null,2));
 });
 
@@ -78,16 +79,55 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
           const channel=createChannel(...args);
           channel.addEventListener('message',({data})=>{
             let message;try{message=JSON.parse(data);}catch{return;}
-            if(message.event==='task_end') window.__rtcManifests.push(message);
+            if(message.event==='task_end' || message.event==='mapping') window.__rtcManifests.push(message);
           });
           return channel;
         };
       }
     };
   });
+  if(process.env.VOICE_AGENT_TD_DROP_STARTUP_RTP==='1') {
+    await page.addInitScript(()=>{
+      const create=RTCRtpReceiver.prototype.createEncodedStreams;
+      RTCRtpReceiver.prototype.createEncodedStreams=function(...args) {
+        const streams=create.apply(this,args);let skipped=0;
+        return {...streams,readable:streams.readable.pipeThrough(new TransformStream({
+          transform(frame,controller) {if(skipped++>=3)controller.enqueue(frame);}
+        }))};
+      };
+    });
+  }
+  const injectionMode=process.env.VOICE_AGENT_TD_INJECT_PLAYBACK_FAILURE;
+  const injectedFailure=Boolean(injectionMode);
+  if(injectedFailure) {
+    await page.addInitScript(mode=>{
+      const NativeWorker=window.Worker;
+      window.Worker=class extends NativeWorker {
+        constructor(...args) {
+          super(...args);
+          if(mode==='preconnect')this.addEventListener('message',({data})=>{
+            if(data.event==='decoder_configured')this.dispatchEvent(new MessageEvent('message',{
+              data:{event:'mapping_failed',reason:'decoder_unavailable'}
+            }));
+          });
+        }
+        postMessage(data,...rest) {
+          super.postMessage(data,...rest);
+          if(mode!=='preconnect' && data?.event==='mapping' && !this.injected) {
+            this.injected=true;
+            setTimeout(()=>this.dispatchEvent(new MessageEvent('message',{
+              data:{event:'mapping_failed',reason:'packet_deadline'}
+            })),0);
+          }
+        }
+      };
+    },injectionMode);
+  }
   let session;
-  const receipts=[];
+  const receipts=[],errors=[];
   page.on("response",async response=>{
+    if(response.url().endsWith('/events') && response.request().postDataJSON()?.event==='mobile_call_error')
+      errors.push({status:response.status(),...response.request().postDataJSON()});
     if(response.url().endsWith("/playback-events")) receipts.push({status:response.status(),receipt:response.request().postDataJSON()});
   });
   page.on("response",async r=>{if(r.url().endsWith(`/api/public/demos/${publicId}/sessions`) && r.status()===201) session=await r.json();});
@@ -98,6 +138,30 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   await page.locator("#start-call").click();
   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);
   expect(session.ice_servers).toEqual([]);
+  if(process.env.VOICE_AGENT_TD_EXPECT_CONTROL_TIMEOUT==='1') {
+    await expect(page.locator('[data-screen="error"]')).toHaveClass(/active/,{timeout:25000});
+    await expect.poll(async()=>{
+      const h=await (await request.get('/health')).json();return h.active_sessions+h.pending_sessions;
+    },{timeout:10000}).toBe(0);
+    writeFileSync(`${evidence}/control-timeout.json`,JSON.stringify({error:await page.locator('#error-copy').textContent(),errors},null,2));
+    return;
+  }
+  if(injectedFailure) {
+    await expect(page.locator('#error-copy')).toHaveText('Audio playback could not be verified. Please start a new call.');
+    await expect.poll(()=>errors.length).toBe(1);
+    const expectedReason=injectionMode==='preconnect'?'decoder_unavailable':'packet_deadline';
+    expect(errors[0]).toMatchObject({status:204,safe_error_category:'playback_failed',playback_failure_reason:expectedReason});
+    if(injectionMode==='preconnect')expect(errors[0].stage).toBe('signaling');
+    await expect.poll(async()=>{
+      const h=await (await request.get('/health')).json();return h.active_sessions+h.pending_sessions;
+    }).toBe(0);
+    await expect(page.locator('#error-copy')).not.toHaveText('Unable to connect to transport');
+    expect(errors).toHaveLength(1);
+    const history=await (await request.get(`/api/history/${session.session_id}`)).json();
+    expect(history.td_events).toContainEqual(expect.objectContaining({event:'browser_call_failed',playback_failure_reason:expectedReason}));
+    writeFileSync(`${evidence}/first-playback-failure.json`,JSON.stringify({errors,history},null,2));
+    return;
+  }
   await expect(page.locator('[data-screen="live"]')).toBeVisible({timeout:20000});
   if(!failure)await expect.poll(()=>receipts.filter(item=>item.status===204 && item.receipt.event==='task_stopped' && item.receipt.rendered_samples>0).length,{timeout:25000}).toBeGreaterThan(0);
   await expect.poll(()=>receipts.filter(item=>item.status===204 && item.receipt.event==='task_finished').length,{timeout:25000}).toBeGreaterThanOrEqual(failure?4:2);

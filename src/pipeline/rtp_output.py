@@ -1,12 +1,16 @@
 """D-064 isolated task writer for RTP, with control-only sample extent manifests."""
 
+import asyncio
 import inspect
+import logging
 from collections.abc import Callable
 from typing import Any
 
 from src.pipeline.audio_identity import TaskAudioFrame
 from src.pipeline.rtp_mapping import MappedRawAudioTrack
 from src.pipeline.webrtc_cancel import clear_pending_rtp_audio
+
+logger = logging.getLogger(__name__)
 
 
 class RTPCandidateWriter:
@@ -116,6 +120,36 @@ def install_candidate_transport(transport: Any, connection: Any) -> None:
 
     original_replace = connection.replace_audio_track
     ledger = RTPTaskLedger()
+    control_ready = asyncio.Event()
+    close_task: asyncio.Task[None] | None = None
+
+    def control_timeout() -> None:
+        """Close outside the sender task, since peer.close waits for that sender to stop."""
+        nonlocal close_task
+        logger.error(
+            "playback_control_timeout connection_id=%s", getattr(connection, "_pc_id", "unknown")
+        )
+
+        async def close_connection() -> None:
+            """Own and consume disconnect errors rather than leaving an orphan task."""
+            try:
+                await connection.disconnect()
+            except Exception:
+                logger.exception("playback_control_timeout_cleanup_failed")
+
+        if close_task is None:
+            close_task = asyncio.create_task(close_connection())
+
+    def observe_channel(channel: Any) -> None:
+        """Do not produce RTP before the reliable ownership channel can carry its evidence."""
+        if channel.readyState == "open":
+            control_ready.set()
+        else:
+            channel.on("open", control_ready.set)
+
+    connection._pc.on("datachannel", observe_channel)
+    if getattr(connection, "_data_channel", None) is not None:
+        observe_channel(connection._data_channel)
 
     def control(message: dict) -> None:
         """Use the existing app-message channel for metadata only."""
@@ -128,7 +162,9 @@ def install_candidate_transport(transport: Any, connection: Any) -> None:
         if len(audio) != 1:
             raise RuntimeError("Candidate RTP audio sender ownership is unproven")
         sender = audio[0]
-        mapped = MappedRawAudioTrack(track._sample_rate, ledger)
+        mapped = MappedRawAudioTrack(
+            track._sample_rate, ledger, ready=control_ready, on_ready_timeout=control_timeout
+        )
         sender._RTCRtpSender__encoder = MappedOpusEncoder(ledger)
         original_send = sender.transport._send_rtp
 

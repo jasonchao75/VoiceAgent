@@ -403,7 +403,8 @@ def test_referenced_key_rotation_clear_and_restore_follow_bot(
     assert old_snapshot_session.status_code == 201
 
 
-def test_failed_preconnect_releases_capacity_and_records_failure(keyed_client):
+@pytest.mark.parametrize("end_reason", ["connection", "provider"])
+def test_failed_preconnect_releases_capacity_and_records_failure(keyed_client, end_reason):
     """Four failed setups must not exhaust three pending slots or invoke a provider."""
     _, share = _create_and_publish(keyed_client)
     for _ in range(4):
@@ -418,8 +419,9 @@ def test_failed_preconnect_releases_capacity_and_records_failure(keyed_client):
             "event": "mobile_call_error",
             "elapsed_ms": 1,
             "stage": "signaling",
-            "end_reason": "connection",
-            "safe_error_category": "playback_unsupported",
+            "end_reason": end_reason,
+            "safe_error_category": "playback_failed",
+            "playback_failure_reason": "decoder_unavailable",
         }
         rejected = keyed_client.post(url, json=event, headers={"Authorization": "Bearer wrong"})
         assert rejected.status_code == 401
@@ -429,5 +431,66 @@ def test_failed_preconnect_releases_capacity_and_records_failure(keyed_client):
         assert keyed_client.get("/health").json()["pending_sessions"] == 0
         history = keyed_client.get(f"/api/history/{session['session_id']}").json()
         assert history["status"] == "failed"
-        assert history["error_category"] == "playback_unsupported"
+        assert history["error_category"] == "playback_failed"
+        assert history["td_events"][0]["playback_failure_reason"] == "decoder_unavailable"
         assert history["recording_status"] == "not_started"
+
+
+def test_playback_failure_reason_rejects_unbounded_client_text():
+    """Only safe machine reasons may enter session diagnostics, never arbitrary text."""
+    import pytest
+    from pydantic import ValidationError
+
+    from src.api import BrowserEvent
+
+    value = BrowserEvent(
+        event="mobile_call_error",
+        elapsed_ms=1,
+        safe_error_category="playback_failed",
+        playback_failure_reason="packet_deadline",
+    )
+    assert value.playback_failure_reason == "packet_deadline"
+    with pytest.raises(ValidationError):
+        BrowserEvent(
+            event="mobile_call_error",
+            elapsed_ms=1,
+            playback_failure_reason="private arbitrary client text",
+        )
+
+
+def test_failure_during_claimed_offer_finishes_history_without_capture(keyed_client):
+    """An offer cancelled before pipeline registration still gets a terminal history record."""
+    _, share = _create_and_publish(keyed_client)
+    response = keyed_client.post(
+        f"/api/public/demos/{share['public_id']}/sessions", json={}, headers=ORIGIN
+    )
+    session = response.json()
+    token = session["connection_url"].rsplit("/", 1)[-1]
+    handler = keyed_client.app.state.webrtc_handler
+
+    async def claim_before_registration():
+        """Hold the real store in the same boundary as a negotiating offer, without a provider."""
+        await handler._session_store.claim(token)
+        handler._offers_inflight.add(token)
+
+    keyed_client.portal.call(claim_before_registration)
+    result = keyed_client.post(
+        f"/api/sessions/{session['session_id']}/events",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "event": "mobile_call_error",
+            "elapsed_ms": 1,
+            "stage": "signaling",
+            "end_reason": "provider",
+            "safe_error_category": "playback_failed",
+            "playback_failure_reason": "decoder_unavailable",
+        },
+    )
+    assert result.status_code == 204
+    assert keyed_client.get("/health").json()["active_sessions"] == 0
+    history = keyed_client.get(f"/api/history/{session['session_id']}").json()
+    assert history["ended_at"] is not None
+    assert history["status"] == "failed"
+    assert history["recording_status"] == "not_started"
+    assert history["td_events"][0]["playback_failure_reason"] == "decoder_unavailable"
+    handler._offers_inflight.discard(token)

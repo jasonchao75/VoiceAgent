@@ -85,6 +85,7 @@ class SessionBoundSmallWebRTCHandler:
         self._handler = handler or SmallWebRTCRequestHandler(ice_servers=ice_servers)
         self._offer_timeout_seconds = offer_timeout_seconds
         self._bindings: dict[str, WebRTCBinding] = {}
+        self._offers_inflight: set[str] = set()
         self._lock = asyncio.Lock()
         self._closing = False
 
@@ -117,25 +118,27 @@ class SessionBoundSmallWebRTCHandler:
                 request=request,
             )
         lease = await self._session_store.claim(capability)
+        self._offers_inflight.add(capability)
         registered = False
         offer_complete = asyncio.Event()
 
-        async def register(connection: SmallWebRTCConnection) -> None:
+        async def register_active(connection: SmallWebRTCConnection) -> None:
             nonlocal registered
-            task = asyncio.create_task(
-                run_connection(lease, connection),
-                name=f"mobile-webrtc-{lease.session_id}",
-            )
-            binding = WebRTCBinding(
-                session_id=lease.session_id,
-                pc_id=connection.pc_id,
-                connection=connection,
-                task=task,
-            )
             async with self._lock:
                 if self._closing or capability in self._bindings:
-                    task.cancel()
                     raise RuntimeError("WebRTC session registration failed")
+                # A browser failure can arrive while offer negotiation still awaits SDP.
+                await self._session_store.get_active(session_id=lease.session_id, token=capability)
+                task = asyncio.create_task(
+                    run_connection(lease, connection),
+                    name=f"mobile-webrtc-{lease.session_id}",
+                )
+                binding = WebRTCBinding(
+                    session_id=lease.session_id,
+                    pc_id=connection.pc_id,
+                    connection=connection,
+                    task=task,
+                )
                 self._bindings[capability] = binding
                 registered = True
             task.add_done_callback(
@@ -145,6 +148,14 @@ class SessionBoundSmallWebRTCHandler:
                 )
             )
 
+        async def register(connection: SmallWebRTCConnection) -> None:
+            """Close a just-negotiated peer if the browser ended its offer meanwhile."""
+            try:
+                await register_active(connection)
+            except Exception:
+                await connection.disconnect()
+                raise
+
         try:
             answer = await asyncio.wait_for(
                 self._handler.handle_web_request(request, register),
@@ -152,7 +163,9 @@ class SessionBoundSmallWebRTCHandler:
             )
             if not registered or answer is None:
                 raise RuntimeError("WebRTC pipeline registration failed")
-            binding = self._bindings[capability]
+            binding = self._bindings.get(capability)
+            if binding is None:
+                raise RuntimeError("WebRTC session ended during negotiation")
             answer_pc_id = answer.get("pc_id", "")
             if not answer_pc_id or not secrets.compare_digest(answer_pc_id, binding.pc_id):
                 raise RuntimeError("WebRTC peer registration mismatch")
@@ -162,6 +175,8 @@ class SessionBoundSmallWebRTCHandler:
             offer_complete.set()
             await self._discard_binding(capability, fallback_session_id=lease.session_id)
             raise
+        finally:
+            self._offers_inflight.discard(capability)
 
     async def _restart_offer(
         self,
@@ -218,6 +233,19 @@ class SessionBoundSmallWebRTCHandler:
         if binding is None or not secrets.compare_digest(binding.pc_id, request.pc_id):
             raise PermissionError("WebRTC session authorization is invalid")
         await self._handler.handle_patch_request(request)
+
+    async def cancel_session(self, *, capability: str, session_id: str) -> None:
+        """End only the authenticated failed browser session, including an in-flight offer.
+
+        Raises:
+            SessionTokenError: If the session and capability do not match.
+        """
+        async with self._lock:
+            if capability not in self._bindings and capability not in self._offers_inflight:
+                raise SessionTokenError("No matching RTC session")
+            await self._session_store.get_active(session_id=session_id, token=capability)
+            await self._session_store.close(session_id)
+        await self._discard_binding(capability)
 
     async def close(self) -> None:
         """Stop accepting offers, cancel pipelines, and close all peer connections."""

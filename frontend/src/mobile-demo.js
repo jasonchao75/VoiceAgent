@@ -54,6 +54,7 @@ let startedAt;
 let timerId;
 let connectionMonitorId;
 let endingCall = false;
+let failurePromise;
 let attemptStartedAt;
 let sessionId;
 let sessionToken;
@@ -216,11 +217,12 @@ function createClient() {
     remoteAudio.srcObject = new MediaStream([track]);
     // SmallWebRTC exposes remote tracks; its default media manager does not play them.
     void remoteAudio.play().catch(() => {
-      if (transport === ownerTransport && !endingCall) void failCall("Call interrupted", "Audio playback is unavailable. Try the call again.", "call_interrupted", "provider");
+      if (transport === ownerTransport && !endingCall) void failCall("Call interrupted", "Audio playback is unavailable. Try the call again.", "playback_failed", "provider", "remote_audio_start_failed");
     });
   }
   return new PipecatClient({ transport, enableMic: true, enableCam: false, disconnectOnBotDisconnect: true, callbacks: {
     onConnected: () => {
+      if(endingCall || transport!==ownerTransport)return;
       attachRemoteAudio(transport?.pc?.getReceivers().find(receiver => receiver.track?.kind === "audio")?.track);
       connectionStage = "live";
       showScreen("live"); if (!startedAt) beginTimer(); showReconnectState(false); monitorConnection();
@@ -229,7 +231,7 @@ function createClient() {
         network_type: safeNetworkType(),
       }));
     },
-    onDisconnected: () => { if (startedAt && !endingCall) void failCall("Call interrupted", "Check your network and try the call again.", "call_interrupted", "disconnect"); },
+    onDisconnected: () => { if (transport===ownerTransport && startedAt && !endingCall) void failCall("Call interrupted", "Check your network and try the call again.", "call_interrupted", "disconnect"); },
     onTransportStateChanged: (state) => {
       if (startedAt && state === "connecting") showReconnectState(true);
       if (startedAt && (state === "connected" || state === "ready")) showReconnectState(false);
@@ -244,10 +246,9 @@ function createClient() {
     onBotTtsText: (data) => { addTurn("agent", data.text, { append: Boolean(currentAgent) }); currentAgent += data.text; },
     onDeviceError: () => { if (startedAt) void failCall("Microphone unavailable", "Allow microphone access in your browser, then try again.", "microphone_unavailable", "provider"); },
     onError: (message) => {
-      if (!startedAt || endingCall) return;
+      if (transport!==ownerTransport || !startedAt || endingCall) return;
       if (message?.data?.error === "asr_source_evidence_unavailable"
         || message?.data?.message === "asr_source_evidence_unavailable") {
-        endingCall = true;
         void failCall("Speech recognition error", "Speech timing was unavailable. Please start a new call.", "asr_source_evidence_unavailable", "provider");
       } else void failCall("Call interrupted", "Check your network and try the call again.", "call_interrupted", "provider");
     },
@@ -258,6 +259,7 @@ async function startCall() {
   if (fixtureState) { turns = fixtureTurns.map((turn) => [...turn]); renderTurns(); showScreen("live"); beginTimer(); if (fixtureState === "reconnecting") { refs["quality-banner"].hidden = false; setMode("reconnecting", "Reconnecting", "Keeping your call alive…"); } return; }
   showScreen("connecting");
   endingCall = false;
+  failurePromise = undefined;
   attemptStartedAt = performance.now();
   sessionId = undefined;
   sessionToken = undefined;
@@ -289,7 +291,7 @@ async function startCall() {
     transport.iceServers = session.ice_servers || [];
     if(session.playback_mode === "rtp_candidate") {
       taskPlayback=await prepareRTCPlayback(transport,{sessionId,token:sessionToken,
-        onFailure:()=>void failCall("Call interrupted","Audio playback could not be verified. Please start a new call.","call_interrupted","provider")});
+        onFailure:reason=>void failCall("Call interrupted","Audio playback could not be verified. Please start a new call.","playback_failed","provider",reason)});
     }
     await client.connect({ connection_url: session.connection_url });
   } catch (error) {
@@ -315,7 +317,26 @@ async function releaseClient() {
 }
 
 async function finishCall() { stopTimer(); await reportSessionEvent("mobile_call_end", { end_reason: "user" }); await releaseClient(); startedAt = undefined; sessionId = undefined; sessionToken = undefined; showScreen("ended"); }
-async function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection") { stopTimer(); const reporting = reportSessionEvent("mobile_call_error", { safe_error_category: safeErrorCategory, stage: connectionStage, end_reason: endReason }); await releaseClient(); await reporting; startedAt = undefined; sessionId = undefined; sessionToken = undefined; showError(title, copy); }
+function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection", playbackReason) {
+  // Disconnect rejects an in-flight connect. Keep the first failure and clean up only once.
+  if(failurePromise || endingCall)return failurePromise || Promise.resolve();
+  endingCall=true;
+  failurePromise=(async()=>{
+    stopTimer();
+    const safeReasons=new Set(['payload_identity_mismatch','decode_sequence_gap','decode_deadline',
+      'invalid_decode_slice','decode_job_unproven','invalid_mapping','duplicate_mapping','mapping_queue_limit',
+      'packet_deadline','missing_ssrc','packet_queue_limit','mapping_deadline','transform_stream_error',
+      'decoder_unavailable','multiple_receiver_transform','decoder_error','decode_job_unowned_output',
+      'invalid_task_extent','decoded_extent_overflow','playback_receipt_unconfirmed','invalid_playback_control',
+      'remote_audio_start_failed']);
+    const extra=playbackReason ? {playback_failure_reason:safeReasons.has(playbackReason)?playbackReason:'unknown_playback_failure'} : {};
+    const reporting=reportSessionEvent("mobile_call_error",{safe_error_category:safeErrorCategory,
+      stage:connectionStage,end_reason:endReason,...extra});
+    await releaseClient();await reporting;
+    startedAt=undefined;sessionId=undefined;sessionToken=undefined;showError(title,copy);
+  })();
+  return failurePromise;
+}
 function showError(title, copy) { stopTimer(); startedAt = undefined; refs["error-title"].textContent = title; refs["error-copy"].textContent = copy; showScreen("error"); }
 
 function applyFixtureState() {

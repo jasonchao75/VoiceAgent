@@ -1,7 +1,8 @@
 import {RTPPacketDecoder} from './td-rtp-decode-job.js';
 /* Modern and legacy RTP transforms share strict packet identity and one decoder. */
 const mappings = new Map(), packets = new Map();
-const packetOrder = [];
+const skippedSilence = new Set();
+let mappedEnd = null;
 let failed = false, decoder, draining = false, nextSource = null;
 const counts={packets:0,mappings:0,decoded:0};
 const emit = data => self.postMessage(data);
@@ -12,15 +13,34 @@ function fail(reason,details) {
   if (decoder && decoder.state !== 'closed') decoder.close();
 }
 function key(ssrc, timestamp) { return `${ssrc}:${timestamp}`; }
-async function deliver(id) {
+function isSilent(map) {
+  let cursor=Math.max(0,map.source_start);
+  for(const span of map.spans || []) {
+    if(span.task!==null || span.start!==cursor || span.end<=cursor) return false;
+    cursor=span.end;
+  }
+  return cursor===map.source_start+map.samples;
+}
+function skipSilence(id,map) {
+  mappings.delete(id);nextSource=map.source_start+map.samples;
+  skippedSilence.add(id);
+  if(skippedSilence.size>256) skippedSilence.delete(skippedSilence.values().next().value);
+  // A source-only silent gap is not decoded audio and never produces a playback receipt.
+  emit({event:'silent_packet_skipped',source_start:map.source_start,samples:map.samples});
+}
+async function deliver() {
   if (draining || failed) return;
   draining = true;
   try {
-    while (packetOrder.length && !failed) {
-      id = packetOrder[0];
-      if (!mappings.has(id)) break;
+    while (mappings.size && !failed) {
+      const [id,map]=mappings.entries().next().value;
+      if(!packets.has(id)) {
+        // Control messages are reliable and ordered; RTP is allowed to arrive out of order.
+        const laterArrived=[...mappings.keys()].some(key=>packets.has(key));
+        if(isSilent(map) && laterArrived) {skipSilence(id,map);continue;}
+        break;
+      }
       await decodePacket(id);
-      packetOrder.shift();
     }
   } finally { draining = false; }
 }
@@ -63,12 +83,21 @@ self.onmessage = async ({data}) => {
   if (data.event === 'mapping') {
     counts.mappings++;
     const map = data.mapping;
-    if (map?.version !== 1 || !Number.isInteger(map.rtp_timestamp) || !Number.isInteger(map.ssrc)) return fail('invalid_mapping');
+    if (map?.version !== 1 || !Number.isInteger(map.rtp_timestamp) || !Number.isInteger(map.ssrc)
+      || !Number.isSafeInteger(map.source_start) || !Number.isSafeInteger(map.samples) || map.samples<=0
+      || (mappedEnd===null ? map.source_start>0 : map.source_start!==mappedEnd)) return fail('invalid_mapping');
+    mappedEnd=map.source_start+map.samples;
     const id = key(map.ssrc,map.rtp_timestamp);
     if (mappings.has(id)) return fail('duplicate_mapping');
     if (mappings.size >= 100) return fail('mapping_queue_limit');
     mappings.set(id,map);
-    setTimeout(()=>{if(mappings.has(id)) fail('packet_deadline');},1000);
+    setTimeout(()=>{
+      if(!mappings.has(id) || failed) return;
+      // Only retire the head of the ordered stream. Missing task audio stays fatal.
+      if(mappings.keys().next().value===id && isSilent(map) && !packets.has(id)) {
+        skipSilence(id,map);void deliver();
+      } else if(!packets.has(id)) fail('packet_deadline');
+    },1000);
     await deliver(id);
   }
 };
@@ -83,9 +112,9 @@ function attachEncodedStream(transformer) {
         const metadata = frame.getMetadata();
         if (!Number.isInteger(metadata.synchronizationSource)) return fail('missing_ssrc');
         const id = key(metadata.synchronizationSource,frame.timestamp);
+        if(skippedSilence.has(id)) {controller.enqueue(frame);return;}
         if (packets.has(id) || packets.size >= 100) return fail('packet_queue_limit');
         packets.set(id,{data:frame.data.slice(0),receivedAt:performance.now()});
-        packetOrder.push(id);
         setTimeout(()=>{if(packets.has(id)) fail('mapping_deadline');},1000);
         await deliver(id);
         // The native receiver stays pulling through a muted sink, never double plays.

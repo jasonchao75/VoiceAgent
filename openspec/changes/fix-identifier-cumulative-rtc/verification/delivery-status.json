@@ -1,5 +1,5 @@
 {
-  "phase": "developing",
+  "phase": "verification",
   "product_acceptance": "pending",
   "ui_change": false,
   "known_issues": [
@@ -56,6 +56,42 @@
       "status": "Resolved",
       "summary": "正式浏览器回归发现SDK在pc尚未创建时disconnect提前返回，initDevices麦克风仍活跃；需显式清理预连接mediaManager。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "MOBILE-POST-ICE-FAILURE",
+      "status": "Resolved",
+      "summary": "最新096cb487会话ICE已成功且服务端session_connected；随后客户端在signaling阶段先上报call_interrupted/provider，再connection_failed。mobile-demo丢弃播放器onFailure原因，connect catch覆盖首次错误，无法从现有遥测唯一定位。需保留安全原因及首个错误并复现移动播放链路。 已按startup-repair.md修复并复验；不代表原手机首因已唯一确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RTP-SILENCE-LOSS",
+      "status": "Resolved",
+      "summary": "旧worker离线重放明确无任务静音缺包会失败；真实Chrome138初次丢3包测试包含任务音频，应保持失败，不能作为纯静音证据。后续/tmp/voiceagent-connect-silence-fixed明确null spans、跳过3包且完成跟读/停止测试。 已按startup-repair.md修复并复验；不代表原手机首因已唯一确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RTP-CONTROL-STARTUP-RACE",
+      "status": "Resolved",
+      "summary": "本地真实Chrome138将SCTP握手延迟1.4秒，复现ICE连通后mapping_deadline断线，51音频包到达但0映射。音频先于控制通道启动，播放器1秒超时被触发；需先等控制通道就绪并重锚首帧发送时钟，避免等待后突发补发。 已按startup-repair.md修复并复验；不代表原手机首因已唯一确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PRECONNECT-PLAYBACK-CLASSIFICATION",
+      "status": "Resolved",
+      "summary": "独立审核发现signaling阶段播放失败标为provider时未走pending释放，首错保护会使通用connection兜底不再执行。需让已认证signaling失败统一原子释放pending，active不误取消。 已按startup-repair.md修复并复验；不代表原手机首因已唯一确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "CONTROL-READY-BOUND",
+      "status": "Resolved",
+      "summary": "独立审核指出新增控制就绪等待需有界：SDK自身10秒超时只丢控制消息，不关闭会话。修复需沿用10秒边界关闭连接并避免sender自等待死锁，测试永不就绪路径。 已按startup-repair.md修复并复验；不代表原手机首因已唯一确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "FAILED-OFFER-ACTIVE-LEASE",
+      "status": "Resolved",
+      "summary": "精确signaling播放器失败浏览器复验发现：offer已claim但ICE尚未完成时，客户端断开不一定立刻通知服务端，active名额仍占用。需要对已认证当前失败RTC会话显式清理，并防止与offer注册竞态启动孤立管线。 已按startup-repair.md修复并复验；不代表原手机首因已唯一确认。",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
@@ -64,13 +100,19 @@
       "status": "Open",
       "summary": "真实安卓手机（含荣耀Chrome97）、Safari、扬声器/AEC、弱网和收费厂商端到端未测。桌面Chrome138真实播放通过不等于安卓硬件验收；沿用先上线再实测授权。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "ORIGINAL-FAILURE-CAUSE",
+      "status": "Open",
+      "summary": "原生产096cb487具体播放首因被旧代码丢弃，不能追溯确认；本轮修复基于本地真实浏览器重现的启动时序、静音缺包及清理缺陷。",
+      "disclosed_to_user": true
     }
   ],
   "external_calls": [],
   "deployment": {
-    "commit": "393b060bfa7ad1734065e78c5e9031732d29a752",
-    "ci_run": 40487240625,
-    "deploy_run": 40487567424,
+    "commit": "eada6b4e62dcfa80cf6e737cfb3e5c8b0b1cdee2",
+    "ci_run": 40492339475,
+    "deploy_run": 40492716633,
     "health": "ok",
     "container": "running healthy"
   }

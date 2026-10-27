@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const workerPath=new URL('../../src/td-rtp-candidate-worker.js',import.meta.url);
 
-async function replay({badExtent=false}={}) {
+async function replay({badExtent=false,drop=0,silent=false,reorder=false}={}) {
   const events=[];
   const source=await readFile(workerPath,'utf8');
   let PacketDecoder;
@@ -33,7 +33,7 @@ async function replay({badExtent=false}={}) {
     self:{postMessage:data=>{
       events.push(data);
       if(data.event==='decoded') count++;
-      if(data.event==='mapping_failed' || count===14) resolve();
+      if(data.event==='mapping_failed' || count===14-drop) resolve();
     }},crypto:webcrypto,performance,TransformStream,ReadableStream,WritableStream,
     setTimeout:(...args)=>{const timer=setTimeout(...args);timer.unref();return timer;},clearTimeout,
   });
@@ -45,11 +45,11 @@ async function replay({badExtent=false}={}) {
     const start=-312+index*960;
     await context.self.onmessage({data:{event:'mapping',mapping:{version:1,ssrc:12,
       rtp_timestamp:100000+index*960,payload_sha256:digest,source_start:start,samples:960,
-      spans:[{start:Math.max(0,start),end:start+960,task:'A'}]}}});
+      spans:[{start:Math.max(0,start),end:start+960,task:silent && index<drop?null:'A'}]}}});
     packets.push({data,timestamp:100000+index*960,getMetadata:()=>({synchronizationSource:12})});
   }
   context.self.onrtctransform({transformer:{
-    readable:new ReadableStream({start(controller){for(const packet of packets)controller.enqueue(packet);controller.close();}}),
+    readable:new ReadableStream({start(controller){for(const packet of (reorder?[packets[1],packets[0],...packets.slice(2)]:packets.slice(drop)))controller.enqueue(packet);controller.close();}}),
     writable:new WritableStream({write(){}}),
   }});
   await Promise.race([complete,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Offline replay deadline')),2000))]);
@@ -67,4 +67,25 @@ test('real output extent disagreement remains rejected instead of guessing owner
   const events=await replay({badExtent:true});
   assert.equal(events.filter(e=>e.event==='mapping_failed').length,1);
   assert.equal(events.filter(e=>e.event==='task_pcm' && e.start===12168).length,0);
+});
+
+
+test('missing source-proven startup silence does not abort or claim rendered samples',async()=>{
+  const events=await replay({drop:3,silent:true});
+  assert.equal(events.filter(e=>e.event==='silent_packet_skipped').length,3);
+  assert.equal(events.filter(e=>e.event==='mapping_failed').length,0);
+  assert.equal(events.filter(e=>e.event==='decoded').length,11);
+  assert.ok(events.filter(e=>e.event==='task_pcm').every(e=>e.start>=2568));
+});
+
+test('missing task audio still fails without a fabricated success',async()=>{
+  const events=await replay({drop:3});
+  assert.equal(events.find(e=>e.event==='mapping_failed')?.reason,'packet_deadline');
+  assert.equal(events.filter(e=>e.event==='task_pcm').length,0);
+});
+
+test('out of order RTP is decoded in reliable source order',async()=>{
+  const events=await replay({reorder:true});
+  assert.equal(events.filter(e=>e.event==='mapping_failed').length,0);
+  assert.deepEqual(events.filter(e=>e.event==='decoded').map(e=>e.source_start),Array.from({length:14},(_,i)=>-312+i*960));
 });

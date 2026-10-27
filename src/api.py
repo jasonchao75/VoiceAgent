@@ -311,6 +311,36 @@ class BrowserEvent(BaseModel):
             "call_interrupted",
             "asr_source_evidence_unavailable",
             "playback_unsupported",
+            "playback_failed",
+        ]
+        | None
+    ) = None
+
+    playback_failure_reason: (
+        Literal[
+            "payload_identity_mismatch",
+            "decode_sequence_gap",
+            "decode_deadline",
+            "invalid_decode_slice",
+            "decode_job_unproven",
+            "invalid_mapping",
+            "duplicate_mapping",
+            "mapping_queue_limit",
+            "packet_deadline",
+            "missing_ssrc",
+            "packet_queue_limit",
+            "mapping_deadline",
+            "transform_stream_error",
+            "decoder_unavailable",
+            "multiple_receiver_transform",
+            "decoder_error",
+            "decode_job_unowned_output",
+            "invalid_task_extent",
+            "decoded_extent_overflow",
+            "playback_receipt_unconfirmed",
+            "invalid_playback_control",
+            "remote_audio_start_failed",
+            "unknown_playback_failure",
         ]
         | None
     ) = None
@@ -1835,6 +1865,17 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
             )
             raise
         finally:
+            browser_failure = next(
+                (item for item in capture.td_events if item.get("event") == "browser_call_failed"),
+                None,
+            )
+            if browser_failure is not None:
+                status = "failed"
+                error_category = (
+                    error_category
+                    or browser_failure.get("safe_error_category")
+                    or "connection_failed"
+                )
             await recorder.stop()
             turns, metrics = capture.finalize()
             await history_store.finish_call(
@@ -1931,11 +1972,7 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
         token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
         if not token:
             raise HTTPException(status_code=401, detail="Missing session authorization")
-        if (
-            event.event == "mobile_call_error"
-            and event.stage == "signaling"
-            and event.end_reason == "connection"
-        ):
+        if event.event == "mobile_call_error" and event.stage == "signaling":
             try:
                 cancelled = await store.cancel_pending(session_id=session_id, token=token)
             except SessionTokenError:
@@ -1953,11 +1990,21 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
                     recording_path=None,
                     recording_status="not_started",
                     error_category=event.safe_error_category or "connection_failed",
+                    td_events=[
+                        {
+                            "event": "browser_call_failed",
+                            "stage": event.stage,
+                            "safe_error_category": event.safe_error_category,
+                            "playback_failure_reason": event.playback_failure_reason,
+                        }
+                    ],
                 )
                 logger.info(
-                    "pending_session_cancelled session_id=%s safe_error_category=%s",
+                    "pending_session_cancelled session_id=%s safe_error_category=%s "
+                    "playback_failure_reason=%s",
                     session_id,
                     event.safe_error_category or "connection_failed",
+                    event.playback_failure_reason or "none",
                 )
                 return
         try:
@@ -1973,9 +2020,19 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
                 capture.chat_text(event.text)
             else:
                 capture.browser_event(event.event, event.elapsed_ms)
+        if capture is not None and event.event == "mobile_call_error":
+            capture.record_td_event(
+                {
+                    "event": "browser_call_failed",
+                    "stage": event.stage,
+                    "safe_error_category": event.safe_error_category,
+                    "playback_failure_reason": event.playback_failure_reason,
+                }
+            )
         logger.info(
             "browser_event session_id=%s event=%s elapsed_ms=%.1f candidate_type=%s "
-            "network_type=%s end_reason=%s stage=%s safe_error_category=%s",
+            "network_type=%s end_reason=%s stage=%s safe_error_category=%s "
+            "playback_failure_reason=%s",
             lease.session_id,
             event.event,
             event.elapsed_ms,
@@ -1984,7 +2041,37 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
             event.end_reason or "none",
             event.stage or "none",
             event.safe_error_category or "none",
+            event.playback_failure_reason or "none",
         )
+
+        if event.event == "mobile_call_error":
+            # Browser teardown is not guaranteed to signal a peer that is still negotiating.
+            try:
+                await webrtc_handler.cancel_session(capability=token, session_id=session_id)
+                history = await history_store.get_call(session_id)
+                if history is not None and history.ended_at is None:
+                    # A cancelled offer may never start the pipeline/capture finally block.
+                    await history_store.finish_call(
+                        call_id=session_id,
+                        status="failed",
+                        duration_ms=0,
+                        turns=[],
+                        metrics=[],
+                        recording_path=None,
+                        recording_status="not_started",
+                        error_category=event.safe_error_category or "connection_failed",
+                        td_events=[
+                            {
+                                "event": "browser_call_failed",
+                                "stage": event.stage,
+                                "safe_error_category": event.safe_error_category,
+                                "playback_failure_reason": event.playback_failure_reason,
+                            }
+                        ],
+                    )
+                    event_buffers.pop(session_id, None)
+            except SessionTokenError:
+                pass  # A concurrent disconnect already released this same authenticated lease.
 
     async def clock_capture(session_id: str, request: Request) -> CallCapture:
         """Resolve only an authenticated live capture; clock requests cannot create one."""

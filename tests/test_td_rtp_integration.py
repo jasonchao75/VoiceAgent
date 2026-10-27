@@ -55,7 +55,9 @@ async def test_native_track_replacement_is_mapped_before_sender_use():
         track=SimpleNamespace(kind="audio"), transport=SimpleNamespace(_send_rtp=AsyncMock())
     )
     connection = SimpleNamespace(
-        _pc=SimpleNamespace(getTransceivers=lambda: [SimpleNamespace(kind="audio", sender=sender)]),
+        _pc=SimpleNamespace(
+            getTransceivers=lambda: [SimpleNamespace(kind="audio", sender=sender)], on=Mock()
+        ),
         replace_audio_track=Mock(),
         send_app_message=Mock(),
     )
@@ -100,3 +102,80 @@ async def test_negotiated_audio_sender_without_initial_track_can_be_bound():
     finally:
         track.stop()
         await peer.close()
+
+
+@pytest.mark.asyncio
+async def test_rtp_waits_for_control_and_anchors_clock_at_actual_start(monkeypatch):
+    """A delayed handshake must not send unowned RTP or burst negotiation-time silence."""
+    from src.pipeline import rtp_mapping
+
+    ready = asyncio.Event()
+    ledger = rtp_mapping.RTPTaskLedger()
+    track = rtp_mapping.MappedRawAudioTrack(24000, ledger, ready=ready)
+    track._start = 1
+    pending = asyncio.create_task(track.recv())
+    await asyncio.sleep(0)
+    assert not pending.done()
+    assert ledger.sources == []
+    monkeypatch.setattr(rtp_mapping.time, "time", lambda: 1000.0)
+    ready.set()
+    first = await pending
+    assert first.pts == 0
+    assert track._start == 1000.0
+    assert len(ledger.sources) == 1
+    track.stop()
+
+
+@pytest.mark.asyncio
+async def test_rtp_control_wait_is_cancellable():
+    """A failed handshake must leave no blocked native sender after disconnect."""
+    from src.pipeline.rtp_mapping import MappedRawAudioTrack, RTPTaskLedger
+
+    track = MappedRawAudioTrack(24000, RTPTaskLedger(), ready=asyncio.Event())
+    pending = asyncio.create_task(track.recv())
+    await asyncio.sleep(0)
+    pending.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await pending
+    assert track.ledger.sources == []
+    track.stop()
+
+
+@pytest.mark.asyncio
+async def test_never_open_control_closes_connection_without_sender_self_await(monkeypatch):
+    """The existing SDK deadline must terminate a real sender's blocked source safely."""
+    from aiortc import RTCPeerConnection
+    from aiortc.mediastreams import MediaStreamError
+    from pipecat.transports.smallwebrtc.transport import RawAudioTrack
+
+    from src.pipeline.rtp_output import install_candidate_transport
+
+    peer = RTCPeerConnection()
+    sender = peer.addTransceiver("audio", direction="sendrecv").sender
+    closed = asyncio.Event()
+    receive = None
+
+    async def disconnect():
+        # Model peer.close waiting for the sender task; an inline call would deadlock.
+        await asyncio.gather(receive, return_exceptions=True)
+        await peer.close()
+        closed.set()
+
+    connection = SimpleNamespace(
+        _pc=peer,
+        replace_audio_track=sender.replaceTrack,
+        send_app_message=lambda value: None,
+        disconnect=disconnect,
+    )
+    output = SimpleNamespace(write_audio_frame=AsyncMock(), send_message=AsyncMock())
+    transport = SimpleNamespace(_client=SimpleNamespace(), output=lambda: output)
+    install_candidate_transport(transport, connection)
+    connection.replace_audio_track(RawAudioTrack(24000))
+    track = sender.track
+    track._ready_timeout = 0.01
+    receive = asyncio.create_task(track.recv())
+    with pytest.raises(MediaStreamError, match="playback_control_timeout"):
+        await receive
+    await asyncio.wait_for(closed.wait(), 1)
+    assert peer.connectionState == "closed"
+    assert track.ledger.sources == []

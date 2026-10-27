@@ -410,3 +410,64 @@ async def test_real_local_offer_patch_and_sensitive_logs_are_suppressed(
             await restart_client.close()
         await client.close()
         await adapter.close()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stage", ["before_register", "after_register"])
+async def test_browser_failure_cancels_only_owned_offer_and_prevents_late_pipeline(
+    session_request, runtime_config, voice_catalog, llm_catalog, stage
+):
+    """An authenticated abort wins against both sides of offer registration."""
+    store, token = await _pending_mobile_lease(
+        request=session_request,
+        runtime=runtime_config,
+        voices=voice_catalog,
+        llms=llm_catalog,
+    )
+    session_id = store._pending[token].session_id
+    entered, resume = asyncio.Event(), asyncio.Event()
+    started = []
+
+    class DelayedHandler(_FakeRequestHandler):
+        async def handle_web_request(self, request, callback):
+            """Hold one side of the registration boundary for deterministic cancellation."""
+            if stage == "before_register":
+                entered.set()
+                await resume.wait()
+            await callback(self.connection)
+            if stage == "after_register":
+                entered.set()
+                await resume.wait()
+            return {"sdp": "fixture", "type": "answer", "pc_id": self.connection.pc_id}
+
+    upstream = DelayedHandler()
+    adapter = SessionBoundSmallWebRTCHandler(session_store=store, handler=upstream)
+
+    async def run_connection(lease, connection):
+        """Never call a provider; record whether a pipeline started."""
+        started.append(lease.session_id)
+        await asyncio.Event().wait()
+
+    offer = asyncio.create_task(
+        adapter.offer(
+            capability=token,
+            request=SmallWebRTCRequest(sdp="fixture", type="offer"),
+            run_connection=run_connection,
+        )
+    )
+    await entered.wait()
+    with pytest.raises(SessionTokenError):
+        await adapter.cancel_session(capability="wrong", session_id=session_id)
+    with pytest.raises(SessionTokenError):
+        await adapter.cancel_session(capability=token, session_id="another-session")
+    assert await store.counts() == (0, 1)
+    await adapter.cancel_session(capability=token, session_id=session_id)
+    resume.set()
+    with pytest.raises((SessionTokenError, RuntimeError)):
+        await offer
+    assert await store.counts() == (0, 0)
+    assert upstream.connection.disconnected
+    assert adapter._bindings == {}
+    if stage == "before_register":
+        assert started == []
+    await adapter.close()

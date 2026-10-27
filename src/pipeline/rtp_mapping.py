@@ -6,13 +6,18 @@ the pinned native queue and codec, recording ownership only at actual dequeue.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import time
 from collections import deque
+from collections.abc import Callable
 from contextvars import ContextVar
 from typing import Any
 
 from aiortc.codecs.opus import OpusEncoder
+from aiortc.mediastreams import MediaStreamError
 from aiortc.rtp import RtpPacket
+from pipecat.transports.smallwebrtc.connection import DATA_CHANNEL_TIMEOUT_SECS
 from pipecat.transports.smallwebrtc.transport import RawAudioTrack
 
 
@@ -127,10 +132,21 @@ class _TaskQueue(deque):
 class MappedRawAudioTrack(RawAudioTrack):
     """Keep native PCM, pacing and silence while observing actual dequeue ownership."""
 
-    def __init__(self, sample_rate: int, ledger: RTPTaskLedger) -> None:
+    def __init__(
+        self,
+        sample_rate: int,
+        ledger: RTPTaskLedger,
+        ready: asyncio.Event | None = None,
+        ready_timeout: float = DATA_CHANNEL_TIMEOUT_SECS,
+        on_ready_timeout: Callable[[], None] | None = None,
+    ) -> None:
         """Bind this isolated track to one connection-local source ledger."""
         super().__init__(sample_rate)
         self.ledger = ledger
+        self._ready = ready
+        self._ready_timeout = ready_timeout
+        self._on_ready_timeout = on_ready_timeout
+        self._started = False
         self._adding_task: str | None = None
         self._receiving: ContextVar[list[str | None] | None] = ContextVar(
             "rtp_native_receive", default=None
@@ -147,6 +163,17 @@ class MappedRawAudioTrack(RawAudioTrack):
 
     async def recv(self) -> Any:
         """Record native returned frames; queue cancellation in other tasks is excluded."""
+        if not self._started:
+            if self._ready is not None:
+                try:
+                    await asyncio.wait_for(self._ready.wait(), self._ready_timeout)
+                except TimeoutError:
+                    if self._on_ready_timeout is not None:
+                        self._on_ready_timeout()
+                    raise MediaStreamError("playback_control_timeout") from None
+            # Negotiation time is not audio time: do not burst "catch-up" silence on connect.
+            self._start = time.time()
+            self._started = True
         received: list[str | None] = []
         token = self._receiving.set(received)
         try:
