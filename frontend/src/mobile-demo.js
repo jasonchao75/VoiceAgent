@@ -162,8 +162,11 @@ async function selectedCandidateType() {
 
 async function reportSessionEvent(event, details = {}) {
   if (!sessionId || !sessionToken || !attemptStartedAt) return;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
   try {
     await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/events`, {
+      signal: controller.signal,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -178,7 +181,7 @@ async function reportSessionEvent(event, details = {}) {
     });
   } catch {
     // Telemetry never blocks media cleanup or recovery.
-  }
+  } finally { clearTimeout(timeout); }
 }
 
 function showReconnectState(active) {
@@ -291,14 +294,28 @@ async function startCall() {
     await client.connect({ connection_url: session.connection_url });
   } catch (error) {
     const category = connectionStage === "permission" ? "microphone_unavailable"
-      : connectionStage === "session" ? "session_unavailable" : "connection_failed";
+      : connectionStage === "session" ? "session_unavailable" : error.code === "playback_unsupported" ? "playback_unsupported" : "connection_failed";
     await failCall("Couldn’t connect", error.message, category, "connection");
   }
 }
 
-async function releaseClient() { endingCall = true; await taskPlayback?.close(); taskPlayback=undefined; remoteAudio?.pause(); if (remoteAudio) remoteAudio.srcObject = null; try { await client?.disconnect(); } catch {} client = undefined; transport = undefined; }
+async function releaseClient() {
+  endingCall = true;
+  const owner = transport;
+  const beforePeer = owner && !owner.pc;
+  try { await taskPlayback?.close(); } catch {}
+  taskPlayback = undefined;
+  remoteAudio?.pause();
+  if (remoteAudio) remoteAudio.srcObject = null;
+  try { await client?.disconnect(); } catch {}
+  // The SDK returns early without a peer, even after initDevices acquired the microphone.
+  if (beforePeer) { try { await owner.mediaManager?.disconnect(); } catch {} }
+  client = undefined;
+  transport = undefined;
+}
+
 async function finishCall() { stopTimer(); await reportSessionEvent("mobile_call_end", { end_reason: "user" }); await releaseClient(); startedAt = undefined; sessionId = undefined; sessionToken = undefined; showScreen("ended"); }
-async function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection") { stopTimer(); void reportSessionEvent("mobile_call_error", { safe_error_category: safeErrorCategory, stage: connectionStage, end_reason: endReason }); await releaseClient(); startedAt = undefined; sessionId = undefined; sessionToken = undefined; showError(title, copy); }
+async function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection") { stopTimer(); const reporting = reportSessionEvent("mobile_call_error", { safe_error_category: safeErrorCategory, stage: connectionStage, end_reason: endReason }); await releaseClient(); await reporting; startedAt = undefined; sessionId = undefined; sessionToken = undefined; showError(title, copy); }
 function showError(title, copy) { stopTimer(); startedAt = undefined; refs["error-title"].textContent = title; refs["error-copy"].textContent = copy; showScreen("error"); }
 
 function applyFixtureState() {

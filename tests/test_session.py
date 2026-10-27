@@ -152,3 +152,35 @@ async def test_server_bound_bot_identity_survives_session_claim(
     )
     assert inline.bot_id is None
     assert "bot_id" not in type(session_request).model_fields
+
+
+async def test_cancel_pending_authenticates_and_cannot_cancel_claimed_call(
+    session_request, runtime_config, voice_catalog, llm_catalog
+):
+    """Failed setup releases its own slot without giving another caller cancellation power."""
+    store, lease = await _create_lease(
+        request=session_request, runtime=runtime_config, voices=voice_catalog, providers=llm_catalog
+    )
+    with pytest.raises(SessionTokenError):
+        await store.cancel_pending(session_id="another-session", token=lease.token)
+    assert await store.counts() == (1, 0)
+    assert await store.cancel_pending(session_id=lease.session_id, token="wrong") is None
+    assert await store.counts() == (1, 0)
+    assert await store.cancel_pending(session_id=lease.session_id, token=lease.token) is lease
+    assert lease.closed
+    assert lease.credentials.llm_api_key.get_secret_value() == ""
+    assert await store.counts() == (0, 0)
+    assert await store.cancel_pending(session_id=lease.session_id, token=lease.token) is None
+    with pytest.raises(SessionTokenError):
+        await store.claim(lease.token)
+    second = await store.create(
+        request=session_request,
+        runtime=runtime_config,
+        voice_catalog=voice_catalog,
+        llm_catalog=llm_catalog,
+    )
+    active = await store.claim(second.token)
+    assert await store.cancel_pending(session_id=active.session_id, token=active.token) is None
+    assert await store.counts() == (0, 1)
+    assert not active.closed
+    await store.close_all()

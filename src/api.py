@@ -310,6 +310,7 @@ class BrowserEvent(BaseModel):
             "connection_failed",
             "call_interrupted",
             "asr_source_evidence_unavailable",
+            "playback_unsupported",
         ]
         | None
     ) = None
@@ -1930,6 +1931,35 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
         token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
         if not token:
             raise HTTPException(status_code=401, detail="Missing session authorization")
+        if (
+            event.event == "mobile_call_error"
+            and event.stage == "signaling"
+            and event.end_reason == "connection"
+        ):
+            try:
+                cancelled = await store.cancel_pending(session_id=session_id, token=token)
+            except SessionTokenError:
+                raise HTTPException(
+                    status_code=401, detail="Session authorization is invalid"
+                ) from None
+            if cancelled is not None:
+                event_buffers.pop(session_id, None)
+                await history_store.finish_call(
+                    call_id=session_id,
+                    status="failed",
+                    duration_ms=0,
+                    turns=[],
+                    metrics=[],
+                    recording_path=None,
+                    recording_status="not_started",
+                    error_category=event.safe_error_category or "connection_failed",
+                )
+                logger.info(
+                    "pending_session_cancelled session_id=%s safe_error_category=%s",
+                    session_id,
+                    event.safe_error_category or "connection_failed",
+                )
+                return
         try:
             lease = await store.get_active(session_id=session_id, token=token)
         except SessionTokenError:

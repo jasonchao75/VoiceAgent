@@ -27,7 +27,11 @@ export function bindRTCTransform(transport,worker,Transform=globalThis.RTCRtpScr
 }
 
 export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,evidence=()=>{}}) {
-  if(!globalThis.RTCRtpScriptTransform || !globalThis.AudioDecoder) throw new Error('Task playback is unavailable in this browser.');
+  if(!globalThis.RTCRtpScriptTransform || !globalThis.AudioDecoder) {
+    const error=new Error('This browser cannot play identifier echoes. Open this link in an up-to-date browser.');
+    error.code='playback_unsupported';
+    throw error;
+  }
   const context=new AudioContext({sampleRate:48000});
   let player,worker,inputWorker,sourceUploader;
   try {

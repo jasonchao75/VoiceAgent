@@ -95,3 +95,17 @@ for (const failure of ['module','worker','resume']) {
   } finally {for(const name of names)globalThis[name]=saved[name];}
  });
 }
+
+for(const missing of ['RTCRtpScriptTransform','AudioDecoder']) {
+ test(`missing ${missing} rejects before acquiring audio resources`,async()=>{
+  const names=['RTCRtpScriptTransform','AudioDecoder','AudioContext'];
+  const saved=Object.fromEntries(names.map(name=>[name,globalThis[name]]));
+  try {
+   globalThis.RTCRtpScriptTransform=class {};globalThis.AudioDecoder=class {};
+   globalThis[missing]=undefined;
+   globalThis.AudioContext=class {constructor(){throw Error('unexpected allocation');}};
+   const {prepareRTCPlayback}=await import('../../src/td-rtc-entry.js');
+   await assert.rejects(prepareRTCPlayback({},{}),error=>error.code==='playback_unsupported');
+  } finally {for(const name of names)globalThis[name]=saved[name];}
+ });
+}

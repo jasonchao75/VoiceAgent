@@ -401,3 +401,33 @@ def test_referenced_key_rotation_clear_and_restore_follow_bot(
         f"/api/public/demos/{share['public_id']}/sessions", json={}, headers=ORIGIN
     )
     assert old_snapshot_session.status_code == 201
+
+
+def test_failed_preconnect_releases_capacity_and_records_failure(keyed_client):
+    """Four failed setups must not exhaust three pending slots or invoke a provider."""
+    _, share = _create_and_publish(keyed_client)
+    for _ in range(4):
+        response = keyed_client.post(
+            f"/api/public/demos/{share['public_id']}/sessions", json={}, headers=ORIGIN
+        )
+        assert response.status_code == 201, response.text
+        session = response.json()
+        token = session["connection_url"].rsplit("/", 1)[-1]
+        url = f"/api/sessions/{session['session_id']}/events"
+        event = {
+            "event": "mobile_call_error",
+            "elapsed_ms": 1,
+            "stage": "signaling",
+            "end_reason": "connection",
+            "safe_error_category": "playback_unsupported",
+        }
+        rejected = keyed_client.post(url, json=event, headers={"Authorization": "Bearer wrong"})
+        assert rejected.status_code == 401
+        assert keyed_client.get("/health").json()["pending_sessions"] == 1
+        cancelled = keyed_client.post(url, json=event, headers={"Authorization": f"Bearer {token}"})
+        assert cancelled.status_code == 204, cancelled.text
+        assert keyed_client.get("/health").json()["pending_sessions"] == 0
+        history = keyed_client.get(f"/api/history/{session['session_id']}").json()
+        assert history["status"] == "failed"
+        assert history["error_category"] == "playback_unsupported"
+        assert history["recording_status"] == "not_started"

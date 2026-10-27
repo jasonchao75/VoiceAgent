@@ -1,5 +1,5 @@
 {
-  "phase": "verified",
+  "phase": "developing",
   "product_acceptance": "pending",
   "ui_change": false,
   "known_issues": [
@@ -26,15 +26,52 @@
       "status": "Resolved",
       "summary": "独立审核发现纯跟读结束后同范围修订可能漏补读或混入下一问；已修复并新增test_late_local_correction_is_echoed_but_not_in_next_question。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "PROD-RTC-COMPAT",
+      "status": "Open",
+      "summary": "已确认报错来自必需RTCRtpScriptTransform/AudioDecoder能力门槛。Chrome新版transform在141发布；用户荣耀UA97且实报unsupported。当前播放器未适配旧接口，仍不能宣称该手机支持跟读。本轮授权的兼容性调查已完成，旧内核播放适配未实现；不静默native降级。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PRECONNECT-TELEMETRY",
+      "status": "Resolved",
+      "summary": "连接前失败上报使用只允许已激活会话的events接口，返回401，具体播放器错误未进入服务端诊断。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PRECONNECT-CAPACITY",
+      "status": "Resolved",
+      "summary": "用户确认busy正文。生产限制3路、待连接TTL120秒；10:30:04/13/23 UTC创建3个会话均未发offer，10:30:34第4次429，符合失败会话占满名额。当前health pending=0 active=0，名额已自动释放；根本连接失败仍待确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PENDING-REVIEW-1",
+      "status": "Resolved",
+      "summary": "审核发现等待错误上报可能推迟媒体清理3秒，调整为并发开始上报、立即清理后等待有界上报。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PRECONNECT-MIC",
+      "status": "Resolved",
+      "summary": "正式浏览器回归发现SDK在pc尚未创建时disconnect提前返回，initDevices麦克风仍活跃；需显式清理预连接mediaManager。",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
     {
       "id": "LIVE",
       "status": "Open",
-      "summary": "本地自测与分项独立审核通过；尚未部署。真实手机、扬声器/AEC、弱网和收费厂商端到端未测，沿用用户先上线再实测的授权，不宣称效果验收。",
+      "summary": "修复已通过本地自测、独立审核、CI/CD，生产版本393b060健康。真实手机、扬声器/AEC、弱网和收费厂商端到端未测，沿用用户先上线再实测的授权，不宣称效果验收。",
       "disclosed_to_user": true
     }
   ],
-  "external_calls": []
+  "external_calls": [],
+  "deployment": {
+    "commit": "393b060bfa7ad1734065e78c5e9031732d29a752",
+    "ci_run": 40487240625,
+    "deploy_run": 40487567424,
+    "health": "ok",
+    "container": "running healthy"
+  }
 }

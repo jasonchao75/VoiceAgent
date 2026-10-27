@@ -347,6 +347,29 @@ class SessionStore:
             if lease is not None:
                 lease.close()
 
+    async def cancel_pending(self, *, session_id: str, token: str) -> SessionLease | None:
+        """Release only the authenticated unclaimed lease, atomically against claim.
+
+        Args:
+            session_id: The client's allocated session identity.
+            token: The corresponding per-call bearer credential.
+
+        Returns:
+            The closed pending lease, or None if no pending lease owns this token.
+
+        Raises:
+            SessionTokenError: If the token belongs to another pending session.
+        """
+        async with self._lock:
+            lease = self._pending.get(token)
+            if lease is None:
+                return None
+            if lease.session_id != session_id or lease.closed:
+                raise SessionTokenError("Session authorization is invalid")
+            del self._pending[token]
+            lease.close()
+            return lease
+
     async def get_active(self, *, session_id: str, token: str) -> SessionLease:
         """Authorize a non-secret browser event against the active session."""
         async with self._lock:

@@ -1,3 +1,5 @@
 # Design
 Ledger区分本地收集来源与真正LLM提交范围。只有完整来源、未提交范围可以随该来源更新；编号collection复用source-bound替换、generation隔离。提交LLM后冻结范围，禁止扩大旧普通话轮。
 RTC统一选择函数用于session响应、transport安装、input时钟和pipeline协议；启用自建TD且优先编号规则的会话走既有RTP任务播放，其他默认保持native。音频仍RTP/Opus，不走数据通道PCM。客户端能力不足按既有明确失败处理，不伪报跟读。
+
+连接前mobile_call_error通过现有Bearer events接口认证pending lease并原子移除；active仍沿用原链路，原子锁确保与claim互斥。失败历史录入not_started，前端等待上报最多3秒，finally清理。兼容性仅能力探测与明确错误，不用UA猜测，不静默native降级。
