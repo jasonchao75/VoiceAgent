@@ -13,12 +13,15 @@ async def test_unit_renderer_reports_upstream_provider_error_without_waiting_for
     """SDK push_error goes upstream; a downstream-only sink cannot observe it."""
     from src.tts.unit_synthesis import synthesize_unit
 
+    errors_sent = []
+
     class FailingSynth(FrameProcessor):
         """Use the actual SDK upstream error path, without any vendor connection."""
 
         async def process_frame(self, frame, direction):
             await super().process_frame(frame, direction)
             if isinstance(frame, TTSSpeakFrame):
+                errors_sent.append(True)
                 await self.push_error(error_msg="sensitive-provider-detail-must-not-leak")
             else:
                 await self.push_frame(frame, direction)
@@ -34,8 +37,11 @@ async def test_unit_renderer_reports_upstream_provider_error_without_waiting_for
             "one",
             TTSConfig(voice="fixture"),
             24000,
-            timeout=0.3,
+            # Cold SDK setup on shared CI is not the provider-error behavior under test.
+            timeout=3,
         )
+
+    assert errors_sent == [True]
 
 
 async def test_unit_renderer_bounds_sdk_setup_and_releases_partial_resources():

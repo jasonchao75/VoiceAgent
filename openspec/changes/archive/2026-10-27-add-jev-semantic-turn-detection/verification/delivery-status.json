@@ -1,5 +1,5 @@
 {
-  "phase": "archived",
+  "phase": "release_preparing",
   "product_acceptance": "accepted",
   "ui_change": true,
   "external_calls": [
@@ -2038,6 +2038,12 @@
       "id": "RELEASE-WHITESPACE",
       "status": "Resolved",
       "summary": "diff --check报告历史原始测试日志空白和1处探针行尾空白。探针已修正；原始日志保留不改写，非功能失败，发布源码差异空白检查通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RELEASE-CI-40470550369",
+      "status": "Open",
+      "summary": "CI测试限时0.3s包含SDK冷启动，初始化阶段超时，未进入上游错误断言。仅测试改为3s并断言错误确实发出；生产超时不变，本地4项通过，等待新CI确认。",
       "disclosed_to_user": true
     }
   ],
