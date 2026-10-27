@@ -116,6 +116,30 @@
       "status": "Open",
       "summary": "现代Chromium桌面回归在会话创建前失败，未进入播放；同批窄屏通过。需要查测试HTTP/状态原因后复验，不能隐藏失败。 trace仅demo/view/start，无mic完成与session请求；原条件单独桌面重跑通过，首次模拟麦克风挂起原因未唯一确定；不属于已进入播放后的缺陷证明。 首次trace被Playwright重跑清理，只有首次worker诊断保留；network结论来自开发者当时读取，无法独立重查trace。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "CI-DB-THREAD-CLEANUP",
+      "status": "Open",
+      "summary": "CI40507816291成功（711 passed101 skipped），但test_publication_is_stable_private_and_uses_shared_capacity存在aiosqlite线程在事件循环关闭后回调的pytest warning；不属于本次worker修改，已登记后续清理，不能宣称零警告。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "POST-2514614-PACKET-DEADLINE",
+      "status": "Open",
+      "summary": "新部署后13:07UTC安卓Chrome138会话64e3e81e-e001-4f2d-940b-e04cde143c27连接成功后2401.5ms以packet_deadline失败；不是旧mapping_deadline。服务器2514614，手机实际加载构建尚待核对；精确缺包状态未知。 已从nginx确认手机加载demo-BRbfGyA5/worker-XmC5jSd4；修复同类非队首静音误超时，手机实际缺包类型旧遥测未记录，仍保留此项待复验。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "CLOCK-RESTART-AFTER-CLOSE",
+      "status": "Resolved",
+      "summary": "最新64e3e81e失败后仍连续约30秒clock401请求。代码control无关闭门禁、sampler.close后start可重启，迟到控制事件能重启旧会话采样；待回归修复，不作为packet_deadline首因。 红绿及真实138/153回归通过，独立专项PASS。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "SILENCE-NONHEAD-DEADLINE",
+      "status": "Resolved",
+      "summary": "本地红测复现：已证明为静音的缺包位于慢解码队列非队首时，旧定时器误触发packet_deadline；关闭后sampler重启红测亦失败。待修复。 红绿及真实138/153回归通过，独立专项PASS。",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
@@ -140,13 +164,14 @@
   ],
   "external_calls": [],
   "deployment": {
-    "commit": "2f25841812212908a68da56e5bd4143de8086e5c",
-    "ci_run": 40503606417,
-    "deploy_run": 40503983684,
+    "commit": "2514614217b48559463e6ce201f736ff44a2c1ae",
+    "ci_run": 40507816291,
+    "deploy_run": 40508237040,
     "health": "ok",
-    "pending_sessions": 0,
-    "active_sessions": 0,
     "container": "running healthy",
-    "server_head_verified": true
+    "server_head_verified": true,
+    "public_worker_sha256": "fd780a28b996e91d32db6f8ce14c4790a08b824a600d2661a628dbea1f13fa4c",
+    "pending_sessions": 0,
+    "active_sessions": 0
   }
 }

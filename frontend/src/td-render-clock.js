@@ -4,11 +4,11 @@ export class RenderClockSampler {
     schedule=(...args)=>globalThis.setTimeout(...args),
     cancel=(...args)=>globalThis.clearTimeout(...args),onError=()=>{}}) {
     Object.assign(this,{sessionId,token,clockId,sampleRate,port,clockKind,fetcher,schedule,cancel,onError});
-    this.active=false;this.pending=null;this.next=null;this.controller=null;
+    this.closed=false;this.active=false;this.pending=null;this.next=null;this.controller=null;
     this.urgent=false;
   }
   start() {
-    if(this.active) return;
+    if(this.active || this.closed) return;
     this.active=true;void this.sample();
   }
   observe(data) {
@@ -57,7 +57,7 @@ export class RenderClockSampler {
     }
   }
   close() {
-    this.active=false;
+    this.closed=true;this.active=false;
     if(this.next!==null) this.cancel(this.next);
     this.next=null;this.controller?.abort();
     this.pending?.reject(new Error('clock_sampler_closed'));

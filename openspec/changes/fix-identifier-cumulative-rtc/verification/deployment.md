@@ -32,3 +32,10 @@
 - 无数据库/机器人配置修改，无收费调用。回退点66b872b（会恢复匿名扫码鉴权缺陷）。
 - 专用18871/18872服务已停止；证据与隔离库路径见public-playback-auth.md，保留不提交。部署后记录留本地，避免仅文档再次部署。
 - SSH复核服务器HEAD与2f25841完整SHA一致，容器running healthy。
+
+## 已匹配包误超时修复上线
+- 发布2514614217b48559463e6ce201f736ff44a2c1ae；CI40507816291、CD40508237040成功。CI后端711 passed/101 skipped，包含publication测试的aiosqlite异步清理warning，已登记。
+- SSH确认生产HEAD完全相同，容器running healthy；公开health ok、pending/active均0。
+- 公开td-rtp-candidate-worker-XmC5jSd4.js与本地验证build字节哈希一致：fd780a28b996e91d32db6f8ce14c4790a08b824a600d2661a628dbea1f13fa4c。初次Python3.13请求因本机CA库失败，改用系统curl正常TLS验证成功，未关闭证书校验。下载证据/tmp/voiceagent-public-worker-2514614.js。
+- 无数据库/配置修改，无收费调用。回退点2f25841（会恢复误超时缺陷）。18871/18872隔离服务已停止；本地证据见matched-packet-repair.md，不提交测试DB/日志。
+- 限定已复现worker缺陷修复上线；手机两次唯一首因和真实硬件未验，模拟麦克风启动未定位、CI线程清理warning均保留Open，不声称整体Gate完成。部署后记录留本地避免仅文档再触发部署。

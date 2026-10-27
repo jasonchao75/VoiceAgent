@@ -26,3 +26,12 @@ test('closing during a delayed probe never writes to a replaced renderer',async(
  sampler.start();sampler.close();finish({ok:true,json:async()=>({sample_id:'b'.repeat(32)})});
  await flush();assert.equal(messages.length,0);assert.equal(sampler.pending,null);
 });
+
+
+test('late control messages cannot restart a closed clock sampler',async()=>{
+ let calls=0;
+ const sampler=new RenderClockSampler({sessionId:'s',token:'inert',clockId:'a'.repeat(32),sampleRate:48000,
+  port:{postMessage(){}},fetcher:async()=>{calls++;return {ok:false};}});
+ sampler.close();sampler.start();sampler.pulse();await flush();sampler.close();
+ assert.equal(calls,0);
+});

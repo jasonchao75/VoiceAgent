@@ -34,3 +34,7 @@
 ## 后续匹配计时专项审核
 
 2026-10-27 `matched_packet_review` 对已匹配包误报缺映射的修复给出限定范围PASS，详见 [matched-packet-review.md](matched-packet-review.md)。不将此专项PASS扩展为生产手机故障唯一归因或用户最终验收。
+
+## 后续静音缺包与关闭清理专项审核
+
+2026-10-27 `matched_packet_review` 对静音范围有序退休、关闭后不重启采样及有界鉴权诊断给出限定范围PASS，见 [packet-silence-review.md](packet-silence-review.md)。不推定生产手机首因已唯一确定或用户验收通过。

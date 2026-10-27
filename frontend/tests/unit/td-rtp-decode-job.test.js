@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const workerPath=new URL('../../src/td-rtp-candidate-worker.js',import.meta.url);
 
-async function replay({badExtent=false,drop=0,silent=false,reorder=false,packetsFirst=false,decodeDelay=0,omitMappings=false}={}) {
+async function replay({badExtent=false,drop=0,silent=false,reorder=false,packetsFirst=false,decodeDelay=0,omitMappings=false,missingSilentIndex=-1}={}) {
   const events=[];
   const source=await readFile(workerPath,'utf8');
   let PacketDecoder;
@@ -33,7 +33,7 @@ async function replay({badExtent=false,drop=0,silent=false,reorder=false,packets
     self:{postMessage:data=>{
       events.push(data);
       if(data.event==='decoded') count++;
-      if(data.event==='mapping_failed' || count===14-drop) resolve();
+      if(data.event==='mapping_failed' || count===14-drop-(missingSilentIndex>=0?1:0)) resolve();
     }},crypto:webcrypto,performance,TransformStream,ReadableStream,WritableStream,
     setTimeout:(...args)=>{const timer=setTimeout(...args);timer.unref();return timer;},clearTimeout,
   });
@@ -45,12 +45,12 @@ async function replay({badExtent=false,drop=0,silent=false,reorder=false,packets
     const start=-312+index*960;
     mappingMessages.push({data:{event:'mapping',mapping:{version:1,ssrc:12,
       rtp_timestamp:100000+index*960,payload_sha256:digest,source_start:start,samples:960,
-      spans:[{start:Math.max(0,start),end:start+960,task:silent && index<drop?null:'A'}]}}});
+      spans:[{start:Math.max(0,start),end:start+960,task:(silent && index<drop) || index===missingSilentIndex?null:'A'}]}}});
     packets.push({data,timestamp:100000+index*960,getMetadata:()=>({synchronizationSource:12})});
   }
   if(!packetsFirst && !omitMappings) for(const message of mappingMessages) await context.self.onmessage(message);
   context.self.onrtctransform({transformer:{
-    readable:new ReadableStream({start(controller){for(const packet of (reorder?[packets[1],packets[0],...packets.slice(2)]:packets.slice(drop)))controller.enqueue(packet);controller.close();}}),
+    readable:new ReadableStream({start(controller){for(const packet of (reorder?[packets[1],packets[0],...packets.slice(2)]:packets.slice(drop).filter((_,i)=>i+drop!==missingSilentIndex)))controller.enqueue(packet);controller.close();}}),
     writable:new WritableStream({write(){}}),
   }});
   if(packetsFirst && !omitMappings) {
@@ -113,4 +113,12 @@ test('an individual stalled decode still times out with matching evidence',async
   const events=await replay({packetsFirst:true,decodeDelay:1200});
   assert.equal(events.find(e=>e.event==='mapping_failed')?.reason,'decode_deadline');
   assert.equal(events.filter(e=>e.event==='task_pcm').length,0);
+});
+
+
+test('missing source-proven silence waiting behind slow matched jobs is not task loss',async()=>{
+  const events=await replay({packetsFirst:true,decodeDelay:90,missingSilentIndex:12});
+  assert.equal(events.filter(e=>e.event==='mapping_failed').length,0);
+  assert.equal(events.filter(e=>e.event==='decoded').length,13);
+  assert.equal(events.filter(e=>e.event==='silent_packet_skipped').length,1);
 });

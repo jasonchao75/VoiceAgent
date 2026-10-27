@@ -39,7 +39,7 @@ export class RTPCandidatePlayback {
     this.failed=true;
     this.evidence({side:'bridge',event:'candidate_failed',reason,details});
     this.player.port.postMessage({event:'interrupt',requestId:'candidate-failed'});
-    this.send({event:'candidate_failed',reason});
+    this.send({event:'candidate_failed',reason,details});
   }
   decoded(data) {
     if(data.event==='mapping_failed') return this.fail(data.reason,data.details);

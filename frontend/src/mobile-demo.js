@@ -291,7 +291,7 @@ async function startCall() {
     transport.iceServers = session.ice_servers || [];
     if(session.playback_mode === "rtp_candidate") {
       taskPlayback=await prepareRTCPlayback(transport,{sessionId,token:sessionToken,
-        onFailure:reason=>void failCall("Call interrupted","Audio playback could not be verified. Please start a new call.","playback_failed","provider",reason)});
+        onFailure:(reason,diagnostics)=>void failCall("Call interrupted","Audio playback could not be verified. Please start a new call.","playback_failed","provider",reason,diagnostics)});
     }
     await client.connect({ connection_url: session.connection_url });
   } catch (error) {
@@ -317,7 +317,7 @@ async function releaseClient() {
 }
 
 async function finishCall() { stopTimer(); await reportSessionEvent("mobile_call_end", { end_reason: "user" }); await releaseClient(); startedAt = undefined; sessionId = undefined; sessionToken = undefined; showScreen("ended"); }
-function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection", playbackReason) {
+function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection", playbackReason, playbackDiagnostics) {
   // Disconnect rejects an in-flight connect. Keep the first failure and clean up only once.
   if(failurePromise || endingCall)return failurePromise || Promise.resolve();
   endingCall=true;
@@ -331,7 +331,7 @@ function failCall(title, copy, safeErrorCategory = "connection_failed", endReaso
       'remote_audio_start_failed']);
     const extra=playbackReason ? {playback_failure_reason:safeReasons.has(playbackReason)?playbackReason:'unknown_playback_failure'} : {};
     const reporting=reportSessionEvent("mobile_call_error",{safe_error_category:safeErrorCategory,
-      stage:connectionStage,end_reason:endReason,...extra});
+      stage:connectionStage,end_reason:endReason,...extra,...(playbackDiagnostics?{playback_diagnostics:playbackDiagnostics}:{})});
     await releaseClient();await reporting;
     startedAt=undefined;sessionId=undefined;sessionToken=undefined;showError(title,copy);
   })();

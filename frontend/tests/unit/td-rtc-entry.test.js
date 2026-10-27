@@ -132,3 +132,25 @@ test('capability selection prefers modern transform and accepts a real legacy re
  assert.equal(rtcTransformMode({RTCRtpReceiver:class {createEncodedStreams(){}}}),'legacy');
  assert.equal(rtcTransformMode({}),null);
 });
+
+test('late datachannel messages after close cannot restart playback or clock requests',async()=>{
+ const names=['AudioContext','AudioWorkletNode','Worker','RTCRtpScriptTransform','AudioDecoder','fetch'];
+ const saved=Object.fromEntries(names.map(name=>[name,globalThis[name]]));
+ let received,requests=0,posts=0;
+ try {
+  globalThis.AudioContext=class {constructor(){this.sampleRate=48000;this.audioWorklet={addModule:async()=>{}};}async resume(){}async close(){}};
+  globalThis.AudioWorkletNode=class {constructor(){this.port={postMessage(){posts++;}};}connect(){}disconnect(){}};
+  globalThis.Worker=class {postMessage(){posts++;}terminate(){}};
+  globalThis.RTCRtpScriptTransform=class {};globalThis.AudioDecoder=class {};
+  globalThis.fetch=async()=>{requests++;return {ok:false};};
+  const peer={addEventListener(){},createDataChannel(){return {addEventListener(type,listener){received=listener;}};}};
+  const transport={addInitialTransceivers(){},createPeerConnection(){return peer;}};
+  const {prepareRTCPlayback}=await import('../../src/td-rtc-entry.js');
+  const playback=await prepareRTCPlayback(transport,{sessionId:'s',token:'inert',onFailure(){}});
+  transport.createPeerConnection().createDataChannel();
+  await playback.close();await playback.close();const before=posts;
+  received({data:JSON.stringify({label:'voice-agent-playback',event:'mapping',mapping:{}})});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(requests,0);assert.equal(posts,before);
+ } finally {for(const name of names)globalThis[name]=saved[name];}
+});

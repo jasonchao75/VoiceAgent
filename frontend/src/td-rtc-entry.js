@@ -58,12 +58,12 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
   };
   player.connect(context.destination);
   await context.resume();
-  let clockSampler;
+  let clockSampler,closed=false;
   const receipts=new PlaybackReceiptSender({sessionId,token,
     onFailure:reason=>bridge.fail(reason)});
   const bridge=new RTPCandidatePlayback({worker,player,evidence,
     onClockSample:data=>clockSampler?.observe(data),send(message){
-    if(message.event==='candidate_failed') { onFailure(message.reason);return; }
+    if(message.event==='candidate_failed') { onFailure(message.reason,{...message.details,client_build:new URL(import.meta.url).pathname.split('/').pop()});return; }
     if(message.event!=='receipt') return;
     if(message.receipt.event==='task_started') clockSampler?.pulse();
     void receipts.enqueue(playbackReceipt(message.receipt));
@@ -72,6 +72,7 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
     sampleRate:context.sampleRate,port:player.port,
     onError:reason=>evidence({side:'clock',event:'clock_sample_unavailable',reason})});
   const control=message=>{
+    if(closed) return;
     if(message.event==='input_source_epoch') {sourceUploader.setEpoch(message.connection_id);return;}
     clockSampler.start();bridge.control(message);
   };
@@ -96,7 +97,7 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
     };
     return peer;
   };
-  return {async close(){receipts.close();clockSampler.close();sourceUploader.close();worker.terminate();inputWorker.terminate();player.disconnect();await context.close();}};
+  return {async close(){if(closed)return;closed=true;receipts.close();clockSampler.close();sourceUploader.close();worker.terminate();inputWorker.terminate();player.disconnect();await context.close();}};
   } catch(error) {
     sourceUploader?.close();
     worker?.terminate();

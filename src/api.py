@@ -290,6 +290,25 @@ class PlaybackReceipt(BaseModel):
         return self
 
 
+class PlaybackDiagnostics(BaseModel):
+    """Bounded playback state without payloads, transcripts, tokens or arbitrary text."""
+
+    model_config = ConfigDict(extra="forbid")
+    client_build: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_.-]{1,100}$")
+    worker_build: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_.-]{1,100}$")
+    packets: int | None = Field(default=None, ge=0, le=10_000_000, strict=True)
+    mappings: int | None = Field(default=None, ge=0, le=10_000_000, strict=True)
+    decoded: int | None = Field(default=None, ge=0, le=10_000_000, strict=True)
+    pending_packets: int | None = Field(default=None, ge=0, le=100, strict=True)
+    pending_mappings: int | None = Field(default=None, ge=0, le=100, strict=True)
+    matched_packets: int | None = Field(default=None, ge=0, le=100, strict=True)
+    decoding: bool | None = Field(default=None, strict=True)
+    head_state: Literal["empty", "matched", "missing_silence", "missing_task"] | None = None
+    target_kind: Literal["unknown", "silence", "task"] | None = None
+    target_has_packet: bool | None = Field(default=None, strict=True)
+    target_has_mapping: bool | None = Field(default=None, strict=True)
+
+
 class BrowserEvent(BaseModel):
     """Whitelisted browser playback event used for interruption timing."""
 
@@ -315,6 +334,8 @@ class BrowserEvent(BaseModel):
         ]
         | None
     ) = None
+
+    playback_diagnostics: PlaybackDiagnostics | None = None
 
     playback_failure_reason: (
         Literal[
@@ -348,6 +369,8 @@ class BrowserEvent(BaseModel):
     @model_validator(mode="after")
     def text_is_only_allowed_for_chat(self) -> BrowserEvent:
         """Prevent mobile telemetry from carrying transcript or arbitrary text."""
+        if self.playback_diagnostics is not None and self.event != "mobile_call_error":
+            raise ValueError("Playback diagnostics require a call failure event")
         if self.event.startswith("mobile_") and self.text is not None:
             raise ValueError("Mobile telemetry cannot include text")
         return self
@@ -1996,6 +2019,11 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
                             "stage": event.stage,
                             "safe_error_category": event.safe_error_category,
                             "playback_failure_reason": event.playback_failure_reason,
+                            "playback_diagnostics": event.playback_diagnostics.model_dump(
+                                exclude_none=True
+                            )
+                            if event.playback_diagnostics
+                            else None,
                         }
                     ],
                 )
@@ -2013,6 +2041,12 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
             raise HTTPException(
                 status_code=401, detail="Session authorization is invalid"
             ) from None
+        if event.event == "mobile_call_error" and event.playback_diagnostics is not None:
+            logger.info(
+                "playback_diagnostics session_id=%s state=%s",
+                session_id,
+                event.playback_diagnostics.model_dump(exclude_none=True),
+            )
         event_buffers[session_id].add(event.event, event.elapsed_ms)
         capture = call_captures.get(session_id)
         if capture is not None:
@@ -2027,6 +2061,9 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
                     "stage": event.stage,
                     "safe_error_category": event.safe_error_category,
                     "playback_failure_reason": event.playback_failure_reason,
+                    "playback_diagnostics": event.playback_diagnostics.model_dump(exclude_none=True)
+                    if event.playback_diagnostics
+                    else None,
                 }
             )
         logger.info(
@@ -2066,6 +2103,11 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
                                 "stage": event.stage,
                                 "safe_error_category": event.safe_error_category,
                                 "playback_failure_reason": event.playback_failure_reason,
+                                "playback_diagnostics": event.playback_diagnostics.model_dump(
+                                    exclude_none=True
+                                )
+                                if event.playback_diagnostics
+                                else None,
                             }
                         ],
                     )

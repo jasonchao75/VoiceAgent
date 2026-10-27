@@ -1,12 +1,20 @@
 import {RTPPacketDecoder} from './td-rtp-decode-job.js';
 /* Modern and legacy RTP transforms share strict packet identity and one decoder. */
 const mappings = new Map(), packets = new Map();
-const skippedSilence = new Set();
+const skippedSilence = new Set(), expiredSilence = new Set();
 let mappedEnd = null;
 let failed = false, decoder, draining = false, nextSource = null;
 const counts={packets:0,mappings:0,decoded:0};
 const emit = data => self.postMessage(data);
-function fail(reason,details) {
+function fail(reason,targetId) {
+  const head=mappings.entries().next().value;
+  const target=mappings.get(targetId);
+  const details={...counts,pending_packets:packets.size,pending_mappings:mappings.size,
+    matched_packets:[...packets.keys()].filter(id=>mappings.has(id)).length,decoding:draining,
+    head_state:head?(packets.has(head[0])?'matched':isSilent(head[1])?'missing_silence':'missing_task'):'empty',
+    target_kind:target?(isSilent(target)?'silence':'task'):'unknown',
+    target_has_packet:packets.has(targetId),target_has_mapping:mappings.has(targetId),
+    worker_build:self.location?.pathname?.split('/').pop() || 'unit-test'};
   if (failed) return;
   failed = true;
   emit({event:'mapping_failed',reason,details,counts:{...counts}});
@@ -22,7 +30,7 @@ function isSilent(map) {
   return cursor===map.source_start+map.samples;
 }
 function skipSilence(id,map) {
-  mappings.delete(id);nextSource=map.source_start+map.samples;
+  expiredSilence.delete(id);mappings.delete(id);nextSource=map.source_start+map.samples;
   skippedSilence.add(id);
   if(skippedSilence.size>256) skippedSilence.delete(skippedSilence.values().next().value);
   // A source-only silent gap is not decoded audio and never produces a playback receipt.
@@ -37,7 +45,7 @@ async function deliver() {
       if(!packets.has(id)) {
         // Control messages are reliable and ordered; RTP is allowed to arrive out of order.
         const laterArrived=[...mappings.keys()].some(key=>packets.has(key));
-        if(isSilent(map) && laterArrived) {skipSilence(id,map);continue;}
+        if(isSilent(map) && (laterArrived || expiredSilence.has(id))) {skipSilence(id,map);continue;}
         break;
       }
       await decodePacket(id);
@@ -46,7 +54,7 @@ async function deliver() {
 }
 async function decodePacket(id) {
   const map = mappings.get(id), packet = packets.get(id);
-  mappings.delete(id); packets.delete(id);
+  mappings.delete(id); packets.delete(id); expiredSilence.delete(id);
   const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256',packet.data))]
     .map(value=>value.toString(16).padStart(2,'0')).join('');
   if (hash !== map.payload_sha256) return fail('payload_identity_mismatch');
@@ -93,10 +101,10 @@ self.onmessage = async ({data}) => {
     mappings.set(id,map);
     setTimeout(()=>{
       if(!mappings.has(id) || failed) return;
-      // Only retire the head of the ordered stream. Missing task audio stays fatal.
-      if(mappings.keys().next().value===id && isSilent(map) && !packets.has(id)) {
-        skipSilence(id,map);void deliver();
-      } else if(!packets.has(id)) fail('packet_deadline');
+      // Expiry permits silence retirement, but only the ordered drain advances the source.
+      if(isSilent(map) && !packets.has(id)) {
+        expiredSilence.add(id);void deliver();
+      } else if(!packets.has(id)) fail('packet_deadline',id);
     },1000);
     await deliver(id);
   }
@@ -116,7 +124,7 @@ function attachEncodedStream(transformer) {
         if (packets.has(id) || packets.size >= 100) return fail('packet_queue_limit');
         packets.set(id,{data:frame.data.slice(0),receivedAt:performance.now()});
         // A matched packet can wait behind an in-flight decode job; that is not missing evidence.
-        setTimeout(()=>{if(packets.has(id) && !mappings.has(id)) fail('mapping_deadline');},1000);
+        setTimeout(()=>{if(packets.has(id) && !mappings.has(id)) fail('mapping_deadline',id);},1000);
         await deliver(id);
         // The native receiver stays pulling through a muted sink, never double plays.
         controller.enqueue(frame);

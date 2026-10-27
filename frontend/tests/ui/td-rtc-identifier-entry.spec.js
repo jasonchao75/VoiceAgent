@@ -68,6 +68,11 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   await page.route(`**/demo/${publicId}`,route=>route.fulfill({response:document}));
   await page.addInitScript(()=>{
     window.__rtcWorkerEvents=[];
+    window.__rtcMicTracks=[];
+    const capture=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getUserMedia=async(...args)=>{
+      const stream=await capture(...args);window.__rtcMicTracks.push(...stream.getTracks());return stream;
+    };
     const NativeWorker=window.Worker;
     window.Worker=class extends NativeWorker {
       constructor(...args){super(...args);this.addEventListener("message",({data})=>{
@@ -100,10 +105,20 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
       const response=await route.fetch();
       let source=await response.text();
       // Delay each real decode job while preserving the real codec and packet identity.
-      source='let fixtureDecodeCount=0;\n'+source;
+      source='let fixtureDecodeCount=0,fixturePacketCount=0;\n'+source;
       source=source.replace('const output=await decoder.decodePacket',
         'if(fixtureDecodeCount++<35) await new Promise(resolve=>setTimeout(resolve,60)); const output=await decoder.decodePacket');
       expect(source).toContain('if(fixtureDecodeCount++<35)');
+      if(process.env.VOICE_AGENT_TD_DROP_QUEUED_SILENCE==='1') {
+        expect(source).toContain('const metadata = frame.getMetadata();');
+        source=source.replace('const metadata = frame.getMetadata();',
+          "if(fixturePacketCount++===34){self.postMessage({event:'fixture_dropped',index:34});controller.enqueue(frame);return;} const metadata = frame.getMetadata();");
+      }
+      if(process.env.VOICE_AGENT_TD_REPLAY_OLD_SILENCE==='1') {
+        expect(source).toContain('if(isSilent(map) && !packets.has(id))');
+        source=source.replace('if(isSilent(map) && !packets.has(id))',
+          'if(mappings.keys().next().value===id && isSilent(map) && !packets.has(id))');
+      }
       if(process.env.VOICE_AGENT_TD_REPLAY_OLD_DEADLINE==='1')
         source=source.replace('packets.has(id) && !mappings.has(id)','packets.has(id)');
       await route.fulfill({response,body:source});
@@ -176,10 +191,19 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   await page.locator("#start-call").click();
   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);
   expect(session.ice_servers).toEqual([]);
-  if(process.env.VOICE_AGENT_TD_REPLAY_OLD_DEADLINE==='1') {
+  if(process.env.VOICE_AGENT_TD_REPLAY_OLD_DEADLINE==='1' || process.env.VOICE_AGENT_TD_REPLAY_OLD_SILENCE==='1') {
     await expect.poll(()=>errors.length,{timeout:10000}).toBe(1);
-    expect(errors[0].playback_failure_reason).toBe('mapping_deadline');
-    writeFileSync(`${evidence}/old-deadline-failure.json`,JSON.stringify(errors,null,2));
+    expect(errors[0].playback_failure_reason).toBe(process.env.VOICE_AGENT_TD_REPLAY_OLD_SILENCE==='1'?'packet_deadline':'mapping_deadline');
+    expect(errors[0].playback_diagnostics.worker_build).toContain('td-rtp-candidate-worker');
+    expect(errors[0].playback_diagnostics.client_build).toBeTruthy();
+    if(process.env.VOICE_AGENT_TD_REPLAY_OLD_SILENCE==='1')expect(errors[0].playback_diagnostics.target_kind).toBe('silence');
+    await expect(page.locator('[data-screen="error"]')).toHaveClass(/active/);
+    await expect.poll(async()=> (await (await request.get('/health')).json()).active_sessions).toBe(0);
+    await expect.poll(()=>page.evaluate(()=>window.__rtcMicTracks.every(track=>track.readyState==='ended'))).toBe(true);
+    const clockCount=telemetry.filter(item=>item.path.includes('/playback-clock')).length;
+    await page.waitForTimeout(1200);
+    expect(telemetry.filter(item=>item.path.includes('/playback-clock')).length).toBe(clockCount);
+    writeFileSync(`${evidence}/old-deadline-failure.json`,JSON.stringify({errors,telemetry,cleanupVerified:true},null,2));
     return;
   }
   if(process.env.VOICE_AGENT_TD_EXPECT_CONTROL_TIMEOUT==='1') {
@@ -218,6 +242,10 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
     expect(Math.max(...bound.map(item=>item.mapping_wait_ms))).toBeGreaterThan(1000);
   }
   const manifests=await page.evaluate(()=>window.__rtcManifests);
+  if(process.env.VOICE_AGENT_TD_DROP_QUEUED_SILENCE==='1') {
+    expect(manifests.filter(item=>item.event==='mapping')[34].mapping.spans.every(span=>span.task===null)).toBe(true);
+    expect(await page.evaluate(()=>window.__rtcWorkerEvents.filter(item=>item.event==='silent_packet_skipped').length)).toBeGreaterThan(0);
+  }
   for(const item of receipts.filter(item=>item.receipt.event==='task_finished')) {
     expect(item.status).toBe(204);
     expect(item.receipt.rendered_samples).toBe(manifests.find(m=>m.playback_id===item.receipt.playback_id)?.expected_samples);
@@ -226,6 +254,7 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   await page.locator("#end").click();
   await expect(page.locator("audio")).toHaveJSProperty("paused",true);
   await expect(page.locator("audio")).toHaveJSProperty("srcObject",null);
+  await expect.poll(()=>page.evaluate(()=>window.__rtcMicTracks.every(track=>track.readyState==='ended'))).toBe(true);
   let history;
   await expect.poll(async()=>{
     history=await (await request.get(`/api/history/${session.session_id}`)).json();

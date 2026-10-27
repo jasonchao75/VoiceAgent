@@ -422,6 +422,12 @@ def test_failed_preconnect_releases_capacity_and_records_failure(keyed_client, e
             "end_reason": end_reason,
             "safe_error_category": "playback_failed",
             "playback_failure_reason": "decoder_unavailable",
+            "playback_diagnostics": {
+                "client_build": "demo-fixture.js",
+                "worker_build": "worker-fixture.js",
+                "packets": 12,
+                "head_state": "missing_task",
+            },
         }
         rejected = keyed_client.post(url, json=event, headers={"Authorization": "Bearer wrong"})
         assert rejected.status_code == 401
@@ -433,6 +439,7 @@ def test_failed_preconnect_releases_capacity_and_records_failure(keyed_client, e
         assert history["status"] == "failed"
         assert history["error_category"] == "playback_failed"
         assert history["td_events"][0]["playback_failure_reason"] == "decoder_unavailable"
+        assert history["td_events"][0]["playback_diagnostics"] == event["playback_diagnostics"]
         assert history["recording_status"] == "not_started"
 
 
@@ -494,3 +501,25 @@ def test_failure_during_claimed_offer_finishes_history_without_capture(keyed_cli
     assert history["recording_status"] == "not_started"
     assert history["td_events"][0]["playback_failure_reason"] == "decoder_unavailable"
     handler._offers_inflight.discard(token)
+
+
+@pytest.mark.parametrize(
+    "diagnostics",
+    [
+        {"secret": "no"},
+        {"packets": -1},
+        {"pending_packets": 101},
+        {"packets": "12"},
+        {"client_build": "https://private/token"},
+        {"worker_build": "x" * 101},
+        {"head_state": "arbitrary text"},
+    ],
+)
+def test_playback_diagnostics_rejects_unbounded_or_private_data(diagnostics):
+    """Numeric and enumerated failure evidence must never accept arbitrary payloads."""
+    from pydantic import ValidationError
+
+    from src.api import BrowserEvent
+
+    with pytest.raises(ValidationError):
+        BrowserEvent(event="mobile_call_error", elapsed_ms=1, playback_diagnostics=diagnostics)
