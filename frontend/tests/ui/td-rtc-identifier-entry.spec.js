@@ -95,6 +95,29 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
       }
     };
   });
+  if(process.env.VOICE_AGENT_TD_SLOW_MATCHED_DECODE==='1') {
+    await page.route('**/td-rtp-candidate-worker.js*',async route=>{
+      const response=await route.fetch();
+      let source=await response.text();
+      // Delay each real decode job while preserving the real codec and packet identity.
+      source='let fixtureDecodeCount=0;\n'+source;
+      source=source.replace('const output=await decoder.decodePacket',
+        'if(fixtureDecodeCount++<35) await new Promise(resolve=>setTimeout(resolve,60)); const output=await decoder.decodePacket');
+      expect(source).toContain('if(fixtureDecodeCount++<35)');
+      if(process.env.VOICE_AGENT_TD_REPLAY_OLD_DEADLINE==='1')
+        source=source.replace('packets.has(id) && !mappings.has(id)','packets.has(id)');
+      await route.fulfill({response,body:source});
+    });
+    await page.addInitScript(()=>{
+      const NativeWorker=window.Worker;
+      window.Worker=class extends NativeWorker {
+        postMessage(message,...rest) {
+          if(message?.event==='mapping')setTimeout(()=>super.postMessage(message,...rest),150);
+          else super.postMessage(message,...rest);
+        }
+      };
+    });
+  }
   if(process.env.VOICE_AGENT_TD_DROP_STARTUP_RTP==='1') {
     await page.addInitScript(()=>{
       const create=RTCRtpReceiver.prototype.createEncodedStreams;
@@ -153,6 +176,12 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   await page.locator("#start-call").click();
   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);
   expect(session.ice_servers).toEqual([]);
+  if(process.env.VOICE_AGENT_TD_REPLAY_OLD_DEADLINE==='1') {
+    await expect.poll(()=>errors.length,{timeout:10000}).toBe(1);
+    expect(errors[0].playback_failure_reason).toBe('mapping_deadline');
+    writeFileSync(`${evidence}/old-deadline-failure.json`,JSON.stringify(errors,null,2));
+    return;
+  }
   if(process.env.VOICE_AGENT_TD_EXPECT_CONTROL_TIMEOUT==='1') {
     await expect(page.locator('[data-screen="error"]')).toHaveClass(/active/,{timeout:25000});
     await expect.poll(async()=>{
@@ -183,6 +212,11 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   await expect(page.locator('[data-screen="error"]')).toHaveAttribute("aria-hidden","true");
   await expect(page.locator('[data-screen="live"]')).toHaveClass(/active/);
   await expect(page.locator("audio")).toHaveJSProperty("muted",true);
+  if(process.env.VOICE_AGENT_TD_SLOW_MATCHED_DECODE==='1') {
+    const bound=await page.evaluate(()=>window.__rtcWorkerEvents.filter(item=>item.event==='packet_bound'));
+    expect(bound.filter(item=>item.decode_job_ms>=55).length).toBeGreaterThanOrEqual(35);
+    expect(Math.max(...bound.map(item=>item.mapping_wait_ms))).toBeGreaterThan(1000);
+  }
   const manifests=await page.evaluate(()=>window.__rtcManifests);
   for(const item of receipts.filter(item=>item.receipt.event==='task_finished')) {
     expect(item.status).toBe(204);

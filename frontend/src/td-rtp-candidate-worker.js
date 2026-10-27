@@ -115,7 +115,8 @@ function attachEncodedStream(transformer) {
         if(skippedSilence.has(id)) {controller.enqueue(frame);return;}
         if (packets.has(id) || packets.size >= 100) return fail('packet_queue_limit');
         packets.set(id,{data:frame.data.slice(0),receivedAt:performance.now()});
-        setTimeout(()=>{if(packets.has(id)) fail('mapping_deadline');},1000);
+        // A matched packet can wait behind an in-flight decode job; that is not missing evidence.
+        setTimeout(()=>{if(packets.has(id) && !mappings.has(id)) fail('mapping_deadline');},1000);
         await deliver(id);
         // The native receiver stays pulling through a muted sink, never double plays.
         controller.enqueue(frame);

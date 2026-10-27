@@ -24,3 +24,11 @@
 - 独立审核startup-rtc-review.md为PASS；详细复现/回归startup-repair.md。
 - 无数据库迁移、无真实厂商测试、无机器人配置修改。代码回退点eada6b4（会恢复已发现的启动/清理缺陷）。
 - 隔离服务18871/18872已关闭，测试证据/tmp/voiceagent-connect-*和被忽略test-results保留，不提交音频、数据库或日志。部署后证据更新留本地，避免仅文档再次触发部署。
+
+## 匿名扫码播放鉴权修复上线
+- 提交2f25841812212908a68da56e5bd4143de8086e5c；CI40503606417、自动CD40503983684均success。
+- 公开health=ok，pending=0、active=0；无token的不存在会话clock请求返回Session authorization is invalid，证明已进入通话鉴权，未放开无凭证访问。
+- 自测803 passed、9 skipped，匿名且启用网站认证的浏览器3组通过，独立审核public-playback-auth-review.md为PASS。
+- 无数据库/机器人配置修改，无收费调用。回退点66b872b（会恢复匿名扫码鉴权缺陷）。
+- 专用18871/18872服务已停止；证据与隔离库路径见public-playback-auth.md，保留不提交。部署后记录留本地，避免仅文档再次部署。
+- SSH复核服务器HEAD与2f25841完整SHA一致，容器running healthy。

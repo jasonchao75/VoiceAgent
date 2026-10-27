@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const workerPath=new URL('../../src/td-rtp-candidate-worker.js',import.meta.url);
 
-async function replay({badExtent=false,drop=0,silent=false,reorder=false}={}) {
+async function replay({badExtent=false,drop=0,silent=false,reorder=false,packetsFirst=false,decodeDelay=0,omitMappings=false}={}) {
   const events=[];
   const source=await readFile(workerPath,'utf8');
   let PacketDecoder;
@@ -25,7 +25,7 @@ async function replay({badExtent=false,drop=0,silent=false,reorder=false}={}) {
         copyTo:array=>array.fill(.1),close:()=>{},
       }));
     }
-    async flush() { await Promise.resolve(); }
+    async flush() { if(decodeDelay) await new Promise(done=>setTimeout(done,decodeDelay)); else await Promise.resolve(); }
     close() { this.state='closed'; }
   }
   const context=vm.createContext({RTPPacketDecoder:PacketDecoder,
@@ -38,20 +38,25 @@ async function replay({badExtent=false,drop=0,silent=false,reorder=false}={}) {
     setTimeout:(...args)=>{const timer=setTimeout(...args);timer.unref();return timer;},clearTimeout,
   });
   vm.runInContext(source.replace(/^import .*;\n/gm,''),context);
-  const packets=[];
+  const packets=[],mappingMessages=[];
   for(let index=0;index<14;index++) {
     const data=new Uint8Array([index,123]).buffer;
     const digest=Buffer.from(await webcrypto.subtle.digest('SHA-256',data)).toString('hex');
     const start=-312+index*960;
-    await context.self.onmessage({data:{event:'mapping',mapping:{version:1,ssrc:12,
+    mappingMessages.push({data:{event:'mapping',mapping:{version:1,ssrc:12,
       rtp_timestamp:100000+index*960,payload_sha256:digest,source_start:start,samples:960,
       spans:[{start:Math.max(0,start),end:start+960,task:silent && index<drop?null:'A'}]}}});
     packets.push({data,timestamp:100000+index*960,getMetadata:()=>({synchronizationSource:12})});
   }
+  if(!packetsFirst && !omitMappings) for(const message of mappingMessages) await context.self.onmessage(message);
   context.self.onrtctransform({transformer:{
     readable:new ReadableStream({start(controller){for(const packet of (reorder?[packets[1],packets[0],...packets.slice(2)]:packets.slice(drop)))controller.enqueue(packet);controller.close();}}),
     writable:new WritableStream({write(){}}),
   }});
+  if(packetsFirst && !omitMappings) {
+    await new Promise(done=>setTimeout(done,30));
+    for(const message of mappingMessages) void context.self.onmessage(message);
+  }
   await Promise.race([complete,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Offline replay deadline')),2000))]);
   return events;
 }
@@ -88,4 +93,24 @@ test('out of order RTP is decoded in reliable source order',async()=>{
   const events=await replay({reorder:true});
   assert.equal(events.filter(e=>e.event==='mapping_failed').length,0);
   assert.deepEqual(events.filter(e=>e.event==='decoded').map(e=>e.source_start),Array.from({length:14},(_,i)=>-312+i*960));
+});
+
+
+test('already matched packets waiting for ordered decode are not missing mappings',async()=>{
+  const events=await replay({packetsFirst:true,decodeDelay:90});
+  assert.equal(events.filter(e=>e.event==='mapping_failed').length,0);
+  assert.equal(events.filter(e=>e.event==='decoded').length,14);
+});
+
+
+test('a genuinely missing mapping still times out',async()=>{
+  const events=await replay({packetsFirst:true,omitMappings:true});
+  assert.equal(events.find(e=>e.event==='mapping_failed')?.reason,'mapping_deadline');
+  assert.equal(events.filter(e=>e.event==='task_pcm').length,0);
+});
+
+test('an individual stalled decode still times out with matching evidence',async()=>{
+  const events=await replay({packetsFirst:true,decodeDelay:1200});
+  assert.equal(events.find(e=>e.event==='mapping_failed')?.reason,'decode_deadline');
+  assert.equal(events.filter(e=>e.event==='task_pcm').length,0);
 });

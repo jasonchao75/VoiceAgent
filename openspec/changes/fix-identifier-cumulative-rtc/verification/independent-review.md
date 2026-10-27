@@ -30,3 +30,7 @@
 真实手机、扬声器/AEC、弱网、真实 ASR/Jev/LLM/TTS 端到端未测；客户端仍要求 RTCRtpScriptTransform 与 AudioDecoder，不能承诺所有 iOS/Android 浏览器兼容。没有进行收费 API 调用或发送真实客户音频。全量测试的 9 个 skip 不计为通过。部署、CI/CD 和线上健康状态由后续交付记录负责。
 
 本报告不修改 `product_acceptance`，也不宣称 Gate2 的真实体验已重新验收。临时证据位于 `/tmp/voiceagent-cumulative-rtc-evidence/`、`/tmp/identifier_review_*.py`，不提交数据库、录音、凭证或缓存。
+
+## 后续匹配计时专项审核
+
+2026-10-27 `matched_packet_review` 对已匹配包误报缺映射的修复给出限定范围PASS，详见 [matched-packet-review.md](matched-packet-review.md)。不将此专项PASS扩展为生产手机故障唯一归因或用户最终验收。

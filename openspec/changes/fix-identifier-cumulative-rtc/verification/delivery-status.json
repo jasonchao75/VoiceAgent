@@ -96,7 +96,25 @@
     {
       "id": "PUBLIC-PLAYBACK-AUTH",
       "status": "Resolved",
-      "summary": "生产fabf7023：events204但playback-events/playback-clock/rtp-input均401；ProductAuthMiddleware._uses_call_bearer遗漏新播放端点，扫码未登录用户的有效通话Bearer被网站Cookie鉴权阻挡。导致playback_receipt_unconfirmed主动断线。 已补精确Cookie豁免且保留Bearer，auth开启匿名回归通过，专项独立审核PASS；待本轮部署。",
+      "summary": "生产fabf7023：events204但playback-events/playback-clock/rtp-input均401；ProductAuthMiddleware._uses_call_bearer遗漏新播放端点，扫码未登录用户的有效通话Bearer被网站Cookie鉴权阻挡。导致playback_receipt_unconfirmed主动断线。 已补精确Cookie豁免且保留Bearer，auth开启匿名回归通过，专项独立审核PASS；已部署2f25841，公开接口已进入通话鉴权而非网站登录。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "POST-AUTH-MAPPING-DEADLINE",
+      "status": "Open",
+      "summary": "用户两次重试c83ac9ba/8373a6e7均ICE成功后约2秒mapping_deadline失败；与前次receipt_unconfirmed不同。音频与任务映射匹配超时原因待查，不得声称整体修好。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "MATCHED-PACKET-FALSE-DEADLINE",
+      "status": "Resolved",
+      "summary": "离线worker重放复现：RTP先到，映射随后完整到达，逐包解码90ms时尚未消费的已匹配包仍在1秒触发mapping_deadline；不等于已证明手机具体首因。已修正条件，待浏览器/独立审核。 Node38通过，真实138旧判断失败/新判断通过，新版153桌面复验及窄屏通过，独立专项PASS。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "MATCHED-MODERN-TEST-START",
+      "status": "Open",
+      "summary": "现代Chromium桌面回归在会话创建前失败，未进入播放；同批窄屏通过。需要查测试HTTP/状态原因后复验，不能隐藏失败。 trace仅demo/view/start，无mic完成与session请求；原条件单独桌面重跑通过，首次模拟麦克风挂起原因未唯一确定；不属于已进入播放后的缺陷证明。 首次trace被Playwright重跑清理，只有首次worker诊断保留；network结论来自开发者当时读取，无法独立重查trace。",
       "disclosed_to_user": true
     }
   ],
@@ -112,16 +130,23 @@
       "status": "Open",
       "summary": "原生产096cb487具体播放首因被旧代码丢弃，不能追溯确认；本轮修复基于本地真实浏览器重现的启动时序、静音缺包及清理缺陷。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "SUSTAINED-DECODE-CAPACITY",
+      "status": "Open",
+      "summary": "压力探针持续人为增加每包35ms时达到packet_queue_limit，按现有保护终止；不能把修复误超时说成支持长期低于实时的解码设备。真实手机持续解码性能待验。",
+      "disclosed_to_user": true
     }
   ],
   "external_calls": [],
   "deployment": {
-    "commit": "66b872b2c84779992a0f6bee22db6bcbab7e1703",
-    "ci_run": 40497716544,
-    "deploy_run": 40498025696,
+    "commit": "2f25841812212908a68da56e5bd4143de8086e5c",
+    "ci_run": 40503606417,
+    "deploy_run": 40503983684,
     "health": "ok",
-    "container": "running healthy",
     "pending_sessions": 0,
-    "active_sessions": 0
+    "active_sessions": 0,
+    "container": "running healthy",
+    "server_head_verified": true
   }
 }
