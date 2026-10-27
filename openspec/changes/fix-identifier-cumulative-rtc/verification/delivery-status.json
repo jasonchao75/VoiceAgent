@@ -92,6 +92,12 @@
       "status": "Resolved",
       "summary": "精确signaling播放器失败浏览器复验发现：offer已claim但ICE尚未完成时，客户端断开不一定立刻通知服务端，active名额仍占用。需要对已认证当前失败RTC会话显式清理，并防止与offer注册竞态启动孤立管线。 已按startup-repair.md修复并复验；不代表原手机首因已唯一确认。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "PUBLIC-PLAYBACK-AUTH",
+      "status": "Resolved",
+      "summary": "生产fabf7023：events204但playback-events/playback-clock/rtp-input均401；ProductAuthMiddleware._uses_call_bearer遗漏新播放端点，扫码未登录用户的有效通话Bearer被网站Cookie鉴权阻挡。导致playback_receipt_unconfirmed主动断线。 已补精确Cookie豁免且保留Bearer，auth开启匿名回归通过，专项独立审核PASS；待本轮部署。",
+      "disclosed_to_user": true
     }
   ],
   "unverified_items": [
@@ -110,10 +116,12 @@
   ],
   "external_calls": [],
   "deployment": {
-    "commit": "eada6b4e62dcfa80cf6e737cfb3e5c8b0b1cdee2",
-    "ci_run": 40492339475,
-    "deploy_run": 40492716633,
+    "commit": "66b872b2c84779992a0f6bee22db6bcbab7e1703",
+    "ci_run": 40497716544,
+    "deploy_run": 40498025696,
     "health": "ok",
-    "container": "running healthy"
+    "container": "running healthy",
+    "pending_sessions": 0,
+    "active_sessions": 0
   }
 }

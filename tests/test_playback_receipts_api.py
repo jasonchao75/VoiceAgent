@@ -1,11 +1,18 @@
 """Task-specific render reports need both the live lease and a prepared task."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src.api import create_app
 
 
-def test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text(monkeypatch, session_request):
+@pytest.mark.parametrize("website_auth", [False, True])
+def test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text(
+    monkeypatch, session_request, website_auth
+):
+    if website_auth:
+        monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_USERNAME", "fixture-manager")
+        monkeypatch.setenv("VOICE_AGENT_BASIC_AUTH_PASSWORD", "fixture-local-only")
     captures = []
 
     async def pipeline(**kwargs):
@@ -29,12 +36,26 @@ def test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text(monkeypatch,
         deepgram_api_key="test-test-fixture-no-network-123",
         llm_api_key="test-test-fixture-no-network-456",
     )
-    with TestClient(create_app()) as client:
+    with TestClient(create_app(), base_url="https://testserver") as client:
+        if website_auth:
+            assert (
+                client.post(
+                    "/api/auth/login",
+                    json={
+                        "username": "fixture-manager",
+                        "password": "fixture-local-only",
+                    },
+                ).status_code
+                == 200
+            )
         created = client.post(
             "/api/sessions", json=payload, headers={"Origin": "http://localhost:8000"}
         )
         assert created.status_code == 201, created.text
         session = created.json()
+        client.cookies.clear()
+        if website_auth:
+            assert client.get("/api/bots").status_code == 401
         with client.websocket_connect(
             session["websocket_path"], headers={"Origin": "http://localhost:8000"}
         ) as socket:
@@ -107,6 +128,33 @@ def test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text(monkeypatch,
                 ).status_code
                 == 422
             )
+            clock_url = f"/api/sessions/{session['session_id']}/playback-clock"
+            probe = {"render_clock_id": "c" * 32, "render_sample_rate": 24000}
+            assert client.post(clock_url, json=probe).status_code == 401
+            challenge = client.post(clock_url, json=probe, headers=headers)
+            assert challenge.status_code == 201, challenge.text
+            ack_url = f"{clock_url}/{challenge.json()['sample_id']}"
+            ack = {**probe, "render_frame": 2048}
+            assert client.post(ack_url, json=ack).status_code == 401
+            assert client.post(ack_url, json=ack, headers=headers).status_code == 204
+            source_url = f"/api/sessions/{session['session_id']}/rtp-input"
+            source = {
+                "connection_id": "f" * 32,
+                "records": [
+                    {
+                        "clock_id": "d" * 32,
+                        "ssrc": 1,
+                        "rtp_timestamp": 1,
+                        "payload_sha256": "e" * 64,
+                        "capture_time_ms": 1.0,
+                        "capture_clock": "worker_performance",
+                    }
+                ],
+            }
+            assert client.post(source_url, json=source).status_code == 401
+            # This fixture has no RTP source epoch; a valid token reaches source validation.
+            rejected_source = client.post(source_url, json=source, headers=headers)
+            assert rejected_source.status_code == 409, rejected_source.text
             socket.send_text("done")
 
 

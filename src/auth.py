@@ -175,15 +175,17 @@ class ProductAuthMiddleware(BaseHTTPMiddleware):
     def _uses_call_bearer(path: str) -> bool:
         """Keep per-call telemetry independent from the website login Cookie."""
         parts = path.rstrip("/").split("/")
-        return (
-            len(parts) == 5
-            and parts[1:3] == ["api", "sessions"]
-            and parts[4]
-            in {
+        if len(parts) < 5 or parts[1:3] != ["api", "sessions"] or not parts[3]:
+            return False
+        if len(parts) == 5:
+            return parts[4] in {
                 "events",
                 "metrics",
+                "playback-events",
+                "playback-clock",
+                "rtp-input",
             }
-        )
+        return len(parts) == 6 and parts[4] == "playback-clock" and bool(parts[5])
 
     def set_cookie(self, response: Response, token: str, expires_at: float) -> None:
         """Attach an unreadable, HTTPS-only website session Cookie."""

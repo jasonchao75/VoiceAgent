@@ -507,8 +507,12 @@ def create_local_app(
     os.environ["VOICE_AGENT_ALLOWED_ORIGINS"] = (
         "http://127.0.0.1:5174,http://localhost:5174,http://127.0.0.1:8765," + ui_origin
     )
-    os.environ.pop("VOICE_AGENT_BASIC_AUTH_USERNAME", None)
-    os.environ.pop("VOICE_AGENT_BASIC_AUTH_PASSWORD", None)
+    if os.environ.get("VOICE_AGENT_TD_WEBSITE_AUTH") == "1":
+        os.environ["VOICE_AGENT_BASIC_AUTH_USERNAME"] = "fixture-manager"
+        os.environ["VOICE_AGENT_BASIC_AUTH_PASSWORD"] = "fixture-local-only"
+    else:
+        os.environ.pop("VOICE_AGENT_BASIC_AUTH_USERNAME", None)
+        os.environ.pop("VOICE_AGENT_BASIC_AUTH_PASSWORD", None)
     block_external_connections()
     api.create_default_asr_registry = LocalASRRegistry
     api.create_default_tts_registry = LocalTTSRegistry

@@ -1,5 +1,14 @@
-import {test,expect} from "@playwright/test";
+import {test as base,expect} from "@playwright/test";
 import {mkdirSync,writeFileSync} from "node:fs";
+const test=base.extend({request:async({request,playwright,baseURL},use)=>{
+  if(process.env.VOICE_AGENT_TD_WEBSITE_AUTH!=='1') {await use(request);return;}
+  const login=await request.post('/api/auth/login',{data:{username:'fixture-manager',password:'fixture-local-only'}});
+  expect(login.status()).toBe(200);
+  const cookie=login.headers()['set-cookie'].split(';')[0];
+  // Only the provisioning API client is logged in; the public browser has no website Cookie.
+  const manager=await playwright.request.newContext({baseURL,extraHTTPHeaders:{Cookie:cookie}});
+  try {await use(manager);} finally {await manager.dispose();}
+}});
 const evidence=process.env.VOICE_AGENT_TD_UI_EVIDENCE || "../test-results/td-webrtc-evidence";
 mkdirSync(evidence,{recursive:true});
 const enabled=process.env.VOICE_AGENT_TD_LOCAL_RUNTIME==="1";
@@ -124,8 +133,10 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
     },injectionMode);
   }
   let session;
-  const receipts=[],errors=[];
+  const receipts=[],errors=[],telemetry=[];
   page.on("response",async response=>{
+    if(/\/(playback-events|playback-clock|rtp-input)(\/|$)/.test(new URL(response.url()).pathname))
+      telemetry.push({path:new URL(response.url()).pathname,status:response.status()});
     if(response.url().endsWith('/events') && response.request().postDataJSON()?.event==='mobile_call_error')
       errors.push({status:response.status(),...response.request().postDataJSON()});
     if(response.url().endsWith("/playback-events")) receipts.push({status:response.status(),receipt:response.request().postDataJSON()});
@@ -135,6 +146,10 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
     await page.addInitScript(()=>Object.defineProperty(globalThis,'RTCRtpScriptTransform',{value:undefined,configurable:true}));
   }
   await page.goto(`/demo/${publicId}`);
+  if(process.env.VOICE_AGENT_TD_WEBSITE_AUTH==='1') {
+    expect(await page.context().cookies()).toEqual([]);
+    expect(await page.evaluate(async()=> (await fetch('/api/bots')).status)).toBe(401);
+  }
   await page.locator("#start-call").click();
   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);
   expect(session.ice_servers).toEqual([]);
@@ -173,7 +188,7 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
     expect(item.status).toBe(204);
     expect(item.receipt.rendered_samples).toBe(manifests.find(m=>m.playback_id===item.receipt.playback_id)?.expected_samples);
   }
-  writeFileSync(`${evidence}/formal-identifier-receipts.json`,JSON.stringify({receipts,manifests},null,2));
+  writeFileSync(`${evidence}/formal-identifier-receipts.json`,JSON.stringify({receipts,manifests,telemetry},null,2));
   await page.locator("#end").click();
   await expect(page.locator("audio")).toHaveJSProperty("paused",true);
   await expect(page.locator("audio")).toHaveJSProperty("srcObject",null);
@@ -183,6 +198,10 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
     return history.ended_at;
   },{timeout:15000}).toBeTruthy();
   writeFileSync(`${evidence}/formal-identifier-history.json`,JSON.stringify(history,null,2));
+  if(process.env.VOICE_AGENT_TD_WEBSITE_AUTH==='1') {
+    expect(telemetry.some(item=>item.path.endsWith('/playback-clock') && item.status===201)).toBe(true);
+    expect(telemetry.filter(item=>[401,403].includes(item.status))).toEqual([]);
+  }
   const events=history.td_events;
   expect(events.filter(item=>item.event==='identifier_local_processed').map(item=>item.collected)).toEqual(['1','12']);
   expect(events.filter(item=>item.event==='identifier_tool_result' && item.operation==='clear')).toMatchObject([{status:'cleared',value:'',count:0}]);

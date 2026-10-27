@@ -9,3 +9,5 @@ RTC统一选择函数用于session响应、transport安装、input时钟和pipel
 连接误断修复：按可靠控制通道的来源顺序匹配RTP包，只有完整范围由task=null覆盖的服务端静音可跳过。跳过不产生PCM或播放成功事实，保留缺包证据；任务音频缺失仍失败。连接错误首次胜出，后续SDK清理错误不覆盖原因。
 
 控制就绪采用连接自身datachannel open事件；MappedRawAudioTrack首个recv前等待，沿用SDK DATA_CHANNEL_TIMEOUT_SECS=10。超时从独立受控任务disconnect，避免sender关闭等待自身；首帧时钟重新锚定，连接等待不计入音频。对已认证mobile_call_error的RTC会话显式取消；offer注册与撤销共用锁并再次验证active lease。无capture时补终态历史，不覆盖已有服务端错误类别。
+
+扫码RTC新端点沿用既有通话Bearer鉴权边界：精确匹配playback-events、playback-clock、playback-clock/{sample_id}、rtp-input，仅绕过网站Cookie层；路由内session token/任务/时钟校验全部保留。测试必须开启网站认证并清除扫码浏览器登录Cookie。

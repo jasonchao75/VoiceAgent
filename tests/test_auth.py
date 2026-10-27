@@ -24,3 +24,30 @@ def test_auth_session_uses_idle_and_absolute_expiry(monkeypatch: pytest.MonkeyPa
 def test_return_path_rejects_external_destinations(value: str | None) -> None:
     """Login redirects must remain on VoiceAgent Demo."""
     assert safe_return_path(value) == "/"
+
+
+def test_only_exact_task_telemetry_routes_use_call_bearer():
+    """Bypassing the login Cookie must not expose management or arbitrary nested routes."""
+    from src.auth import ProductAuthMiddleware
+
+    allowed = [
+        "/api/sessions/id/events",
+        "/api/sessions/id/metrics",
+        "/api/sessions/id/playback-events",
+        "/api/sessions/id/playback-clock",
+        "/api/sessions/id/playback-clock/sample",
+        "/api/sessions/id/rtp-input",
+    ]
+    denied = [
+        "/api/sessions",
+        "/api/sessions/id",
+        "/api/sessions//playback-events",
+        "/api/sessions/id/playback-events/admin",
+        "/api/sessions/id/rtp-input/admin",
+        "/api/sessions/id/playback-clock/sample/admin",
+        "/api/bots/id",
+        "/api/history/id",
+        "/api/sessions/id/unknown",
+    ]
+    assert all(ProductAuthMiddleware._uses_call_bearer(path) for path in allowed)
+    assert not any(ProductAuthMiddleware._uses_call_bearer(path) for path in denied)

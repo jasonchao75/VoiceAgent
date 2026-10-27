@@ -17,3 +17,10 @@
 - 无数据库迁移、无机器人配置修改、无收费调用。回退代码为8112278；回退会失去旧接口兼容。
 - 本轮18871/18872隔离服务已停止。Chrome138测试包和证据保留在browser-compatibility.md列出的/tmp路径，不提交。
 - 安卓硬件、Safari、AEC及弱网仍未验；未将桌面138测试等同于手机体验通过。
+
+## 连接启动修复上线
+- 提交66b872b2c84779992a0f6bee22db6bcbab7e1703；CI40497716544、自动CD40498025696均success。
+- SSH确认生产checkout HEAD一致，容器running healthy；公开/health status=ok、pending=0、active=0。
+- 独立审核startup-rtc-review.md为PASS；详细复现/回归startup-repair.md。
+- 无数据库迁移、无真实厂商测试、无机器人配置修改。代码回退点eada6b4（会恢复已发现的启动/清理缺陷）。
+- 隔离服务18871/18872已关闭，测试证据/tmp/voiceagent-connect-*和被忽略test-results保留，不提交音频、数据库或日志。部署后证据更新留本地，避免仅文档再次触发部署。
