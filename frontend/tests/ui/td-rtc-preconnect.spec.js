@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 test.skip(process.env.VOICE_AGENT_TD_LOCAL_RUNTIME!=='1','Requires offline local application');
-test.use({permissions:['microphone'],launchOptions:{args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']}});
+test.use({permissions:['microphone'],launchOptions:{executablePath:process.env.VOICE_AGENT_TEST_BROWSER,args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']}});
 test('unsupported task playback releases each real pending session before retry',async({page,request,baseURL})=>{
   expect(['localhost','127.0.0.1']).toContain(new URL(baseURL).hostname);
   expect((await request.get('/health')).headers()['x-voiceagent-test-fixture']).toBe('td-local-offline');
@@ -30,6 +30,7 @@ test('unsupported task playback releases each real pending session before retry'
   await page.route(`**/demo/${publicId}`,route=>route.fulfill({response:document}));
   await page.addInitScript(()=>{
     Object.defineProperty(globalThis,'RTCRtpScriptTransform',{value:undefined,configurable:true});
+    Object.defineProperty(RTCRtpReceiver.prototype,'createEncodedStreams',{value:undefined,configurable:true});
     window.__setupTracks=[];
     const getMedia=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia=async(...args)=>{

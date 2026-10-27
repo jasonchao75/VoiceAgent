@@ -109,3 +109,26 @@ for(const missing of ['RTCRtpScriptTransform','AudioDecoder']) {
   } finally {for(const name of names)globalThis[name]=saved[name];}
  });
 }
+
+test('legacy receiver and sender streams are transferred without replacing RTP transport',()=>{
+ const receiverStreams={readable:{kind:'rx-read'},writable:{kind:'rx-write'}};
+ const senderStreams={readable:{kind:'tx-read'},writable:{kind:'tx-write'}};
+ const receiver={track:{kind:'audio'},createEncodedStreams:()=>receiverStreams};
+ const sender={createEncodedStreams:()=>senderStreams};
+ const sent=[],worker={postMessage:(message,transfer)=>sent.push({message,transfer})};
+ const transport={pc:{getTransceivers:()=>[{receiver,sender}]},addInitialTransceivers(){}};
+ bindRTCTransformForTest(transport,worker,null,worker);
+ transport.addInitialTransceivers();
+ assert.equal(sent.length,2);
+ assert.equal(sent[0].message.event,'legacy_transform');
+ assert.deepEqual(sent[0].transfer,[receiverStreams.readable,receiverStreams.writable]);
+ assert.deepEqual(sent[1].transfer,[senderStreams.readable,senderStreams.writable]);
+ assert.equal(receiver.transform,undefined);
+});
+
+test('capability selection prefers modern transform and accepts a real legacy receiver',async()=>{
+ const {rtcTransformMode}=await import('../../src/td-rtc-entry.js');
+ assert.equal(rtcTransformMode({RTCRtpScriptTransform:class {}}),'script');
+ assert.equal(rtcTransformMode({RTCRtpReceiver:class {createEncodedStreams(){}}}),'legacy');
+ assert.equal(rtcTransformMode({}),null);
+});

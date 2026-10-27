@@ -4,9 +4,9 @@ const evidence=process.env.VOICE_AGENT_TD_UI_EVIDENCE || "../test-results/td-web
 mkdirSync(evidence,{recursive:true});
 const enabled=process.env.VOICE_AGENT_TD_LOCAL_RUNTIME==="1";
 test.skip(!enabled,"Requires the loopback-only disposable TD application");
-test.use({permissions:["microphone"],launchOptions:{args:["--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream","--autoplay-policy=no-user-gesture-required"]}});
+test.use({permissions:["microphone"],launchOptions:{executablePath:process.env.VOICE_AGENT_TEST_BROWSER,args:["--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream","--autoplay-policy=no-user-gesture-required"]}});
 test.afterEach(async({page},info)=>{
-  const diagnostics=await page.evaluate(async()=>({workerEvents:window.__rtcWorkerEvents,samples:window.__rtcSamples,tracks:window.__rtcTracks,
+  const diagnostics=await page.evaluate(async()=>({browser:navigator.userAgent,scriptTransform:typeof RTCRtpScriptTransform,legacyTransform:typeof RTCRtpReceiver.prototype.createEncodedStreams,audioDecoder:typeof AudioDecoder,workerEvents:window.__rtcWorkerEvents,samples:window.__rtcSamples,tracks:window.__rtcTracks,
     stats:await Promise.all((window.__rtcConnections||[]).map(async pc=>[...(await pc.getStats()).values()]
       .filter(s=>s.type==="inbound-rtp" && s.kind==="audio")))})).catch(()=>({closed:true}));
   writeFileSync(`${evidence}/rtc-probe-diagnostics.${info.project.name}.json`,JSON.stringify(diagnostics,null,2));
@@ -91,6 +91,9 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
     if(response.url().endsWith("/playback-events")) receipts.push({status:response.status(),receipt:response.request().postDataJSON()});
   });
   page.on("response",async r=>{if(r.url().endsWith(`/api/public/demos/${publicId}/sessions`) && r.status()===201) session=await r.json();});
+  if(process.env.VOICE_AGENT_TD_LEGACY_TRANSFORM==='1') {
+    await page.addInitScript(()=>Object.defineProperty(globalThis,'RTCRtpScriptTransform',{value:undefined,configurable:true}));
+  }
   await page.goto(`/demo/${publicId}`);
   await page.locator("#start-call").click();
   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);

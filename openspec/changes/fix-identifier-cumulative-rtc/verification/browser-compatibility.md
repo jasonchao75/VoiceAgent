@@ -16,5 +16,16 @@ Bearer认证的连接前失败事件可以原子取消其pending lease；不能�
 - 原正式RTC编号跟读td-rtc-identifier-entry.spec.js 1 passed，证据/tmp/voiceagent-preconnect-normal-rtc。
 - 测试库/tmp/voiceagent-preconnect-20261027；Playwright产物test-results（忽略）；未发送真实客户数据，无收费调用。一次从仓库根误运行npx未成功安装，随后均使用frontend已有依赖与--no-install，未修改依赖。
 
-## 尚未完成
+## 当时尚未完成（后续修复见下）
 旧荣耀浏览器仍不支持当前播放器。这不是名额释放修复能解决的问题；必须为旧接口做独立适配和实际RTP/解码/停止证据验证，或使用具备所需能力的浏览器。本轮没有绕过任务身份验证、回退无跟读音轨、改数据通道音频或新增解码依赖。真实手机、AEC、弱网未验。
+
+
+## 旧接口兼容补丁（本日后续）
+已适配旧createEncodedStreams与新RTCRtpScriptTransform，共用worker、RTP包身份验证、Opus解码和AudioWorklet；仍走RTP，不通过数据通道传音频。无能力时明确失败并释放名额，不绕过任务证明。
+- 实际Google Chrome138.0.7204.183桌面内核：正式RTC编号播放/停止1 passed。能力探针确认script=undefined、legacy=function、decoder=function。证据/tmp/voiceagent-chrome138-rtc-evidence（含browser-capabilities.json）；424包绑定/解码、实际停止回执，详见legacy-rtc-review.md。
+- 现代Chromium强制旧接口：1 passed；/tmp/voiceagent-legacy-rtc-evidence。
+- 现代接口正常播放及完全缺接口失败释放：2项全部通过，test-results/playwright/.last-run.json status=passed；/tmp/voiceagent-legacy-modern-regression。
+- 前端Node全量32 passed；生产build通过；独立审核22项定向测试通过，范围内PASS。
+- 补录能力探针首次受本机进程权限限制，授权执行后成功；不是浏览器兼容失败。
+- 本地fixture数据/tmp/voiceagent-legacy-rtc-20261027；Chrome测试包/tmp/voiceagent-chrome138及/tmp/voiceagent-chrome138.zip，保留作复验，不提交Git；无付费调用。
+- 安卓真机、Chrome97、Safari、AEC、弱网未验证，不能宣称所有浏览器兼容。

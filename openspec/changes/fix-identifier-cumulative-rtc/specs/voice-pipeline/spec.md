@@ -19,3 +19,9 @@
 ### Scenario: 浏览器能力缺失
 - WHEN 编号任务播放所需浏览器接口缺失
 - THEN 显式说明不支持，释放本次未激活名额，不调用ASR/LLM/TTS；重复重试不积压并发名额
+
+## Requirement: 新旧RTP接口兼容
+浏览器支持旧createEncodedStreams且具备所需解码能力时，系统 MUST 接入与新版ScriptTransform相同的任务播放链路，并保留严格包身份、停止和播放回执契约。
+### Scenario: Chrome旧接口
+- WHEN ScriptTransform不存在而旧RTP编码流接口可用
+- THEN 使用旧接口接入同一worker，不因缺少新版API拒绝连接，音频仍走RTP

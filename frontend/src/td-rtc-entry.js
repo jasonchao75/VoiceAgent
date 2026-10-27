@@ -1,4 +1,4 @@
-/* D-068 development opt-in: retain RTP and post actual Worklet facts to the session API. */
+/* Keep RTP audio and report actual Worklet playback through modern or legacy transforms. */
 import {RTPCandidatePlayback} from './td-rtp-candidate-playback.js';
 import {RenderClockSampler} from './td-render-clock.js';
 import {RTPCaptureUploader} from './td-rtp-capture.js';
@@ -12,22 +12,34 @@ export function playbackReceipt(data) {
   return receipt;
 }
 
+export function rtcTransformMode(scope=globalThis) {
+  if(typeof scope.RTCRtpScriptTransform==='function') return 'script';
+  if(typeof scope.RTCRtpReceiver?.prototype?.createEncodedStreams==='function') return 'legacy';
+  return null;
+}
+
+function bindEncodedStream(endpoint,worker,Transform) {
+  if(Transform) {endpoint.transform=new Transform(worker);return;}
+  const {readable,writable}=endpoint.createEncodedStreams();
+  worker.postMessage({event:'legacy_transform',readable,writable},[readable,writable]);
+}
+
 export function bindRTCTransform(transport,worker,Transform=globalThis.RTCRtpScriptTransform,inputWorker) {
   const original=transport.addInitialTransceivers.bind(transport);
   transport.addInitialTransceivers=()=>{
     original();
     const audio=transport.pc.getTransceivers().filter(item=>item.receiver.track.kind==='audio');
     if(audio.length!==1) throw new Error('Audio receiver ownership is unproven');
-    audio[0].receiver.transform=new Transform(worker);
+    bindEncodedStream(audio[0].receiver,worker,Transform);
     if(inputWorker) {
-      try {audio[0].sender.transform=new Transform(inputWorker);}
+      try {bindEncodedStream(audio[0].sender,inputWorker,Transform);}
       catch {inputWorker.postMessage({event:'capture_install_failed'});}
     }
   };
 }
 
 export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,evidence=()=>{}}) {
-  if(!globalThis.RTCRtpScriptTransform || !globalThis.AudioDecoder) {
+  if(!rtcTransformMode() || !globalThis.AudioDecoder) {
     const error=new Error('This browser cannot play identifier echoes. Open this link in an up-to-date browser.');
     error.code='playback_unsupported';
     throw error;

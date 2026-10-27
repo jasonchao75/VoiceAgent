@@ -29,8 +29,8 @@
     },
     {
       "id": "PROD-RTC-COMPAT",
-      "status": "Open",
-      "summary": "已确认报错来自必需RTCRtpScriptTransform/AudioDecoder能力门槛。Chrome新版transform在141发布；用户荣耀UA97且实报unsupported。当前播放器未适配旧接口，仍不能宣称该手机支持跟读。本轮授权的兼容性调查已完成，旧内核播放适配未实现；不静默native降级。",
+      "status": "Resolved",
+      "summary": "已补createEncodedStreams旧接口，复用同一RTP身份校验、Opus解码和任务播放器。真实桌面Chrome138与现代接口均通过播放/停止回归，独立审核PASS；安卓硬件兼容性单列未验证。",
       "disclosed_to_user": true
     },
     {
@@ -62,7 +62,7 @@
     {
       "id": "LIVE",
       "status": "Open",
-      "summary": "修复已通过本地自测、独立审核、CI/CD，生产版本393b060健康。真实手机、扬声器/AEC、弱网和收费厂商端到端未测，沿用用户先上线再实测的授权，不宣称效果验收。",
+      "summary": "真实安卓手机（含荣耀Chrome97）、Safari、扬声器/AEC、弱网和收费厂商端到端未测。桌面Chrome138真实播放通过不等于安卓硬件验收；沿用先上线再实测授权。",
       "disclosed_to_user": true
     }
   ],

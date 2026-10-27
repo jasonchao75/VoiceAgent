@@ -1,5 +1,5 @@
 import {RTPPacketDecoder} from './td-rtp-decode-job.js';
-/* D-064 isolated RTP candidate. No production entry selects this decoder. */
+/* Modern and legacy RTP transforms share strict packet identity and one decoder. */
 const mappings = new Map(), packets = new Map();
 const packetOrder = [];
 let failed = false, decoder, draining = false, nextSource = null;
@@ -59,6 +59,7 @@ async function decodePacket(id) {
   finally { clearTimeout(timer); }
 }
 self.onmessage = async ({data}) => {
+  if (data.event === 'legacy_transform') { attachEncodedStream(data);return; }
   if (data.event === 'mapping') {
     counts.mappings++;
     const map = data.mapping;
@@ -71,7 +72,7 @@ self.onmessage = async ({data}) => {
     await deliver(id);
   }
 };
-self.onrtctransform = ({transformer}) => {
+function attachEncodedStream(transformer) {
   if (decoder) return fail('multiple_receiver_transform');
   try {
     decoder = new RTPPacketDecoder({Decoder:AudioDecoder,Chunk:EncodedAudioChunk,onFailure:reason=>fail(reason)});
@@ -93,4 +94,5 @@ self.onrtctransform = ({transformer}) => {
     })).pipeTo(transformer.writable).catch(()=>fail('transform_stream_error'));
     emit({event:'decoder_configured'});
   } catch { fail('decoder_unavailable'); }
-};
+}
+self.onrtctransform = ({transformer}) => attachEncodedStream(transformer);
