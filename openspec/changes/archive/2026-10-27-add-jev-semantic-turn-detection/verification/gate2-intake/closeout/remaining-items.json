@@ -1,0 +1,284 @@
+[
+  {
+    "category": "known_issues",
+    "id": "REVIEW-BOUNDARY-CONTRACTS-20261020",
+    "summary": "当前普通TD/编号工具/缓存/WS及开发RTC实际回执/Final/编号仲裁/认证源端E2E有本地证据，r87完整739通过；剩余真实重连/效果、硬件/弱网/默认采用/独立验收见22ID矩阵。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "ASR-EVENT-ADAPTER-GAPS",
+    "summary": "四家六模型SDK桥接及r85 external-real英文数字基本范围/Partial/Final通过；多场景/多语种/真实重连/完整时间与WPM效果仍未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "TIMESTAMP-OWNERSHIP-AUDIT",
+    "summary": "来源代次/跨提交/缺口恢复与D061有界失败本地SDK通过，r85六模型基本真实范围通过；跨连接绝对钟和真实重连仍未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "PREFIX-SEGMENT-PARSING",
+    "summary": "严格全输入编号/WPM/保护/提醒/工具与混合修订已有SDK及正式WS/受控RTC证据；r84研发B本地真实API存储矩阵完成。真实模型语速、设备及独立C仍未验证。",
+    "status": "Open",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "known_issues",
+    "id": "REVISION-TOOL-SIDE-EFFECTS",
+    "summary": "不可变来源/工具幂等/Final结果共享SDK及WS/开发RTC清空停止/编号组合通过；真实LLM/TTS取消残留及弱网硬件仍未验证。 r95/D084已补Flux单voice真实取消与19200在途旧字节隔离证据；该有限子场景已验证，真实LLM/正式浏览器组合/其他voice/弱网仍保持未验证。 2026-10-27收尾校正：r97/D085已验证单voice真实TTS接正式WS浏览器的Final实停与新答接续，先前“待授权/浏览器未测”为历史状态；真实LLM、完整真实链、其他voice和设备弱网仍未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "M1-NORMALIZER-INTEGRATION-PENDING",
+    "summary": "正式normalizer/coordinator/唯一提交/编号工具/WS与开发RTC已接，本地来源缺失Tmax失败与RTC认证源端E2E通过；仍缺实际厂商重连/跨连接时钟与完整效果，不再称集成未接。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "BROWSER-PLAYBACK-SERVER-ECHO",
+    "summary": "WS/开发RTC由实际Worklet任务身份/认证回执和两端因果锚证明播放停止/延迟范围，r87历史重启通过；硬件声学/真实厂商/弱网手机/默认采用仍未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "PRIORITY-OUTPUT-INTEGRATION-PENDING",
+    "summary": "WS及受控正式RTC编号串行/清空旧代次停止/续说保留和混合排队已有r69/r83证据；实际厂商/弱网/硬件与默认采用未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "NUMBER-SUCCESS-AND-OLD-REVISION-PENDING",
+    "summary": "SDK纯混合/成功换代/旧范围回流/迟到隔离通过，WS/开发RTC编号清空停止及r83缓存故障继续通过；真实厂商网络/硬件未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "R9-UI-DRAFT-AND-PREVIEW",
+    "summary": "r82正式fixture A与r84真实本地API/存储B矩阵及发布缓存正负故障闭合；真实TTS音质与独立C可访问性/跨浏览器未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "known_issues",
+    "id": "R18-FORMAL-LANGUAGE-SWITCH",
+    "status": "Open",
+    "summary": "正式TD/Jev、新旧历史语言入口已接；原对话/事件值/来源ID排除翻译，动态候选状态和普通回复标签分片翻译。旧指标不重算，重复打开单控件，8历史视口通过。全部动态文案/全状态及视觉可访问性矩阵仍未闭环。",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "known_issues",
+    "id": "R18-WEBRTC-TRACK-QUEUE-CANCEL",
+    "status": "Open",
+    "summary": "旧原音轨清队列取消与D-068开发候选的实际任务停止/Final接续、完整编号串行均有本地正式入口证据。仍不证明硬件零残留/弱网实机或默认采用；这些剩余边界继续Open。",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "known_issues",
+    "id": "R38-JEV-LATEST-ALIAS-DRIFT",
+    "summary": "2026-10-22官方models页称jev-latest指向jev-1.13.0，但D-053两次真实响应均为jev-1.14.0。接口与基本概率格式通过；别名版本与文档不一致，后续校准必须保留实际版本，不能据两例保证版本稳定或语言质量。",
+    "status": "Open",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "JEV-NOT-TESTED",
+    "summary": "Jev正式客户端两条虚构英文文本真实接口测试通过；仅基本连通/概率格式与两例区分，不证明语言效果、P95、真实音频流水线、并发或全部异常兼容。",
+    "status": "Open",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "ECHO-NOT-TESTED",
+    "summary": "SDK/WS及开发RTC编号仲裁已验证，六模型基本范围external-real通过；真实WPM/物理回声/真人双讲未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "PROTOTYPE-ONLY",
+    "summary": "研发A(r82)与B(r84)已完成正式路由fixture/真实本地API存储矩阵；独立C及真实厂商效果/设备待验证，不以原型冒充。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "ASR-EVENT-MAPPING-STATIC",
+    "summary": "SDK/fixture与r85四家六模型external-real英文数字基本范围通过；真实多场景/重连/WPM/多语种完整覆盖未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "ECHO-AUDIO-CACHE-PROTOTYPE",
+    "summary": "正式缓存发布/双单元试听/间隔/版本隔离/重启及r83公开入口缓存恢复成功失败矩阵已有本地真实API/浏览器证据；真实TTS音质/动态语速实际效果未测。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "TIMESTAMP-LIVE-COVERAGE",
+    "summary": "r84/85四家六模型新固定数字素材基本来源范围/Partial/Final实际通过；真实多场景修订/重连、跨连接时钟/语言效果仍未验证，不扩大单例结论。",
+    "status": "Open",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "FINAL-REVISION-RESTART-NOT-TESTED",
+    "summary": "D049同范围首有效Final替换：SDK/WS及受控正式RTC实播取消/新答/r87两响应历史通过；真实厂商LLM/TTS取消残留和硬件弱网未验证。 r94修复Flux取消确认边界/本地控制回压/发送任务代次，actualSDK与独立复核通过；新196字符真实TTS批次待专属授权，真实取消/确认往返延迟、共享原生off组合和实际客户端停播仍未验证。 D084/r95真实Flux单批已验证取消ACK、19200在途旧字节无旧回答输出、新49920样本归新响应；仅TTS SDK，不替代真实浏览器/物理停播或完整ASR/Jev/LLM组合，其他范围保持Open。 2026-10-27收尾校正：r97/D085已验证单voice真实TTS接正式WS浏览器的Final实停与新答接续，先前“待授权/浏览器未测”为历史状态；真实LLM、完整真实链、其他voice和设备弱网仍未验证。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "BROWSER-AEC-RUNTIME-UNVERIFIED",
+    "summary": "AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。",
+    "status": "Open",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "R11-RENDER-CLOCK-CORRELATION",
+    "summary": "D073认证因果双锚已建立WS/开发RTC采集→VAD源端→实际Worklet范围，持久化和重启通过；硬件出声不在证据内，范围宽不代表精确延迟。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R14-EXTERNAL-CREDENTIALS-NOT-PREPARED",
+    "summary": "本地.env Key已在D-053两次真实Jev请求成功使用；未打印/入库/写证据。正式Bot尚未配置、不自动读取该变量；其他调用仍须逐批授权。",
+    "status": "Open",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "R40-DEEPGRAM-PROBE-PREPARATION",
+    "summary": "旧失败批次保留且不复用授权；后续D075/076三模型基本ASR与D065 one TTS真实成功。旧剩余文本/新场景未执行，范围见r85/22ID矩阵。",
+    "status": "Open",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R45-PUBLICATION-TRANSPORT",
+    "status": "Open",
+    "summary": "原r45草稿会话边界保留；r83公开发布入口固定配置/manifest缓存恢复成功与失败继续实际RTC组合已通过。真实厂商/硬件设备未测。",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R47-ASR-SYNTHETIC-ACCURACY",
+    "status": "Open",
+    "summary": "D-062首条范围兼容通过，但虚构Albert合成英文实际识别明显偏离固定原文（如booking被识别为putty here）；仅一次人工可见错误，不据此报告整体WER、语言/语义效果或真实说话人质量通过。",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "R53-CANDIDATE-SCOPE",
+    "status": "Open",
+    "summary": "r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "D065-TTS-SCOPE",
+    "status": "Open",
+    "summary": "D-065只证明flux-alexis-en/24k mono PCM16/one单次真实单元合成。未试听/实播、未测其他文本/音色/采样率/厂商取消或正式缓存/RTC全链；3计费字符不是实际账户美元账单。",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "R59-ADOPTION-GAPS",
+    "status": "Open",
+    "summary": "r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "R70-LATENCY-MEASUREMENT-BOUNDARY",
+    "status": "Open",
+    "summary": "本地同输入有效观测原链41.1ms/候选25.9ms（控制消息→输出探针回调），但原链captureStream额外延迟未校准、n=1，不能解释为改善或精确新增E2E/P95/硬件/手机结论。",
+    "disclosed_to_user": true
+  },
+  {
+    "category": "unverified_items",
+    "id": "R78-E2E-SOURCE-END-CLOCK",
+    "status": "Open",
+    "summary": "r81 WS及r87开发RTC配置VAD源样本→Worklet E2E范围/两端证据与应用重启通过；硬件ADC/声学、真实厂商效果/手机/弱网未验证。",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R86-RTC-CAPTURE-ANCHOR-JOIN",
+    "status": "Open",
+    "summary": "r87同worker认证采集锚、严格同包processed输入区间、VAD冻结与渲染锚及持久化重启通过；新增旁路延迟/设备兼容/默认采用未验证。",
+    "disclosed_to_user": true,
+    "evidence": "verification/current-scenario-matrix-r87.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R87-RTC-TIMING-PRECISION",
+    "status": "Open",
+    "summary": "本地RTC两响应保守E2E为598–1335ms、815–1841ms，误差边界宽；只证明有界来源关联，不证明精确延迟或低延迟目标达标。新增链路同输入延迟对照仍未验证。",
+    "disclosed_to_user": true,
+    "evidence": "verification/development-20261025-r87/formal-final-history.json"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R89-ERROR-TELEMETRY-DELIVERY",
+    "status": "Open",
+    "summary": "故意阻断客户端错误遥测时，UI实际错误/媒体关闭而服务端仅持有已播与未知stop，顶层可能completed/error_category为空；不承诺后端已取得确定客户端失败原因，不以此伪造failed/stop；独立r88认定非新增确认规范缺陷，完整送达/异常归因效果未验证。",
+    "disclosed_to_user": true,
+    "evidence": "verification/development-20261026-r88/rtc-fault-evidence/receipt-response-lost-history.json"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R89-HISTORICAL-SOURCE-CAUSE",
+    "status": "Open",
+    "summary": "r88原来源缺失当时未留server native覆盖快照，无法唯一回溯全部原因；当前已确认并修复晚到/替换track缺陷且严格冷暖和重启通过，不能把无效诊断的0计数当生产事实或断言历史只有一种原因。",
+    "disclosed_to_user": true,
+    "evidence": "verification/stage-review/repair-review-r89.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "R93-RESOURCE-SCOPE",
+    "status": "Open",
+    "summary": "r93实际Linuxarm64/1CPU1GiB下strict镜像真实Silero静音及两通正式WS替身通过，无OOM；100ms队列采样不证明短暂峰值，真实厂商负载/并发分布/完整真实VAD同跑/RTC资源/手机弱网/成对新增链路延迟/x86_64仍未验证。 r94取消屏障新路径的资源开销尚无实测，r93镜像仅代表其冻结版本。",
+    "disclosed_to_user": true,
+    "evidence": "verification/development-20261026-r93/README.md"
+  },
+  {
+    "category": "unverified_items",
+    "id": "G2-02-REAL-REMINDER-PLAYBACK",
+    "status": "Open",
+    "summary": "已补满位/超位正式WS浏览器播放组合：实际开播/结束、串行、未播末段跳过、单次提醒已验证（本地厂商替身）。超位历史UI缺陷另见G2-02-OVERFLOW-HISTORY；真实TTS听感、真实ASR/LLM工具选择/设备声学仍未验证。",
+    "disclosed_to_user": true
+  }
+]

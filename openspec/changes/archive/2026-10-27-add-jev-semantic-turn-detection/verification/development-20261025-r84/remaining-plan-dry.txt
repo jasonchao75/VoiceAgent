@@ -1,0 +1,1 @@
+INFO:__main__:Dry plan: deepgram-td-remaining-models-v1 calls=2 ceiling=USD0.02 sha256=45eeec12974c070878819db599b4765d3f7c42da1cf240f579ab5bd4e5e4b4ce

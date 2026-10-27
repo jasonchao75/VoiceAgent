@@ -1,0 +1,50 @@
+........................................................................ [  9%]
+..............................................sssssssss................. [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 36%]
+........................................................................ [ 46%]
+........................................................................ [ 55%]
+........................................................................ [ 64%]
+........................................................................ [ 73%]
+........................................................................ [ 82%]
+........................................................................ [ 92%]
+..............................................................           [100%]
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/fastapi/testclient.py:1
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+tests/test_asr_factory.py::test_flux_and_nova3_map_distinct_protocols
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/deepgram/core/websocket_compat.py:4: DeprecationWarning: websockets.exceptions.InvalidStatusCode is deprecated
+    from websockets.exceptions import InvalidStatusCode as InvalidWebSocketStatus  # type: ignore[attr-defined]
+
+tests/test_asr_factory.py::test_flux_and_nova3_map_distinct_protocols
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/websockets/legacy/__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+tests/test_asr_factory.py::test_speechmatics_uses_bundled_turn_models_and_certifi
+  <string>:22: DeprecationWarning: 'operating_point' is deprecated, use 'model' instead.
+
+tests/test_flux_interrupt_boundary.py::test_locked_sdk_pipeline_replacement_waits_for_wire_boundary
+  /Users/zhaozichen/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py:84: DeprecationWarning: Passing a worker to WorkerRunner.run() is deprecated; register it with WorkerRunner.add_workers() before calling run() instead.
+    self._context.run(self._callback, *self._args)
+
+tests/test_playback_receipts_api.py::test_formal_websocket_pipeline_sends_task_pcm_and_accepts_matching_receipts
+tests/test_td_runtime.py::test_bundled_silero_real_silence_and_pcm_validation
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/vad/silero.py:160: DeprecationWarning: path is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    with impresources.path(package_path, model_name) as f:
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------- generated xml file: /tmp/voiceagent-r94-candidate-junit.xml ----------
+773 passed, 9 skipped, 10 warnings in 37.71s

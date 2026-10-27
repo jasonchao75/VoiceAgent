@@ -1,0 +1,1339 @@
+{
+  "workerEvents": [
+    {
+      "event": "decoder_configured"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562720114,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": -312,
+      "spans": [
+        {
+          "start": 0,
+          "end": 480,
+          "task": null
+        },
+        {
+          "start": 480,
+          "end": 648,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 1.7999999970197678,
+      "decode_job_ms": 0.7999999970197678,
+      "input_timestamp": 993500,
+      "output_timestamp": 993500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": -312,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 993500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562721074,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 648,
+      "spans": [
+        {
+          "start": 648,
+          "end": 960,
+          "task": null
+        },
+        {
+          "start": 960,
+          "end": 1440,
+          "task": null
+        },
+        {
+          "start": 1440,
+          "end": 1608,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.09999999403953552,
+      "input_timestamp": 1013500,
+      "output_timestamp": 1013500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 648,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1013500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562722034,
+      "ssrc": 569596727,
+      "payload_sha256": "b236f8dc4c5b02734bab69c641b7792f82ccab2f0598826fe2905aae1555124a",
+      "source_start": 1608,
+      "spans": [
+        {
+          "start": 1608,
+          "end": 1920,
+          "task": null
+        },
+        {
+          "start": 1920,
+          "end": 2400,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 2400,
+          "end": 2568,
+          "task": "9915eb864ade42b388f536510764fd45"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000894069672,
+      "decode_job_ms": 0.19999998807907104,
+      "input_timestamp": 1033500,
+      "output_timestamp": 1033500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 1608,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1033500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562722994,
+      "ssrc": 569596727,
+      "payload_sha256": "fd67839886443845001d2e9a3572f09d6a446bd9f4b344ebd3e597989e77703d",
+      "source_start": 2568,
+      "spans": [
+        {
+          "start": 2568,
+          "end": 2880,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 2880,
+          "end": 3360,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 3360,
+          "end": 3528,
+          "task": "9915eb864ade42b388f536510764fd45"
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1053500,
+      "output_timestamp": 1053500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 2568,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1053500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562723954,
+      "ssrc": 569596727,
+      "payload_sha256": "4306dcaff676e1fe712df2a55a9151e20b3c0ba32a07c0e7a4926fb10aea77bc",
+      "source_start": 3528,
+      "spans": [
+        {
+          "start": 3528,
+          "end": 3840,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 3840,
+          "end": 4320,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 4320,
+          "end": 4488,
+          "task": "9915eb864ade42b388f536510764fd45"
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1073500,
+      "output_timestamp": 1073500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 3528,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1073500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562724914,
+      "ssrc": 569596727,
+      "payload_sha256": "1f5b814688cd923607cdd57482676e7c5238b1462124d3dfd4155c6fc69e3a11",
+      "source_start": 4488,
+      "spans": [
+        {
+          "start": 4488,
+          "end": 4800,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 4800,
+          "end": 5280,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 5280,
+          "end": 5448,
+          "task": "9915eb864ade42b388f536510764fd45"
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0,
+      "input_timestamp": 1093500,
+      "output_timestamp": 1093500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 4488,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1093500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562725874,
+      "ssrc": 569596727,
+      "payload_sha256": "1eabfa293089c984a1185244fb7ea3568186c6ce4189253ae34a05896890f8b5",
+      "source_start": 5448,
+      "spans": [
+        {
+          "start": 5448,
+          "end": 5760,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 5760,
+          "end": 6240,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 6240,
+          "end": 6408,
+          "task": "9915eb864ade42b388f536510764fd45"
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.09999999403953552,
+      "input_timestamp": 1113500,
+      "output_timestamp": 1113500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 5448,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1113500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562726834,
+      "ssrc": 569596727,
+      "payload_sha256": "eb49002aa005b2b9e3e6a2300fa0d2a6948d9eaf3564985d966e2045d2c627d7",
+      "source_start": 6408,
+      "spans": [
+        {
+          "start": 6408,
+          "end": 6720,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 6720,
+          "end": 7200,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 7200,
+          "end": 7368,
+          "task": "9915eb864ade42b388f536510764fd45"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000894069672,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1133500,
+      "output_timestamp": 1133500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 6408,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1133500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562727794,
+      "ssrc": 569596727,
+      "payload_sha256": "eda0d999c92a6bbbf96fcc306f768d611a348339956f6ed340cc80a0df01bbc3",
+      "source_start": 7368,
+      "spans": [
+        {
+          "start": 7368,
+          "end": 7680,
+          "task": "9915eb864ade42b388f536510764fd45"
+        },
+        {
+          "start": 7680,
+          "end": 8160,
+          "task": null
+        },
+        {
+          "start": 8160,
+          "end": 8328,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.9000000059604645,
+      "decode_job_ms": 0.7999999970197678,
+      "input_timestamp": 1153500,
+      "output_timestamp": 1153500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 7368,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1153500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562728754,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 8328,
+      "spans": [
+        {
+          "start": 8328,
+          "end": 8640,
+          "task": null
+        },
+        {
+          "start": 8640,
+          "end": 9120,
+          "task": null
+        },
+        {
+          "start": 9120,
+          "end": 9288,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 1.2999999970197678,
+      "decode_job_ms": 0.30000001192092896,
+      "input_timestamp": 1173500,
+      "output_timestamp": 1173500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 8328,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1173500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562729714,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 9288,
+      "spans": [
+        {
+          "start": 9288,
+          "end": 9600,
+          "task": null
+        },
+        {
+          "start": 9600,
+          "end": 10080,
+          "task": null
+        },
+        {
+          "start": 10080,
+          "end": 10248,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.5,
+      "decode_job_ms": 0.30000001192092896,
+      "input_timestamp": 1193500,
+      "output_timestamp": 1193500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 9288,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1193500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562730674,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 10248,
+      "spans": [
+        {
+          "start": 10248,
+          "end": 10560,
+          "task": null
+        },
+        {
+          "start": 10560,
+          "end": 11040,
+          "task": null
+        },
+        {
+          "start": 11040,
+          "end": 11208,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.10000000894069672,
+      "input_timestamp": 1213500,
+      "output_timestamp": 1213500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 10248,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1213500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562731634,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 11208,
+      "spans": [
+        {
+          "start": 11208,
+          "end": 11520,
+          "task": null
+        },
+        {
+          "start": 11520,
+          "end": 12000,
+          "task": null
+        },
+        {
+          "start": 12000,
+          "end": 12168,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000894069672,
+      "decode_job_ms": 0.19999998807907104,
+      "input_timestamp": 1233500,
+      "output_timestamp": 1233500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 11208,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1233500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562732594,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 12168,
+      "spans": [
+        {
+          "start": 12168,
+          "end": 12480,
+          "task": null
+        },
+        {
+          "start": 12480,
+          "end": 12960,
+          "task": null
+        },
+        {
+          "start": 12960,
+          "end": 13128,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1253500,
+      "output_timestamp": 1253500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 12168,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1253500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562733554,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 13128,
+      "spans": [
+        {
+          "start": 13128,
+          "end": 13440,
+          "task": null
+        },
+        {
+          "start": 13440,
+          "end": 13920,
+          "task": null
+        },
+        {
+          "start": 13920,
+          "end": 14088,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000894069672,
+      "decode_job_ms": 0.29999999701976776,
+      "input_timestamp": 1273500,
+      "output_timestamp": 1273500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 13128,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1273500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562734514,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 14088,
+      "spans": [
+        {
+          "start": 14088,
+          "end": 14400,
+          "task": null
+        },
+        {
+          "start": 14400,
+          "end": 14880,
+          "task": null
+        },
+        {
+          "start": 14880,
+          "end": 15048,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.19999998807907104,
+      "input_timestamp": 1293500,
+      "output_timestamp": 1293500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 14088,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1293500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562735474,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 15048,
+      "spans": [
+        {
+          "start": 15048,
+          "end": 15360,
+          "task": null
+        },
+        {
+          "start": 15360,
+          "end": 15840,
+          "task": null
+        },
+        {
+          "start": 15840,
+          "end": 16008,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1313500,
+      "output_timestamp": 1313500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 15048,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1313500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562736434,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 16008,
+      "spans": [
+        {
+          "start": 16008,
+          "end": 16320,
+          "task": null
+        },
+        {
+          "start": 16320,
+          "end": 16800,
+          "task": null
+        },
+        {
+          "start": 16800,
+          "end": 16968,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1333500,
+      "output_timestamp": 1333500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 16008,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1333500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562737394,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 16968,
+      "spans": [
+        {
+          "start": 16968,
+          "end": 17280,
+          "task": null
+        },
+        {
+          "start": 17280,
+          "end": 17760,
+          "task": null
+        },
+        {
+          "start": 17760,
+          "end": 17928,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.19999998807907104,
+      "input_timestamp": 1353500,
+      "output_timestamp": 1353500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 16968,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1353500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562738354,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 17928,
+      "spans": [
+        {
+          "start": 17928,
+          "end": 18240,
+          "task": null
+        },
+        {
+          "start": 18240,
+          "end": 18720,
+          "task": null
+        },
+        {
+          "start": 18720,
+          "end": 18888,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1373500,
+      "output_timestamp": 1373500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 17928,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1373500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562739314,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 18888,
+      "spans": [
+        {
+          "start": 18888,
+          "end": 19200,
+          "task": null
+        },
+        {
+          "start": 19200,
+          "end": 19680,
+          "task": null
+        },
+        {
+          "start": 19680,
+          "end": 19848,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1393500,
+      "output_timestamp": 1393500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 18888,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1393500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562740274,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 19848,
+      "spans": [
+        {
+          "start": 19848,
+          "end": 20160,
+          "task": null
+        },
+        {
+          "start": 20160,
+          "end": 20640,
+          "task": null
+        },
+        {
+          "start": 20640,
+          "end": 20808,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.09999999403953552,
+      "input_timestamp": 1413500,
+      "output_timestamp": 1413500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 19848,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1413500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562741234,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 20808,
+      "spans": [
+        {
+          "start": 20808,
+          "end": 21120,
+          "task": null
+        },
+        {
+          "start": 21120,
+          "end": 21600,
+          "task": null
+        },
+        {
+          "start": 21600,
+          "end": 21768,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.4000000059604645,
+      "input_timestamp": 1433500,
+      "output_timestamp": 1433500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 20808,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1433500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562742194,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 21768,
+      "spans": [
+        {
+          "start": 21768,
+          "end": 22080,
+          "task": null
+        },
+        {
+          "start": 22080,
+          "end": 22560,
+          "task": null
+        },
+        {
+          "start": 22560,
+          "end": 22728,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.19999998807907104,
+      "decode_job_ms": 0.10000000894069672,
+      "input_timestamp": 1453500,
+      "output_timestamp": 1453500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 21768,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1453500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562743154,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 22728,
+      "spans": [
+        {
+          "start": 22728,
+          "end": 23040,
+          "task": null
+        },
+        {
+          "start": 23040,
+          "end": 23520,
+          "task": null
+        },
+        {
+          "start": 23520,
+          "end": 23688,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.29999999701976776,
+      "input_timestamp": 1473500,
+      "output_timestamp": 1473500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 22728,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1473500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562744114,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 23688,
+      "spans": [
+        {
+          "start": 23688,
+          "end": 24000,
+          "task": null
+        },
+        {
+          "start": 24000,
+          "end": 24480,
+          "task": null
+        },
+        {
+          "start": 24480,
+          "end": 24648,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.5999999940395355,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1493500,
+      "output_timestamp": 1493500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 23688,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1493500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562745074,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 24648,
+      "spans": [
+        {
+          "start": 24648,
+          "end": 24960,
+          "task": null
+        },
+        {
+          "start": 24960,
+          "end": 25440,
+          "task": null
+        },
+        {
+          "start": 25440,
+          "end": 25608,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.4000000059604645,
+      "decode_job_ms": 0.09999999403953552,
+      "input_timestamp": 1513500,
+      "output_timestamp": 1513500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 24648,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1513500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562746034,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 25608,
+      "spans": [
+        {
+          "start": 25608,
+          "end": 25920,
+          "task": null
+        },
+        {
+          "start": 25920,
+          "end": 26400,
+          "task": null
+        },
+        {
+          "start": 26400,
+          "end": 26568,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.19999998807907104,
+      "decode_job_ms": 0.30000001192092896,
+      "input_timestamp": 1533500,
+      "output_timestamp": 1533500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 25608,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1533500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562746994,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 26568,
+      "spans": [
+        {
+          "start": 26568,
+          "end": 26880,
+          "task": null
+        },
+        {
+          "start": 26880,
+          "end": 27360,
+          "task": null
+        },
+        {
+          "start": 27360,
+          "end": 27528,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.3999999910593033,
+      "input_timestamp": 1553500,
+      "output_timestamp": 1553500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 26568,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1553500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562747954,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 27528,
+      "spans": [
+        {
+          "start": 27528,
+          "end": 27840,
+          "task": null
+        },
+        {
+          "start": 27840,
+          "end": 28320,
+          "task": null
+        },
+        {
+          "start": 28320,
+          "end": 28488,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.3999999910593033,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1573500,
+      "output_timestamp": 1573500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 27528,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1573500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562748914,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 28488,
+      "spans": [
+        {
+          "start": 28488,
+          "end": 28800,
+          "task": null
+        },
+        {
+          "start": 28800,
+          "end": 29280,
+          "task": null
+        },
+        {
+          "start": 29280,
+          "end": 29448,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.30000001192092896,
+      "decode_job_ms": 0.29999999701976776,
+      "input_timestamp": 1593500,
+      "output_timestamp": 1593500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 28488,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1593500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562749874,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 29448,
+      "spans": [
+        {
+          "start": 29448,
+          "end": 29760,
+          "task": null
+        },
+        {
+          "start": 29760,
+          "end": 30240,
+          "task": null
+        },
+        {
+          "start": 30240,
+          "end": 30408,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.29999999701976776,
+      "input_timestamp": 1613500,
+      "output_timestamp": 1613500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 29448,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1613500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562750834,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 30408,
+      "spans": [
+        {
+          "start": 30408,
+          "end": 30720,
+          "task": null
+        },
+        {
+          "start": 30720,
+          "end": 31200,
+          "task": null
+        },
+        {
+          "start": 31200,
+          "end": 31368,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.3999999910593033,
+      "decode_job_ms": 0.30000001192092896,
+      "input_timestamp": 1633500,
+      "output_timestamp": 1633500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 30408,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1633500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562751794,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 31368,
+      "spans": [
+        {
+          "start": 31368,
+          "end": 31680,
+          "task": null
+        },
+        {
+          "start": 31680,
+          "end": 32160,
+          "task": null
+        },
+        {
+          "start": 32160,
+          "end": 32328,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.10000000894069672,
+      "input_timestamp": 1653500,
+      "output_timestamp": 1653500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 31368,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1653500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562752754,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 32328,
+      "spans": [
+        {
+          "start": 32328,
+          "end": 32640,
+          "task": null
+        },
+        {
+          "start": 32640,
+          "end": 33120,
+          "task": null
+        },
+        {
+          "start": 33120,
+          "end": 33288,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1673500,
+      "output_timestamp": 1673500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 32328,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1673500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "packet_bound",
+      "rtp_timestamp": 562753714,
+      "ssrc": 569596727,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 33288,
+      "spans": [
+        {
+          "start": 33288,
+          "end": 33600,
+          "task": null
+        },
+        {
+          "start": 33600,
+          "end": 34080,
+          "task": null
+        },
+        {
+          "start": 34080,
+          "end": 34248,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.10000000894069672,
+      "input_timestamp": 1693500,
+      "output_timestamp": 1693500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "event": "decoded",
+      "source_start": 33288,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1693500,
+      "binding": "single_packet_flush"
+    }
+  ],
+  "samples": [],
+  "tracks": [],
+  "stats": [
+    []
+  ]
+}

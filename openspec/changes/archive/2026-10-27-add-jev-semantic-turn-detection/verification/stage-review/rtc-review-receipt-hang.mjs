@@ -1,0 +1,16 @@
+import {prepareRTCPlayback} from '../../../../../frontend/src/td-rtc-entry.js';
+let player, calls=0, failures=0;
+globalThis.AudioContext=class {constructor(){this.sampleRate=48000;this.audioWorklet={addModule:async()=>{}};}async resume(){}async close(){}};
+globalThis.AudioWorkletNode=class {constructor(){this.port={postMessage(){}};player=this;}connect(){}disconnect(){}};
+globalThis.Worker=class {postMessage(){}terminate(){}};
+globalThis.RTCRtpScriptTransform=class {};
+globalThis.AudioDecoder=class {};
+globalThis.fetch=(_url,options)=>{calls++;if(options.signal)throw Error('Unexpected bound request');return new Promise(()=>{});};
+const transport={addInitialTransceivers(){},createPeerConnection(){}};
+const playback=await prepareRTCPlayback(transport,{sessionId:'fixture',token:'fixture',onFailure:()=>failures++});
+player.port.onmessage({data:{event:'task_started',playback_id:'old',rendered_samples:128}});
+await new Promise(resolve=>setTimeout(resolve,10));
+player.port.onmessage({data:{event:'task_stopped',playback_id:'old',rendered_samples:128}});
+await new Promise(resolve=>setTimeout(resolve,100));
+console.log(JSON.stringify({requestsStarted:calls,failureCallbacks:failures,stopReceiptBlocked:calls===1}));
+await playback.close();

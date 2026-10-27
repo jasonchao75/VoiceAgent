@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:68787) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:60:2 › keyboard Sessions drawer opens and Escape restores its trigger at 1440px (665ms)
+  ✓  2 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 1440px (576ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:60:2 › keyboard Sessions drawer opens and Escape restores its trigger at 390px (545ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 390px (567ms)
+
+  4 passed (2.9s)

@@ -1,0 +1,55 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________ test_old_audio_keeps_old_identity_after_final_replaces_partial ________
+
+    async def test_old_audio_keeps_old_identity_after_final_replaces_partial():
+        owner = ResponseRevisions()
+        old = owner.submit(turn_id='t', source_ids=((0, 'a'),), text='one', final=False)
+>       tts = service(owner)
+              ^^^^^^^^^^^^^^
+
+tests/test_td_tts_scope.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <src.pipeline.response_revision.ResponseRevisions object at 0x115b60440>
+
+    def service(owner):
+        """Use a deterministic provider base; no socket or credentials."""
+>       assert util.find_spec('src.tts.response_scope') is not None, 'TTS response scope absent'
+E       AssertionError: TTS response scope absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x10302e8e0>('src.tts.response_scope')
+E        +    where <function find_spec at 0x10302e8e0> = util.find_spec
+
+tests/test_td_tts_scope.py:13: AssertionError
+_____ test_new_speech_fences_queued_audio_and_unknown_context_fails_closed _____
+
+    async def test_new_speech_fences_queued_audio_and_unknown_context_fails_closed():
+        owner = ResponseRevisions()
+        version = owner.submit(turn_id='t', source_ids=((0, 'a'),), text='one', final=False)
+>       tts = service(owner)
+              ^^^^^^^^^^^^^^
+
+tests/test_td_tts_scope.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <src.pipeline.response_revision.ResponseRevisions object at 0x115b16210>
+
+    def service(owner):
+        """Use a deterministic provider base; no socket or credentials."""
+>       assert util.find_spec('src.tts.response_scope') is not None, 'TTS response scope absent'
+E       AssertionError: TTS response scope absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x10302e8e0>('src.tts.response_scope')
+E        +    where <function find_spec at 0x10302e8e0> = util.find_spec
+
+tests/test_td_tts_scope.py:13: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_scope.py::test_old_audio_keeps_old_identity_after_final_replaces_partial
+FAILED tests/test_td_tts_scope.py::test_new_speech_fences_queued_audio_and_unknown_context_fails_closed
+2 failed, 1 warning in 1.00s

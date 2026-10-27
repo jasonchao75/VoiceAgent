@@ -1,0 +1,92 @@
+
+Running 2 tests using 1 worker
+
+(node:74398) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 1440px (5.5s)
+(node:74408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 390px (5.4s)
+
+
+  1) [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 1440px 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('#error-banner')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeVisible" locator('#error-banner') with timeout 5000ms
+      - waiting for locator('#error-banner')
+        14 × locator resolved to <div role="alert" id="error-banner" class="error-banner">History fixture unavailable</div>
+           - unexpected value "hidden"
+
+
+      30 |     await page.locator('#refresh-history').click();
+      31 |     await expect(page.locator('#error-banner')).toContainText('History fixture unavailable');
+    > 32 |     await expect(page.locator('#error-banner')).toBeVisible();
+         |                                                 ^
+      33 |     await page.screenshot({path:`${evidence}/history-failed-${width}.png`});
+      34 |     mode = 'empty';
+      35 |     await page.locator('#refresh-history').click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-recovery.spec.js:32:49
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-recovery-Sessio-560c3-thout-stale-error-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-recovery-Sessio-560c3-thout-stale-error-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-recovery-Sessio-560c3-thout-stale-error-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-recovery-Sessio-560c3-thout-stale-error-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 390px 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('#error-banner')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeVisible" locator('#error-banner') with timeout 5000ms
+      - waiting for locator('#error-banner')
+        14 × locator resolved to <div role="alert" id="error-banner" class="error-banner">History fixture unavailable</div>
+           - unexpected value "hidden"
+
+
+      30 |     await page.locator('#refresh-history').click();
+      31 |     await expect(page.locator('#error-banner')).toContainText('History fixture unavailable');
+    > 32 |     await expect(page.locator('#error-banner')).toBeVisible();
+         |                                                 ^
+      33 |     await page.screenshot({path:`${evidence}/history-failed-${width}.png`});
+      34 |     mode = 'empty';
+      35 |     await page.locator('#refresh-history').click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-recovery.spec.js:32:49
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-recovery-Sessio-6d42c-ithout-stale-error-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-recovery-Sessio-6d42c-ithout-stale-error-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-recovery-Sessio-6d42c-ithout-stale-error-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-recovery-Sessio-6d42c-ithout-stale-error-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 1440px 
+    [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 390px 

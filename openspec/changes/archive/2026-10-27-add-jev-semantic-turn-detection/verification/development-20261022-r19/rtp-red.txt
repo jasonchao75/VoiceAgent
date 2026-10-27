@@ -1,0 +1,65 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+__________ test_cancelled_writer_does_not_leave_old_pcm_in_rtp_track ___________
+
+    @pytest.mark.asyncio
+    async def test_cancelled_writer_does_not_leave_old_pcm_in_rtp_track():
+        track = RawAudioTrack(sample_rate=24000)
+        old = track.add_audio_bytes(np.full(2400, 1234, dtype=np.int16).tobytes())
+        old.cancel()
+>       adapter()(track)
+        ^^^^^^^^^
+
+tests/test_td_webrtc_cancel.py:23: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def adapter():
+        """Load the production adapter only after the missing-behavior red test runs."""
+>       from src.pipeline.webrtc_cancel import clear_pending_rtp_audio
+E       ModuleNotFoundError: No module named 'src.pipeline.webrtc_cancel'
+
+tests/test_td_webrtc_cancel.py:13: ModuleNotFoundError
+_____ test_purge_settles_waiters_and_preserves_new_audio_on_the_same_track _____
+
+    @pytest.mark.asyncio
+    async def test_purge_settles_waiters_and_preserves_new_audio_on_the_same_track():
+        track = RawAudioTrack(sample_rate=24000)
+        old = track.add_audio_bytes(np.full(480, 1111, dtype=np.int16).tobytes())
+>       adapter()(track)
+        ^^^^^^^^^
+
+tests/test_td_webrtc_cancel.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def adapter():
+        """Load the production adapter only after the missing-behavior red test runs."""
+>       from src.pipeline.webrtc_cancel import clear_pending_rtp_audio
+E       ModuleNotFoundError: No module named 'src.pipeline.webrtc_cancel'
+
+tests/test_td_webrtc_cancel.py:13: ModuleNotFoundError
+_____ test_unknown_sdk_queue_shape_is_rejected_instead_of_claiming_a_purge _____
+
+    def test_unknown_sdk_queue_shape_is_rejected_instead_of_claiming_a_purge():
+        with pytest.raises(RuntimeError, match="queue"):
+>           adapter()(SimpleNamespace(_chunk_queue=[]))
+            ^^^^^^^^^
+
+tests/test_td_webrtc_cancel.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def adapter():
+        """Load the production adapter only after the missing-behavior red test runs."""
+>       from src.pipeline.webrtc_cancel import clear_pending_rtp_audio
+E       ModuleNotFoundError: No module named 'src.pipeline.webrtc_cancel'
+
+tests/test_td_webrtc_cancel.py:13: ModuleNotFoundError
+=============================== warnings summary ===============================
+tests/test_td_webrtc_cancel.py::test_cancelled_writer_does_not_leave_old_pcm_in_rtp_track
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_webrtc_cancel.py::test_cancelled_writer_does_not_leave_old_pcm_in_rtp_track
+FAILED tests/test_td_webrtc_cancel.py::test_purge_settles_waiters_and_preserves_new_audio_on_the_same_track
+FAILED tests/test_td_webrtc_cancel.py::test_unknown_sdk_queue_shape_is_rejected_instead_of_claiming_a_purge
+3 failed, 1 warning in 1.06s

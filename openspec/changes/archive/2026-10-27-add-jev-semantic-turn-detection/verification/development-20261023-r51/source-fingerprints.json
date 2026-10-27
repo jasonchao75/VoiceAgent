@@ -1,0 +1,10 @@
+[
+  {
+    "path": "frontend/src/main.js",
+    "sha256": "b66623ca627774c5c4a93cd4d6c0b4379376b1d713cf2c655f51a2708514db23"
+  },
+  {
+    "path": "frontend/tests/ui/td-history-recovery.spec.js",
+    "sha256": "6bf9b32643d862c56b31d0a75eb7b42c64e333b23e181e4e48c80762876ed4ef"
+  }
+]

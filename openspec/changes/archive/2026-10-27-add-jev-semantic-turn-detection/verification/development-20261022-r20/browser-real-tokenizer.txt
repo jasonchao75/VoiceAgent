@@ -1,0 +1,21 @@
+
+Running 11 tests using 1 worker
+
+(node:13850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/td-runtime.spec.js:30:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history (6.1s)
+  ✓   2 [desktop-chromium] › tests/ui/td-runtime.spec.js:102:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.5s)
+  ✓   3 [desktop-chromium] › tests/ui/td-runtime.spec.js:148:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (668ms)
+  ✓   4 [desktop-chromium] › tests/ui/td-runtime.spec.js:178:1 › failed TD save retains draft and retries against the actual API (819ms)
+  -   5 [desktop-chromium] › tests/ui/td-runtime.spec.js:199:1 › formal configuration and audio survive an explicitly coordinated process restart
+  ✓   6 [desktop-chromium] › tests/ui/td-runtime.spec.js:230:1 › late save failure stays with its original Bot after selection changes (765ms)
+  ✓   7 [desktop-chromium] › tests/ui/td-runtime.spec.js:251:1 › formal TD settings remain operable at 390px with actual saved configuration (620ms)
+  ✓   8 [desktop-chromium] › tests/ui/td-runtime.spec.js:272:1 › audio generation failure permits an explicit retry without publishing or losing settings (545ms)
+  ✓   9 [desktop-chromium] › tests/ui/td-runtime.spec.js:291:1 › formal language switch changes labels without changing TD request or user values (686ms)
+  ✓  10 [desktop-chromium] › tests/ui/td-runtime.spec.js:313:1 › formal TD language defaults to Chinese without replacing user prompts (441ms)
+(node:13877) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  11 [desktop-chromium] › tests/ui/td-webrtc-runtime.spec.js:13:1 › formal mobile route establishes the existing WebRTC audio track with local TD (7.5s)
+
+  1 skipped
+  10 passed (20.4s)

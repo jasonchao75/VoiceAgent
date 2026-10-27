@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:65534) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation (9.6s)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation 
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 0
+    Received array:  []
+
+      199 |   if(recovery) {
+      200 |     const started=events.filter(event=>event.event==='identifier_echo_synthesis_started');
+    > 201 |     expect(started).toHaveLength(1);
+          |                     ^
+      202 |     expect(started[0].unit).toBe('1');
+      203 |     expect(started[0].fingerprint).toBe(resources.fingerprint);
+      204 |     const repaired=events.filter(event=>event.event==='identifier_echo_resource_ready' && event.recovery_path);
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:201:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation 

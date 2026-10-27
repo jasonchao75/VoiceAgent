@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:58136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API (13.5s)
+
+
+  1) [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('audio')
+    Expected: true
+    Received: false
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('audio') with timeout 5000ms
+      - waiting for locator('audio')
+        14 × locator resolved to <audio hidden="" autoplay="" playsinline=""></audio>
+           - unexpected value "false"
+
+
+      105 |       await expect.poll(()=>Boolean(heldReceipt),{timeout:10000}).toBe(true);
+      106 |       await expect(page.locator('[data-screen="error"]')).toBeVisible({timeout:7000});
+    > 107 |       await expect(page.locator('audio')).toHaveJSProperty('paused',true);
+          |                                           ^
+      108 |       await expect(page.locator('audio')).toHaveJSProperty('srcObject',null);
+      109 |       await expect.poll(async()=>{
+      110 |         const history=await (await request.get(`/api/history/${session.session_id}`)).json();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtc-entry.spec.js:107:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 

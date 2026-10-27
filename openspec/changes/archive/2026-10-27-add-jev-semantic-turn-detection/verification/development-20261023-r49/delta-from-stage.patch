@@ -1,0 +1,279 @@
+--- a/src/asr/transcript.py
++++ b/src/asr/transcript.py
+@@ -21,10 +21,51 @@
+         raise ValueError("Audio range must be non-negative and ordered")
+ 
+ 
+-def _strictly_before(left: float, right: float) -> bool:
+-    """Ignore only floating-point representation noise, keeping actual times unchanged."""
++def _sample_boundary(time_ms: float, sample_rate: int) -> int:
++    """Return the PCM boundary of a half-open interval without rewriting source times.
++
++    Args:
++        time_ms: Source time on the connection's audio clock.
++        sample_rate: Explicit rate of that same PCM stream.
++
++    Returns:
++        The first sample index excluded by an end, or included by a start.
++
++    Raises:
++        ValueError: If an exact sample index cannot be represented reliably.
++    """
++    position = time_ms * sample_rate / 1000
++    if not math.isfinite(position) or abs(position) > 2**53 - 1:
++        raise ValueError("Sample boundary cannot be represented reliably")
++    nearest = round(position)
++    # Multiplication can move an exact integer by machine noise; this is not a
++    # provider-wide timestamp tolerance or a licence to add another PCM sample.
++    tolerance = 4 * max(math.ulp(position), math.ulp(nearest))
++    if math.isclose(position, nearest, rel_tol=0, abs_tol=tolerance):
++        return nearest
++    return math.ceil(position)
++
++
++def _strictly_before(left: float, right: float, *, sample_rate: int | None = None) -> bool:
++    """Compare PCM boundaries, retaining strict time comparison for an unknown rate.
++
++    Args:
++        left: First boundary in milliseconds on the same source clock.
++        right: Second boundary in milliseconds on that clock.
++        sample_rate: Explicit stream rate, or None when it is not proven.
++
++    Returns:
++        Whether the first boundary precedes the second in actual samples.
++
++    Raises:
++        ValueError: If the sample coordinate exceeds reliable representation.
++    """
+     tolerance = 4 * max(math.ulp(left), math.ulp(right))
+-    return left < right and not math.isclose(left, right, rel_tol=0, abs_tol=tolerance)
++    if left >= right or math.isclose(left, right, rel_tol=0, abs_tol=tolerance):
++        return False
++    if sample_rate is not None:
++        return _sample_boundary(left, sample_rate) < _sample_boundary(right, sample_rate)
++    return True
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+@@ -70,21 +111,33 @@
+     final: bool
+     words: tuple[TimedWord, ...] = ()
+     timing_reliable: bool = True
++    sample_rate: int | None = None
+ 
+     def __post_init__(self) -> None:
+         """Validate identity and time containment before accepting evidence."""
+         _validate_range(self.start_ms, self.end_ms)
+         if self.epoch < 0 or self.revision < 1 or not self.source_id:
+             raise ValueError("Source identity and revision are required")
++        if self.sample_rate is not None and (
++            type(self.sample_rate) is not int or not 8000 <= self.sample_rate <= 384000
++        ):
++            raise ValueError("Source sample rate must be explicitly valid")
++        if self.sample_rate is not None:
++            _sample_boundary(self.start_ms, self.sample_rate)
++            _sample_boundary(self.end_ms, self.sample_rate)
+         previous_start = self.start_ms
+         for word in self.words:
+-            if _strictly_before(word.start_ms, previous_start) or _strictly_before(
++            if self.boundary_before(word.start_ms, previous_start) or self.boundary_before(
+                 self.end_ms, word.end_ms
+             ):
+                 raise ValueError("Words must be ordered within their source range")
+             # Providers may overlap adjacent words; preserve that evidence so a
+             # later consumed boundary through either word remains unsplittable.
+             previous_start = word.start_ms
++
++    def boundary_before(self, left_ms: float, right_ms: float) -> bool:
++        """Compare bounds on this source's known PCM grid, keeping all raw values intact."""
++        return _strictly_before(left_ms, right_ms, sample_rate=self.sample_rate)
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+@@ -141,19 +194,26 @@
+             self._segments.values(), key=lambda item: (item.epoch, item.start_ms, item.source_id)
+         ):
+             consumed = self._consumed.get(segment.epoch, -1.0)
+-            if segment.end_ms <= consumed:
++            if not segment.boundary_before(consumed, segment.end_ms):
+                 continue
+-            if segment.start_ms < consumed:
++            if segment.boundary_before(segment.start_ms, consumed):
+                 if not segment.words or not segment.timing_reliable:
+                     missing_reason = "cross_commit_word_timing_unavailable"
+                     continue
+                 if not words_cover_text(segment.text, segment.words):
+                     missing_reason = "cross_commit_word_timing_incomplete"
+                     continue
+-                if any(word.start_ms < consumed < word.end_ms for word in segment.words):
++                if any(
++                    segment.boundary_before(word.start_ms, consumed)
++                    and segment.boundary_before(consumed, word.end_ms)
++                    for word in segment.words
++                ):
+                     missing_reason = "cross_commit_word_overlaps_boundary"
+                     continue
+-                words = tuple(word for word in segment.words if word.start_ms >= consumed)
++                words = tuple(
++                    word for word in segment.words
++                    if not segment.boundary_before(word.start_ms, consumed)
++                )
+                 text = "".join(word.text for word in words)
+                 # A submission owns only this tail, even if the provider keeps
+                 # revising a source that also includes already committed speech.
+@@ -181,13 +241,22 @@
+         parts = []
+         for original in snapshot.segments:
+             current = self._segments.get((original.epoch, original.source_id))
+-            if current is None or (require_final and not current.final):
++            if (
++                current is None or (require_final and not current.final)
++                or current.sample_rate != original.sample_rate
++            ):
+                 return None
+-            if current.start_ms == original.start_ms and current.end_ms == original.end_ms:
++            if (
++                not current.boundary_before(current.start_ms, original.start_ms)
++                and not current.boundary_before(original.start_ms, current.start_ms)
++                and not current.boundary_before(current.end_ms, original.end_ms)
++                and not current.boundary_before(original.end_ms, current.end_ms)
++            ):
+                 text = current.text
+             else:
+                 if any(
+-                    word.start_ms < boundary < word.end_ms
++                    current.boundary_before(word.start_ms, boundary)
++                    and current.boundary_before(boundary, word.end_ms)
+                     for word in current.words
+                     for boundary in (original.start_ms, original.end_ms)
+                 ):
+@@ -195,7 +264,8 @@
+                 words = [
+                     word
+                     for word in current.words
+-                    if word.start_ms >= original.start_ms and word.end_ms <= original.end_ms
++                    if not current.boundary_before(word.start_ms, original.start_ms)
++                    and not current.boundary_before(original.end_ms, word.end_ms)
+                 ]
+                 if not words or not current.timing_reliable:
+                     return None
+--- a/src/asr/turn_events.py
++++ b/src/asr/turn_events.py
+@@ -39,10 +39,11 @@
+ class SourceNormalizer:
+     """Assign revisions to proven provider ranges within one connection epoch."""
+ 
+-    def __init__(self, provider: str, model: str) -> None:
++    def __init__(self, provider: str, model: str, *, sample_rate: int | None = None) -> None:
+         """Bind a normalizer to a validated provider/model selection."""
+         self.provider = provider
+         self.model = model
++        self.sample_rate = sample_rate
+         self.epoch = 0
+         self.missing_reason: str | None = None
+         self._previous: dict[str, SourceSegment] = {}
+@@ -302,7 +303,10 @@
+         """Assign a new revision only when the source snapshot really changed."""
+         previous = self._previous.get(source)
+         revision = 1 if previous is None else previous.revision + 1
+-        segment = SourceSegment(self.epoch, source, revision, start, end, text, final, words)
++        segment = SourceSegment(
++            self.epoch, source, revision, start, end, text, final, words,
++            sample_rate=self.sample_rate,
++        )
+         self.unresolved_sources.discard((self.epoch, source))
+         if previous and (
+             previous.start_ms,
+--- a/src/asr/factory.py
++++ b/src/asr/factory.py
+@@ -168,7 +168,9 @@
+         context_enabled = isinstance(parsed, AssemblyAIOptions) and parsed.agent_context_enabled
+         return ASRService(
+             processor=processor,
+-            source_normalizer=SourceNormalizer(canonical_provider, model),
++            source_normalizer=SourceNormalizer(
++                canonical_provider, model, sample_rate=audio.input_sample_rate,
++            ),
+             context_updates_enabled=context_enabled,
+             _context_updater=(cast(AgentContextUpdater, processor) if context_enabled else None),
+         )
+--- a/tests/test_td_asr_events.py
++++ b/tests/test_td_asr_events.py
+@@ -492,3 +492,45 @@
+     following = parser.normalize(payload(False, 1, '34'))
+     assert following[0].text == '34'
+     assert not parser.unresolved_sources
++
++
++def test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent(runtime_config):
++    """D-062: retain raw times while accepting the same actual 16kHz sample extent."""
++    import copy
++    import json
++    from pathlib import Path
++
++    from pipecat.frames.frames import InterimTranscriptionFrame
++
++    from src.asr.factory import create_default_asr_registry
++
++    records = [json.loads(line) for line in Path(
++        'openspec/changes/add-jev-semantic-turn-detection/verification/'
++        'development-20261023-r47/deepgram-td-asr-synthetic-v1-D-062.jsonl'
++    ).read_text().splitlines()]
++    event = records[-1]['events'][-1]
++    payload = copy.deepcopy(event['source_evidence'])
++    payload['transcript'] = event['text']
++    service = create_default_asr_registry().create(
++        provider='deepgram', model='flux-general-en', api_key='inert-no-network',
++        turn_detection_source='self_developed', options={}, audio=runtime_config.audio,
++    )
++    before = copy.deepcopy(payload)
++    frame = InterimTranscriptionFrame(event['text'], '', '', result=payload)
++    segments = service.normalize_source_frame(frame)
++    assert len(segments) == 1
++    assert segments[0].end_ms == 2.6399999 * 1000
++    assert segments[0].words[-1].end_ms == 2640
++    assert frame.result == before
++    assert normalizer('deepgram', 'flux-general-en').normalize(payload) == ()
++    # A full additional sample is not the same PCM extent and must remain a gap.
++    overshoot = copy.deepcopy(payload)
++    overshoot['words'][-1]['end'] = 2.6400625
++    assert service.normalize_source_frame(
++        InterimTranscriptionFrame(event['text'], '', '', result=overshoot)
++    ) == ()
++    assert service.source_normalizer.missing_reason == 'invalid_source_audio_evidence'
++    overshoot['words'][-1]['end'] = 2.6400001
++    assert service.normalize_source_frame(
++        InterimTranscriptionFrame(event['text'], '', '', result=overshoot)
++    ) == ()
+--- a/tests/test_td_transcript.py
++++ b/tests/test_td_transcript.py
+@@ -158,3 +158,29 @@
+     view = ledger.view()
+     assert view.text == ""
+     assert view.missing_reason == "cross_commit_word_timing_incomplete"
++
++
++def test_sample_equivalent_consumed_edge_keeps_final_prefix_and_new_tail_separate():
++    """The D-062 boundary must not duplicate an old word or erase its new tail."""
++    from dataclasses import replace
++
++    from src.asr.transcript import SourceSegment, TimedWord, TranscriptLedger
++
++    ledger = TranscriptLedger()
++    old = SourceSegment(0, 'stream-source', 1, 0, 2639.9999, 'one', False,
++                        (TimedWord('one', 0, 2640),), sample_rate=16000)
++    ledger.apply(old)
++    submitted = ledger.consume()
++    updated = replace(old, revision=2, end_ms=2800, text='one six', final=True,
++                      words=(TimedWord('one', 0, 2640), TimedWord('six', 2640, 2800)))
++    ledger.apply(updated)
++    assert ledger.view().text == 'six'
++    assert ledger.view().missing_reason is None
++    resolved = ledger.resolve_snapshot(submitted)
++    assert resolved is not None and resolved.text == 'one'
++    assert resolved.segments[0].end_ms == 2639.9999
++    # A word genuinely crossing that PCM boundary remains unsplittable.
++    ledger.apply(replace(updated, revision=3,
++                         words=(TimedWord('one', 0, 2700), TimedWord('six', 2700, 2800))))
++    assert ledger.view().missing_reason == 'cross_commit_word_overlaps_boundary'
++    assert ledger.resolve_snapshot(submitted) is None

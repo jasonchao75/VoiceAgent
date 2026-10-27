@@ -1,0 +1,87 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_______ test_runtime_cached_repeated_units_stream_pcm_without_synthesis ________
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-135/test_runtime_cached_repeated_u0')
+
+    async def test_runtime_cached_repeated_units_stream_pcm_without_synthesis(tmp_path):
+        cache = EchoAudioCache(tmp_path)
+        state = IdentifierCollection(IdentifierVocabulary({'1': ['one']}), target_length=None)
+        config = TTSConfig(voice='fixture-voice')
+        events, calls = [], []
+    
+        async def synthesize(unit, config, rate, *, timeout):
+            calls.append((unit, config.speed))
+            return b'\x01\x00' * 240
+    
+        await cache.prepare('bot', ['1'], config, 24000, synthesize, timeout=2)
+        manifest = await cache.manifest('bot', ['1'], config, 24000)
+>       audio = renderer(cache, state, config, synthesize, events, manifest)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_echo_runtime.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cache = <src.tts.echo_cache.EchoAudioCache object at 0x114ed46e0>
+state = <src.pipeline.identifier.IdentifierCollection object at 0x114ed4980>
+config = TTSConfig(provider='deepgram_flux', voice='fixture-voice', model='flux-general-en', text_aggregation='token', speed=1....ment_opt_out=False, stability=0.5, similarity_boost=0.8, style=0.0, use_speaker_boost=False, text_normalization='auto')
+synthesize = <function test_runtime_cached_repeated_units_stream_pcm_without_synthesis.<locals>.synthesize at 0x114ec0720>
+events = []
+manifest = {'1': 'da0663bef948bdf7681897062fa707dca58c4451d2123dd3e162cc071feff1e2'}
+
+    def renderer(cache, state, config, synthesize, events, manifest=None):
+        """Require the production runtime adapter without invoking a provider."""
+>       assert util.find_spec('src.pipeline.echo_audio') is not None, 'Runtime cache adapter absent'
+E       AssertionError: Runtime cache adapter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1023aa8e0>('src.pipeline.echo_audio')
+E        +    where <function find_spec at 0x1023aa8e0> = util.find_spec
+
+tests/test_echo_runtime.py:15: AssertionError
+_________ test_clear_during_missing_asset_repair_never_reinserts_audio _________
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-135/test_clear_during_missing_asse0')
+
+    async def test_clear_during_missing_asset_repair_never_reinserts_audio(tmp_path):
+        cache = EchoAudioCache(tmp_path)
+        state = IdentifierCollection(IdentifierVocabulary({'1': ['one']}), target_length=None)
+        config = TTSConfig(voice='fixture-voice', speed=0.9)
+        events, calls = [], []
+        started, release = asyncio.Event(), asyncio.Event()
+    
+        async def synthesize(unit, settings, rate, *, timeout):
+            calls.append(settings.speed)
+            started.set()
+            await release.wait()
+            return b'\x01\x00' * 240
+    
+>       audio = renderer(cache, state, config, synthesize, events)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_echo_runtime.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cache = <src.tts.echo_cache.EchoAudioCache object at 0x114e82490>
+state = <src.pipeline.identifier.IdentifierCollection object at 0x114e82c10>
+config = TTSConfig(provider='deepgram_flux', voice='fixture-voice', model='flux-general-en', text_aggregation='token', speed=0....ment_opt_out=False, stability=0.5, similarity_boost=0.8, style=0.0, use_speaker_boost=False, text_normalization='auto')
+synthesize = <function test_clear_during_missing_asset_repair_never_reinserts_audio.<locals>.synthesize at 0x114f35620>
+events = [], manifest = None
+
+    def renderer(cache, state, config, synthesize, events, manifest=None):
+        """Require the production runtime adapter without invoking a provider."""
+>       assert util.find_spec('src.pipeline.echo_audio') is not None, 'Runtime cache adapter absent'
+E       AssertionError: Runtime cache adapter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1023aa8e0>('src.pipeline.echo_audio')
+E        +    where <function find_spec at 0x1023aa8e0> = util.find_spec
+
+tests/test_echo_runtime.py:15: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_echo_runtime.py::test_runtime_cached_repeated_units_stream_pcm_without_synthesis
+FAILED tests/test_echo_runtime.py::test_clear_during_missing_asset_repair_never_reinserts_audio
+2 failed, 1 warning in 0.89s

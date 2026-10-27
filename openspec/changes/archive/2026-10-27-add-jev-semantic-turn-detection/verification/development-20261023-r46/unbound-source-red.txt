@@ -1,0 +1,57 @@
+....FF                                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_unbound_callback_never_borrows_the_current_connection_epoch _______
+
+    async def test_unbound_callback_never_borrows_the_current_connection_epoch():
+        """A callback without inherited provenance cannot be relabelled as the active socket."""
+        from contextvars import Context
+    
+        source = Source()
+        await source._websocket_connect('fixture://current')
+    
+        async def unbound():
+            await source.push_frame(InterimTranscriptionFrame('unbound callback', '', '', result={
+                'event': 'Update', 'turn_index': 0, 'transcript': 'unbound callback',
+                'audio_window_start': 0., 'audio_window_end': 1.,
+            }))
+    
+        await asyncio.create_task(unbound(), context=Context())
+        frame = source.frames[-1]
+>       assert frame.metadata['asr_stream_epoch'] is None
+E       assert 0 is None
+
+tests/test_td_source_frames.py:125: AssertionError
+____ test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline _____
+
+    async def test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline():
+        """D-061: explicit unknown ownership is a retained gap, never a current or stale guess."""
+        from tests.test_td_runtime import coordinator
+    
+        td = coordinator()
+        errors = []
+    
+        async def error(message, **kwargs):
+            errors.append(message)
+    
+        td.push_error = error
+        await td.speech_started()
+        frame = InterimTranscriptionFrame('unbound original', '', '', result={
+            'event': 'Update', 'turn_index': 0, 'transcript': 'unbound original',
+            'audio_window_start': 0., 'audio_window_end': 1.,
+        })
+        frame.metadata.update(td_source_only=True, asr_stream_epoch=None)
+        assert await td.filter_provider_frame(frame) is True
+>       assert td.unranged_text == 'unbound original'
+E       AssertionError: assert None == 'unbound original'
+E        +  where None = <src.pipeline.custom_td.CustomTDCoordinator object at 0x1176be350>.unranged_text
+
+tests/test_td_source_frames.py:147: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_source_frames.py::test_old_receiver_keeps_original_epoch_after_new_connection
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_source_frames.py::test_unbound_callback_never_borrows_the_current_connection_epoch
+FAILED tests/test_td_source_frames.py::test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline
+2 failed, 4 passed, 1 warning in 0.97s

@@ -1,0 +1,70 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_missing_range_fails_once_at_maximum_without_submitting_or_executing_tools _
+
+    async def test_missing_range_fails_once_at_maximum_without_submitting_or_executing_tools():
+        """D-061: unresolved evidence must terminate at the existing silence maximum."""
+        events, errors, output = [], [], []
+        td = coordinator(evidence_sink=events.append)
+    
+        async def error(error_msg, **kwargs):
+            errors.append((error_msg, kwargs.get('force_treat_as_permanent')))
+    
+        async def push(frame, *args, **kwargs):
+            output.append(frame)
+    
+        td.push_error = error
+        td.push_frame = push
+        await td.speech_started()
+        await td.receive_transcript(InterimTranscriptionFrame('unknown original', '', '', result=None))
+        await td.speech_stopped(1000)
+        await td.advance(3499)
+        assert errors == []
+        await td.advance(3500)
+>       assert errors == [('asr_source_evidence_unavailable', True)]
+E       AssertionError: assert [] == [('asr_source...lable', True)]
+E         
+E         Right contains one more item: ('asr_source_evidence_unavailable', True)
+E         Use -v to get more diff
+
+tests/test_td_runtime.py:884: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-23 03:52:25.060 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+______ test_same_snapshot_recovery_before_maximum_keeps_normal_submission ______
+
+    async def test_same_snapshot_recovery_before_maximum_keeps_normal_submission():
+        """D-061 does not turn recoverable interim evidence into a premature call failure."""
+        from pipecat.processors.frame_processor import FrameProcessor
+    
+        td = coordinator()
+        td.asr = ASRService(FrameProcessor(), source_normalizer=SourceNormalizer('soniox', 'stt-rt-v5'))
+        output = []
+    
+        async def push(frame, *args, **kwargs):
+            output.append(frame)
+    
+        td.push_frame = push
+        await td.speech_started()
+        await td.receive_transcript(InterimTranscriptionFrame(
+            'one', '', '', result=[{'text': 'one', 'is_final': False}],
+        ))
+        await td.speech_stopped(1000)
+        await td.advance(3499)
+        await td.receive_transcript(InterimTranscriptionFrame(
+            'one', '', '', result=[{'text': 'one', 'is_final': False, 'start_ms': 0, 'end_ms': 100}],
+        ))
+        await td.advance(3500)
+>       assert td.source_evidence_error is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CustomTDCoordinator' object has no attribute 'source_evidence_error'
+
+tests/test_td_runtime.py:917: AttributeError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_missing_range_fails_once_at_maximum_without_submitting_or_executing_tools
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_missing_range_fails_once_at_maximum_without_submitting_or_executing_tools
+FAILED tests/test_td_runtime.py::test_same_snapshot_recovery_before_maximum_keeps_normal_submission
+2 failed, 47 deselected, 1 warning in 1.10s

@@ -1,0 +1,10 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (0.86875ms)
+✔ targeted clear removes future samples without claiming they rendered (0.341667ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 31.662875

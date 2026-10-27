@@ -1,0 +1,92 @@
+
+Running 2 tests using 1 worker
+
+(node:8964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:98:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (5.8s)
+(node:8979) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-runtime.spec.js:143:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (5.6s)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:98:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#error-banner')
+    Expected substring: "audio missing"
+    Received string:    ""
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('#error-banner') with timeout 5000ms
+      - waiting for locator('#error-banner')
+        14 × locator resolved to <div hidden="" role="alert" id="error-banner" class="error-banner"></div>
+           - unexpected value ""
+
+
+      109 |   await expect(page.locator(".td-audio-status").first()).toContainText("Missing");
+      110 |   await page.locator(".publish-button").click();
+    > 111 |   await expect(page.locator("#error-banner")).toContainText("audio missing");
+          |                                               ^
+      112 |   expect(generations).toHaveLength(0);
+      113 |   await page.locator("#cache-generate").click();
+      114 |   await expect(page.locator("#cache-action-status")).toHaveText("Audio ready · stored permanently");
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:111:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-runtime.spec.js:143:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#save-state')
+    Expected substring: "newer edits unsaved"
+    Received string:    "Saved"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('#save-state') with timeout 5000ms
+      - waiting for locator('#save-state')
+        14 × locator resolved to <span role="status" id="save-state" class="td-save-status">Saved</span>
+           - unexpected value "Saved"
+
+
+      156 |   await page.locator(".td-vocab-row").last().getByRole("button",{name:"Delete mapping"}).click();
+      157 |   release();
+    > 158 |   await expect(page.locator("#save-state")).toContainText("newer edits unsaved");
+          |                                             ^
+      159 |   await expect(page.locator(".td-vocab-row")).toHaveCount(1);
+      160 |   await page.unroute(`**/api/bots/${bot.id}`);
+      161 |   await page.getByRole("button",{name:"Save TD settings",exact:true}).click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:158:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-deleting-a-voca-fd6a2-retains-newer-unsaved-edits-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-deleting-a-voca-fd6a2-retains-newer-unsaved-edits-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-deleting-a-voca-fd6a2-retains-newer-unsaved-edits-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-deleting-a-voca-fd6a2-retains-newer-unsaved-edits-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:98:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state 
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:143:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits 

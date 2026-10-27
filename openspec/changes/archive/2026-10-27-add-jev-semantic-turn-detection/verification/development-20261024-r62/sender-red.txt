@@ -1,0 +1,51 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_negotiated_audio_sender_without_initial_track_can_be_bound ________
+
+    @pytest.mark.asyncio
+    async def test_negotiated_audio_sender_without_initial_track_can_be_bound():
+        """A real native audio transceiver has a sender before it has any source track."""
+        from aiortc import RTCPeerConnection
+    
+        from src.pipeline.rtp_output import install_candidate_transport
+    
+        peer = RTCPeerConnection()
+        transceiver = peer.addTransceiver("audio", direction="sendrecv")
+        assert transceiver.sender.track is None
+        connection = SimpleNamespace(
+            _pc=peer,
+            replace_audio_track=lambda track: transceiver.sender.replaceTrack(track),
+            send_app_message=lambda message: None,
+        )
+        output = SimpleNamespace(write_audio_frame=AsyncMock(), send_message=AsyncMock())
+        transport = SimpleNamespace(_client=SimpleNamespace(), output=lambda: output)
+        from src.pipeline.rtp_mapping import MappedRawAudioTrack, RTPTaskLedger
+        from pipecat.transports.smallwebrtc.transport import RawAudioTrack
+    
+        track = RawAudioTrack(24000)
+        try:
+            install_candidate_transport(transport, connection)
+>           connection.replace_audio_track(track)
+
+tests/test_td_rtp_integration.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+track = <pipecat.transports.smallwebrtc.transport.RawAudioTrack object at 0x11303c830>
+
+    def replace(track: Any) -> None:
+        """Attach provenance before the native sender can consume the new track."""
+        senders = connection._pc.getSenders()
+        audio = [sender for sender in senders if sender.track and sender.track.kind == "audio"]
+        if len(audio) != 1:
+>           raise RuntimeError("Candidate RTP audio sender ownership is unproven")
+E           RuntimeError: Candidate RTP audio sender ownership is unproven
+
+src/pipeline/rtp_output.py:129: RuntimeError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_rtp_integration.py::test_negotiated_audio_sender_without_initial_track_can_be_bound
+1 failed, 1 warning in 0.98s

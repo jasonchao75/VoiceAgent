@@ -1,0 +1,119 @@
+..FF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[speechmatics-enhanced] _
+
+provider = 'speechmatics', model = 'enhanced'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('assemblyai', 'universal-streaming-english'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v4'),
+    ])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        td = coordinator()
+        td.asr.source_normalizer = SourceNormalizer(provider, model)
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        def frame(source, text, start=None, end=None):
+            if provider == 'deepgram':
+                payload = {'event': 'Update', 'turn_index': source, 'transcript': text}
+                if start is not None:
+                    payload.update(audio_window_start=start, audio_window_end=end)
+            elif provider == 'speechmatics':
+                metadata = {'start_time': source * .2}
+                if end is not None:
+                    metadata['end_time'] = end
+                payload = {'message': 'AddPartialSegment', 'segments': [
+                    {'speaker_id': 'a', 'text': text, 'metadata': metadata},
+                ]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': source * 200}
+                if end is not None:
+                    token['end_ms'] = end * 1000
+                payload = {'tokens': [token]}
+            else:
+                payload = {'turn_order': source, 'transcript': text}
+                if start is not None:
+                    payload['words'] = [{'text': text, 'start': start * 1000, 'end': end * 1000}]
+            return InterimTranscriptionFrame(text, '', '', result=payload)
+    
+        td.push_frame = push
+        await td.receive_transcript(frame(0, '12'))
+        await td.receive_transcript(frame(1, '34', .2, .4))
+        await td.speech_stopped(1000)
+        await td.advance(9999)
+>       assert not any(isinstance(item, TranscriptionFrame) for item in out)
+E       assert not True
+E        +  where True = any(<generator object test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers.<locals>.<genexpr> at 0x117843e60>)
+
+tests/test_td_runtime.py:956: AssertionError
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[soniox-stt-rt-v4] _
+
+provider = 'soniox', model = 'stt-rt-v4'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('assemblyai', 'universal-streaming-english'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v4'),
+    ])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        td = coordinator()
+        td.asr.source_normalizer = SourceNormalizer(provider, model)
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        def frame(source, text, start=None, end=None):
+            if provider == 'deepgram':
+                payload = {'event': 'Update', 'turn_index': source, 'transcript': text}
+                if start is not None:
+                    payload.update(audio_window_start=start, audio_window_end=end)
+            elif provider == 'speechmatics':
+                metadata = {'start_time': source * .2}
+                if end is not None:
+                    metadata['end_time'] = end
+                payload = {'message': 'AddPartialSegment', 'segments': [
+                    {'speaker_id': 'a', 'text': text, 'metadata': metadata},
+                ]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': source * 200}
+                if end is not None:
+                    token['end_ms'] = end * 1000
+                payload = {'tokens': [token]}
+            else:
+                payload = {'turn_order': source, 'transcript': text}
+                if start is not None:
+                    payload['words'] = [{'text': text, 'start': start * 1000, 'end': end * 1000}]
+            return InterimTranscriptionFrame(text, '', '', result=payload)
+    
+        td.push_frame = push
+        await td.receive_transcript(frame(0, '12'))
+        await td.receive_transcript(frame(1, '34', .2, .4))
+        await td.speech_stopped(1000)
+        await td.advance(9999)
+>       assert not any(isinstance(item, TranscriptionFrame) for item in out)
+E       assert not True
+E        +  where True = any(<generator object test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers.<locals>.<genexpr> at 0x1178c5ee0>)
+
+tests/test_td_runtime.py:956: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[deepgram-flux-general-en]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[speechmatics-enhanced]
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[soniox-stt-rt-v4]
+2 failed, 2 passed, 29 deselected, 1 warning in 1.01s

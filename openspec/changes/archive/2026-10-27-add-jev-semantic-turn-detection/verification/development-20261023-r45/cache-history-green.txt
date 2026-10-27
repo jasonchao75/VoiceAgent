@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:65724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation (15.0s)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#history-dialog .td-record').filter({ has: locator('dt').filter({ hasText: 'Runtime audio recovery' }) }).filter({ hasText: 'true' })
+    Expected: 1
+    Received: 3
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#history-dialog .td-record').filter({ has: locator('dt').filter({ hasText: 'Runtime audio recovery' }) }).filter({ hasText: 'true' }) with timeout 5000ms
+      - waiting for locator('#history-dialog .td-record').filter({ has: locator('dt').filter({ hasText: 'Runtime audio recovery' }) }).filter({ hasText: 'true' })
+        14 × locator resolved to 3 elements
+           - unexpected value "3"
+
+
+      213 |     await details.evaluateAll(nodes=>nodes.forEach(node=>{node.open=true;}));
+      214 |     const record=page.locator('#history-dialog .td-record').filter({has:page.locator('dt',{hasText:'Runtime audio recovery'})}).filter({hasText:'true'});
+    > 215 |     await expect(record).toHaveCount(1);
+          |                          ^
+      216 |     await expect(record).toContainText('Resource duration (ms)');
+      217 |     await expect(record).not.toContainText('Elapsed silence (ms)');
+      218 |     await expect(record).toContainText(resources.fingerprint);
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:215:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-WS-ident-f1037-ops-only-its-old-generation-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation 

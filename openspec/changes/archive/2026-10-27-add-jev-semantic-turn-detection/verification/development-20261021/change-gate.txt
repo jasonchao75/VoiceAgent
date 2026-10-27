@@ -1,0 +1,16 @@
+WARNING: Open known_issues[1]: 提交后范围归属、临界续说、媒体断流、聚合器、Jev异常、Partial指标仍需实现验证；播放、混合表达工具、主动更正及Final实质改义取消重答均已确认写入Delta，产品开放问题0项。
+WARNING: Open known_issues[12]: Flux Update与时间桥接、厂商原生停止建议隔离仍待实现；Speechmatics仍按锁定Voice SDK适配。原型AssemblyAI ID已在v0.14修为universal-3-5-pro，UI修正不代表真实兼容。
+WARNING: Open known_issues[15]: 时间戳能力应由工程查证，不是产品确认。新静态证据：Speechmatics Voice SDK输出metadata/fragments，Pipecat1.8.1读取results且未转传metadata，可能丢失音频时间；Flux Update桥接亦缺失。已讨论的去重/用户续说不打断不应继续笼统标未定，ASR已播后自动修订与用户主动更正需区分。
+WARNING: Open known_issues[17]: 原前缀本地抽取方案已由D-040严格分流替代：仅纯编号本地，混合表达交现有LLM工具。当前规格已同步，原型/解析/工具/时间戳及Partial修订的实现验证仍缺失。
+WARNING: Open known_issues[20]: 交接核查将D-043重答与已成功编号工具副作用的组合列为工程风险：重答不能无条件重复提交/清空，也不能伪造撤销已执行操作。已进入M2/M5、研发细则E及REV-03自测，尚未实现验证。
+WARNING: Open known_issues[25]: 正式工厂已补Flux Update和Speechmatics时间元数据、ASRService提供归一化接口；范围/时钟/Jev/重答/编号底座尚未全部接正式Pipeline。缺时间范围文本保留及跨提交切分待完善；M1—M5和UI A/B未完成，未达到独立审核交付条件。
+WARNING: Open unverified_items[1]: 未调用 Jev，语言效果、P95 延迟、费用、字段映射和厂商兼容均未实测；仅方案草案。
+WARNING: Open unverified_items[2]: 未验证 ASR 单元时间戳、Partial 修订去重、双向同时说话时的回声及跟读队列行为。
+WARNING: Open unverified_items[3]: v0.10 为fixture原型。新增逐轮展示、普通回复/指标、多候选、旧会话缺失数据；已验证数量关联、筛选、跳转、中英切换与390px抽屉无横向溢出。未连接真实历史API或持久化；ASR集成、编号边界和效果仍未实现/验证。
+WARNING: Open unverified_items[4]: ASR事件映射基于官方文档、当前注册和锁定依赖静态审阅；未验证真实回包顺序、迟到Final/重连及时间戳覆盖，不证明自建TD已实现。
+WARNING: Open unverified_items[5]: v0.12 采用逗号别名、行内音频状态/试听、标题一键合成和下方独立间隔；校验与窄屏已检查。未调用TTS或生成真实音频，持久存储、音质、发布后缓存故障及动态语速仍未实现/验证。
+WARNING: Open unverified_items[6]: 本轮证实官方/SDK字段存在及Speechmatics静态适配不匹配，未执行真实厂商回包测试；各Partial覆盖、重连、修订与队列仍需工程fixture/授权联调。
+WARNING: Open unverified_items[8]: D-043已确认同范围有效Final实质改义时停止旧回答并重答；语义变化判定、取消残留音频、上下文修订、幂等及旧轮次隔离均待实现与验证。
+WARNING: Open unverified_items[9]: AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。
+WARNING: 30 tasks remain unchecked
+PASS: 0 errors, 15 warning(s)

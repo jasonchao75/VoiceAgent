@@ -1,0 +1,640 @@
+FFFFFFFFFFFF                                                             [100%]
+=================================== FAILURES ===================================
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-flux-general-en] _
+
+provider = 'deepgram', model = 'flux-general-en', bad_range = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0')}
+E        +  where {(0, '0')} = <src.asr.turn_events.SourceNormalizer object at 0x109e66e40>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-flux-general-multi] _
+
+provider = 'deepgram', model = 'flux-general-multi', bad_range = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0')}
+E        +  where {(0, '0')} = <src.asr.turn_events.SourceNormalizer object at 0x109e13d90>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-nova-3] _
+
+provider = 'deepgram', model = 'nova-3', bad_range = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0.0')}
+E        +  where {(0, '0.0')} = <src.asr.turn_events.SourceNormalizer object at 0x10a3cc050>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[missing-speechmatics-enhanced] _
+
+provider = 'speechmatics', model = 'enhanced', bad_range = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, 'a:0.0')}
+E        +  where {(0, 'a:0.0')} = <src.asr.turn_events.SourceNormalizer object at 0x109e7a520>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[missing-soniox-stt-rt-v5] _
+
+provider = 'soniox', model = 'stt-rt-v5', bad_range = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0.0')}
+E        +  where {(0, '0.0')} = <src.asr.turn_events.SourceNormalizer object at 0x109e7a8b0>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[missing-assemblyai-universal-3-5-pro] _
+
+provider = 'assemblyai', model = 'universal-3-5-pro', bad_range = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0')}
+E        +  where {(0, '0')} = <src.asr.turn_events.SourceNormalizer object at 0x10a351fd0>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-flux-general-en] _
+
+provider = 'deepgram', model = 'flux-general-en', bad_range = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0')}
+E        +  where {(0, '0')} = <src.asr.turn_events.SourceNormalizer object at 0x10a39a030>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-flux-general-multi] _
+
+provider = 'deepgram', model = 'flux-general-multi', bad_range = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0')}
+E        +  where {(0, '0')} = <src.asr.turn_events.SourceNormalizer object at 0x10a39aad0>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-nova-3] _
+
+provider = 'deepgram', model = 'nova-3', bad_range = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0.0')}
+E        +  where {(0, '0.0')} = <src.asr.turn_events.SourceNormalizer object at 0x109efbd50>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-speechmatics-enhanced] _
+
+provider = 'speechmatics', model = 'enhanced', bad_range = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, 'a:0.0')}
+E        +  where {(0, 'a:0.0')} = <src.asr.turn_events.SourceNormalizer object at 0x10a5e8550>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-soniox-stt-rt-v5] _
+
+provider = 'soniox', model = 'stt-rt-v5', bad_range = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0.0')}
+E        +  where {(0, '0.0')} = <src.asr.turn_events.SourceNormalizer object at 0x10a3b8b90>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+_ test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-assemblyai-universal-3-5-pro] _
+
+provider = 'assemblyai', model = 'universal-3-5-pro', bad_range = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    @pytest.mark.parametrize('bad_range', ['missing', 'invalid'])
+    def test_final_source_cannot_reopen_a_gap_from_late_partial(provider, model, bad_range):
+        """A rejected late downgrade must not strand a later user turn behind a false gap."""
+        parser = normalizer(provider, model)
+    
+        def payload(final, source, text, broken=None):
+            start, end = source * 100, source * 100 + 100
+            if provider == 'deepgram' and model.startswith('flux-'):
+                data = {'event': 'EndOfTurn' if final else 'Update', 'turn_index': source,
+                        'transcript': text, 'audio_window_start': start / 1000}
+                if broken != 'missing':
+                    data['audio_window_end'] = -1 if broken else end / 1000
+            elif provider == 'deepgram':
+                data = {'start': start / 1000, 'is_final': final,
+                        'channel': {'alternatives': [{'transcript': text}]}}
+                if broken != 'missing':
+                    data['duration'] = -1 if broken else .1
+            elif provider == 'speechmatics':
+                metadata = {'start_time': start / 1000}
+                if broken != 'missing':
+                    metadata['end_time'] = -1 if broken else end / 1000
+                data = {'message': 'AddSegment' if final else 'AddPartialSegment',
+                        'segments': [{'speaker_id': 'a', 'text': text, 'metadata': metadata}]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': start, 'is_final': final}
+                if broken != 'missing':
+                    token['end_ms'] = -1 if broken else end
+                data = {'tokens': [token]}
+            else:
+                data = {'turn_order': source, 'transcript': text, 'end_of_turn': final}
+                if broken != 'missing':
+                    data['words'] = [{'text': text, 'start': start,
+                                      'end': -1 if broken else end}]
+            return data
+    
+        original = parser.normalize(payload(True, 0, '12'))[0]
+        assert original.final
+        assert parser.normalize(payload(False, 0, 'old', bad_range)) == ()
+>       assert not parser.unresolved_sources
+E       AssertionError: assert not {(0, '0')}
+E        +  where {(0, '0')} = <src.asr.turn_events.SourceNormalizer object at 0x10a3b9220>.unresolved_sources
+
+tests/test_td_asr_events.py:354: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-flux-general-en]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-flux-general-multi]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-nova-3]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-speechmatics-enhanced]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-soniox-stt-rt-v5]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-assemblyai-universal-3-5-pro]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-flux-general-en]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-flux-general-multi]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-nova-3]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-speechmatics-enhanced]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-soniox-stt-rt-v5]
+FAILED tests/test_td_asr_events.py::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-assemblyai-universal-3-5-pro]
+12 failed, 26 deselected in 0.08s

@@ -1,0 +1,92 @@
+
+Running 2 tests using 1 worker
+
+(node:21491) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted incomplete identifier remains visible after refresh at 1440px (5.8s)
+(node:21505) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted overflow identifier remains visible after refresh at 1440px (5.5s)
+
+
+  1) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted incomplete identifier remains visible after refresh at 1440px 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#history-dialog').locator('[data-turn-id="1"]')
+    Expected: 1
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#history-dialog').locator('[data-turn-id="1"]') with timeout 5000ms
+      - waiting for locator('#history-dialog').locator('[data-turn-id="1"]')
+        14 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      164 |       await page.locator('.history-row').first().click();
+      165 |       const dialog=page.locator('#history-dialog'),turn=dialog.locator('[data-turn-id="1"]');
+    > 166 |       await expect(turn).toHaveCount(1);
+          |                          ^
+      167 |       await expect(turn).toContainText('one two three');
+      168 |       await expect(turn).toContainText(text);
+      169 |       await expect(turn.locator('.td-badge')).toHaveText('rule processed');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:166:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-unsubm-a5fba-ble-after-refresh-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-unsubm-a5fba-ble-after-refresh-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-unsubm-a5fba-ble-after-refresh-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-unsubm-a5fba-ble-after-refresh-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted overflow identifier remains visible after refresh at 1440px 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#history-dialog').locator('[data-turn-id="1"]')
+    Expected: 1
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#history-dialog').locator('[data-turn-id="1"]') with timeout 5000ms
+      - waiting for locator('#history-dialog').locator('[data-turn-id="1"]')
+        14 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      164 |       await page.locator('.history-row').first().click();
+      165 |       const dialog=page.locator('#history-dialog'),turn=dialog.locator('[data-turn-id="1"]');
+    > 166 |       await expect(turn).toHaveCount(1);
+          |                          ^
+      167 |       await expect(turn).toContainText('one two three');
+      168 |       await expect(turn).toContainText(text);
+      169 |       await expect(turn.locator('.td-badge')).toHaveText('rule processed');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:166:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-unsubm-0a30e-ble-after-refresh-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-unsubm-0a30e-ble-after-refresh-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-unsubm-0a30e-ble-after-refresh-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-unsubm-0a30e-ble-after-refresh-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted incomplete identifier remains visible after refresh at 1440px 
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted overflow identifier remains visible after refresh at 1440px 

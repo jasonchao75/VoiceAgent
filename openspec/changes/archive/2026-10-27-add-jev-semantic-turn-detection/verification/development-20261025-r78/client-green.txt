@@ -1,0 +1,14 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (0.986625ms)
+✔ targeted clear removes future samples without claiming they rendered (0.680334ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (0.394417ms)
+✔ clock challenge is observed in an actual later quantum without changing audio (0.370916ms)
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (2.479875ms)
+✔ closing during a delayed probe never writes to a replaced renderer (0.485083ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35.695667

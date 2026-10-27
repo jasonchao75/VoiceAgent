@@ -1,0 +1,6 @@
+{
+  "native_mapping_messages_observed": 51,
+  "task_started_proven": false,
+  "browser_failed": true,
+  "exact_browser_mapping_failure_reason": "not retained by current bridge callback"
+}

@@ -1,0 +1,73 @@
+{
+  "batch_id": "deepgram-negation-continuation-r91-v1",
+  "authorization_status": "not_authorized",
+  "cases": [
+    {
+      "id": "negation-continuation",
+      "path": "/Volumes/work/OpenCode/VoiceAgent/test-results/td-vendor-inputs/20261026-r91/negation-continuation.wav",
+      "sha256": "f4dafd141773d42683c84fa7b938b68615e7f7493e9cad1da29d99c49f7de4b9",
+      "duration_seconds": 5.8576875,
+      "provider": "deepgram",
+      "model": "flux-general-en",
+      "options": {},
+      "silence_tail_seconds": 3,
+      "text": "Please do not cancel my booking. I would like to change the time."
+    }
+  ],
+  "audio_format": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "sample_width_bytes": 2
+  },
+  "timeline": [
+    {
+      "kind": "local_synthetic_segment",
+      "sample_start": 0,
+      "sample_end": 41153,
+      "intended_text": "Please do not cancel my booking.",
+      "word_truth": "segment bounds only; not human word annotation"
+    },
+    {
+      "kind": "inserted_silence",
+      "sample_start": 41153,
+      "sample_end": 53953
+    },
+    {
+      "kind": "local_synthetic_segment",
+      "sample_start": 53953,
+      "sample_end": 93723,
+      "intended_text": "I would like to change the time.",
+      "word_truth": "segment bounds only; not human word annotation"
+    }
+  ],
+  "max_calls": 1,
+  "connection_wall_seconds": 30,
+  "connect_timeout_seconds": 5,
+  "cost_ceiling_usd": "0.02",
+  "maximum_public_price_usd": "0.00385",
+  "pricing_source": "https://deepgram.com/pricing",
+  "price_verified": "2026-10-26",
+  "price_basis": "regular Flux English PAYG USD0.0077/min, 30-second connection envelope; no promotion assumed",
+  "recipient": "api.deepgram.com",
+  "retries": 0,
+  "llm_jev_tts_calls": 0,
+  "turn_detection_source": "self_developed",
+  "stop_conditions": [
+    "first authentication/rate-limit/timeout/protocol failure",
+    "first missing or invalid source range",
+    "asset hash mismatch",
+    "connection count or time budget exceeded"
+  ],
+  "scope": "ASR raw/normalized source evidence; negation and continuation observations only; no guarantee provider produces revision; no TD+Jev integration/WPM/human word timing claim",
+  "generator": "local macOS say Albert rate150; not external TTS",
+  "output_whitelist": [
+    "transcript",
+    "source times and ranges",
+    "raw event type/revision flags",
+    "normalized event identity",
+    "elapsed durations",
+    "bounded failure reason"
+  ],
+  "account_hard_cost_cap_verified": false,
+  "request_sha256": "ec8070080abcd19bf988b079055ce91c07c857c2e21b46d917baf3209a5836ac"
+}

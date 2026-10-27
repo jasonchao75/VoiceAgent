@@ -1,0 +1,17 @@
+WARNING: Open known_issues[1]: 提交后范围归属、临界续说、媒体断流、聚合器、Jev异常、Partial指标仍需实现验证；播放、混合表达工具、主动更正及Final实质改义取消重答均已确认写入Delta，产品开放问题0项。
+WARNING: Open known_issues[12]: Flux原始Update桥接、Speechmatics metadata/fragments（含null详情）及自建端点隔离已实现并通过fixture；真实六模型回包、时间覆盖与重连兼容仍未验证，不以来源选项可见宣称兼容。
+WARNING: Open known_issues[15]: 已补Speechmatics时间字段和Flux Update保留、SDK连接代次frame及fixture归一化；未知音频范围的可靠切分、跨连接本地时钟对齐与实际时间覆盖尚未闭环。
+WARNING: Open known_issues[17]: 严格本地全输入格式与共享编号状态单测已实现；混合表达的LLM提交/清空工具、关键词/WPM及正式流水线仍未接全。
+WARNING: Open known_issues[20]: 交接核查将D-043重答与已成功编号工具副作用的组合列为工程风险：重答不能无条件重复提交/清空，也不能伪造撤销已执行操作。已进入M2/M5、研发细则E及REV-03自测，尚未实现验证。
+WARNING: Open known_issues[25]: 普通自建TD已接正式Pipeline、配置/快照/加密Jev及历史事件；真实Pipecat验证唯一提交和D-049上下文替换。未知范围保留/切分、完整输出/工具隔离、编号播放/缓存及正式UI A/B仍未完成；不得提交独立审核。
+WARNING: Open known_issues[27]: 重答集成检查发现现有set_speech_speed回调尚未绑定原回答/来源身份；Final重答可能重复执行成功的加速操作，迟到工具也未完成代次隔离。需要与编号工具一起补响应作用域及成功操作幂等，修复前不得宣称M2-5/M3工具安全通过。
+WARNING: Open unverified_items[1]: 已实现Jev后端安全客户端、显式问题/融合、MockTransport错误测试及普通TD编排；没有真实调用，语言效果、实际P95延迟、费用和厂商兼容仍未实测。
+WARNING: Open unverified_items[2]: 未验证 ASR 单元时间戳、Partial 修订去重、双向同时说话时的回声及跟读队列行为。
+WARNING: Open unverified_items[3]: v0.10 为fixture原型。新增逐轮展示、普通回复/指标、多候选、旧会话缺失数据；已验证数量关联、筛选、跳转、中英切换与390px抽屉无横向溢出。未连接真实历史API或持久化；ASR集成、编号边界和效果仍未实现/验证。
+WARNING: Open unverified_items[4]: ASR事件映射基于官方文档、当前注册和锁定依赖静态审阅；未验证真实回包顺序、迟到Final/重连及时间戳覆盖，不证明自建TD已实现。
+WARNING: Open unverified_items[5]: v0.12 采用逗号别名、行内音频状态/试听、标题一键合成和下方独立间隔；校验与窄屏已检查。未调用TTS或生成真实音频，持久存储、音质、发布后缓存故障及动态语速仍未实现/验证。
+WARNING: Open unverified_items[6]: 本轮证实官方/SDK字段存在及Speechmatics静态适配不匹配，未执行真实厂商回包测试；各Partial覆盖、重连、修订与队列仍需工程fixture/授权联调。
+WARNING: Open unverified_items[8]: D-049替代实质改义门槛。真实Pipecat已验证同轮Partial→Final上下文替换和只计1个用户提交；真实LLM/TTS取消残留、工具副作用及客户端缓冲尚未完整验证。
+WARNING: Open unverified_items[9]: AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。
+WARNING: 29 tasks remain unchecked
+PASS: 0 errors, 16 warning(s)

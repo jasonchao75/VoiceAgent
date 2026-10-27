@@ -1,0 +1,47 @@
+[
+  {
+    "playback_id": "b770a444da20474e88df71beacc95196",
+    "event": "task_started",
+    "rendered_samples": 128,
+    "elapsed_ms": 5488.800000011921,
+    "evidence_source": "audio_worklet_render",
+    "render_frame": 77056,
+    "render_sample_rate": 24000,
+    "render_clock_id": "16f22008edf04dd5892244bb285bbcc3",
+    "http_status": 204
+  },
+  {
+    "playback_id": "b770a444da20474e88df71beacc95196",
+    "event": "task_stopped",
+    "rendered_samples": 2624,
+    "elapsed_ms": 5608.5999999940395,
+    "evidence_source": "audio_worklet_render",
+    "render_frame": 79872,
+    "render_sample_rate": 24000,
+    "render_clock_id": "16f22008edf04dd5892244bb285bbcc3",
+    "request_id": "0cca4e56b83e400896254aeae76e3291",
+    "http_status": 204
+  },
+  {
+    "playback_id": "2a4320c7b8f349b99f5257381779d21b",
+    "event": "task_started",
+    "rendered_samples": 128,
+    "elapsed_ms": 6320.0999999940395,
+    "evidence_source": "audio_worklet_render",
+    "render_frame": 96896,
+    "render_sample_rate": 24000,
+    "render_clock_id": "16f22008edf04dd5892244bb285bbcc3",
+    "http_status": 204
+  },
+  {
+    "playback_id": "2a4320c7b8f349b99f5257381779d21b",
+    "event": "task_finished",
+    "rendered_samples": 51840,
+    "elapsed_ms": 8478.59999999404,
+    "evidence_source": "audio_worklet_render",
+    "render_frame": 148800,
+    "render_sample_rate": 24000,
+    "render_clock_id": "16f22008edf04dd5892244bb285bbcc3",
+    "http_status": 204
+  }
+]

@@ -1,0 +1,157 @@
+........................................................................ [ 10%]
+...........................................................s.ss....s.F.. [ 20%]
+.............ssssss....ssss..ss....sss..ssssssssssssss.sssssssssssssssss [ 30%]
+sssssssssssssss.sssssssssss.sssssssss.sssssss........................... [ 41%]
+........................................................................ [ 51%]
+........................................................................ [ 61%]
+........................................................................ [ 72%]
+........................................................................ [ 82%]
+........................................................................ [ 92%]
+...................................................                      [100%]
+=================================== FAILURES ===================================
+______________ test_runtime_image_packages_active_prompt_fixtures ______________
+
+    def test_runtime_image_packages_active_prompt_fixtures() -> None:
+        """The production image must contain every Prompt loaded during app startup."""
+        root = Path(__file__).resolve().parents[1]
+        dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
+>       dockerignore = (root / ".dockerignore").read_text(encoding="utf-8")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_evaluation.py:607: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-complete-7g09xox4/.dockerignore')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-complete-7g09xox4/.dockerignore'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+=============================== warnings summary ===============================
+../../../../../../../Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+tests/test_asr_factory.py::test_flux_and_nova3_map_distinct_protocols
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/deepgram/core/websocket_compat.py:4: DeprecationWarning: websockets.exceptions.InvalidStatusCode is deprecated
+    from websockets.exceptions import InvalidStatusCode as InvalidWebSocketStatus  # type: ignore[attr-defined]
+
+tests/test_asr_factory.py::test_flux_and_nova3_map_distinct_protocols
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/websockets/legacy/__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+tests/test_asr_factory.py::test_speechmatics_uses_bundled_turn_models_and_certifi
+  <string>:22: DeprecationWarning: 'operating_point' is deprecated, use 'model' instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_evaluation.py:153: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:215: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:283: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:520: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1090: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1192: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1285: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1355: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1454: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1532: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1738: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1817: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1847: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1917: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:1992: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2024: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2242: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2295: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2346: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2446: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2456: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2521: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2558: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2604: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2634: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2773: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2860: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2931: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:2999: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3051: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3075: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3110: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3134: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3158: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3183: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3237: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3293: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3326: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3359: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3412: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3465: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3513: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3559: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:3946: private Evaluation source fixture is not available
+SKIPPED [2] tests/test_evaluation.py:3979: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4039: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4074: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4103: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4182: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4260: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4309: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4363: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4385: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4424: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4461: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4515: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4574: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4645: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4729: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4858: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:4986: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:5143: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:5291: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:5340: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:5405: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:5537: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:5647: private Evaluation source fixture is not available
+SKIPPED [3] tests/test_evaluation.py:5741: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:5883: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6013: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6149: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6258: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6296: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6352: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6392: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6429: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6526: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6642: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6700: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6736: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6769: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6819: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6892: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:6937: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:7025: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:7076: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:7127: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:7229: private Evaluation source fixture is not available
+SKIPPED [1] tests/test_evaluation.py:7288: private Evaluation source fixture is not available
+1 failed, 606 passed, 92 skipped, 5 warnings in 15.14s

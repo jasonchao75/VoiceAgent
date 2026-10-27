@@ -1,0 +1,35 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________ test_renderer_failure_is_not_recorded_as_successful_completion ________
+
+    def test_renderer_failure_is_not_recorded_as_successful_completion():
+        player = arbiter()
+        queue(player, "a")
+        player.dispatch()
+>       assert player.client_finished("a", event="task_failed")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: PlaybackArbiter.client_finished() got an unexpected keyword argument 'event'
+
+tests/test_td_playback.py:207: TypeError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 20:24:54.965 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+____ test_explicit_renderer_stop_is_preserved_without_a_server_stop_request ____
+
+    def test_explicit_renderer_stop_is_preserved_without_a_server_stop_request():
+        player = arbiter()
+        queue(player, "a")
+        player.dispatch()
+>       assert player.client_finished("a", event="task_stopped")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: PlaybackArbiter.client_finished() got an unexpected keyword argument 'event'
+
+tests/test_td_playback.py:215: TypeError
+=============================== warnings summary ===============================
+tests/test_td_playback.py::test_renderer_failure_is_not_recorded_as_successful_completion
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_playback.py::test_renderer_failure_is_not_recorded_as_successful_completion
+FAILED tests/test_td_playback.py::test_explicit_renderer_stop_is_preserved_without_a_server_stop_request
+2 failed, 8 deselected, 1 warning in 1.10s

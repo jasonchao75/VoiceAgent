@@ -1,0 +1,23 @@
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+__ test_context_contains_verified_state_without_mutating_conversation_history __
+
+    def test_context_contains_verified_state_without_mutating_conversation_history():
+        handlers, boundary, owner, state = tools()
+        output = []
+        source = state.bind_source(0, 'a', 1, '号码123')
+        state.submit_tool(source, '123')
+        original = LLMContext(messages=[{'role': 'user', 'content': '号码123'}])
+>       boundary.enrich_context = handlers.enrich_context
+                                  ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'IdentifierTools' object has no attribute 'enrich_context'
+
+tests/test_td_identifier_tools.py:94: AttributeError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_context_contains_verified_state_without_mutating_conversation_history
+1 failed, 4 passed, 1 warning in 0.82s

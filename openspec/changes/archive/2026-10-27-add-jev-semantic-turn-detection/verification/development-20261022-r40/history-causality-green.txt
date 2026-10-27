@@ -1,0 +1,104 @@
+..........F..                                                            [100%]
+=================================== FAILURES ===================================
+_______ test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1172e0a10>
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text(monkeypatch, session_request):
+        captures = []
+    
+        async def pipeline(**kwargs):
+            capture = kwargs["call_capture"]
+            captures.append(capture)
+            capture.record_td_event(
+                {
+                    "event": "playback_task_prepared",
+                    "playback_id": "a" * 32,
+                    "kind": "normal",
+                    "response_id": "1:1",
+                }
+            )
+            await kwargs["websocket"].send_json({"ready": True})
+            await kwargs["websocket"].receive_text()
+    
+        monkeypatch.setattr("src.api.run_voice_agent_session", pipeline)
+        payload = session_request.model_dump(mode="json")
+        payload.update(
+            session_type="chat_test",
+            deepgram_api_key="fixture-no-network-123",
+            llm_api_key="fixture-no-network-456",
+        )
+        with TestClient(create_app()) as client:
+            created = client.post(
+                "/api/sessions", json=payload, headers={"Origin": "http://localhost:8000"}
+            )
+            assert created.status_code == 201, created.text
+            session = created.json()
+            with client.websocket_connect(
+                session["websocket_path"], headers={"Origin": "http://localhost:8000"}
+            ) as socket:
+                assert socket.receive_json()["ready"]
+                url = f"/api/sessions/{session['session_id']}/playback-events"
+                headers = {"Authorization": f"Bearer {session['session_token']}"}
+                receipt = {
+                    "playback_id": "a" * 32,
+                    "event": "task_started",
+                    "rendered_samples": 128,
+                    "elapsed_ms": 10,
+                    "evidence_source": "audio_worklet_render",
+                    "render_frame": 1024, "render_sample_rate": 24000,
+                    "render_clock_id": "c" * 32,
+                }
+                assert client.post(url, json=receipt).status_code == 401
+                assert (
+                    client.post(
+                        url, json={**receipt, "playback_id": "b" * 32}, headers=headers
+                    ).status_code
+                    == 409
+                )
+                assert (
+                    client.post(
+                        url, json={**receipt, "rendered_samples": 0}, headers=headers
+                    ).status_code
+                    == 409
+                )
+                assert (
+                    client.post(
+                        url, json={**receipt, "text": "private text"}, headers=headers
+                    ).status_code
+                    == 422
+                )
+                assert client.post(url, json=receipt, headers=headers).status_code == 204
+                assert client.post(url, json=receipt, headers=headers).status_code == 204
+                clock_receipt = next(event for event in captures[0].td_events
+                                     if event["event"] == "playback_renderer_receipt")
+                assert clock_receipt["render_frame"] == 1024
+                assert clock_receipt["render_sample_rate"] == 24000
+                assert clock_receipt["render_clock_id"] == "c" * 32
+                assert captures[0]._current.browser_playback_ms is None
+                assert client.post(url, json={**receipt, "render_clock_id": "d" * 32},
+                                   headers=headers).status_code == 409
+                assert client.post(url, json={**receipt, "render_frame": 1025},
+                                   headers=headers).status_code == 409
+    
+                failed = {**receipt, "event": "task_failed", "failure_reason": "render_queue_limit"}
+>               assert client.post(url, json=failed, headers=headers).status_code == 204
+E               AssertionError: assert 409 == 204
+E                +  where 409 = <Response [409 Conflict]>.status_code
+E                +    where <Response [409 Conflict]> = post('/api/sessions/550b8ab5-3bad-4a12-932f-d4a6eac51be8/playback-events', json={'elapsed_ms': 10, 'event': 'task_failed', 'evidence_source': 'audio_worklet_render', 'failure_reason': 'render_queue_limit', ...}, headers={'Authorization': 'Bearer wIz_Bse622HhAnsTc1W3-Rsz0PxDya8vtk0oHChLITw'})
+E                +      where post = <starlette.testclient.TestClient object at 0x1172cc2f0>.post
+
+tests/test_playback_receipts_api.py:86: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_playback_receipts_api.py::test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text
+1 failed, 12 passed, 2 warnings in 1.99s

@@ -1,0 +1,7 @@
+{
+  "src/tts/confirmed_flux.py": "5daacd13dce0ad5a99f48ecd709623e30ac0cdb414e11d2d5d2c40b77d8fa1cf",
+  "scripts/evaluation/probe_td_tts_cancel.py": "ce5fc9eb70e8dc2dc767128ce86ce646f6879cd791e58592676ee91adc546223",
+  "tests/test_flux_interrupt_boundary.py": "2f7be6007da3afaea0c81ef9a3d66c78ba8b424f4b92e3a5d7e1a3e52ffbcd64",
+  "tests/test_td_tts_cancel_probe.py": "0440129cf268133af6ea0a9936b36f6a8606d2991fd6affcded6caf0acc6c405",
+  "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-tts-cancel-r94-plan.json": "367b800bb1b544d61a21c9ddb337dea42b521da59f090610f483b32f0b25d774"
+}

@@ -1,0 +1,62 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_________ test_old_receiver_keeps_original_epoch_after_new_connection __________
+
+    async def test_old_receiver_keeps_original_epoch_after_new_connection():
+        source = Source()
+        await source._connect()
+        await source._connect()
+        for gate in source.gates:
+            gate.set()
+        await asyncio.gather(*source.receivers)
+        texts = [f for f in source.frames if isinstance(f, InterimTranscriptionFrame)]
+>       assert [f.metadata['asr_stream_epoch'] for f in texts] == [0, 1]
+E       assert [1, 1] == [0, 1]
+E         
+E         At index 0 diff: 1 != 0
+E         Use -v to get more diff
+
+tests/test_td_source_frames.py:50: AssertionError
+_____ test_socket_retry_without_connect_advances_epoch_and_fences_old_task _____
+
+    async def test_socket_retry_without_connect_advances_epoch_and_fences_old_task():
+        source = Source()
+        await source._websocket_connect('fixture://first')
+        gate = asyncio.Event()
+    
+        async def late():
+            await gate.wait()
+            await source.push_frame(InterimTranscriptionFrame('old', '', ''))
+    
+        old = asyncio.create_task(late())
+        await source._websocket_connect('fixture://retry')
+        await source.push_frame(InterimTranscriptionFrame('new', '', ''))
+        gate.set()
+        await old
+        texts = [f for f in source.frames if isinstance(f, InterimTranscriptionFrame)]
+>       assert [(f.text, f.metadata['asr_stream_epoch']) for f in texts] == [('new', 1), ('old', 0)]
+E       AssertionError: assert [('new', 0), ('old', 0)] == [('new', 1), ('old', 0)]
+E         
+E         At index 0 diff: ('new', 0) != ('new', 1)
+E         Use -v to get more diff
+
+tests/test_td_source_frames.py:68: AssertionError
+_____________ test_lazy_sdk_context_retries_bind_each_actual_entry _____________
+
+    async def test_lazy_sdk_context_retries_bind_each_actual_entry():
+        source = Source()
+    
+        @asynccontextmanager
+        async def connect():
+            yield object()
+    
+>       factory = source._source_context_connector(connect)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Source' object has no attribute '_source_context_connector'
+
+tests/test_td_source_frames.py:79: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_td_source_frames.py::test_old_receiver_keeps_original_epoch_after_new_connection
+FAILED tests/test_td_source_frames.py::test_socket_retry_without_connect_advances_epoch_and_fences_old_task
+FAILED tests/test_td_source_frames.py::test_lazy_sdk_context_retries_bind_each_actual_entry
+3 failed in 0.03s

@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:50449) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API (332ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "td-local-offline"
+    Received: undefined
+
+      19 |   if(process.env.VOICE_AGENT_TD_ASSERT_RTP_INPUT==='1') {
+      20 |     const initial=await request.get('/_test/td-rtp-input');
+    > 21 |     expect(initial.headers()['x-voiceagent-test-fixture']).toBe('td-local-offline');
+         |                                                            ^
+      22 |     expect((await initial.json()).proofs).toHaveLength(0);
+      23 |   }
+      24 |   const response=await request.post("/api/bots",{headers:{Origin:baseURL},data:{
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtc-entry.spec.js:21:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 

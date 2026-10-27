@@ -1,0 +1,31 @@
+.......F                                                                 [100%]
+=================================== FAILURES ===================================
+_ test_collection_clear_preserves_ordinary_response_for_independent_response_validation _
+
+    def test_collection_clear_preserves_ordinary_response_for_independent_response_validation():
+        player = arbiter()
+        ordinary = player.enqueue(
+            playback_id="clear-answer",
+            kind="normal",
+            generation=0,
+            source_id="current-response",
+            revision=1,
+            source_order=2,
+        )
+        queue(player, "old-echo")
+        player.clear(1)
+>       assert ordinary.status == "queued"
+E       AssertionError: assert 'cancelled_unplayed' == 'queued'
+E         
+E         - queued
+E         + cancelled_unplayed
+
+tests/test_td_playback.py:198: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_playback.py::test_send_is_unknown_until_actual_client_start_and_serial_finish
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_playback.py::test_collection_clear_preserves_ordinary_response_for_independent_response_validation
+1 failed, 7 passed, 1 warning in 0.67s

@@ -1,0 +1,104 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_formal_websocket_pipeline_sends_task_pcm_and_accepts_matching_receipts __
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11381e9e0>
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_formal_websocket_pipeline_sends_task_pcm_and_accepts_matching_receipts(
+        monkeypatch, session_request
+    ):
+        """Keep the real route, transport, SDK queues and serial output; stub external services only."""
+        import json
+    
+        from pipecat.frames.frames import TTSAudioRawFrame, TTSStoppedFrame
+        from pipecat.frames.protobufs import frames_pb2
+        from pipecat.processors.frame_processor import FrameProcessor
+        from pipecat.services.tts_service import TTSService
+    
+        from src.asr.factory import ASRService
+        from src.pipeline.audio_identity import decode_audio_identity
+        from src.tts.response_scope import ResponseScopedTTSMixin
+        from tests.test_td_config import td_settings
+    
+        class Pass(FrameProcessor):
+            async def process_frame(self, frame, direction):
+                await super().process_frame(frame, direction)
+                await self.push_frame(frame, direction)
+    
+        class ASR:
+            def create(self, **kwargs):
+                return ASRService(processor=Pass())
+    
+        class Synth(ResponseScopedTTSMixin, TTSService):
+            async def run_tts(self, text, context_id):
+                yield TTSAudioRawFrame(b"\x01\x00" * 2400, 24000, 1, context_id=context_id)
+                yield TTSStoppedFrame(context_id=context_id)
+    
+        class TTS:
+            def create(self, **kwargs):
+                return Synth(response_owner=kwargs.get("response_owner"), sample_rate=24000)
+    
+        monkeypatch.setattr("src.api.create_default_asr_registry", ASR)
+        monkeypatch.setattr("src.api.create_default_tts_registry", TTS)
+        monkeypatch.setattr("src.pipeline.voice_agent.create_llm_service", lambda **kwargs: Pass())
+        payload = session_request.model_dump(mode="json")
+        payload.update(
+            turn_detection_source="self_developed",
+            td_config=td_settings(),
+            jev_api_key="fixture-no-network-jev",
+            opening_script="Welcome.",
+        )
+        with TestClient(create_app()) as client:
+            created = client.post(
+                "/api/sessions", json=payload, headers={"Origin": "http://localhost:8000"}
+            )
+            assert created.status_code == 201, created.text
+            session = created.json()
+            with client.websocket_connect(session["websocket_path"]) as socket:
+                ready = frames_pb2.Frame()
+                ready.message.data = json.dumps(
+                    {
+                        "label": "rtvi-ai",
+                        "type": "client-ready",
+                        "id": "fixture",
+                        "data": {"version": "1.0.0"},
+                    }
+                )
+                socket.send_bytes(ready.SerializeToString())
+                identity = None
+                samples = 0
+                # The existing sender may split/pad short PCM; every output chunk retains identity.
+                for _ in range(100):
+>                   frame = frames_pb2.Frame.FromString(socket.receive_bytes())
+                                                        ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_playback_receipts_api.py:145: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/starlette/testclient.py:194: in receive_bytes
+    self._raise_on_close(message)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.WebSocketTestSession object at 0x113b7f230>
+message = {'code': 1011, 'reason': 'Voice service error', 'type': 'websocket.close'}
+
+    def _raise_on_close(self, message: Message) -> None:
+        if message["type"] == "websocket.close":
+>           raise WebSocketDisconnect(code=message.get("code", 1000), reason=message.get("reason", ""))
+E           starlette.websockets.WebSocketDisconnect
+
+.venv/lib/python3.13/site-packages/starlette/testclient.py:152: WebSocketDisconnect
+------------------------------ Captured log call -------------------------------
+ERROR    src.api:api.py:1985 session_failed session_id=ba824733-f4b7-4351-9917-01ddc065e179 diagnostic_id=0efffa4a-e592-4791-95c7-c49aa5cd9f64 category=upstream_error error_type=ValueError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_playback_receipts_api.py::test_formal_websocket_pipeline_sends_task_pcm_and_accepts_matching_receipts
+1 failed, 1 deselected, 2 warnings in 1.13s

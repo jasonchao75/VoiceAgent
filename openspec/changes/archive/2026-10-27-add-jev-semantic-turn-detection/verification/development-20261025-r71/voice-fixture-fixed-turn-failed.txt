@@ -1,0 +1,113 @@
+
+Running 18 tests using 1 worker
+
+(node:33703) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/voice-bot.spec.js:95:1 › component drawers preserve approved ASR and LLM structure (504ms)
+  ✓   2 [desktop-chromium] › tests/ui/voice-bot.spec.js:122:1 › TTS provider rules and voice picker are responsive (542ms)
+  ✓   3 [desktop-chromium] › tests/ui/voice-bot.spec.js:153:1 › Sessions remain a list and their detail drawer closes (476ms)
+  ✓   4 [desktop-chromium] › tests/ui/voice-bot.spec.js:172:1 › Advanced is Bot-scoped and keeps the Bot selector (348ms)
+  ✓   5 [desktop-chromium] › tests/ui/voice-bot.spec.js:184:1 › Automatic ASR and credential states remain usable (346ms)
+  ✓   6 [desktop-chromium] › tests/ui/voice-bot.spec.js:201:1 › account ASR catalogs stay isolated when switching Bots (953ms)
+  ✘   7 [desktop-chromium] › tests/ui/voice-bot.spec.js:268:1 › provider catalog drives model, language, Turn, and advanced branches (5.3s)
+(node:33735) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [desktop-chromium] › tests/ui/voice-bot.spec.js:331:1 › catalog failure is explicit and disables unsafe actions (248ms)
+  ✓   9 [desktop-chromium] › tests/ui/voice-bot.spec.js:341:1 › interactive controls have names and overlays contain keyboard focus (379ms)
+(node:33741) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  10 [narrow-chromium] › tests/ui/voice-bot.spec.js:95:1 › component drawers preserve approved ASR and LLM structure (470ms)
+  ✓  11 [narrow-chromium] › tests/ui/voice-bot.spec.js:122:1 › TTS provider rules and voice picker are responsive (507ms)
+  ✓  12 [narrow-chromium] › tests/ui/voice-bot.spec.js:153:1 › Sessions remain a list and their detail drawer closes (465ms)
+  ✓  13 [narrow-chromium] › tests/ui/voice-bot.spec.js:172:1 › Advanced is Bot-scoped and keeps the Bot selector (305ms)
+  ✓  14 [narrow-chromium] › tests/ui/voice-bot.spec.js:184:1 › Automatic ASR and credential states remain usable (340ms)
+  ✓  15 [narrow-chromium] › tests/ui/voice-bot.spec.js:201:1 › account ASR catalogs stay isolated when switching Bots (894ms)
+  ✘  16 [narrow-chromium] › tests/ui/voice-bot.spec.js:268:1 › provider catalog drives model, language, Turn, and advanced branches (5.3s)
+(node:33766) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  17 [narrow-chromium] › tests/ui/voice-bot.spec.js:331:1 › catalog failure is explicit and disables unsafe actions (221ms)
+  ✓  18 [narrow-chromium] › tests/ui/voice-bot.spec.js:341:1 › interactive controls have names and overlays contain keyboard focus (373ms)
+
+
+  1) [desktop-chromium] › tests/ui/voice-bot.spec.js:268:1 › provider catalog drives model, language, Turn, and advanced branches 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  locator('[data-panel="asr"]').getByLabel('Turn detection source')
+    Expected: disabled
+    Received: enabled
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeDisabled" locator('[data-panel="asr"]').getByLabel('Turn detection source') with timeout 5000ms
+      - waiting for locator('[data-panel="asr"]').getByLabel('Turn detection source')
+        14 × locator resolved to <select id="bot-turn-source">…</select>
+           - unexpected value "enabled"
+
+
+      279 |   await model.selectOption("nova-3");
+      280 |   await expect(panel.getByLabel("Turn detection source")).toHaveValue("off");
+    > 281 |   await expect(panel.getByLabel("Turn detection source")).toBeDisabled();
+          |                                                           ^
+      282 |   await expect(panel.getByLabel("Endpointing silence (ms)")).toHaveValue("300");
+      283 |   await page.screenshot({ path: path.join(evidenceDir, `actual-gate-2-deepgram-nova.${testInfo.project.name}.png`), animations: "disabled" });
+      284 |
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/voice-bot.spec.js:281:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [narrow-chromium] › tests/ui/voice-bot.spec.js:268:1 › provider catalog drives model, language, Turn, and advanced branches 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  locator('[data-panel="asr"]').getByLabel('Turn detection source')
+    Expected: disabled
+    Received: enabled
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeDisabled" locator('[data-panel="asr"]').getByLabel('Turn detection source') with timeout 5000ms
+      - waiting for locator('[data-panel="asr"]').getByLabel('Turn detection source')
+        14 × locator resolved to <select id="bot-turn-source">…</select>
+           - unexpected value "enabled"
+
+
+      279 |   await model.selectOption("nova-3");
+      280 |   await expect(panel.getByLabel("Turn detection source")).toHaveValue("off");
+    > 281 |   await expect(panel.getByLabel("Turn detection source")).toBeDisabled();
+          |                                                           ^
+      282 |   await expect(panel.getByLabel("Endpointing silence (ms)")).toHaveValue("300");
+      283 |   await page.screenshot({ path: path.join(evidenceDir, `actual-gate-2-deepgram-nova.${testInfo.project.name}.png`), animations: "disabled" });
+      284 |
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/voice-bot.spec.js:281:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-narrow-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-narrow-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-narrow-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/voice-bot-provider-catalog-3b7f4--Turn-and-advanced-branches-narrow-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/voice-bot.spec.js:268:1 › provider catalog drives model, language, Turn, and advanced branches 
+    [narrow-chromium] › tests/ui/voice-bot.spec.js:268:1 › provider catalog drives model, language, Turn, and advanced branches 
+  16 passed (19.2s)

@@ -1,0 +1,22 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_unconfirmed_stop_fails_boundedly_without_releasing_the_next_response ___
+
+    async def test_unconfirmed_stop_fails_boundedly_without_releasing_the_next_response():
+        """A missing renderer receipt must not hold the call silently or authorize overlap."""
+        from src.pipeline.serial_output import SerialAudioOutput
+    
+        events, errors, ids = [], [], []
+>       output = SerialAudioOutput(responses=ResponseRevisions(), evidence_sink=events.append,
+                                   stop_confirmation_timeout=0.03)
+E       TypeError: SerialAudioOutput.__init__() got an unexpected keyword argument 'stop_confirmation_timeout'
+
+tests/test_td_serial_output.py:230: TypeError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_serial_output.py::test_unconfirmed_stop_fails_boundedly_without_releasing_the_next_response
+1 failed, 3 deselected, 1 warning in 1.14s

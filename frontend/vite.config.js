@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import { resolve } from "node:path";
 
+const apiTarget = process.env.VOICE_AGENT_UI_API_TARGET || "http://127.0.0.1:8000";
+
 export default defineConfig({
   build: {
     rollupOptions: {
@@ -27,11 +29,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8000",
+        target: apiTarget,
         changeOrigin: true,
         ws: true,
       },
-      "/health": "http://127.0.0.1:8000",
+      "/health": apiTarget,
     },
   },
 });

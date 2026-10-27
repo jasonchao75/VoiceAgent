@@ -1,0 +1,20 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/test_td_history.py:96:5
+   |
+94 | def test_no_client_ack_is_unknown_not_proof_that_playback_never_started():
+95 |     """P11 keeps missing client evidence separate from server-side synthesis completion."""
+96 |     from pipecat.frames.frames import TTSStartedFrame, TTSAudioRawFrame
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+97 |     capture = CallCapture(provider='openai', model='gpt-4.1-mini')
+98 |     capture.chat_text('hello')
+   |
+help: Organize imports
+   |
+95 |     """P11 keeps missing client evidence separate from server-side synthesis completion."""
+   -     from pipecat.frames.frames import TTSStartedFrame, TTSAudioRawFrame
+96 +     from pipecat.frames.frames import TTSAudioRawFrame, TTSStartedFrame
+97 |     capture = CallCapture(provider='openai', model='gpt-4.1-mini')
+   |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

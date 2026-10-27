@@ -1,0 +1,102 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+__________ test_durable_units_deduplicate_generation_but_not_playback __________
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_durable_units_deduplicate0')
+
+    async def test_durable_units_deduplicate_generation_but_not_playback(tmp_path):
+>       store = cache(tmp_path)
+                ^^^^^^^^^^^^^^^
+
+tests/test_echo_cache.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_durable_units_deduplicate0')
+
+    def cache(path):
+        """Require the production asynchronous resource store."""
+>       assert util.find_spec('src.tts.echo_cache') is not None, 'Permanent echo cache absent'
+E       AssertionError: Permanent echo cache absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d1a8e0>('src.tts.echo_cache')
+E        +    where <function find_spec at 0x100d1a8e0> = util.find_spec
+
+tests/test_echo_cache.py:12: AssertionError
+____ test_config_fingerprint_and_published_manifest_never_borrow_new_voice _____
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_config_fingerprint_and_pu0')
+
+    async def test_config_fingerprint_and_published_manifest_never_borrow_new_voice(tmp_path):
+>       store = cache(tmp_path)
+                ^^^^^^^^^^^^^^^
+
+tests/test_echo_cache.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_config_fingerprint_and_pu0')
+
+    def cache(path):
+        """Require the production asynchronous resource store."""
+>       assert util.find_spec('src.tts.echo_cache') is not None, 'Permanent echo cache absent'
+E       AssertionError: Permanent echo cache absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d1a8e0>('src.tts.echo_cache')
+E        +    where <function find_spec at 0x100d1a8e0> = util.find_spec
+
+tests/test_echo_cache.py:12: AssertionError
+_ test_failed_unit_retry_does_not_regenerate_successes_and_corruption_blocks_publish _
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_failed_unit_retry_does_no0')
+
+    async def test_failed_unit_retry_does_not_regenerate_successes_and_corruption_blocks_publish(tmp_path):
+>       store = cache(tmp_path)
+                ^^^^^^^^^^^^^^^
+
+tests/test_echo_cache.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_failed_unit_retry_does_no0')
+
+    def cache(path):
+        """Require the production asynchronous resource store."""
+>       assert util.find_spec('src.tts.echo_cache') is not None, 'Permanent echo cache absent'
+E       AssertionError: Permanent echo cache absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d1a8e0>('src.tts.echo_cache')
+E        +    where <function find_spec at 0x100d1a8e0> = util.find_spec
+
+tests/test_echo_cache.py:12: AssertionError
+_____ test_runtime_repair_is_bounded_deduplicated_and_uses_frozen_settings _____
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_runtime_repair_is_bounded0')
+
+    async def test_runtime_repair_is_bounded_deduplicated_and_uses_frozen_settings(tmp_path):
+        import asyncio
+>       store = cache(tmp_path)
+                ^^^^^^^^^^^^^^^
+
+tests/test_echo_cache.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-121/test_runtime_repair_is_bounded0')
+
+    def cache(path):
+        """Require the production asynchronous resource store."""
+>       assert util.find_spec('src.tts.echo_cache') is not None, 'Permanent echo cache absent'
+E       AssertionError: Permanent echo cache absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d1a8e0>('src.tts.echo_cache')
+E        +    where <function find_spec at 0x100d1a8e0> = util.find_spec
+
+tests/test_echo_cache.py:12: AssertionError
+=============================== warnings summary ===============================
+tests/test_echo_cache.py::test_durable_units_deduplicate_generation_but_not_playback
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_echo_cache.py::test_durable_units_deduplicate_generation_but_not_playback
+FAILED tests/test_echo_cache.py::test_config_fingerprint_and_published_manifest_never_borrow_new_voice
+FAILED tests/test_echo_cache.py::test_failed_unit_retry_does_not_regenerate_successes_and_corruption_blocks_publish
+FAILED tests/test_echo_cache.py::test_runtime_repair_is_bounded_deduplicated_and_uses_frozen_settings
+4 failed, 1 warning in 0.05s

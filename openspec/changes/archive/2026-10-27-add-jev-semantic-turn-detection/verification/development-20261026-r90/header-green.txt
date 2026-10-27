@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:66723) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px zh (1.0s)
+  ✓  2 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px en (699ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px zh (632ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px en (601ms)
+  ✓  5 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 650px en (635ms)
+  ✓  6 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 701px en (624ms)
+
+  6 passed (4.6s)

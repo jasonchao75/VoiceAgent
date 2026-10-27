@@ -1,0 +1,1255 @@
+{
+  "events": [
+    {
+      "side": "decode",
+      "event": "decoder_configured"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375031145,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": -312,
+        "samples": 960,
+        "priming_samples": 312,
+        "spans": [
+          {
+            "start": 0,
+            "end": 480,
+            "task": null
+          },
+          {
+            "start": 480,
+            "end": 648,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375031145,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": -312,
+      "spans": [
+        {
+          "start": 0,
+          "end": 480,
+          "task": null
+        },
+        {
+          "start": 480,
+          "end": 648,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.7999999998137355
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": -312,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 993500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375032105,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 648,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 648,
+            "end": 960,
+            "task": null
+          },
+          {
+            "start": 960,
+            "end": 1440,
+            "task": null
+          },
+          {
+            "start": 1440,
+            "end": 1608,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375032105,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 648,
+      "spans": [
+        {
+          "start": 648,
+          "end": 960,
+          "task": null
+        },
+        {
+          "start": 960,
+          "end": 1440,
+          "task": null
+        },
+        {
+          "start": 1440,
+          "end": 1608,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000055879354
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 648,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1013500
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "task_end",
+      "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "expected_samples": 32160
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375033065,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 1608,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 1608,
+            "end": 1920,
+            "task": null
+          },
+          {
+            "start": 1920,
+            "end": 2400,
+            "task": null
+          },
+          {
+            "start": 2400,
+            "end": 2568,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375033065,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 1608,
+      "spans": [
+        {
+          "start": 1608,
+          "end": 1920,
+          "task": null
+        },
+        {
+          "start": 1920,
+          "end": 2400,
+          "task": null
+        },
+        {
+          "start": 2400,
+          "end": 2568,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 1608,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1033500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375034025,
+        "ssrc": 1177429210,
+        "payload_sha256": "343f4e2bd539d5d0dc827c38bac0ecf46e5901798d24946c0fad3650aba31b60",
+        "source_start": 2568,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 2568,
+            "end": 2880,
+            "task": null
+          },
+          {
+            "start": 2880,
+            "end": 3360,
+            "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+          },
+          {
+            "start": 3360,
+            "end": 3528,
+            "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375034025,
+      "ssrc": 1177429210,
+      "payload_sha256": "343f4e2bd539d5d0dc827c38bac0ecf46e5901798d24946c0fad3650aba31b60",
+      "source_start": 2568,
+      "spans": [
+        {
+          "start": 2568,
+          "end": 2880,
+          "task": null
+        },
+        {
+          "start": 2880,
+          "end": 3360,
+          "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+        },
+        {
+          "start": 3360,
+          "end": 3528,
+          "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000055879354
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "start": 2880,
+      "end": 3360,
+      "decode_timestamp": 1053500,
+      "rtp_timestamp": 2375034025,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "start": 3360,
+      "end": 3528,
+      "decode_timestamp": 1053500,
+      "rtp_timestamp": 2375034025,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 2568,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1053500
+    },
+    {
+      "side": "render",
+      "event": "task_started",
+      "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "rendered_samples": 128,
+      "render_frame": 9472,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "stop_task",
+      "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "request_id": "42d702fbb0e341cd93b64cda428f72a7"
+    },
+    {
+      "side": "render",
+      "event": "task_stopped",
+      "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "request_id": "42d702fbb0e341cd93b64cda428f72a7",
+      "rendered_samples": 256,
+      "started": true,
+      "render_frame": 9728,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375034985,
+        "ssrc": 1177429210,
+        "payload_sha256": "1e37f19ef5ad098e74606158477d5eb04d33dc390b40e6a14a8c5ffa5ac550ac",
+        "source_start": 3528,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 3528,
+            "end": 3840,
+            "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+          },
+          {
+            "start": 3840,
+            "end": 4320,
+            "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+          },
+          {
+            "start": 4320,
+            "end": 4488,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375034985,
+      "ssrc": 1177429210,
+      "payload_sha256": "1e37f19ef5ad098e74606158477d5eb04d33dc390b40e6a14a8c5ffa5ac550ac",
+      "source_start": 3528,
+      "spans": [
+        {
+          "start": 3528,
+          "end": 3840,
+          "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+        },
+        {
+          "start": 3840,
+          "end": 4320,
+          "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+        },
+        {
+          "start": 4320,
+          "end": 4488,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000018626451
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "start": 3528,
+      "end": 3840,
+      "decode_timestamp": 1073500,
+      "rtp_timestamp": 2375034985,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "start": 3840,
+      "end": 4320,
+      "decode_timestamp": 1073500,
+      "rtp_timestamp": 2375034985,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 3528,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1073500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375035945,
+        "ssrc": 1177429210,
+        "payload_sha256": "653fecd84f348a3effa6d7b2ffd149a5ab825fbc412cb750056f67422fc73662",
+        "source_start": 4488,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 4488,
+            "end": 4800,
+            "task": null
+          },
+          {
+            "start": 4800,
+            "end": 5280,
+            "task": null
+          },
+          {
+            "start": 5280,
+            "end": 5448,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375035945,
+      "ssrc": 1177429210,
+      "payload_sha256": "653fecd84f348a3effa6d7b2ffd149a5ab825fbc412cb750056f67422fc73662",
+      "source_start": 4488,
+      "spans": [
+        {
+          "start": 4488,
+          "end": 4800,
+          "task": null
+        },
+        {
+          "start": 4800,
+          "end": 5280,
+          "task": null
+        },
+        {
+          "start": 5280,
+          "end": 5448,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000055879354
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 4488,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1093500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375036905,
+        "ssrc": 1177429210,
+        "payload_sha256": "0205530d030e25af9f40f2a1402da4caba5093d7249b575f72e09460e4d1f58c",
+        "source_start": 5448,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 5448,
+            "end": 5760,
+            "task": null
+          },
+          {
+            "start": 5760,
+            "end": 6240,
+            "task": null
+          },
+          {
+            "start": 6240,
+            "end": 6408,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375036905,
+      "ssrc": 1177429210,
+      "payload_sha256": "0205530d030e25af9f40f2a1402da4caba5093d7249b575f72e09460e4d1f58c",
+      "source_start": 5448,
+      "spans": [
+        {
+          "start": 5448,
+          "end": 5760,
+          "task": null
+        },
+        {
+          "start": 5760,
+          "end": 6240,
+          "task": null
+        },
+        {
+          "start": 6240,
+          "end": 6408,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.09999999962747097
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 5448,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1113500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375037865,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 6408,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 6408,
+            "end": 6720,
+            "task": null
+          },
+          {
+            "start": 6720,
+            "end": 7200,
+            "task": null
+          },
+          {
+            "start": 7200,
+            "end": 7368,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375037865,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 6408,
+      "spans": [
+        {
+          "start": 6408,
+          "end": 6720,
+          "task": null
+        },
+        {
+          "start": 6720,
+          "end": 7200,
+          "task": null
+        },
+        {
+          "start": 7200,
+          "end": 7368,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000018626451
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 6408,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1133500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375038825,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 7368,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 7368,
+            "end": 7680,
+            "task": null
+          },
+          {
+            "start": 7680,
+            "end": 8160,
+            "task": null
+          },
+          {
+            "start": 8160,
+            "end": 8328,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375038825,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 7368,
+      "spans": [
+        {
+          "start": 7368,
+          "end": 7680,
+          "task": null
+        },
+        {
+          "start": 7680,
+          "end": 8160,
+          "task": null
+        },
+        {
+          "start": 8160,
+          "end": 8328,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.09999999962747097
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 7368,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1153500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375039785,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 8328,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 8328,
+            "end": 8640,
+            "task": null
+          },
+          {
+            "start": 8640,
+            "end": 9120,
+            "task": null
+          },
+          {
+            "start": 9120,
+            "end": 9288,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375039785,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 8328,
+      "spans": [
+        {
+          "start": 8328,
+          "end": 8640,
+          "task": null
+        },
+        {
+          "start": 8640,
+          "end": 9120,
+          "task": null
+        },
+        {
+          "start": 9120,
+          "end": 9288,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000018626451
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 8328,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1173500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375040745,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 9288,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 9288,
+            "end": 9600,
+            "task": null
+          },
+          {
+            "start": 9600,
+            "end": 10080,
+            "task": null
+          },
+          {
+            "start": 10080,
+            "end": 10248,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375040745,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 9288,
+      "spans": [
+        {
+          "start": 9288,
+          "end": 9600,
+          "task": null
+        },
+        {
+          "start": 9600,
+          "end": 10080,
+          "task": null
+        },
+        {
+          "start": 10080,
+          "end": 10248,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000018626451
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 9288,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1193500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375041705,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 10248,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 10248,
+            "end": 10560,
+            "task": null
+          },
+          {
+            "start": 10560,
+            "end": 11040,
+            "task": null
+          },
+          {
+            "start": 11040,
+            "end": 11208,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375041705,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 10248,
+      "spans": [
+        {
+          "start": 10248,
+          "end": 10560,
+          "task": null
+        },
+        {
+          "start": 10560,
+          "end": 11040,
+          "task": null
+        },
+        {
+          "start": 11040,
+          "end": 11208,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000018626451
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 10248,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1213500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375042665,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 11208,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 11208,
+            "end": 11520,
+            "task": null
+          },
+          {
+            "start": 11520,
+            "end": 12000,
+            "task": null
+          },
+          {
+            "start": 12000,
+            "end": 12168,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375042665,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 11208,
+      "spans": [
+        {
+          "start": 11208,
+          "end": 11520,
+          "task": null
+        },
+        {
+          "start": 11520,
+          "end": 12000,
+          "task": null
+        },
+        {
+          "start": 12000,
+          "end": 12168,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000055879354
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 11208,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1233500
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375043625,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 12168,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 12168,
+            "end": 12480,
+            "task": null
+          },
+          {
+            "start": 12480,
+            "end": 12960,
+            "task": null
+          },
+          {
+            "start": 12960,
+            "end": 13128,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 2375043625,
+      "ssrc": 1177429210,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 12168,
+      "spans": [
+        {
+          "start": 12168,
+          "end": 12480,
+          "task": null
+        },
+        {
+          "start": 12480,
+          "end": 12960,
+          "task": null
+        },
+        {
+          "start": 12960,
+          "end": 13128,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.19999999925494194
+    },
+    {
+      "side": "bridge",
+      "event": "candidate_failed",
+      "reason": "decode_coordinate_unproven"
+    },
+    {
+      "side": "render",
+      "event": "offset",
+      "requestId": "candidate-failed",
+      "trackId": "cda0d82301e94d96a61c4cd568d8ee8c",
+      "offset": 256
+    },
+    {
+      "side": "render",
+      "event": "stop"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 2375044585,
+        "ssrc": 1177429210,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 13128,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 13128,
+            "end": 13440,
+            "task": null
+          },
+          {
+            "start": 13440,
+            "end": 13920,
+            "task": null
+          },
+          {
+            "start": 13920,
+            "end": 14088,
+            "task": null
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "server": {
+    "scenario": "identifier",
+    "actions": [
+      {
+        "event": "scenario_started",
+        "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+      },
+      {
+        "event": "continuation_and_question",
+        "active_kind": "echo",
+        "active_status": "playing",
+        "question_status": "cancelled_unplayed",
+        "stop_requests": []
+      },
+      {
+        "event": "clear_result",
+        "result": {
+          "status": "cleared",
+          "value": "",
+          "count": 0,
+          "generation": 1
+        },
+        "generation": 1
+      },
+      {
+        "event": "candidate_failed",
+        "reason": "decode_coordinate_unproven"
+      }
+    ],
+    "receipts": [
+      {
+        "event": "task_started",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "rendered_samples": 128,
+        "render_frame": 9472,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 443.70000000018626,
+        "render_clock_id": "536380bd0c3849c0b687af3acbbc7ab6",
+        "accepted": true
+      },
+      {
+        "event": "task_stopped",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "request_id": "42d702fbb0e341cd93b64cda428f72a7",
+        "rendered_samples": 256,
+        "started": true,
+        "render_frame": 9728,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 449.1000000005588,
+        "render_clock_id": "536380bd0c3849c0b687af3acbbc7ab6",
+        "accepted": true
+      }
+    ],
+    "td_events": [
+      {
+        "event": "identifier_echo_scheduled",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "collection_generation": 0,
+        "text": "12",
+        "kind": "echo",
+        "prior_output_sent": false,
+        "turn_id": 1,
+        "created_ms": 49.608125000304426
+      },
+      {
+        "event": "identifier_echo_resource_ready",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "turn_id": 1,
+        "collection_generation": 0,
+        "unit": "1",
+        "fingerprint": "2bfa88db11e80d53d4a741d1b294af209855da9195211401278f369c6c1b487f",
+        "resource_version": null,
+        "recovery_path": false,
+        "elapsed_ms": 0.406416999794601,
+        "created_ms": 50.092208000023675
+      },
+      {
+        "event": "playback_queued",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "queued",
+        "client_start_confirmed": false,
+        "output_kind": "echo",
+        "created_ms": 50.128083000345214
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "kind": "echo",
+        "response_id": null,
+        "turn_id": 1,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "collection_generation": 0,
+        "created_ms": 50.13979199975438
+      },
+      {
+        "event": "playback_dispatched",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "sent_unknown",
+        "client_start_confirmed": false,
+        "output_kind": "echo",
+        "created_ms": 50.278249999792024
+      },
+      {
+        "event": "identifier_echo_resource_ready",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "turn_id": 1,
+        "collection_generation": 0,
+        "unit": "2",
+        "fingerprint": "2bfa88db11e80d53d4a741d1b294af209855da9195211401278f369c6c1b487f",
+        "resource_version": null,
+        "recovery_path": false,
+        "elapsed_ms": 0.8402909998039831,
+        "created_ms": 51.06379199969524
+      },
+      {
+        "event": "playback_client_started",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "playing",
+        "client_start_confirmed": true,
+        "output_kind": "echo",
+        "created_ms": 86.78558300016448
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "response_id": null,
+        "turn_id": 1,
+        "output_kind": "echo",
+        "renderer_event": "task_started",
+        "rendered_samples": 128,
+        "client_elapsed_ms": 443.70000000018626,
+        "request_id": null,
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 9472,
+        "render_sample_rate": 48000,
+        "render_clock_id": "536380bd0c3849c0b687af3acbbc7ab6",
+        "created_ms": 86.790624999594
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "question-Q",
+        "kind": "normal",
+        "turn_id": 1,
+        "response_id": null,
+        "created_ms": 86.88900000015565
+      },
+      {
+        "event": "playback_queued",
+        "playback_id": "question-Q",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "queued",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 88.5353749999922
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "question-Q",
+        "kind": "normal",
+        "response_id": null,
+        "turn_id": 1,
+        "source_id": "reply",
+        "source_revision": 1,
+        "collection_generation": 0,
+        "created_ms": 88.5428330002469
+      },
+      {
+        "event": "playback_cancelled",
+        "playback_id": "question-Q",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "cancelled_unplayed",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 88.81112499966548
+      },
+      {
+        "event": "playback_stop_requested",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "stop_requested",
+        "client_start_confirmed": true,
+        "output_kind": "echo",
+        "created_ms": 88.9668330000859
+      },
+      {
+        "event": "playback_client_stopped",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "stopped",
+        "client_start_confirmed": true,
+        "output_kind": "echo",
+        "created_ms": 92.10429199993087
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "response_id": null,
+        "turn_id": 1,
+        "output_kind": "echo",
+        "renderer_event": "task_stopped",
+        "rendered_samples": 256,
+        "client_elapsed_ms": 449.1000000005588,
+        "request_id": "42d702fbb0e341cd93b64cda428f72a7",
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 9728,
+        "render_sample_rate": 48000,
+        "render_clock_id": "536380bd0c3849c0b687af3acbbc7ab6",
+        "created_ms": 92.10908299974108
+      }
+    ],
+    "user_submissions": 0,
+    "tasks": {
+      "cda0d82301e94d96a61c4cd568d8ee8c": {
+        "status": "stopped",
+        "kind": "echo"
+      },
+      "question-Q": {
+        "status": "cancelled_unplayed",
+        "kind": "normal"
+      }
+    },
+    "job_errors": []
+  },
+  "connection": "connected"
+}

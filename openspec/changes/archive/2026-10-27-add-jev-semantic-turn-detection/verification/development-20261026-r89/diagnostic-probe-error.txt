@@ -1,0 +1,1 @@
+2026-10-26 01:07:28.988 | ERROR    | pipecat.utils.asyncio.task_manager:run_coroutine:199 - WorkerObserver#0::_proxy_task_handler unexpected exception (/Volumes/work/OpenCode/VoiceAgent/tests/ui/td_local_app.py:343): 'CallCapture' object has no attribute 'fixture_input_count' and no __dict__ for setting new attributes

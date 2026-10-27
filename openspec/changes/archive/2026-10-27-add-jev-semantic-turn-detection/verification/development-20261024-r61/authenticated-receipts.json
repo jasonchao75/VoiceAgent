@@ -1,0 +1,30 @@
+[
+  {
+    "status": 204,
+    "receipt": {
+      "event": "task_stopped",
+      "playback_id": "e773bf5502984fdba28562cffa28accb",
+      "rendered_samples": 0,
+      "elapsed_ms": 3134.89999999851,
+      "evidence_source": "audio_worklet_render",
+      "render_clock_id": "7ad11fc0c5d24fd899d024c99a011d6b",
+      "request_id": "1ab796dedd624beba14112ae8e129010",
+      "render_frame": 57600,
+      "render_sample_rate": 48000
+    }
+  },
+  {
+    "status": 204,
+    "receipt": {
+      "event": "task_stopped",
+      "playback_id": "97a2b4dbfb1e487fb8a800e17578b845",
+      "rendered_samples": 0,
+      "elapsed_ms": 5342.89999999851,
+      "evidence_source": "audio_worklet_render",
+      "render_clock_id": "7ad11fc0c5d24fd899d024c99a011d6b",
+      "request_id": "6e5bdf2f6db64c1d83540bac110a43eb",
+      "render_frame": 163584,
+      "render_sample_rate": 48000
+    }
+  }
+]

@@ -1,5 +1,6 @@
 """Static contract checks for the dependency-free browser application."""
 
+import re
 from pathlib import Path
 
 FRONTEND = Path("frontend/src/main.js").read_text(encoding="utf-8")
@@ -56,7 +57,10 @@ def test_session_dates_use_stable_english_format() -> None:
 def test_session_drawer_closes_on_page_navigation() -> None:
     """Session recording/details must never cover another product page."""
     assert "if (!elements.historyDialog.hidden) closeHistoryDrawer();" in FRONTEND
-    assert '<aside id="history-dialog" class="history-dialog"' in FRONTEND
+    drawer = re.search(r'<aside\b[^>]*\bid="history-dialog"[^>]*>', FRONTEND)
+    assert drawer is not None
+    classes = re.search(r'\bclass="([^"]*)"', drawer[0])
+    assert classes is not None and "history-dialog" in classes[1].split()
     assert "event.preventDefault();" in FRONTEND
     assert 'aria-label="Close session details"' in FRONTEND
     assert "elements.historyDialog.hidden = true;" in FRONTEND

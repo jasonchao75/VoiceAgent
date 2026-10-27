@@ -1,0 +1,51 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_runtime_does_not_forward_provider_endpoint_or_partial __________
+
+    async def test_runtime_does_not_forward_provider_endpoint_or_partial():
+        """Only a custom deadline may release aggregated user text downstream."""
+>       td = coordinator()
+             ^^^^^^^^^^^^^
+
+tests/test_td_runtime.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def coordinator():
+        """Use the production processor and replace only its output transport in tests."""
+>       assert util.find_spec('src.pipeline.custom_td') is not None, 'Runtime TD coordinator is absent'
+E       AssertionError: Runtime TD coordinator is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d268e0>('src.pipeline.custom_td')
+E        +    where <function find_spec at 0x100d268e0> = util.find_spec
+
+tests/test_td_runtime.py:17: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 00:47:29.228 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+________________ test_runtime_continuation_cancels_old_deadline ________________
+
+    async def test_runtime_continuation_cancels_old_deadline():
+        """A stale candidate cannot submit after new speech has started."""
+>       td = coordinator()
+             ^^^^^^^^^^^^^
+
+tests/test_td_runtime.py:59: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def coordinator():
+        """Use the production processor and replace only its output transport in tests."""
+>       assert util.find_spec('src.pipeline.custom_td') is not None, 'Runtime TD coordinator is absent'
+E       AssertionError: Runtime TD coordinator is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d268e0>('src.pipeline.custom_td')
+E        +    where <function find_spec at 0x100d268e0> = util.find_spec
+
+tests/test_td_runtime.py:17: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_runtime_does_not_forward_provider_endpoint_or_partial
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_runtime_does_not_forward_provider_endpoint_or_partial
+FAILED tests/test_td_runtime.py::test_runtime_continuation_cancels_old_deadline
+2 failed, 1 warning in 0.65s

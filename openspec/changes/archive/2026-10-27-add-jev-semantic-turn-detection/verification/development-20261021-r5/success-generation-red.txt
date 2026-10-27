@@ -1,0 +1,53 @@
+..............F.                                                         [100%]
+=================================== FAILURES ===================================
+___ test_new_pure_input_resets_only_after_committed_final_success[True-1-1] ____
+
+finalized = True, expected = '1', generation = 1
+
+    @pytest.mark.parametrize('finalized,expected,generation', [(True, '1', 1), (False, '1231', 0)])
+    async def test_new_pure_input_resets_only_after_committed_final_success(finalized, expected, generation):
+        """Partial target length is not success; a genuinely new post-success input changes generation."""
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_rule_settings import priority_settings
+    
+        state = IdentifierCollection(IdentifierVocabulary({'1': ['1'], '2': ['2'], '3': ['3']}),
+                                     target_length=3)
+        rules = IdentifierRules(IdentifierRuleSettings.model_validate(priority_settings()), state)
+        td = coordinator(identifier_rules=rules)
+    
+        async def push(frame, *args, **kwargs):
+            pass
+    
+        td.push_frame = push
+        td.assistant_context('请提供编号')
+        await td.speech_started()
+        first = interim('123')
+        if finalized:
+            first.result['event'] = 'EndOfTurn'
+        await td.receive_transcript(first)
+        await td.speech_stopped(1000)
+        await td.advance(3500)
+        assert state.value == '123'
+        await td.speech_started()
+        following = interim('1')
+        following.result.update(turn_index=1, audio_window_start=1, audio_window_end=2,
+                                words=[{'word': '1', 'start': 1, 'end': 2}])
+        await td.receive_transcript(following)
+        await td.speech_stopped(2000)
+>       assert state.value == expected and state.generation == generation
+E       AssertionError: assert ('1231' == '1'
+E         
+E         - 1
+E         + 1231)
+
+tests/test_td_runtime.py:560: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_runtime_does_not_forward_provider_endpoint_or_partial
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_new_pure_input_resets_only_after_committed_final_success[True-1-1]
+1 failed, 15 passed, 1 warning in 1.23s

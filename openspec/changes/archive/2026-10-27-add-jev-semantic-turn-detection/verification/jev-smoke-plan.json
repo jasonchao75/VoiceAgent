@@ -1,0 +1,57 @@
+{
+  "batch_id": "jev-synthetic-smoke-v1",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "requests": [
+    {
+      "model": "jev-latest",
+      "state": {
+        "assistant": "How can I help you?",
+        "user": "Please check my booking.",
+        "transcript_status": "Final"
+      },
+      "questions": {
+        "yield": {
+          "type": "noul",
+          "instructions": "Has the user finished their utterance and yielded the turn?"
+        },
+        "speech_state": {
+          "type": "choice",
+          "instructions": "Classify the current user utterance.",
+          "criteria": {
+            "complete": "The request is complete.",
+            "incomplete": "The user is still forming a request."
+          }
+        }
+      }
+    },
+    {
+      "model": "jev-latest",
+      "state": {
+        "assistant": "How can I help you?",
+        "user": "I would like to...",
+        "transcript_status": "Partial"
+      },
+      "questions": {
+        "yield": {
+          "type": "noul",
+          "instructions": "Has the user finished their utterance and yielded the turn?"
+        },
+        "speech_state": {
+          "type": "choice",
+          "instructions": "Classify the current user utterance.",
+          "criteria": {
+            "complete": "The request is complete.",
+            "incomplete": "The user is still forming a request."
+          }
+        }
+      }
+    }
+  ],
+  "request_sha256": "b6554bcff188a37790374b6a93b3b92b9a569f2b2f1fd7dd6afe99233cf0254d",
+  "max_calls": 2,
+  "timeout_seconds": 3,
+  "cost_ceiling_usd": "0.01",
+  "input_usd_per_million": "0.042",
+  "default_context_tokens_per_request": 64000,
+  "pricing_source": "https://docs.typesafe.ai/models"
+}

@@ -1,0 +1,54 @@
+{
+  "actual": {
+    "headings": [
+      "Public demo profile",
+      "QR code",
+      "Web Link"
+    ],
+    "cards": [
+      {
+        "radius": "12px",
+        "padding": "20px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "20px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "20px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      }
+    ],
+    "overflow": false,
+    "grid": 2
+  },
+  "expected": {
+    "headings": [
+      "Public demo profile",
+      "QR code",
+      "Web Link"
+    ],
+    "cards": [
+      {
+        "radius": "12px",
+        "padding": "20px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "20px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "20px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      }
+    ],
+    "overflow": false,
+    "grid": 2
+  }
+}

@@ -1,0 +1,122 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+__________ test_plan_has_exact_data_and_public_price_connection_bound __________
+
+    def test_plan_has_exact_data_and_public_price_connection_bound():
+        """A wall-clock billable envelope is stronger than a speech-duration estimate."""
+>       plan = probe().build_plan()
+               ^^^^^^^
+
+tests/test_td_vendor_probe.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_td_vendor_probe.py:10: in probe
+    return import_module('scripts.evaluation.probe_td_compatibility')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.evaluation.probe_td_compatibility'
+import_ = <function _gcd_import at 0x1045104a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.evaluation.probe_td_compatibility'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________ test_socket_budget_blocks_the_second_attempt_before_connecting ________
+
+    async def test_socket_budget_blocks_the_second_attempt_before_connecting():
+        """An SDK retry is a second paid connection, even inside one processor."""
+>       module = probe()
+                 ^^^^^^^
+
+tests/test_td_vendor_probe.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_td_vendor_probe.py:10: in probe
+    return import_module('scripts.evaluation.probe_td_compatibility')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.evaluation.probe_td_compatibility'
+import_ = <function _gcd_import at 0x1045104a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.evaluation.probe_td_compatibility'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________ test_sdk_context_connector_also_refuses_automatic_reconnection ________
+
+    def test_sdk_context_connector_also_refuses_automatic_reconnection():
+        """Nova uses a context-manager connector rather than Flux's async connector."""
+>       module = probe()
+                 ^^^^^^^
+
+tests/test_td_vendor_probe.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_td_vendor_probe.py:10: in probe
+    return import_module('scripts.evaluation.probe_td_compatibility')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.evaluation.probe_td_compatibility'
+import_ = <function _gcd_import at 0x1045104a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.evaluation.probe_td_compatibility'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+______ test_probe_cli_cannot_load_a_key_without_an_exact_confirmed_batch _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c759150>
+
+    def test_probe_cli_cannot_load_a_key_without_an_exact_confirmed_batch(monkeypatch):
+        """Dry-run and absent authorization cannot touch the local credential."""
+>       module = probe()
+                 ^^^^^^^
+
+tests/test_td_vendor_probe.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_td_vendor_probe.py:10: in probe
+    return import_module('scripts.evaluation.probe_td_compatibility')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.evaluation.probe_td_compatibility'
+import_ = <function _gcd_import at 0x1045104a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.evaluation.probe_td_compatibility'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_plan_has_exact_data_and_public_price_connection_bound
+FAILED tests/test_td_vendor_probe.py::test_socket_budget_blocks_the_second_attempt_before_connecting
+FAILED tests/test_td_vendor_probe.py::test_sdk_context_connector_also_refuses_automatic_reconnection
+FAILED tests/test_td_vendor_probe.py::test_probe_cli_cannot_load_a_key_without_an_exact_confirmed_batch
+4 failed in 0.04s

@@ -1,0 +1,36 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_consumed_grant_is_rejected_without_relying_on_a_local_log ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ce39f30>
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-342/test_consumed_grant_is_rejecte0')
+
+    def test_consumed_grant_is_rejected_without_relying_on_a_local_log(monkeypatch, tmp_path):
+        """A copied workspace without claim logs still cannot replay a completed grant."""
+        import json
+    
+        module = probe()
+        plan = module.build_plan()
+        (tmp_path / 'verification').mkdir()
+        (tmp_path / 'decisions').mkdir()
+        grant = {key: plan[key] for key in
+                 ('batch_id', 'request_sha256', 'max_calls', 'cost_ceiling_usd')}
+        grant.update(authorization_decision_id='D-777', authorization_status='confirmed')
+        (tmp_path / 'decisions/decision-log.md').write_text(
+            '### D-777: Offline fixture\n- Status: Confirmed\n'
+            '- Confirmation quote: fixture scope accepted\n- Source thread/message: fixture only\n'
+        )
+        monkeypatch.setattr(module, 'CHANGE', tmp_path)
+        for consumed in ['completed', 'stopped_on_first_failure', 'running_exclusive_claim']:
+            grant['execution_status'] = consumed
+            (tmp_path / 'verification/delivery-status.json').write_text(
+                json.dumps({'external_calls': [grant]})
+            )
+>           with pytest.raises(ValueError, match='consumed|started'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_td_vendor_probe.py:210: Failed
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_consumed_grant_is_rejected_without_relying_on_a_local_log
+1 failed in 0.03s

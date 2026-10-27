@@ -1,0 +1,51 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent _____
+
+runtime_config = RuntimeConfig(language='en', audio=AudioConfig(encoding='linear16', input_sample_rate=16000, output_sample_rate=24000,...nLimits(pending_token_ttl_seconds=120, idle_timeout_seconds=300, max_duration_seconds=1800, max_concurrent_sessions=3))
+
+    def test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent(runtime_config):
+        """D-062: retain raw times while accepting the same actual 16kHz sample extent."""
+        import copy
+        import json
+        from pathlib import Path
+    
+        from pipecat.frames.frames import InterimTranscriptionFrame
+    
+        from src.asr.factory import create_default_asr_registry
+    
+        records = [json.loads(line) for line in Path(
+            'openspec/changes/add-jev-semantic-turn-detection/verification/'
+            'development-20261023-r47/deepgram-td-asr-synthetic-v1-D-062.jsonl'
+>       ).read_text().splitlines()]
+          ^^^^^^^^^^^
+
+tests/test_td_asr_events.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/deepgram-td-asr-synthetic-v1-D-062.jsonl')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/deepgram-td-asr-synthetic-v1-D-062.jsonl'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent
+1 failed in 0.06s

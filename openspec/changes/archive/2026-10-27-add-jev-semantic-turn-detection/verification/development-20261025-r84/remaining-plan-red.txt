@@ -1,0 +1,15 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_remaining_deepgram_plan_excludes_the_verified_english_model _______
+
+    def test_remaining_deepgram_plan_excludes_the_verified_english_model():
+        """A compatibility batch must not spend another call on an unchanged passing case."""
+        module = probe()
+>       plan = module.build_plan(remaining_deepgram=True)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_plan() got an unexpected keyword argument 'remaining_deepgram'
+
+tests/test_td_vendor_probe.py:276: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_remaining_deepgram_plan_excludes_the_verified_english_model
+1 failed, 14 deselected in 0.04s

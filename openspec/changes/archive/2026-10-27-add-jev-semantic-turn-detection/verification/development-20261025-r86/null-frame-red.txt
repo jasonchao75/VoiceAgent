@@ -1,0 +1,45 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_observer_preserves_the_native_null_frame_tolerance ____________
+
+    @pytest.mark.asyncio
+    async def test_observer_preserves_the_native_null_frame_tolerance():
+        """Missing native frames remain a temporary gap, not an observer exception."""
+        from src.pipeline.rtp_input import RTPInputLedger, observe_native_reader
+        reader = observe_native_reader(native_client([None, audio_frame(0)]), RTPInputLedger())
+>       frame = await anext(reader)
+                ^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_rtp_input.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/pipeline/rtp_input.py:227: in observe_native_reader
+    async for frame in (native_reader or client.read_audio_frame)():
+.venv/lib/python3.13/site-packages/pipecat/transports/smallwebrtc/transport.py:392: in read_audio_frame
+    frame = await asyncio.wait_for(self._audio_input_track.recv(), timeout=2.0)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/tasks.py:507: in wait_for
+    return await fut
+           ^^^^^^^^^
+src/pipeline/rtp_input.py:192: in recv
+    ledger.record_decoded(frame)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <src.pipeline.rtp_input.RTPInputLedger object at 0x1173ad6a0>
+frame = None
+
+    def record_decoded(self, frame: Any) -> None:
+        """Accept only actual Opus-clock decoded frames with a matching encoded origin."""
+>       if (frame.sample_rate != 48000 or frame.time_base != Fraction(1, 48000)
+            ^^^^^^^^^^^^^^^^^
+                or type(frame.pts) is not int or frame.samples <= 0):
+E               AttributeError: 'NoneType' object has no attribute 'sample_rate'
+
+src/pipeline/rtp_input.py:70: AttributeError
+=============================== warnings summary ===============================
+tests/test_td_rtp_input.py::test_observer_preserves_the_native_null_frame_tolerance
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_rtp_input.py::test_observer_preserves_the_native_null_frame_tolerance
+1 failed, 5 deselected, 1 warning in 0.84s

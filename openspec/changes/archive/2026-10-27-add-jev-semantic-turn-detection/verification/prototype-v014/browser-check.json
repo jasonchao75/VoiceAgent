@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "evidence_level": "fixture browser checks",
+  "models_checked": 6,
+  "routing_demo_removed": true,
+  "language_preserves_data": true,
+  "keyword_required_validation": true,
+  "final_revision_fixture": true,
+  "playback_P03": "B",
+  "widths": [
+    {
+      "name": "sessions",
+      "document": 390,
+      "viewport": 390,
+      "panels": [
+        {
+          "scroll": 358,
+          "client": 358
+        }
+      ]
+    },
+    {
+      "name": "rules",
+      "document": 390,
+      "viewport": 390,
+      "panels": []
+    },
+    {
+      "name": "publish-dialog",
+      "document": 390,
+      "viewport": 390,
+      "panels": [
+        {
+          "scroll": 356,
+          "client": 356
+        }
+      ]
+    },
+    {
+      "name": "semantic",
+      "document": 390,
+      "viewport": 390,
+      "panels": []
+    },
+    {
+      "name": "vad",
+      "document": 390,
+      "viewport": 390,
+      "panels": []
+    },
+    {
+      "name": "asr-drawer",
+      "document": 390,
+      "viewport": 390,
+      "panels": [
+        {
+          "scroll": 358,
+          "client": 358
+        }
+      ]
+    },
+    {
+      "name": "settings-1024",
+      "document": 1024,
+      "viewport": 1024,
+      "panels": []
+    }
+  ],
+  "page_errors": [],
+  "external_requests": [],
+  "not_tested": [
+    "production integration",
+    "actual ASR/Jev/TTS",
+    "real audio timing",
+    "physical AEC",
+    "full accessibility or cross-browser audit",
+    "user approval"
+  ]
+}

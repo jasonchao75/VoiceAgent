@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:22698) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings (1.9s)
+(node:22709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [narrow-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings (2.6s)
+
+  2 passed (5.4s)

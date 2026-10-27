@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:11602) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:269:1 › audio generation failure permits an explicit retry without publishing or losing settings (776ms)
+(node:11612) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [narrow-chromium] › tests/ui/td-runtime.spec.js:269:1 › audio generation failure permits an explicit retry without publishing or losing settings (519ms)
+
+  2 passed (2.0s)

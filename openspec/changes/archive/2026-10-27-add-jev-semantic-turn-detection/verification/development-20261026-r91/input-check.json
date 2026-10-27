@@ -1,0 +1,28 @@
+{
+  "frames": 93723,
+  "duration_seconds": 5.8576875,
+  "peak_pcm16": 17446,
+  "sha256": "f4dafd141773d42683c84fa7b938b68615e7f7493e9cad1da29d99c49f7de4b9",
+  "segment_bounds": [
+    {
+      "kind": "local_synthetic_segment",
+      "sample_start": 0,
+      "sample_end": 41153,
+      "intended_text": "Please do not cancel my booking.",
+      "word_truth": "segment bounds only; not human word annotation"
+    },
+    {
+      "kind": "inserted_silence",
+      "sample_start": 41153,
+      "sample_end": 53953
+    },
+    {
+      "kind": "local_synthetic_segment",
+      "sample_start": 53953,
+      "sample_end": 93723,
+      "intended_text": "I would like to change the time.",
+      "word_truth": "segment bounds only; not human word annotation"
+    }
+  ],
+  "not_human_word_truth": true
+}

@@ -1,0 +1,51 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_actual_flux_drops_old_wire_audio_until_interrupt_ack ___________
+
+    async def test_actual_flux_drops_old_wire_audio_until_interrupt_ack():
+        service, owner, old, sent = setup_service()
+        await service.on_audio_context_interrupted(old)
+        new = await replace_context(service, owner)
+        await service._handle_audio(b'\x09\x00' * 240)
+        assert sent == [{'type': 'Interrupt'}]
+>       assert service._audio_contexts[new].empty(), 'Old wire bytes acquired the new response identity'
+E       AssertionError: Old wire bytes acquired the new response identity
+E       assert False
+E        +  where False = empty()
+E        +    where empty = <Queue at 0x113aa5f90 maxsize=0 _queue=[TTSAudioRawFrame(audio=b'\t\x00\t\x00\t\x00\t\x00\t\x00\t\x00\t\x00\t\x00\t\x0... None}, transport_source=None, transport_destination=None, context_id='2edae07e-0e8a-4fc0-8cb6-15e1c5690ed2')] tasks=1>.empty
+
+tests/test_flux_interrupt_boundary.py:46: AssertionError
+________ test_actual_flux_does_not_send_new_speak_before_interrupt_ack _________
+
+    async def test_actual_flux_does_not_send_new_speak_before_interrupt_ack():
+        service, owner, old, sent = setup_service()
+        await service.on_audio_context_interrupted(old)
+        new = await replace_context(service, owner)
+        pending = asyncio.create_task(anext(service.run_tts('new', new)))
+        try:
+            await asyncio.sleep(0)
+>           assert sent == [{'type': 'Interrupt'}], 'New Speak escaped before the old wire boundary'
+E           AssertionError: New Speak escaped before the old wire boundary
+E           assert [{'type': 'In...pe': 'Speak'}] == [{'type': 'Interrupt'}]
+E             
+E             Left contains one more item: {'text': 'new', 'type': 'Speak'}
+E             Use -v to get more diff
+
+tests/test_flux_interrupt_boundary.py:56: AssertionError
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_flux_interrupt_boundary.py::test_actual_flux_drops_old_wire_audio_until_interrupt_ack
+FAILED tests/test_flux_interrupt_boundary.py::test_actual_flux_does_not_send_new_speak_before_interrupt_ack
+2 failed, 3 warnings in 1.05s

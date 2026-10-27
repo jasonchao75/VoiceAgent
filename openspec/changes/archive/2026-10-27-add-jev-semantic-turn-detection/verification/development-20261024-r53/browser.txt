@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:10107) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtp-candidate.spec.js:7:1 › D-064 actual RTP payload and mixed-task decode reaches the existing Worklet (297ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-rtp-candidate.spec.js:7:1 › D-064 actual RTP payload and mixed-task decode reaches the existing Worklet 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5177/
+    Call log:
+      - navigating to "http://127.0.0.1:5177/", waiting until "load"
+
+
+       8 |   test.skip(process.env.VOICE_AGENT_TD_RTP_CANDIDATE !== '1','Finite isolated candidate only');
+       9 |   await page.route('**/api/**',route=>route.fulfill({status:503,body:'{}'}));
+    > 10 |   await page.goto('/');
+         |              ^
+      11 |   const result = await page.evaluate(async () => {
+      12 |     const events = [], receipts = [], totals = {}, failures = [];
+      13 |     const pc = new RTCPeerConnection({iceServers:[]});
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtp-candidate.spec.js:10:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtp-candidate-D-064-act-72bf4-eaches-the-existing-Worklet-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtp-candidate-D-064-act-72bf4-eaches-the-existing-Worklet-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtp-candidate-D-064-act-72bf4-eaches-the-existing-Worklet-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtp-candidate-D-064-act-72bf4-eaches-the-existing-Worklet-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtp-candidate.spec.js:7:1 › D-064 actual RTP payload and mixed-task decode reaches the existing Worklet 

@@ -1,0 +1,186 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_unit_renderer_reports_upstream_provider_error_without_waiting_for_timeout _
+
+registry = <test_echo_synthesis.test_unit_renderer_reports_upstream_provider_error_without_waiting_for_timeout.<locals>.Registry object at 0x10ab55010>
+api_key = 'inert-key', unit = 'one'
+config = TTSConfig(provider='deepgram_flux', voice='fixture', model='flux-general-en', text_aggregation='token', speed=1.0, dyn...ment_opt_out=False, stability=0.5, similarity_boost=0.8, style=0.0, use_speaker_boost=False, text_normalization='auto')
+sample_rate = 24000
+
+    async def synthesize_unit(
+        registry: TTSProviderRegistry,
+        api_key: str,
+        unit: str,
+        config: TTSConfig,
+        sample_rate: int,
+        *,
+        timeout: float,
+    ) -> bytes:
+        """Render one configured unit, validating actual PCM before it becomes a persistent asset.
+    
+        Args:
+            registry: Existing provider registry, injectable without network in tests.
+            api_key: Backend-only credential, never returned or placed in metadata.
+            unit: One allowed vocabulary output, not arbitrary user speech.
+            config: Frozen batch/publication synthesis settings.
+            sample_rate: Required output PCM rate.
+            timeout: Total synthesis lifecycle deadline in seconds.
+    
+        Raises:
+            ValueError: If the provider returns empty, oversized or mismatched PCM.
+            TimeoutError: If the unit does not complete within the explicit deadline.
+        """
+        audio = AudioConfig(output_sample_rate=sample_rate)
+        fixed = config.model_copy(
+            deep=True,
+            update={
+                "dynamic_speed_enabled": False,
+                "text_aggregation": "sentence",
+            },
+        )
+        processor = registry.create(provider=fixed.provider, api_key=api_key, config=fixed, audio=audio)
+        loop = asyncio.get_running_loop()
+        result: asyncio.Future[bytes] = loop.create_future()
+        ready = asyncio.Event()
+        chunks: list[bytes] = []
+        length = 0
+    
+        class Sink(FrameProcessor):
+            """Read actual SDK output; server start signals alone never prove usable audio."""
+    
+            async def process_frame(self, frame: Frame, direction: FrameDirection) -> None:
+                nonlocal length
+                await super().process_frame(frame, direction)
+                if isinstance(frame, StartFrame):
+                    ready.set()
+                if not result.done():
+                    if isinstance(frame, TTSAudioRawFrame):
+                        if (
+                            frame.sample_rate != sample_rate
+                            or frame.num_channels != 1
+                            or len(frame.audio) % 2
+                        ):
+                            result.set_exception(ValueError("TTS PCM format mismatch"))
+                        else:
+                            length += len(frame.audio)
+                            if length > sample_rate * 2 * 120:
+                                result.set_exception(ValueError("TTS PCM exceeds unit bound"))
+                            else:
+                                chunks.append(frame.audio)
+                    elif isinstance(frame, TTSStoppedFrame):
+                        if chunks:
+                            result.set_result(b"".join(chunks))
+                        else:
+                            result.set_exception(ValueError("TTS returned empty audio"))
+                    elif isinstance(frame, ErrorFrame):
+                        result.set_exception(ValueError("TTS synthesis failed"))
+                await self.push_frame(frame, direction)
+    
+        worker = PipelineWorker(
+            Pipeline([processor, Sink()]),
+            enable_rtvi=False,
+            params=PipelineParams(audio_out_sample_rate=sample_rate),
+        )
+        runner = WorkerRunner(handle_sigint=False, handle_sigterm=False)
+        await runner.add_workers(worker)
+        running = asyncio.create_task(runner.run())
+        try:
+            async with asyncio.timeout(timeout):
+                await ready.wait()
+                await worker.queue_frames([TTSSpeakFrame(unit, append_to_context=False)])
+>               return await result
+                       ^^^^^^^^^^^^
+E               asyncio.exceptions.CancelledError
+
+src/tts/unit_synthesis.py:105: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+    async def test_unit_renderer_reports_upstream_provider_error_without_waiting_for_timeout():
+        """SDK push_error goes upstream; a downstream-only sink cannot observe it."""
+        from src.tts.unit_synthesis import synthesize_unit
+    
+        class FailingSynth(FrameProcessor):
+            """Use the actual SDK upstream error path, without any vendor connection."""
+    
+            async def process_frame(self, frame, direction):
+                await super().process_frame(frame, direction)
+                if isinstance(frame, TTSSpeakFrame):
+                    await self.push_error(error_msg='sensitive-provider-detail-must-not-leak')
+                else:
+                    await self.push_frame(frame, direction)
+    
+        class Registry:
+            def create(self, **kwargs):
+                return FailingSynth()
+    
+        with pytest.raises(ValueError, match='TTS synthesis failed'):
+>           await synthesize_unit(
+                Registry(), 'inert-key', 'one', TTSConfig(voice='fixture'), 24000, timeout=.3,
+            )
+
+tests/test_echo_synthesis.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tts/unit_synthesis.py:102: in synthesize_unit
+    async with asyncio.timeout(timeout):
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Timeout [expired]>
+exc_type = <class 'asyncio.exceptions.CancelledError'>
+exc_val = CancelledError(), exc_tb = <traceback object at 0x10a3a8f80>
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> Optional[bool]:
+        assert self._state in (_State.ENTERED, _State.EXPIRING)
+    
+        if self._timeout_handler is not None:
+            self._timeout_handler.cancel()
+            self._timeout_handler = None
+    
+        if self._state is _State.EXPIRING:
+            self._state = _State.EXPIRED
+    
+            if self._task.uncancel() <= self._cancelling and exc_type is not None:
+                # Since there are no new cancel requests, we're
+                # handling this.
+                if issubclass(exc_type, exceptions.CancelledError):
+>                   raise TimeoutError from exc_val
+E                   TimeoutError
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/timeouts.py:116: TimeoutError
+----------------------------- Captured stderr call -----------------------------
+2026-10-23 03:20:55.591 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> FailingSynth#0
+2026-10-23 03:20:55.592 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking FailingSynth#0 -> Sink#0
+2026-10-23 03:20:55.592 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-23 03:20:55.592 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-23 03:20:55.593 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-10-23 03:20:55.593 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-82344aa4': added worker 'PipelineWorker#0'
+2026-10-23 03:20:55.593 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-82344aa4': started running
+2026-10-23 03:20:55.594 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-82344aa4': starting worker 'PipelineWorker#0'
+2026-10-23 03:20:55.691 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-10-23 03:20:55.692 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#0' ready (local)
+2026-10-23 03:20:55.692 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-82344aa4': broadcasting registry: ['PipelineWorker#0']
+2026-10-23 03:20:55.692 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'PipelineWorker#0': activated
+2026-10-23 03:20:55.693 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-10-23 03:20:55.693 | ERROR    | pipecat.processors.frame_processor:push_error_frame:1001 - FailingSynth#0 error: sensitive-provider-detail-must-not-leak
+2026-10-23 03:20:55.693 | WARNING  | pipecat.pipeline.worker:_source_push_frame:1480 - PipelineWorker#0: Something went wrong: ErrorFrame#0(error: sensitive-provider-detail-must-not-leak, fatal: False)
+2026-10-23 03:20:55.894 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-23 03:20:55.895 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#0: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-23 03:20:55.896 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - PipelineWorker#0: CancelFrame#0(reason: None) reached the end of the pipeline.
+2026-10-23 03:20:55.897 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#0: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-23 03:20:55.898 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#0 is finishing...
+2026-10-23 03:20:55.899 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#0 has finished
+2026-10-23 03:20:55.899 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-82344aa4': finished running
+=============================== warnings summary ===============================
+tests/test_echo_synthesis.py::test_unit_renderer_reports_upstream_provider_error_without_waiting_for_timeout
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_echo_synthesis.py::test_unit_renderer_reports_upstream_provider_error_without_waiting_for_timeout
+1 failed, 2 deselected, 1 warning in 0.40s

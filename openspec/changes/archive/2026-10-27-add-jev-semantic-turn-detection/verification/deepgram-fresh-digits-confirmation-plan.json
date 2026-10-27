@@ -1,0 +1,30 @@
+{
+  "batch_id": "deepgram-td-fresh-digits-confirmation-v1",
+  "cases": [
+    {
+      "id": "fresh-digits",
+      "path": "/Volumes/work/OpenCode/VoiceAgent/test-results/td-vendor-inputs/20261024/digits-ready.wav",
+      "sha256": "a93499196b16dd1e9307ba97bedd24d246dedf995755e05bc9f20e382139966e",
+      "duration_seconds": 5.1675,
+      "text": "One two three. Four five six. Seven eight nine.",
+      "provider": "deepgram",
+      "model": "flux-general-en",
+      "options": {},
+      "silence_tail_seconds": 3
+    }
+  ],
+  "max_calls": 1,
+  "connection_wall_seconds": 30,
+  "connect_timeout_seconds": 5,
+  "cost_ceiling_usd": "0.02",
+  "maximum_public_price_usd": "0.00385",
+  "price_verified": "2026-10-25",
+  "pricing_source": "https://deepgram.com/pricing",
+  "turn_detection_source": "self_developed",
+  "retries": 0,
+  "recipient": "api.deepgram.com",
+  "llm_jev_tts_calls": 0,
+  "public_price_bound": "USD0.0077/min regular price times 30 seconds; no promotion assumed",
+  "source_evidence": "new pinned PCM; existing sample-boundary repair; stop first gap",
+  "request_sha256": "9ca5f2e2c4fad0e811d67ac63b22d05ab2e1ac1c0a3044bb8b81ee02aa10d2ec"
+}

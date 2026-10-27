@@ -1,0 +1,102 @@
+F.......F                                                                [100%]
+=================================== FAILURES ===================================
+_______ test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x117906060>
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text(monkeypatch, session_request):
+        async def pipeline(**kwargs):
+            capture = kwargs["call_capture"]
+            capture.record_td_event(
+                {
+                    "event": "playback_task_prepared",
+                    "playback_id": "a" * 32,
+                    "kind": "normal",
+                    "response_id": "1:1",
+                }
+            )
+            await kwargs["websocket"].send_json({"ready": True})
+            await kwargs["websocket"].receive_text()
+    
+        monkeypatch.setattr("src.api.run_voice_agent_session", pipeline)
+        payload = session_request.model_dump(mode="json")
+        payload.update(
+            session_type="chat_test",
+            deepgram_api_key="fixture-no-network-123",
+            llm_api_key="fixture-no-network-456",
+        )
+        with TestClient(create_app()) as client:
+            created = client.post(
+                "/api/sessions", json=payload, headers={"Origin": "http://localhost:8000"}
+            )
+            assert created.status_code == 201, created.text
+            session = created.json()
+            with client.websocket_connect(session["websocket_path"]) as socket:
+                assert socket.receive_json()["ready"]
+                url = f"/api/sessions/{session['session_id']}/playback-events"
+                headers = {"Authorization": f"Bearer {session['session_token']}"}
+                receipt = {
+                    "playback_id": "a" * 32,
+                    "event": "task_started",
+                    "rendered_samples": 128,
+                    "elapsed_ms": 10,
+                    "evidence_source": "audio_worklet_render",
+                }
+                assert client.post(url, json=receipt).status_code == 401
+                assert (
+                    client.post(
+                        url, json={**receipt, "playback_id": "b" * 32}, headers=headers
+                    ).status_code
+                    == 409
+                )
+                assert (
+                    client.post(
+                        url, json={**receipt, "rendered_samples": 0}, headers=headers
+                    ).status_code
+                    == 409
+                )
+                assert (
+                    client.post(
+                        url, json={**receipt, "text": "private text"}, headers=headers
+                    ).status_code
+                    == 422
+                )
+                assert client.post(url, json=receipt, headers=headers).status_code == 204
+                assert client.post(url, json=receipt, headers=headers).status_code == 204
+                failed = {**receipt, "event": "task_failed", "failure_reason": "render_queue_limit"}
+>               assert client.post(url, json=failed, headers=headers).status_code == 204
+E               AssertionError: assert 422 == 204
+E                +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E                +    where <Response [422 Unprocessable Entity]> = post('/api/sessions/47aa4fc9-6e37-46af-a49c-a0bdd16cf4f8/playback-events', json={'elapsed_ms': 10, 'event': 'task_failed', 'evidence_source': 'audio_worklet_render', 'failure_reason': 'render_queue_limit', ...}, headers={'Authorization': 'Bearer HADgSYcbWTM7OpAUTqaOXVK10BlMMam3u3ZJlowmG2o'})
+E                +      where post = <starlette.testclient.TestClient object at 0x10d09e660>.post
+
+tests/test_playback_receipts_api.py:68: AssertionError
+_______ test_renderer_failure_reason_is_preserved_without_raw_error_text _______
+
+    def test_renderer_failure_reason_is_preserved_without_raw_error_text():
+        from src.history.capture import CallCapture
+    
+        capture = CallCapture(provider="fixture", model="fixture")
+        capture.record_td_event(
+            {"event": "playback_task_prepared", "playback_id": "known", "kind": "normal"}
+        )
+>       assert capture.playback_receipt(
+            "known", "task_failed", 0, 1.0, failure_reason="render_queue_limit"
+        )
+E       TypeError: CallCapture.playback_receipt() got an unexpected keyword argument 'failure_reason'
+
+tests/test_td_history.py:158: TypeError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_playback_receipts_api.py::test_receipt_endpoint_rejects_foreign_tasks_tokens_and_raw_text
+FAILED tests/test_td_history.py::test_renderer_failure_reason_is_preserved_without_raw_error_text
+2 failed, 7 passed, 2 warnings in 1.56s

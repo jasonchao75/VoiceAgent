@@ -1,0 +1,28 @@
+{
+  "batch_id": "deepgram-td-tts-one-confirmation-v1",
+  "max_calls": 1,
+  "recipient": "api.deepgram.com",
+  "endpoint": "wss://api.deepgram.com/v2/speak",
+  "voice": "flux-alexis-en",
+  "speed": 1.0,
+  "expressivity": 0,
+  "sample_rate": 24000,
+  "channels": 1,
+  "format": "PCM16",
+  "cases": [
+    {
+      "id": "1",
+      "text": "one"
+    }
+  ],
+  "characters": 3,
+  "cost_ceiling_usd": "0.02",
+  "usd_per_1000_characters": "0.045",
+  "estimated_cost_usd": "0.000135",
+  "timeout_seconds": 15,
+  "retries": 0,
+  "asr_jev_llm_calls": 0,
+  "pricing_source": "https://deepgram.com/pricing",
+  "price_verified": "2026-10-22",
+  "request_sha256": "7ffeb382d2409fc1cf79165bdad55ee1533429af2ba9658fb13c65499e488a35"
+}

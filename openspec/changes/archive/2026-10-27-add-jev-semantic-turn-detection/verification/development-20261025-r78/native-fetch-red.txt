@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:38129) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-clock-sampler.spec.js:2:1 › browser clock sampler uses native fetch without losing its Window receiver (3.3s)
+
+
+  1) [desktop-chromium] › tests/ui/td-clock-sampler.spec.js:2:1 › browser clock sampler uses native fetch without losing its Window receiver 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 0
+
+    Call Log:
+    - Timeout 3000ms exceeded while waiting on the predicate
+
+      18 |  });
+      19 |  try {
+    > 20 |   await expect.poll(()=>requests,{timeout:3000}).toBe(2);
+         |                                                  ^
+      21 |   expect(await page.evaluate(()=>window.__clockErrors)).toEqual([]);
+      22 |  } finally {await page.evaluate(()=>window.__clockSampler.close());}
+      23 | });
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-clock-sampler.spec.js:20:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-clock-sampler.spec.js:2:1 › browser clock sampler uses native fetch without losing its Window receiver 

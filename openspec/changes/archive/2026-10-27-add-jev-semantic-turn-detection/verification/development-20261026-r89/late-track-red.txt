@@ -1,0 +1,72 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_late_native_track_assignment_keeps_exact_rtp_provenance_and_pcm _____
+
+    @pytest.mark.asyncio
+    async def test_late_native_track_assignment_keeps_exact_rtp_provenance_and_pcm():
+        """The locked SDK can install its real track after the input reader has begun."""
+        import asyncio
+    
+        from src.pipeline.rtp_input import RTPInputLedger, observe_native_reader
+    
+        baseline = native_client().read_audio_frame()
+        expected = await anext(baseline)
+        await baseline.aclose()
+        client, ledger = native_client(), RTPInputLedger()
+        native_track = client._audio_input_track
+        client._audio_input_track = None
+        for index in range(3):
+            ledger.record_encoded(pts=index * 960, rtp_timestamp=10000 + index * 960,
+                                  ssrc=7, payload=f'packet{index}'.encode())
+        reader = observe_native_reader(client, ledger)
+        pending = asyncio.create_task(anext(reader))
+        try:
+            await asyncio.sleep(0)
+            assert not pending.done()
+            client._audio_input_track = native_track
+            frame = await asyncio.wait_for(pending, 1)
+            assert (frame.audio, frame.sample_rate, frame.pts) == (
+                expected.audio, expected.sample_rate, expected.pts)
+>           assert frame.metadata.get('td_rtp_input'), frame.metadata
+E           AssertionError: {'td_rtp_input_unavailable': 'encoded_source_unavailable'}
+E           assert None
+E            +  where None = <built-in method get of dict object at 0x113464c40>('td_rtp_input')
+E            +    where <built-in method get of dict object at 0x113464c40> = {'td_rtp_input_unavailable': 'encoded_source_unavailable'}.get
+E            +      where {'td_rtp_input_unavailable': 'encoded_source_unavailable'} = InputAudioRawFrame(audio=b'\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x0...metadata={'td_rtp_input_unavailable': 'encoded_source_unavailable'}, transport_source=None, transport_destination=None).metadata
+
+tests/test_td_rtp_input.py:255: AssertionError
+___ test_native_track_replacement_is_observed_without_pinning_the_old_track ____
+
+    @pytest.mark.asyncio
+    async def test_native_track_replacement_is_observed_without_pinning_the_old_track():
+        """A lifecycle replacement on the same connection retains only its proven native extents."""
+        from src.pipeline.rtp_input import RTPInputLedger, observe_native_reader
+    
+        client, ledger = native_client(), RTPInputLedger()
+        for index in range(3):
+            ledger.record_encoded(pts=index * 960, rtp_timestamp=10000 + index * 960,
+                                  ssrc=7, payload=f'packet{index}'.encode())
+        reader = observe_native_reader(client, ledger)
+        try:
+            await anext(reader)
+            replacement = Track()
+            replacement.frames = iter([audio_frame(960), audio_frame(1920)])
+            client._audio_input_track = replacement
+            frame = await anext(reader)
+>           assert frame.metadata.get('td_rtp_input'), frame.metadata
+E           AssertionError: {'td_rtp_input_unavailable': 'encoded_source_unavailable'}
+E           assert None
+E            +  where None = <built-in method get of dict object at 0x113572a80>('td_rtp_input')
+E            +    where <built-in method get of dict object at 0x113572a80> = {'td_rtp_input_unavailable': 'encoded_source_unavailable'}.get
+E            +      where {'td_rtp_input_unavailable': 'encoded_source_unavailable'} = InputAudioRawFrame(audio=b'\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x00\x10\x0...metadata={'td_rtp_input_unavailable': 'encoded_source_unavailable'}, transport_source=None, transport_destination=None).metadata
+
+tests/test_td_rtp_input.py:279: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_rtp_input.py::test_late_native_track_assignment_keeps_exact_rtp_provenance_and_pcm
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_rtp_input.py::test_late_native_track_assignment_keeps_exact_rtp_provenance_and_pcm
+FAILED tests/test_td_rtp_input.py::test_native_track_replacement_is_observed_without_pinning_the_old_track
+2 failed, 8 deselected, 1 warning in 1.00s

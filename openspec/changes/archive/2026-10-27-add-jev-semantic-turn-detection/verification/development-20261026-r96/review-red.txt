@@ -1,0 +1,72 @@
+...FFFF                                                                  [100%]
+=================================== FAILURES ===================================
+__________ test_old_metadata_requires_matching_started_identity[None] __________
+
+identity = None
+
+    @pytest.mark.parametrize('identity', [None, '', 'wrong-id'])
+    def test_old_metadata_requires_matching_started_identity(identity):
+        module = fixture()
+        with pytest.raises(ValueError):
+>           module.require_old_identity(identity, ['old-id'])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'tests.ui.td_tts_browser_app' has no attribute 'require_old_identity'
+
+tests/test_td_tts_browser_fixture.py:65: AttributeError
+____________ test_old_metadata_requires_matching_started_identity[] ____________
+
+identity = ''
+
+    @pytest.mark.parametrize('identity', [None, '', 'wrong-id'])
+    def test_old_metadata_requires_matching_started_identity(identity):
+        module = fixture()
+        with pytest.raises(ValueError):
+>           module.require_old_identity(identity, ['old-id'])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'tests.ui.td_tts_browser_app' has no attribute 'require_old_identity'
+
+tests/test_td_tts_browser_fixture.py:65: AttributeError
+________ test_old_metadata_requires_matching_started_identity[wrong-id] ________
+
+identity = 'wrong-id'
+
+    @pytest.mark.parametrize('identity', [None, '', 'wrong-id'])
+    def test_old_metadata_requires_matching_started_identity(identity):
+        module = fixture()
+        with pytest.raises(ValueError):
+>           module.require_old_identity(identity, ['old-id'])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'tests.ui.td_tts_browser_app' has no attribute 'require_old_identity'
+
+tests/test_td_tts_browser_fixture.py:65: AttributeError
+________________ test_batch_stop_aborts_only_owned_connections _________________
+
+    @pytest.mark.asyncio
+    async def test_batch_stop_aborts_only_owned_connections():
+        module = fixture()
+        class Transport:
+            aborted = False
+            def abort(self):
+                self.aborted = True
+        class Connection:
+            transport = Transport()
+        owned = Connection()
+        untouched = Connection()
+        untouched.transport = Transport()
+>       await module.stop_owned_connections([owned])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'tests.ui.td_tts_browser_app' has no attribute 'stop_owned_connections'
+
+tests/test_td_tts_browser_fixture.py:81: AttributeError
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_browser_fixture.py::test_old_metadata_requires_matching_started_identity[None]
+FAILED tests/test_td_tts_browser_fixture.py::test_old_metadata_requires_matching_started_identity[]
+FAILED tests/test_td_tts_browser_fixture.py::test_old_metadata_requires_matching_started_identity[wrong-id]
+FAILED tests/test_td_tts_browser_fixture.py::test_batch_stop_aborts_only_owned_connections
+4 failed, 3 passed, 1 warning in 0.04s

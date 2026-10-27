@@ -1,0 +1,54 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_only_the_authorized_development_candidate_installs_ingress_observation __
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11039c2b0>
+
+    def test_only_the_authorized_development_candidate_installs_ingress_observation(monkeypatch):
+        """Ordinary/native callers must keep the original transport and input path."""
+        from unittest.mock import Mock
+        from src.pipeline.voice_agent import create_small_webrtc_transport
+        from src.pipeline import rtp_input, rtp_output, webrtc_cancel
+        runtime = SimpleNamespace(audio=SimpleNamespace(input_sample_rate=16000,
+                                  output_sample_rate=24000, channels=1))
+        transport = SimpleNamespace()
+        monkeypatch.setattr(webrtc_cancel, 'CancellableRTPTransport', lambda **kwargs: transport)
+        output = Mock()
+        ingress = Mock()
+        monkeypatch.setattr(rtp_output, 'install_candidate_transport', output)
+        monkeypatch.setattr(rtp_input, 'install_candidate_input', ingress)
+        connection = object()
+        assert create_small_webrtc_transport(connection=connection, runtime=runtime,
+                                            custom_td=True) is transport
+        ingress.assert_not_called()
+        assert create_small_webrtc_transport(connection=connection, runtime=runtime,
+                                            custom_td=True, candidate_playback=True) is transport
+>       ingress.assert_called_once_with(transport, connection)
+
+tests/test_td_rtp_input.py:155: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Mock id='4683097360'>
+args = (namespace(), <object object at 0x1128e67e0>), kwargs = {}
+msg = "Expected 'mock' to be called once. Called 0 times."
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'mock' to be called once. Called 0 times.
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:988: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_rtp_input.py::test_only_the_authorized_development_candidate_installs_ingress_observation
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_rtp_input.py::test_only_the_authorized_development_candidate_installs_ingress_observation
+1 failed, 4 deselected, 1 warning in 1.12s

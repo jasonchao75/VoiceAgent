@@ -1,0 +1,24 @@
+{
+  "scope": "重连任务来源隔离与正式UI中英六状态矩阵",
+  "baseline_sha256_verified": true,
+  "external_calls_made": false,
+  "tests": [
+    "完整后端658 passed/36.51秒（后续TTS独立导入修复另有定向13项通过，最终整包未冻结）",
+    "ASR/ledger/runtime/工具99通过；历史/API19通过；默认3.11 mypy依赖阻塞，实际3.13目标6源文件通过",
+    "UI B状态矩阵7通过+窄屏修复1通过；实际重启before/after通过；普通WS/历史原因及WS编号完整网络组合分别通过",
+    "UI A严格对照1440/390共2失败，唯一剩余为Q-044保存Key控件差异；其余五状态签名一致；未更新baseline",
+    "ASR固定批次授权问题待答；TTS另批35字符计划就绪未获授权，无新增厂商调用"
+  ],
+  "not_ready_for_independent_review": true,
+  "latest_decision": "D-060",
+  "formal_pipeline_integrated": true,
+  "ui_checkpoints_AB_complete": false,
+  "report": "verification/self-test-report.md",
+  "evidence": "verification/development-20261022-r40/",
+  "round": 47,
+  "formal_pipeline_scope": "普通TD、编号/工具、WS任务音频/回执、缓存跟读/清空与串行仲裁已接；完整网络/RTC/精确指标/UI未闭环",
+  "functional_tests_run": true,
+  "production_changes": true,
+  "ui_increment": "D-050省略max_calls仍可保存100；UI A/B完整矩阵未完成",
+  "external_calls_executed": false
+}

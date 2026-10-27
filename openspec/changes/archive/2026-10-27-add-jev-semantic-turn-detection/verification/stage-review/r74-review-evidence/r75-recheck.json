@@ -1,0 +1,8 @@
+{
+  "extracted_path": "/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-independent-qvu77a3k",
+  "package_sha256": "ef7243425f0894fc3e4aa190f7ab436f850c8286d5152c24af6196c488c9c7f2",
+  "fixture_exists": true,
+  "fixture_sha256": "d28ed84a232a74a588274807633eacc9d025f178f7b1e990368ebcd4e9af5b2f",
+  "workspace_fixture_matches": true,
+  "test_exit_code": 0
+}

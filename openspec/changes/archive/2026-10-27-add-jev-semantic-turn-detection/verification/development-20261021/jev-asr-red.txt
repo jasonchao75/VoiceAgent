@@ -1,0 +1,142 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+___________ test_flux_update_and_final_share_range[flux-general-en] ____________
+
+model = 'flux-general-en'
+
+    @pytest.mark.parametrize('model', ['flux-general-en', 'flux-general-multi'])
+    def test_flux_update_and_final_share_range(model):
+        """Flux Update must be usable before EOT and retain raw timing."""
+>       parser = normalizer('deepgram', model)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_asr_events.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = 'deepgram', model = 'flux-general-en'
+
+    def normalizer(provider, model):
+        """Load the actual adapter normalization contract."""
+>       assert util.find_spec('src.asr.turn_events') is not None, 'ASR source event bridge is absent'
+E       AssertionError: ASR source event bridge is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x102a6a8e0>('src.asr.turn_events')
+E        +    where <function find_spec at 0x102a6a8e0> = util.find_spec
+
+tests/test_td_asr_events.py:10: AssertionError
+__________ test_flux_update_and_final_share_range[flux-general-multi] __________
+
+model = 'flux-general-multi'
+
+    @pytest.mark.parametrize('model', ['flux-general-en', 'flux-general-multi'])
+    def test_flux_update_and_final_share_range(model):
+        """Flux Update must be usable before EOT and retain raw timing."""
+>       parser = normalizer('deepgram', model)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_asr_events.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = 'deepgram', model = 'flux-general-multi'
+
+    def normalizer(provider, model):
+        """Load the actual adapter normalization contract."""
+>       assert util.find_spec('src.asr.turn_events') is not None, 'ASR source event bridge is absent'
+E       AssertionError: ASR source event bridge is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x102a6a8e0>('src.asr.turn_events')
+E        +    where <function find_spec at 0x102a6a8e0> = util.find_spec
+
+tests/test_td_asr_events.py:10: AssertionError
+___________________ test_speechmatics_metadata_and_fragments ___________________
+
+    def test_speechmatics_metadata_and_fragments():
+        """Voice SDK 0.2.8 uses metadata/fragments, not the obsolete results field."""
+>       parser = normalizer('speechmatics', 'enhanced')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_asr_events.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = 'speechmatics', model = 'enhanced'
+
+    def normalizer(provider, model):
+        """Load the actual adapter normalization contract."""
+>       assert util.find_spec('src.asr.turn_events') is not None, 'ASR source event bridge is absent'
+E       AssertionError: ASR source event bridge is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x102a6a8e0>('src.asr.turn_events')
+E        +    where <function find_spec at 0x102a6a8e0> = util.find_spec
+
+tests/test_td_asr_events.py:10: AssertionError
+_______________ test_nova_final_chunk_does_not_finalize_new_tail _______________
+
+    def test_nova_final_chunk_does_not_finalize_new_tail():
+        """Result ranges remain independent of speech_final endpoint hints."""
+>       parser = normalizer('deepgram', 'nova-3')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_asr_events.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = 'deepgram', model = 'nova-3'
+
+    def normalizer(provider, model):
+        """Load the actual adapter normalization contract."""
+>       assert util.find_spec('src.asr.turn_events') is not None, 'ASR source event bridge is absent'
+E       AssertionError: ASR source event bridge is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x102a6a8e0>('src.asr.turn_events')
+E        +    where <function find_spec at 0x102a6a8e0> = util.find_spec
+
+tests/test_td_asr_events.py:10: AssertionError
+____________ test_soniox_stability_control_tokens_and_missing_time _____________
+
+    def test_soniox_stability_control_tokens_and_missing_time():
+        """Control tokens never become spoken units; absent time is unavailable evidence."""
+>       parser = normalizer('soniox', 'stt-rt-v5')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_asr_events.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = 'soniox', model = 'stt-rt-v5'
+
+    def normalizer(provider, model):
+        """Load the actual adapter normalization contract."""
+>       assert util.find_spec('src.asr.turn_events') is not None, 'ASR source event bridge is absent'
+E       AssertionError: ASR source event bridge is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x102a6a8e0>('src.asr.turn_events')
+E        +    where <function find_spec at 0x102a6a8e0> = util.find_spec
+
+tests/test_td_asr_events.py:10: AssertionError
+________________ test_assembly_formatting_and_connection_epochs ________________
+
+    def test_assembly_formatting_and_connection_epochs():
+        """Formatting revises a turn; a new connection starts a new source namespace."""
+>       parser = normalizer('assemblyai', 'universal-3-5-pro')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_asr_events.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = 'assemblyai', model = 'universal-3-5-pro'
+
+    def normalizer(provider, model):
+        """Load the actual adapter normalization contract."""
+>       assert util.find_spec('src.asr.turn_events') is not None, 'ASR source event bridge is absent'
+E       AssertionError: ASR source event bridge is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x102a6a8e0>('src.asr.turn_events')
+E        +    where <function find_spec at 0x102a6a8e0> = util.find_spec
+
+tests/test_td_asr_events.py:10: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_flux_update_and_final_share_range[flux-general-en]
+FAILED tests/test_td_asr_events.py::test_flux_update_and_final_share_range[flux-general-multi]
+FAILED tests/test_td_asr_events.py::test_speechmatics_metadata_and_fragments
+FAILED tests/test_td_asr_events.py::test_nova_final_chunk_does_not_finalize_new_tail
+FAILED tests/test_td_asr_events.py::test_soniox_stability_control_tokens_and_missing_time
+FAILED tests/test_td_asr_events.py::test_assembly_formatting_and_connection_epochs
+6 failed in 0.04s

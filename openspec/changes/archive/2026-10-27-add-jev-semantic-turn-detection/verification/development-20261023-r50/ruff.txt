@@ -1,0 +1,11 @@
+E501 Line too long (102 > 100)
+   --> tests/test_td_tts_vendor_probe.py:116:101
+    |
+115 | @pytest.mark.parametrize('changed', [False, True])
+116 | async def test_actual_sdk_single_unit_preserves_exact_authorized_text(monkeypatch, tmp_path, changed):
+    |                                                                                                     ^^
+117 |     """A unit does not need the continuous-sentence separator inserted by Flux SDK."""
+118 |     import asyncio
+    |
+
+Found 1 error.

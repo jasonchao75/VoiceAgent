@@ -1,0 +1,1 @@
+INFO:__main__:Dry TTS plan: calls=1 characters=3 ceiling=USD0.02 sha256=7ffeb382d2409fc1cf79165bdad55ee1533429af2ba9658fb13c65499e488a35

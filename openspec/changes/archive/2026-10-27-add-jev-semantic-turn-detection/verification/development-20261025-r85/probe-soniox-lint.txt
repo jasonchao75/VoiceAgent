@@ -1,0 +1,12 @@
+E501 Line too long (104 > 100)
+   --> scripts/evaluation/probe_td_compatibility.py:119:101
+    |
+117 |                     public_price_bound='Budget reserve, not guaranteed billing cap: '
+118 |                     '1000 audio tokens at USD2/M plus 4000 text tokens at USD4/M; '
+119 |                     '1000 reported tokens stops client with in-flight headroom; no context/translation',
+    |                                                                                                     ^^^^
+120 |                     pricing_source='https://soniox.com/pricing',
+121 |                 )
+    |
+
+Found 1 error.

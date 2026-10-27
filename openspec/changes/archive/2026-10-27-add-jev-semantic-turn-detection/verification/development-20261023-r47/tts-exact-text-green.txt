@@ -1,0 +1,108 @@
+......F.............                                                     [100%]
+=================================== FAILURES ===================================
+_________ test_actual_sdk_single_unit_preserves_exact_authorized_text __________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11889a4e0>
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-336/test_actual_sdk_single_unit_pr0')
+
+    async def test_actual_sdk_single_unit_preserves_exact_authorized_text(monkeypatch, tmp_path):
+        """A unit does not need the continuous-sentence separator inserted by Flux SDK."""
+        import asyncio
+        import json
+    
+        from websockets.protocol import State
+    
+        from src.tts import factory
+    
+        sent = []
+    
+        class Socket:
+            state = State.OPEN
+            response = None
+    
+            def __init__(self):
+                self.queue = asyncio.Queue()
+                self.spoken = False
+                self.queue.put_nowait(json.dumps({'type': 'Connected'}))
+    
+            def __aiter__(self):
+                return self
+    
+            async def __anext__(self):
+                item = await self.queue.get()
+                if item is None:
+                    raise StopAsyncIteration
+                return item
+    
+            async def send(self, payload):
+                message = json.loads(payload)
+                sent.append(message)
+                if message['type'] == 'Speak':
+                    self.spoken = True
+                    await self.queue.put(b'\x01\x00' * 480)
+                elif message['type'] == 'Flush' and self.spoken:
+                    await self.queue.put(json.dumps({'type': 'SpeechMetadata',
+                                                     'billable_character_count': 3}))
+    
+            async def close(self):
+                self.state = State.CLOSED
+                await self.queue.put(None)
+    
+        registry = factory.create_default_tts_registry()
+        create = registry.create
+    
+        def offline_create(**kwargs):
+            processor = create(**kwargs)
+    
+            async def connect(*args, **kwargs):
+                return Socket()
+    
+            processor._websocket_connect = connect
+            return processor
+    
+        registry.create = offline_create
+        monkeypatch.setattr(factory, 'create_default_tts_registry', lambda: registry)
+        result = await probe().run_case({'id': '1', 'text': 'one'}, 'inert-key', tmp_path, timeout=2)
+>       assert result['status'] == 'ok'
+E       AssertionError: assert 'synthesis_or_format_error' == 'ok'
+E         
+E         - ok
+E         + synthesis_or_format_error
+
+tests/test_td_tts_vendor_probe.py:173: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-23 17:52:56.831 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2::Source -> ScopedDeepgramFluxTTSService#2
+2026-10-23 17:52:56.831 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking ScopedDeepgramFluxTTSService#2 -> Sink#1
+2026-10-23 17:52:56.832 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#1 -> Pipeline#2::Sink
+2026-10-23 17:52:56.832 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#1::Source -> Pipeline#2
+2026-10-23 17:52:56.832 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2 -> PipelineWorker#1::Sink
+2026-10-23 17:52:56.833 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-ce7a05b4': added worker 'PipelineWorker#1'
+2026-10-23 17:52:56.833 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-ce7a05b4': started running
+2026-10-23 17:52:56.833 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-ce7a05b4': starting worker 'PipelineWorker#1'
+2026-10-23 17:52:56.834 | DEBUG    | pipecat.services.deepgram.flux.tts:_connect_websocket:173 - Connecting to Deepgram Flux WebSocket
+2026-10-23 17:52:56.834 | DEBUG    | pipecat.services.deepgram.flux.tts:_connect_websocket:188 - ScopedDeepgramFluxTTSService#2: Websocket connection initialized: {"headers": {}}
+2026-10-23 17:52:56.835 | DEBUG    | pipecat.services.deepgram.flux.tts_base:_handle_message:378 - ScopedDeepgramFluxTTSService#2: connected (request_id: None, model: None)
+2026-10-23 17:52:56.835 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#1: Starting. Waiting for StartFrame#1 to reach the end of the pipeline...
+2026-10-23 17:52:56.836 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#1' ready (local)
+2026-10-23 17:52:56.836 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-ce7a05b4': broadcasting registry: ['PipelineWorker#1']
+2026-10-23 17:52:56.836 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'PipelineWorker#1': activated
+2026-10-23 17:52:56.836 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#1: StartFrame#1 reached the end of the pipeline, pipeline is now ready.
+2026-10-23 17:52:56.837 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - ScopedDeepgramFluxTTSService#2: Generating TTS [one]
+2026-10-23 17:52:56.837 | DEBUG    | pipecat.services.deepgram.flux.tts_base:_handle_message:391 - ScopedDeepgramFluxTTSService#2: speech complete (speech_id: None, duration: Nonems, billable characters: 3)
+2026-10-23 17:52:56.838 | DEBUG    | pipecat.services.tts_service:push_frame:935 - ScopedDeepgramFluxTTSService#2 cleaning up TTS context b90381bd-a183-46bc-8b3e-6a5fc6f52cf6
+2026-10-23 17:52:56.838 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#1
+2026-10-23 17:52:56.838 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#1: Closing. Waiting for CancelFrame#1(reason: None) to reach the end of the pipeline...
+2026-10-23 17:52:56.839 | DEBUG    | pipecat.services.deepgram.flux.tts:_disconnect_websocket:203 - ScopedDeepgramFluxTTSService#2: Disconnecting from Deepgram Flux WebSocket
+2026-10-23 17:52:56.839 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - PipelineWorker#1: CancelFrame#1(reason: None) reached the end of the pipeline.
+2026-10-23 17:52:56.840 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#1: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-23 17:52:56.840 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#1 is finishing...
+2026-10-23 17:52:56.841 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#1 has finished
+2026-10-23 17:52:56.841 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-ce7a05b4': finished running
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_vendor_probe.py::test_actual_sdk_single_unit_preserves_exact_authorized_text
+1 failed, 19 passed, 1 warning in 1.46s

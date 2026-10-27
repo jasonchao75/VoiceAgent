@@ -1,0 +1,29 @@
+{
+  "evidenceLevel": "local-real",
+  "publishedFingerprint": "126f05ec3b5806f7e67a66a0b7e5833a36be807bbb44c072f08e6a104b7dc24b",
+  "failed": [
+    {
+      "event": "identifier_echo_resource_failed",
+      "playback_id": "22a2b8bf2aa74d86a5240617b6909be7",
+      "source_id": "range:597b7a31474126d238e7ddb7ef4681030bdfc6785da27d03141b0aa964133c1a",
+      "source_revision": 1,
+      "turn_id": 1,
+      "collection_generation": 0,
+      "unit": "1",
+      "fingerprint": "126f05ec3b5806f7e67a66a0b7e5833a36be807bbb44c072f08e6a104b7dc24b",
+      "resource_version": "180db6f07e32bc1cf711bf99724926acdeed9b6a24e9c7f212c5a9fad22aaa26",
+      "error_type": "ValueError",
+      "elapsed_ms": 5.754457990406081,
+      "created_ms": 2252.9542919946834
+    }
+  ],
+  "failedTaskHasNoClientSuccess": true,
+  "collectionContinued": [
+    "1",
+    "12"
+  ],
+  "laterClearSucceeded": true,
+  "renderedOtherTasks": 4,
+  "iceServers": [],
+  "providerCalls": "offline replacements only"
+}

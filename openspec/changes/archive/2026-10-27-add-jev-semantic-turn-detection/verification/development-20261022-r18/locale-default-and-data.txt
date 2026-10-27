@@ -1,0 +1,13 @@
+
+Running 4 tests using 1 worker
+
+(node:12172) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:291:1 › formal language switch changes labels without changing TD request or user values (1.1s)
+  ✓  2 [desktop-chromium] › tests/ui/td-runtime.spec.js:313:1 › formal TD language defaults to Chinese without replacing user prompts (436ms)
+(node:12205) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [narrow-chromium] › tests/ui/td-runtime.spec.js:291:1 › formal language switch changes labels without changing TD request or user values (683ms)
+  ✓  4 [narrow-chromium] › tests/ui/td-runtime.spec.js:313:1 › formal TD language defaults to Chinese without replacing user prompts (407ms)
+
+  4 passed (3.4s)

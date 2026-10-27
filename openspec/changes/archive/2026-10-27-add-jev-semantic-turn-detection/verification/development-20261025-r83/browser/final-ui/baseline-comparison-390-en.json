@@ -1,0 +1,1073 @@
+[
+  {
+    "name": "rules",
+    "baseline": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "rule-enabled",
+          "type": "checkbox",
+          "fontSize": "16px",
+          "color": "rgb(158, 170, 164)",
+          "background": "rgb(35, 117, 80)",
+          "radius": "20px",
+          "width": 34
+        },
+        {
+          "id": "keywords",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "anonymous:0",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:1",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "anonymous:2",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:3",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "anonymous:4",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:5",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "anonymous:6",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:7",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "echo-gap",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 90
+        },
+        {
+          "id": "wpm",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "echo-pause",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "collection-enabled",
+          "type": "checkbox",
+          "fontSize": "16px",
+          "color": "rgb(158, 170, 164)",
+          "background": "rgb(35, 117, 80)",
+          "radius": "20px",
+          "width": 34
+        },
+        {
+          "id": "number-length",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "collection-timeout",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "collection-message",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "overflow-message",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    },
+    "production": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "rule-enabled",
+          "type": "checkbox",
+          "fontSize": "16px",
+          "color": "rgb(158, 170, 164)",
+          "background": "rgb(35, 117, 80)",
+          "radius": "20px",
+          "width": 34
+        },
+        {
+          "id": "keywords",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "anonymous:0",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:1",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "anonymous:2",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:3",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "anonymous:4",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:5",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "anonymous:6",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 173
+        },
+        {
+          "id": "anonymous:7",
+          "type": "text",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 62
+        },
+        {
+          "id": "echo-gap",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 90
+        },
+        {
+          "id": "wpm",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "echo-pause",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "collection-enabled",
+          "type": "checkbox",
+          "fontSize": "16px",
+          "color": "rgb(158, 170, 164)",
+          "background": "rgb(35, 117, 80)",
+          "radius": "20px",
+          "width": 34
+        },
+        {
+          "id": "number-length",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "collection-timeout",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "collection-message",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "overflow-message",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    }
+  },
+  {
+    "name": "semantic",
+    "baseline": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "minimum",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "maximum",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "final-wait",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    },
+    "production": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "minimum",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "maximum",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "final-wait",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    }
+  },
+  {
+    "name": "vad",
+    "baseline": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "vad-stop",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "vad-start",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "confidence",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "volume",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    },
+    "production": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "vad-stop",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "vad-start",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "confidence",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "volume",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    }
+  },
+  {
+    "name": "jev-connection",
+    "baseline": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "jev-endpoint",
+          "type": "url",
+          "fontSize": "16px",
+          "color": "rgb(158, 170, 164)",
+          "background": "rgb(17, 21, 19)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-key",
+          "type": "password",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-model",
+          "type": "select-one",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-timeout",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    },
+    "production": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "jev-endpoint",
+          "type": "url",
+          "fontSize": "16px",
+          "color": "rgb(158, 170, 164)",
+          "background": "rgb(17, 21, 19)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-key",
+          "type": "password",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-save-key",
+          "type": "checkbox",
+          "fontSize": "12px",
+          "color": "rgb(158, 170, 164)",
+          "background": "rgb(57, 65, 61)",
+          "radius": "999px",
+          "width": 34
+        },
+        {
+          "id": "jev-model",
+          "type": "select-one",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-timeout",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    }
+  },
+  {
+    "name": "jev-questions",
+    "baseline": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "jev-yield-instructions",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-state-instructions",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "anonymous:0",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:1",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:2",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "anonymous:3",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:4",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:5",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "anonymous:6",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:7",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:8",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "anonymous:9",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:10",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:11",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "fusion-alpha",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "conflict-high",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    },
+    "production": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "jev-yield-instructions",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-state-instructions",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "anonymous:0",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:1",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:2",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "anonymous:3",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:4",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:5",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "anonymous:6",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:7",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:8",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "anonymous:9",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 152
+        },
+        {
+          "id": "anonymous:10",
+          "type": "text",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 256
+        },
+        {
+          "id": "anonymous:11",
+          "type": "number",
+          "fontSize": "11px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 96
+        },
+        {
+          "id": "fusion-alpha",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "conflict-high",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        }
+      ]
+    }
+  },
+  {
+    "name": "jev-preview",
+    "baseline": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "jev-sample-assistant",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-sample-user",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-transcript-kind",
+          "type": "select-one",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "sim-yield",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "sim-elapsed",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "anonymous:0",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        },
+        {
+          "id": "anonymous:1",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        },
+        {
+          "id": "anonymous:2",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        },
+        {
+          "id": "anonymous:3",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        }
+      ]
+    },
+    "production": {
+      "overflow": [],
+      "unnamed": [],
+      "controls": [
+        {
+          "id": "jev-sample-assistant",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-sample-user",
+          "type": "textarea",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "jev-transcript-kind",
+          "type": "select-one",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "sim-yield",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "sim-elapsed",
+          "type": "number",
+          "fontSize": "16px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 284
+        },
+        {
+          "id": "anonymous:0",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        },
+        {
+          "id": "anonymous:1",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        },
+        {
+          "id": "anonymous:2",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        },
+        {
+          "id": "anonymous:3",
+          "type": "number",
+          "fontSize": "12px",
+          "color": "rgb(243, 246, 244)",
+          "background": "rgb(12, 16, 15)",
+          "radius": "9px",
+          "width": 110
+        }
+      ]
+    }
+  }
+]

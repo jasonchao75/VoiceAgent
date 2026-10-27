@@ -13,7 +13,7 @@ import aiosqlite
 from src.bots.models import BotConfigFields, BotRecord
 
 _COLUMNS = (
-    "id, name, asr_provider, asr_model, turn_detection_source, asr_options, "
+    "id, name, asr_provider, asr_model, turn_detection_source, asr_options, td_config, "
     "asr_language_hints, asr_eot_threshold, "
     "asr_eot_timeout_ms, asr_keyterms, asr_profanity_filter, asr_numerals, asr_redact, "
     "tts_provider, tts_voice, tts_model, tts_text_aggregation, tts_speed, "
@@ -26,7 +26,7 @@ _COLUMNS = (
     "llm_key_provider, encrypted_llm_key, "
     "encrypted_elevenlabs_key, asr_key_provider, encrypted_asr_key, "
     "tts_key_provider, encrypted_tts_key, "
-    "asr_account_catalog, "
+    "asr_account_catalog, encrypted_jev_key, jev_key_endpoint, "
     "created_at, updated_at"
 )
 
@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS bots (
     asr_model TEXT NOT NULL DEFAULT 'flux-general-en',
     turn_detection_source TEXT NOT NULL DEFAULT 'provider_native',
     asr_options TEXT NOT NULL DEFAULT '{}',
+    td_config TEXT,
     asr_language_hints TEXT NOT NULL DEFAULT '[]',
     asr_eot_threshold REAL NOT NULL DEFAULT 0.7,
     asr_eot_timeout_ms INTEGER NOT NULL DEFAULT 5000,
@@ -78,6 +79,8 @@ CREATE TABLE IF NOT EXISTS bots (
     tts_key_provider TEXT,
     encrypted_tts_key TEXT,
     asr_account_catalog TEXT,
+    encrypted_jev_key TEXT,
+    jev_key_endpoint TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 )
@@ -93,6 +96,7 @@ def _row_to_record(row: Sequence[object]) -> BotRecord:
     values = dict(zip(keys, row, strict=True))
     for key in ("asr_options", "asr_language_hints", "asr_keyterms"):
         values[key] = json.loads(str(values[key]))
+    values["td_config"] = json.loads(str(values["td_config"])) if values["td_config"] else None
     values["asr_account_catalog"] = (
         json.loads(str(values["asr_account_catalog"]))
         if values["asr_account_catalog"] is not None
@@ -116,6 +120,11 @@ class BotStore:
             columns = {
                 row[1] for row in await (await db.execute("PRAGMA table_info(bots)")).fetchall()
             }
+            for column in ("encrypted_jev_key", "jev_key_endpoint"):
+                if column not in columns:
+                    await db.execute(f"ALTER TABLE bots ADD COLUMN {column} TEXT")
+            if "td_config" not in columns:
+                await db.execute("ALTER TABLE bots ADD COLUMN td_config TEXT")
             if "reasoning_mode" not in columns:
                 await db.execute(
                     "ALTER TABLE bots ADD COLUMN reasoning_mode TEXT NOT NULL "
@@ -227,6 +236,8 @@ class BotStore:
         tts_key_provider: str | None = None,
         encrypted_tts_key: str | None = None,
         asr_account_catalog: dict[str, object] | None = None,
+        encrypted_jev_key: str | None = None,
+        jev_key_endpoint: str | None = None,
     ) -> BotRecord:
         """Insert one bot and return the stored record."""
         now = _utcnow()
@@ -242,11 +253,14 @@ class BotStore:
             tts_key_provider=tts_key_provider,
             encrypted_tts_key=encrypted_tts_key,
             asr_account_catalog=asr_account_catalog,
+            encrypted_jev_key=encrypted_jev_key,
+            jev_key_endpoint=jev_key_endpoint,
             created_at=now,
             updated_at=now,
         )
         async with aiosqlite.connect(self._db_path) as db:
             values = record.model_dump()
+            values["td_config"] = json.dumps(values["td_config"]) if values["td_config"] else None
             values["asr_options"] = json.dumps(values["asr_options"])
             values["asr_language_hints"] = json.dumps(values["asr_language_hints"])
             values["asr_keyterms"] = json.dumps(values["asr_keyterms"])
@@ -277,6 +291,8 @@ class BotStore:
         tts_key_provider: str | None = None,
         encrypted_tts_key: str | None = None,
         asr_account_catalog: dict[str, object] | None = None,
+        encrypted_jev_key: str | None = None,
+        jev_key_endpoint: str | None = None,
     ) -> BotRecord | None:
         """Replace one bot's mutable fields; None when the ID does not exist."""
         existing = await self.get(bot_id)
@@ -294,10 +310,13 @@ class BotStore:
             tts_key_provider=tts_key_provider,
             encrypted_tts_key=encrypted_tts_key,
             asr_account_catalog=asr_account_catalog,
+            encrypted_jev_key=encrypted_jev_key,
+            jev_key_endpoint=jev_key_endpoint,
             created_at=existing.created_at,
             updated_at=_utcnow(),
         )
         values = record.model_dump()
+        values["td_config"] = json.dumps(values["td_config"]) if values["td_config"] else None
         values["asr_options"] = json.dumps(values["asr_options"])
         values["asr_language_hints"] = json.dumps(values["asr_language_hints"])
         values["asr_keyterms"] = json.dumps(values["asr_keyterms"])

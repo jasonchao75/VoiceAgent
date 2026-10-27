@@ -1,0 +1,12 @@
+E501 Line too long (103 > 100)
+  --> src/asr/turn_events.py:46:101
+   |
+44 |                     start, end = metadata.get("start_time"), metadata.get("end_time")
+45 |                     words = self._words(row.get("fragments") or [], "start_time", "end_time", 1000)
+46 |                     if (start is None or end is None) and words_cover_text(row.get("text", ""), words):
+   |                                                                                                     ^^^
+47 |                         # Use actual complete word evidence, never receipt time or text length.
+48 |                         start = words[0].start_ms / 1000 if start is None else start
+   |
+
+Found 1 error.

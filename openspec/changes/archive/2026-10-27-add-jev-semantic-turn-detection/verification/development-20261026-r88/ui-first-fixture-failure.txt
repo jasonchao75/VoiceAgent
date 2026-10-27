@@ -1,0 +1,83 @@
+
+Running 4 tests using 1 worker
+
+(node:57929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-settings.spec.js:9:1 › formal Advanced edits and saves explicit TD settings (2.0s)
+  ✘  2 [desktop-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route (5.4s)
+(node:57937) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [narrow-chromium] › tests/ui/td-settings.spec.js:9:1 › formal Advanced edits and saves explicit TD settings (1.8s)
+  ✘  4 [narrow-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route (5.4s)
+
+
+  1) [desktop-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 16
+    Received: undefined
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      146 |  await page.locator('#overflow-message').fill('Please check your number.');
+      147 |  await page.getByRole('button',{name:'Save TD settings',exact:true}).click();
+    > 148 |  await expect.poll(()=>saved?.td_config?.priority_rule?.collection?.target_length).toBe(16);
+          |                                                                                    ^
+      149 |  await page.locator('#collection-enabled').uncheck();
+      150 |  for(const id of fields)await expect(page.locator('#'+id)).toBeDisabled();
+      151 |  await page.getByRole('button',{name:'Save TD settings',exact:true}).click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-settings.spec.js:148:84
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [narrow-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 16
+    Received: undefined
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      146 |  await page.locator('#overflow-message').fill('Please check your number.');
+      147 |  await page.getByRole('button',{name:'Save TD settings',exact:true}).click();
+    > 148 |  await expect.poll(()=>saved?.td_config?.priority_rule?.collection?.target_length).toBe(16);
+          |                                                                                    ^
+      149 |  await page.locator('#collection-enabled').uncheck();
+      150 |  for(const id of fields)await expect(page.locator('#'+id)).toBeDisabled();
+      151 |  await page.getByRole('button',{name:'Save TD settings',exact:true}).click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-settings.spec.js:148:84
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-narrow-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-narrow-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-narrow-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-narrow-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route 
+    [narrow-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route 
+  2 passed (15.3s)

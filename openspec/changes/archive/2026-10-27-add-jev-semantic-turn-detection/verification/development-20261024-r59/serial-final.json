@@ -1,0 +1,2707 @@
+{
+  "events": [
+    {
+      "side": "decode",
+      "event": "decoder_configured"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515769993,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": -312,
+        "samples": 960,
+        "priming_samples": 312,
+        "spans": [
+          {
+            "start": 0,
+            "end": 480,
+            "task": null
+          },
+          {
+            "start": 480,
+            "end": 648,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515769993,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": -312,
+      "spans": [
+        {
+          "start": 0,
+          "end": 480,
+          "task": null
+        },
+        {
+          "start": 480,
+          "end": 648,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.7999999970197678,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 993500,
+      "output_timestamp": 993500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": -312,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 993500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515770953,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 648,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 648,
+            "end": 960,
+            "task": null
+          },
+          {
+            "start": 960,
+            "end": 1440,
+            "task": null
+          },
+          {
+            "start": 1440,
+            "end": 1608,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515770953,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 648,
+      "spans": [
+        {
+          "start": 648,
+          "end": 960,
+          "task": null
+        },
+        {
+          "start": 960,
+          "end": 1440,
+          "task": null
+        },
+        {
+          "start": 1440,
+          "end": 1608,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1013500,
+      "output_timestamp": 1013500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 648,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1013500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515771913,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 1608,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 1608,
+            "end": 1920,
+            "task": null
+          },
+          {
+            "start": 1920,
+            "end": 2400,
+            "task": null
+          },
+          {
+            "start": 2400,
+            "end": 2568,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515771913,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 1608,
+      "spans": [
+        {
+          "start": 1608,
+          "end": 1920,
+          "task": null
+        },
+        {
+          "start": 1920,
+          "end": 2400,
+          "task": null
+        },
+        {
+          "start": 2400,
+          "end": 2568,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1033500,
+      "output_timestamp": 1033500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 1608,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1033500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515772873,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 2568,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 2568,
+            "end": 2880,
+            "task": null
+          },
+          {
+            "start": 2880,
+            "end": 3360,
+            "task": null
+          },
+          {
+            "start": 3360,
+            "end": 3528,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515772873,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 2568,
+      "spans": [
+        {
+          "start": 2568,
+          "end": 2880,
+          "task": null
+        },
+        {
+          "start": 2880,
+          "end": 3360,
+          "task": null
+        },
+        {
+          "start": 3360,
+          "end": 3528,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1053500,
+      "output_timestamp": 1053500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 2568,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1053500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515773833,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 3528,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 3528,
+            "end": 3840,
+            "task": null
+          },
+          {
+            "start": 3840,
+            "end": 4320,
+            "task": null
+          },
+          {
+            "start": 4320,
+            "end": 4488,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515773833,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 3528,
+      "spans": [
+        {
+          "start": 3528,
+          "end": 3840,
+          "task": null
+        },
+        {
+          "start": 3840,
+          "end": 4320,
+          "task": null
+        },
+        {
+          "start": 4320,
+          "end": 4488,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1073500,
+      "output_timestamp": 1073500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 3528,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1073500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515774793,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 4488,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 4488,
+            "end": 4800,
+            "task": null
+          },
+          {
+            "start": 4800,
+            "end": 5280,
+            "task": null
+          },
+          {
+            "start": 5280,
+            "end": 5448,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515774793,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 4488,
+      "spans": [
+        {
+          "start": 4488,
+          "end": 4800,
+          "task": null
+        },
+        {
+          "start": 4800,
+          "end": 5280,
+          "task": null
+        },
+        {
+          "start": 5280,
+          "end": 5448,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.19999999552965164,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1093500,
+      "output_timestamp": 1093500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 4488,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1093500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515775753,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 5448,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 5448,
+            "end": 5760,
+            "task": null
+          },
+          {
+            "start": 5760,
+            "end": 6240,
+            "task": null
+          },
+          {
+            "start": 6240,
+            "end": 6408,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515775753,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 5448,
+      "spans": [
+        {
+          "start": 5448,
+          "end": 5760,
+          "task": null
+        },
+        {
+          "start": 5760,
+          "end": 6240,
+          "task": null
+        },
+        {
+          "start": 6240,
+          "end": 6408,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1113500,
+      "output_timestamp": 1113500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 5448,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1113500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "task_end",
+      "playback_id": "partial-A",
+      "expected_samples": 14880
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515776713,
+        "ssrc": 3769974215,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 6408,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 6408,
+            "end": 6720,
+            "task": null
+          },
+          {
+            "start": 6720,
+            "end": 7200,
+            "task": null
+          },
+          {
+            "start": 7200,
+            "end": 7368,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515776713,
+      "ssrc": 3769974215,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 6408,
+      "spans": [
+        {
+          "start": 6408,
+          "end": 6720,
+          "task": null
+        },
+        {
+          "start": 6720,
+          "end": 7200,
+          "task": null
+        },
+        {
+          "start": 7200,
+          "end": 7368,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1133500,
+      "output_timestamp": 1133500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 6408,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1133500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515777673,
+        "ssrc": 3769974215,
+        "payload_sha256": "343f4e2bd539d5d0dc827c38bac0ecf46e5901798d24946c0fad3650aba31b60",
+        "source_start": 7368,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 7368,
+            "end": 7680,
+            "task": null
+          },
+          {
+            "start": 7680,
+            "end": 8160,
+            "task": "partial-A"
+          },
+          {
+            "start": 8160,
+            "end": 8328,
+            "task": "partial-A"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515777673,
+      "ssrc": 3769974215,
+      "payload_sha256": "343f4e2bd539d5d0dc827c38bac0ecf46e5901798d24946c0fad3650aba31b60",
+      "source_start": 7368,
+      "spans": [
+        {
+          "start": 7368,
+          "end": 7680,
+          "task": null
+        },
+        {
+          "start": 7680,
+          "end": 8160,
+          "task": "partial-A"
+        },
+        {
+          "start": 8160,
+          "end": 8328,
+          "task": "partial-A"
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.19999999552965164,
+      "input_timestamp": 1153500,
+      "output_timestamp": 1153500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "partial-A",
+      "start": 7680,
+      "end": 8160,
+      "decode_timestamp": 1153500,
+      "rtp_timestamp": 515777673,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "partial-A",
+      "start": 8160,
+      "end": 8328,
+      "decode_timestamp": 1153500,
+      "rtp_timestamp": 515777673,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 7368,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1153500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "render",
+      "event": "task_started",
+      "playback_id": "partial-A",
+      "rendered_samples": 128,
+      "render_frame": 13312,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "stop_task",
+      "playback_id": "partial-A",
+      "request_id": "f2720bbc5df34a40b3487ad10bd93212"
+    },
+    {
+      "side": "render",
+      "event": "task_stopped",
+      "playback_id": "partial-A",
+      "request_id": "f2720bbc5df34a40b3487ad10bd93212",
+      "rendered_samples": 256,
+      "started": true,
+      "render_frame": 13568,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "task_end",
+      "playback_id": "final-B",
+      "expected_samples": 14880
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515778633,
+        "ssrc": 3769974215,
+        "payload_sha256": "75b9d884bd21e0a28d3c15ab62b0b103144dc7a7f169ae25157d694b2fb1a474",
+        "source_start": 8328,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 8328,
+            "end": 8640,
+            "task": "partial-A"
+          },
+          {
+            "start": 8640,
+            "end": 9120,
+            "task": "partial-A"
+          },
+          {
+            "start": 9120,
+            "end": 9288,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515778633,
+      "ssrc": 3769974215,
+      "payload_sha256": "75b9d884bd21e0a28d3c15ab62b0b103144dc7a7f169ae25157d694b2fb1a474",
+      "source_start": 8328,
+      "spans": [
+        {
+          "start": 8328,
+          "end": 8640,
+          "task": "partial-A"
+        },
+        {
+          "start": 8640,
+          "end": 9120,
+          "task": "partial-A"
+        },
+        {
+          "start": 9120,
+          "end": 9288,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1173500,
+      "output_timestamp": 1173500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "partial-A",
+      "start": 8328,
+      "end": 8640,
+      "decode_timestamp": 1173500,
+      "rtp_timestamp": 515778633,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "partial-A",
+      "start": 8640,
+      "end": 9120,
+      "decode_timestamp": 1173500,
+      "rtp_timestamp": 515778633,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 9120,
+      "end": 9288,
+      "decode_timestamp": 1173500,
+      "rtp_timestamp": 515778633,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 8328,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1173500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "render",
+      "event": "task_started",
+      "playback_id": "final-B",
+      "rendered_samples": 128,
+      "render_frame": 14336,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515779593,
+        "ssrc": 3769974215,
+        "payload_sha256": "f01152cdfecab9e21f32400e0d47d120d2722dd084c5d1df165bc7188748926a",
+        "source_start": 9288,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 9288,
+            "end": 9600,
+            "task": "final-B"
+          },
+          {
+            "start": 9600,
+            "end": 10080,
+            "task": "final-B"
+          },
+          {
+            "start": 10080,
+            "end": 10248,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515779593,
+      "ssrc": 3769974215,
+      "payload_sha256": "f01152cdfecab9e21f32400e0d47d120d2722dd084c5d1df165bc7188748926a",
+      "source_start": 9288,
+      "spans": [
+        {
+          "start": 9288,
+          "end": 9600,
+          "task": "final-B"
+        },
+        {
+          "start": 9600,
+          "end": 10080,
+          "task": "final-B"
+        },
+        {
+          "start": 10080,
+          "end": 10248,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0,
+      "input_timestamp": 1193500,
+      "output_timestamp": 1193500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 9288,
+      "end": 9600,
+      "decode_timestamp": 1193500,
+      "rtp_timestamp": 515779593,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 9600,
+      "end": 10080,
+      "decode_timestamp": 1193500,
+      "rtp_timestamp": 515779593,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 10080,
+      "end": 10248,
+      "decode_timestamp": 1193500,
+      "rtp_timestamp": 515779593,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 9288,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1193500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515780553,
+        "ssrc": 3769974215,
+        "payload_sha256": "cfda793afcca70b0ea5a6d11cd6cb8fe8c3d7c3727ecd4c32d122b36eb4f07e8",
+        "source_start": 10248,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 10248,
+            "end": 10560,
+            "task": "final-B"
+          },
+          {
+            "start": 10560,
+            "end": 11040,
+            "task": "final-B"
+          },
+          {
+            "start": 11040,
+            "end": 11208,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515780553,
+      "ssrc": 3769974215,
+      "payload_sha256": "cfda793afcca70b0ea5a6d11cd6cb8fe8c3d7c3727ecd4c32d122b36eb4f07e8",
+      "source_start": 10248,
+      "spans": [
+        {
+          "start": 10248,
+          "end": 10560,
+          "task": "final-B"
+        },
+        {
+          "start": 10560,
+          "end": 11040,
+          "task": "final-B"
+        },
+        {
+          "start": 11040,
+          "end": 11208,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1213500,
+      "output_timestamp": 1213500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 10248,
+      "end": 10560,
+      "decode_timestamp": 1213500,
+      "rtp_timestamp": 515780553,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 10560,
+      "end": 11040,
+      "decode_timestamp": 1213500,
+      "rtp_timestamp": 515780553,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 11040,
+      "end": 11208,
+      "decode_timestamp": 1213500,
+      "rtp_timestamp": 515780553,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 10248,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1213500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515781513,
+        "ssrc": 3769974215,
+        "payload_sha256": "111f53f7b2eea9af6aef38d8586efd9dab8d62bedfb5886c17e4570221f65543",
+        "source_start": 11208,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 11208,
+            "end": 11520,
+            "task": "final-B"
+          },
+          {
+            "start": 11520,
+            "end": 12000,
+            "task": "final-B"
+          },
+          {
+            "start": 12000,
+            "end": 12168,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515781513,
+      "ssrc": 3769974215,
+      "payload_sha256": "111f53f7b2eea9af6aef38d8586efd9dab8d62bedfb5886c17e4570221f65543",
+      "source_start": 11208,
+      "spans": [
+        {
+          "start": 11208,
+          "end": 11520,
+          "task": "final-B"
+        },
+        {
+          "start": 11520,
+          "end": 12000,
+          "task": "final-B"
+        },
+        {
+          "start": 12000,
+          "end": 12168,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1233500,
+      "output_timestamp": 1233500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 11208,
+      "end": 11520,
+      "decode_timestamp": 1233500,
+      "rtp_timestamp": 515781513,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 11520,
+      "end": 12000,
+      "decode_timestamp": 1233500,
+      "rtp_timestamp": 515781513,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 12000,
+      "end": 12168,
+      "decode_timestamp": 1233500,
+      "rtp_timestamp": 515781513,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 11208,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1233500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515782473,
+        "ssrc": 3769974215,
+        "payload_sha256": "cf7db05b34936c7d6a733abc0c3a002a955d5a56aedef8085e53cb082887f92f",
+        "source_start": 12168,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 12168,
+            "end": 12480,
+            "task": "final-B"
+          },
+          {
+            "start": 12480,
+            "end": 12960,
+            "task": "final-B"
+          },
+          {
+            "start": 12960,
+            "end": 13128,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515782473,
+      "ssrc": 3769974215,
+      "payload_sha256": "cf7db05b34936c7d6a733abc0c3a002a955d5a56aedef8085e53cb082887f92f",
+      "source_start": 12168,
+      "spans": [
+        {
+          "start": 12168,
+          "end": 12480,
+          "task": "final-B"
+        },
+        {
+          "start": 12480,
+          "end": 12960,
+          "task": "final-B"
+        },
+        {
+          "start": 12960,
+          "end": 13128,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1253500,
+      "output_timestamp": 1253500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 12168,
+      "end": 12480,
+      "decode_timestamp": 1253500,
+      "rtp_timestamp": 515782473,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 12480,
+      "end": 12960,
+      "decode_timestamp": 1253500,
+      "rtp_timestamp": 515782473,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 12960,
+      "end": 13128,
+      "decode_timestamp": 1253500,
+      "rtp_timestamp": 515782473,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 12168,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1253500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515783433,
+        "ssrc": 3769974215,
+        "payload_sha256": "8330adb448ffd679287c6bb0ddbfa832426ccfb2b4f9531893efc273bfddcd81",
+        "source_start": 13128,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 13128,
+            "end": 13440,
+            "task": "final-B"
+          },
+          {
+            "start": 13440,
+            "end": 13920,
+            "task": "final-B"
+          },
+          {
+            "start": 13920,
+            "end": 14088,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515783433,
+      "ssrc": 3769974215,
+      "payload_sha256": "8330adb448ffd679287c6bb0ddbfa832426ccfb2b4f9531893efc273bfddcd81",
+      "source_start": 13128,
+      "spans": [
+        {
+          "start": 13128,
+          "end": 13440,
+          "task": "final-B"
+        },
+        {
+          "start": 13440,
+          "end": 13920,
+          "task": "final-B"
+        },
+        {
+          "start": 13920,
+          "end": 14088,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0,
+      "input_timestamp": 1273500,
+      "output_timestamp": 1273500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 13128,
+      "end": 13440,
+      "decode_timestamp": 1273500,
+      "rtp_timestamp": 515783433,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 13440,
+      "end": 13920,
+      "decode_timestamp": 1273500,
+      "rtp_timestamp": 515783433,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 13920,
+      "end": 14088,
+      "decode_timestamp": 1273500,
+      "rtp_timestamp": 515783433,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 13128,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1273500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515784393,
+        "ssrc": 3769974215,
+        "payload_sha256": "e461668e4ffbc51ff27553d8750a2a76867bd7914b4d446427d0f10b6250adc6",
+        "source_start": 14088,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 14088,
+            "end": 14400,
+            "task": "final-B"
+          },
+          {
+            "start": 14400,
+            "end": 14880,
+            "task": "final-B"
+          },
+          {
+            "start": 14880,
+            "end": 15048,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515784393,
+      "ssrc": 3769974215,
+      "payload_sha256": "e461668e4ffbc51ff27553d8750a2a76867bd7914b4d446427d0f10b6250adc6",
+      "source_start": 14088,
+      "spans": [
+        {
+          "start": 14088,
+          "end": 14400,
+          "task": "final-B"
+        },
+        {
+          "start": 14400,
+          "end": 14880,
+          "task": "final-B"
+        },
+        {
+          "start": 14880,
+          "end": 15048,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1293500,
+      "output_timestamp": 1293500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 14088,
+      "end": 14400,
+      "decode_timestamp": 1293500,
+      "rtp_timestamp": 515784393,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 14400,
+      "end": 14880,
+      "decode_timestamp": 1293500,
+      "rtp_timestamp": 515784393,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 14880,
+      "end": 15048,
+      "decode_timestamp": 1293500,
+      "rtp_timestamp": 515784393,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 14088,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1293500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515785353,
+        "ssrc": 3769974215,
+        "payload_sha256": "7c34cff001cb1ba94c0054afe229d450922937c38a2c108fe9b3a2a660a69ea4",
+        "source_start": 15048,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 15048,
+            "end": 15360,
+            "task": "final-B"
+          },
+          {
+            "start": 15360,
+            "end": 15840,
+            "task": "final-B"
+          },
+          {
+            "start": 15840,
+            "end": 16008,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515785353,
+      "ssrc": 3769974215,
+      "payload_sha256": "7c34cff001cb1ba94c0054afe229d450922937c38a2c108fe9b3a2a660a69ea4",
+      "source_start": 15048,
+      "spans": [
+        {
+          "start": 15048,
+          "end": 15360,
+          "task": "final-B"
+        },
+        {
+          "start": 15360,
+          "end": 15840,
+          "task": "final-B"
+        },
+        {
+          "start": 15840,
+          "end": 16008,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1313500,
+      "output_timestamp": 1313500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 15048,
+      "end": 15360,
+      "decode_timestamp": 1313500,
+      "rtp_timestamp": 515785353,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 15360,
+      "end": 15840,
+      "decode_timestamp": 1313500,
+      "rtp_timestamp": 515785353,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 15840,
+      "end": 16008,
+      "decode_timestamp": 1313500,
+      "rtp_timestamp": 515785353,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 15048,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1313500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515786313,
+        "ssrc": 3769974215,
+        "payload_sha256": "a084decb4a83f831f85905e87dba154c82e3f5795ba28c0c80fab9745fbbbdd3",
+        "source_start": 16008,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 16008,
+            "end": 16320,
+            "task": "final-B"
+          },
+          {
+            "start": 16320,
+            "end": 16800,
+            "task": "final-B"
+          },
+          {
+            "start": 16800,
+            "end": 16968,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515786313,
+      "ssrc": 3769974215,
+      "payload_sha256": "a084decb4a83f831f85905e87dba154c82e3f5795ba28c0c80fab9745fbbbdd3",
+      "source_start": 16008,
+      "spans": [
+        {
+          "start": 16008,
+          "end": 16320,
+          "task": "final-B"
+        },
+        {
+          "start": 16320,
+          "end": 16800,
+          "task": "final-B"
+        },
+        {
+          "start": 16800,
+          "end": 16968,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.09999999403953552,
+      "input_timestamp": 1333500,
+      "output_timestamp": 1333500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 16008,
+      "end": 16320,
+      "decode_timestamp": 1333500,
+      "rtp_timestamp": 515786313,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 16320,
+      "end": 16800,
+      "decode_timestamp": 1333500,
+      "rtp_timestamp": 515786313,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 16800,
+      "end": 16968,
+      "decode_timestamp": 1333500,
+      "rtp_timestamp": 515786313,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 16008,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1333500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515787273,
+        "ssrc": 3769974215,
+        "payload_sha256": "e23afd7dade1318488e1ff458f5995863f67ecf2b1c952b8cdee768110f0ee09",
+        "source_start": 16968,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 16968,
+            "end": 17280,
+            "task": "final-B"
+          },
+          {
+            "start": 17280,
+            "end": 17760,
+            "task": "final-B"
+          },
+          {
+            "start": 17760,
+            "end": 17928,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515787273,
+      "ssrc": 3769974215,
+      "payload_sha256": "e23afd7dade1318488e1ff458f5995863f67ecf2b1c952b8cdee768110f0ee09",
+      "source_start": 16968,
+      "spans": [
+        {
+          "start": 16968,
+          "end": 17280,
+          "task": "final-B"
+        },
+        {
+          "start": 17280,
+          "end": 17760,
+          "task": "final-B"
+        },
+        {
+          "start": 17760,
+          "end": 17928,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.09999999403953552,
+      "input_timestamp": 1353500,
+      "output_timestamp": 1353500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 16968,
+      "end": 17280,
+      "decode_timestamp": 1353500,
+      "rtp_timestamp": 515787273,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 17280,
+      "end": 17760,
+      "decode_timestamp": 1353500,
+      "rtp_timestamp": 515787273,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 17760,
+      "end": 17928,
+      "decode_timestamp": 1353500,
+      "rtp_timestamp": 515787273,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 16968,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1353500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515788233,
+        "ssrc": 3769974215,
+        "payload_sha256": "dd85146df3b8810f48fca47020f567a1305a5af558f03d242e647885a9fa8cc2",
+        "source_start": 17928,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 17928,
+            "end": 18240,
+            "task": "final-B"
+          },
+          {
+            "start": 18240,
+            "end": 18720,
+            "task": "final-B"
+          },
+          {
+            "start": 18720,
+            "end": 18888,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515788233,
+      "ssrc": 3769974215,
+      "payload_sha256": "dd85146df3b8810f48fca47020f567a1305a5af558f03d242e647885a9fa8cc2",
+      "source_start": 17928,
+      "spans": [
+        {
+          "start": 17928,
+          "end": 18240,
+          "task": "final-B"
+        },
+        {
+          "start": 18240,
+          "end": 18720,
+          "task": "final-B"
+        },
+        {
+          "start": 18720,
+          "end": 18888,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.29999999701976776,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1373500,
+      "output_timestamp": 1373500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 17928,
+      "end": 18240,
+      "decode_timestamp": 1373500,
+      "rtp_timestamp": 515788233,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 18240,
+      "end": 18720,
+      "decode_timestamp": 1373500,
+      "rtp_timestamp": 515788233,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 18720,
+      "end": 18888,
+      "decode_timestamp": 1373500,
+      "rtp_timestamp": 515788233,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 17928,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1373500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515789193,
+        "ssrc": 3769974215,
+        "payload_sha256": "70a542ac8da356b9259838aeaea8442bbe65db80154bb08345b4a0e955332454",
+        "source_start": 18888,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 18888,
+            "end": 19200,
+            "task": "final-B"
+          },
+          {
+            "start": 19200,
+            "end": 19680,
+            "task": "final-B"
+          },
+          {
+            "start": 19680,
+            "end": 19848,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515789193,
+      "ssrc": 3769974215,
+      "payload_sha256": "70a542ac8da356b9259838aeaea8442bbe65db80154bb08345b4a0e955332454",
+      "source_start": 18888,
+      "spans": [
+        {
+          "start": 18888,
+          "end": 19200,
+          "task": "final-B"
+        },
+        {
+          "start": 19200,
+          "end": 19680,
+          "task": "final-B"
+        },
+        {
+          "start": 19680,
+          "end": 19848,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1393500,
+      "output_timestamp": 1393500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 18888,
+      "end": 19200,
+      "decode_timestamp": 1393500,
+      "rtp_timestamp": 515789193,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 19200,
+      "end": 19680,
+      "decode_timestamp": 1393500,
+      "rtp_timestamp": 515789193,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 19680,
+      "end": 19848,
+      "decode_timestamp": 1393500,
+      "rtp_timestamp": 515789193,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 18888,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1393500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515790153,
+        "ssrc": 3769974215,
+        "payload_sha256": "fa586e01d47204347c80763e1773418e08066316b953038aef2e6aac503811bc",
+        "source_start": 19848,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 19848,
+            "end": 20160,
+            "task": "final-B"
+          },
+          {
+            "start": 20160,
+            "end": 20640,
+            "task": "final-B"
+          },
+          {
+            "start": 20640,
+            "end": 20808,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515790153,
+      "ssrc": 3769974215,
+      "payload_sha256": "fa586e01d47204347c80763e1773418e08066316b953038aef2e6aac503811bc",
+      "source_start": 19848,
+      "spans": [
+        {
+          "start": 19848,
+          "end": 20160,
+          "task": "final-B"
+        },
+        {
+          "start": 20160,
+          "end": 20640,
+          "task": "final-B"
+        },
+        {
+          "start": 20640,
+          "end": 20808,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1413500,
+      "output_timestamp": 1413500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 19848,
+      "end": 20160,
+      "decode_timestamp": 1413500,
+      "rtp_timestamp": 515790153,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 20160,
+      "end": 20640,
+      "decode_timestamp": 1413500,
+      "rtp_timestamp": 515790153,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 20640,
+      "end": 20808,
+      "decode_timestamp": 1413500,
+      "rtp_timestamp": 515790153,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 19848,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1413500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515791113,
+        "ssrc": 3769974215,
+        "payload_sha256": "699f2bac5a721c401ae95ae683d7053688ef6d760d955e39117b0508c70af818",
+        "source_start": 20808,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 20808,
+            "end": 21120,
+            "task": "final-B"
+          },
+          {
+            "start": 21120,
+            "end": 21600,
+            "task": "final-B"
+          },
+          {
+            "start": 21600,
+            "end": 21768,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515791113,
+      "ssrc": 3769974215,
+      "payload_sha256": "699f2bac5a721c401ae95ae683d7053688ef6d760d955e39117b0508c70af818",
+      "source_start": 20808,
+      "spans": [
+        {
+          "start": 20808,
+          "end": 21120,
+          "task": "final-B"
+        },
+        {
+          "start": 21120,
+          "end": 21600,
+          "task": "final-B"
+        },
+        {
+          "start": 21600,
+          "end": 21768,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.30000000447034836,
+      "input_timestamp": 1433500,
+      "output_timestamp": 1433500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 20808,
+      "end": 21120,
+      "decode_timestamp": 1433500,
+      "rtp_timestamp": 515791113,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 21120,
+      "end": 21600,
+      "decode_timestamp": 1433500,
+      "rtp_timestamp": 515791113,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 21600,
+      "end": 21768,
+      "decode_timestamp": 1433500,
+      "rtp_timestamp": 515791113,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 20808,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1433500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515792073,
+        "ssrc": 3769974215,
+        "payload_sha256": "1d7cf2e13ca33163ea22a3b5878893d812d87748e5c43f0415fd138808a47adb",
+        "source_start": 21768,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 21768,
+            "end": 22080,
+            "task": "final-B"
+          },
+          {
+            "start": 22080,
+            "end": 22560,
+            "task": "final-B"
+          },
+          {
+            "start": 22560,
+            "end": 22728,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515792073,
+      "ssrc": 3769974215,
+      "payload_sha256": "1d7cf2e13ca33163ea22a3b5878893d812d87748e5c43f0415fd138808a47adb",
+      "source_start": 21768,
+      "spans": [
+        {
+          "start": 21768,
+          "end": 22080,
+          "task": "final-B"
+        },
+        {
+          "start": 22080,
+          "end": 22560,
+          "task": "final-B"
+        },
+        {
+          "start": 22560,
+          "end": 22728,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.19999999552965164,
+      "input_timestamp": 1453500,
+      "output_timestamp": 1453500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 21768,
+      "end": 22080,
+      "decode_timestamp": 1453500,
+      "rtp_timestamp": 515792073,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 22080,
+      "end": 22560,
+      "decode_timestamp": 1453500,
+      "rtp_timestamp": 515792073,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 22560,
+      "end": 22728,
+      "decode_timestamp": 1453500,
+      "rtp_timestamp": 515792073,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 21768,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1453500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515793033,
+        "ssrc": 3769974215,
+        "payload_sha256": "1ece6180008430be2e4c36f37f56cbb542b46c22be6794ef7becd73aae64b57c",
+        "source_start": 22728,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 22728,
+            "end": 23040,
+            "task": "final-B"
+          },
+          {
+            "start": 23040,
+            "end": 23520,
+            "task": "final-B"
+          },
+          {
+            "start": 23520,
+            "end": 23688,
+            "task": "final-B"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515793033,
+      "ssrc": 3769974215,
+      "payload_sha256": "1ece6180008430be2e4c36f37f56cbb542b46c22be6794ef7becd73aae64b57c",
+      "source_start": 22728,
+      "spans": [
+        {
+          "start": 22728,
+          "end": 23040,
+          "task": "final-B"
+        },
+        {
+          "start": 23040,
+          "end": 23520,
+          "task": "final-B"
+        },
+        {
+          "start": 23520,
+          "end": 23688,
+          "task": "final-B"
+        }
+      ],
+      "mapping_wait_ms": 0.19999999552965164,
+      "decode_job_ms": 0.30000000447034836,
+      "input_timestamp": 1473500,
+      "output_timestamp": 1473500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 22728,
+      "end": 23040,
+      "decode_timestamp": 1473500,
+      "rtp_timestamp": 515793033,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 23040,
+      "end": 23520,
+      "decode_timestamp": 1473500,
+      "rtp_timestamp": 515793033,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 23520,
+      "end": 23688,
+      "decode_timestamp": 1473500,
+      "rtp_timestamp": 515793033,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 22728,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1473500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515793993,
+        "ssrc": 3769974215,
+        "payload_sha256": "3aff4656325e02b4fc193bb6113981f990417fce64e7bfa1b7a6410a9b209cb5",
+        "source_start": 23688,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 23688,
+            "end": 24000,
+            "task": "final-B"
+          },
+          {
+            "start": 24000,
+            "end": 24480,
+            "task": null
+          },
+          {
+            "start": 24480,
+            "end": 24648,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515793993,
+      "ssrc": 3769974215,
+      "payload_sha256": "3aff4656325e02b4fc193bb6113981f990417fce64e7bfa1b7a6410a9b209cb5",
+      "source_start": 23688,
+      "spans": [
+        {
+          "start": 23688,
+          "end": 24000,
+          "task": "final-B"
+        },
+        {
+          "start": 24000,
+          "end": 24480,
+          "task": null
+        },
+        {
+          "start": 24480,
+          "end": 24648,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.19999999552965164,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1493500,
+      "output_timestamp": 1493500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "final-B",
+      "start": 23688,
+      "end": 24000,
+      "decode_timestamp": 1493500,
+      "rtp_timestamp": 515793993,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 23688,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1493500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "render",
+      "event": "task_finished",
+      "playback_id": "final-B",
+      "rendered_samples": 14880,
+      "started": true,
+      "render_frame": 30200,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 515794953,
+        "ssrc": 3769974215,
+        "payload_sha256": "f90265e3171b58c162bbd2bf94f0974b74b1fca9250fbf64b9887c0014798b6c",
+        "source_start": 24648,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 24648,
+            "end": 24960,
+            "task": null
+          },
+          {
+            "start": 24960,
+            "end": 25440,
+            "task": null
+          },
+          {
+            "start": 25440,
+            "end": 25608,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 515794953,
+      "ssrc": 3769974215,
+      "payload_sha256": "f90265e3171b58c162bbd2bf94f0974b74b1fca9250fbf64b9887c0014798b6c",
+      "source_start": 24648,
+      "spans": [
+        {
+          "start": 24648,
+          "end": 24960,
+          "task": null
+        },
+        {
+          "start": 24960,
+          "end": 25440,
+          "task": null
+        },
+        {
+          "start": 25440,
+          "end": 25608,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.19999999552965164,
+      "input_timestamp": 1513500,
+      "output_timestamp": 1513500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 24648,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1513500,
+      "binding": "single_packet_flush"
+    }
+  ],
+  "errors": [],
+  "server": {
+    "scenario": "final",
+    "actions": [
+      {
+        "event": "scenario_started",
+        "task": "partial-A"
+      },
+      {
+        "event": "final_replaced",
+        "duplicate_restart": false,
+        "tool_replayed": false
+      }
+    ],
+    "receipts": [
+      {
+        "event": "task_started",
+        "playback_id": "partial-A",
+        "rendered_samples": 128,
+        "render_frame": 13312,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 535.2000000029802,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "accepted": true
+      },
+      {
+        "event": "task_stopped",
+        "playback_id": "partial-A",
+        "request_id": "f2720bbc5df34a40b3487ad10bd93212",
+        "rendered_samples": 256,
+        "started": true,
+        "render_frame": 13568,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 540.5,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "accepted": true
+      },
+      {
+        "event": "task_started",
+        "playback_id": "final-B",
+        "rendered_samples": 128,
+        "render_frame": 14336,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 556.6000000014901,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "accepted": true
+      },
+      {
+        "event": "task_finished",
+        "playback_id": "final-B",
+        "rendered_samples": 14880,
+        "started": true,
+        "render_frame": 30200,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 882,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "accepted": true
+      }
+    ],
+    "td_events": [
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "partial-A",
+        "kind": "normal",
+        "turn_id": 1,
+        "response_id": "1:1",
+        "created_ms": 149.55058399937116
+      },
+      {
+        "event": "playback_queued",
+        "playback_id": "partial-A",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "queued",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 150.83141699869884
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "partial-A",
+        "kind": "normal",
+        "response_id": null,
+        "turn_id": 1,
+        "source_id": "reply",
+        "source_revision": 1,
+        "collection_generation": 0,
+        "created_ms": 150.83699999377131
+      },
+      {
+        "event": "playback_dispatched",
+        "playback_id": "partial-A",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "sent_unknown",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 150.9797089966014
+      },
+      {
+        "event": "playback_client_started",
+        "playback_id": "partial-A",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "playing",
+        "client_start_confirmed": true,
+        "output_kind": "normal",
+        "created_ms": 183.75337500037858
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "partial-A",
+        "response_id": "1:1",
+        "turn_id": 1,
+        "output_kind": "normal",
+        "renderer_event": "task_started",
+        "rendered_samples": 128,
+        "client_elapsed_ms": 535.2000000029802,
+        "request_id": null,
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 13312,
+        "render_sample_rate": 48000,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "created_ms": 183.758166996995
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "final-B",
+        "kind": "normal",
+        "turn_id": 1,
+        "response_id": "1:2",
+        "created_ms": 183.8293339969823
+      },
+      {
+        "event": "playback_queued",
+        "playback_id": "final-B",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 2,
+        "status": "queued",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 185.01533399830805
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "final-B",
+        "kind": "normal",
+        "response_id": null,
+        "turn_id": 1,
+        "source_id": "reply",
+        "source_revision": 2,
+        "collection_generation": 0,
+        "created_ms": 185.01987499621464
+      },
+      {
+        "event": "playback_stop_requested",
+        "playback_id": "partial-A",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "stop_requested",
+        "client_start_confirmed": true,
+        "output_kind": "normal",
+        "created_ms": 185.0422499992419
+      },
+      {
+        "event": "playback_client_stopped",
+        "playback_id": "partial-A",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "stopped",
+        "client_start_confirmed": true,
+        "output_kind": "normal",
+        "created_ms": 189.0754999985802
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "partial-A",
+        "response_id": "1:1",
+        "turn_id": 1,
+        "output_kind": "normal",
+        "renderer_event": "task_stopped",
+        "rendered_samples": 256,
+        "client_elapsed_ms": 540.5,
+        "request_id": "f2720bbc5df34a40b3487ad10bd93212",
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 13568,
+        "render_sample_rate": 48000,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "created_ms": 189.08220899902517
+      },
+      {
+        "event": "playback_dispatched",
+        "playback_id": "final-B",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 2,
+        "status": "sent_unknown",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 189.13841699395562
+      },
+      {
+        "event": "playback_client_started",
+        "playback_id": "final-B",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 2,
+        "status": "playing",
+        "client_start_confirmed": true,
+        "output_kind": "normal",
+        "created_ms": 205.25562499824446
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "final-B",
+        "response_id": "1:2",
+        "turn_id": 1,
+        "output_kind": "normal",
+        "renderer_event": "task_started",
+        "rendered_samples": 128,
+        "client_elapsed_ms": 556.6000000014901,
+        "request_id": null,
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 14336,
+        "render_sample_rate": 48000,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "created_ms": 205.26179199805483
+      },
+      {
+        "event": "playback_client_finished",
+        "playback_id": "final-B",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 2,
+        "status": "finished",
+        "client_start_confirmed": true,
+        "output_kind": "normal",
+        "created_ms": 530.7339999999385
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "final-B",
+        "response_id": "1:2",
+        "turn_id": 1,
+        "output_kind": "normal",
+        "renderer_event": "task_finished",
+        "rendered_samples": 14880,
+        "client_elapsed_ms": 882,
+        "request_id": null,
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 30200,
+        "render_sample_rate": 48000,
+        "render_clock_id": "40b6c27291424ff08e39dd1a8560e9ab",
+        "created_ms": 530.7475419976981
+      }
+    ],
+    "user_submissions": 1,
+    "tasks": {
+      "partial-A": {
+        "status": "stopped",
+        "kind": "normal"
+      },
+      "final-B": {
+        "status": "finished",
+        "kind": "normal"
+      }
+    },
+    "job_errors": []
+  },
+  "connection": "connected"
+}

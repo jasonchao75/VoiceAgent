@@ -1,0 +1,18 @@
+{
+  "status": "pending_user_authorization",
+  "decision_id_reserved": "D-070; not confirmed",
+  "data": "same synthetic opening PCM 2400 samples/24kHz plus native silence; no transcription inference",
+  "receiver": "local machine only",
+  "connections_max": 1,
+  "source_media_seconds_max": 2,
+  "cost_usd": 0,
+  "retry": false,
+  "stop": "first mapping failure immediately closes; no Final/identifier combination",
+  "added_evidence": [
+    "completed native RTP send count after await",
+    "browser inbound audio packet/byte count and codec MIME before close",
+    "native audio sink paused/muted/ready state",
+    "existing transform packet/decoded counters"
+  ],
+  "no_architecture_or_tolerance_change": true
+}

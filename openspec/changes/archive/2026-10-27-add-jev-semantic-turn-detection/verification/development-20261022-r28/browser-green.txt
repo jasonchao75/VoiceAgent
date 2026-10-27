@@ -1,0 +1,21 @@
+
+Running 12 tests using 1 worker
+
+(node:21148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (685ms)
+  ✓   2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (493ms)
+  ✓   3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 1440px (636ms)
+  ✓   4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 390px (527ms)
+  ✓   5 [desktop-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (488ms)
+  ✓   6 [desktop-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings (1.4s)
+(node:21189) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (563ms)
+  ✓   8 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (509ms)
+  ✓   9 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 1440px (618ms)
+  ✓  10 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 390px (558ms)
+  ✓  11 [narrow-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (464ms)
+  ✓  12 [narrow-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings (1.4s)
+
+  12 passed (9.0s)

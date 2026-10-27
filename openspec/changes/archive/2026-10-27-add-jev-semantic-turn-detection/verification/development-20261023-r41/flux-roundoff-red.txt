@@ -1,0 +1,21 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_flux_real_decimal_roundoff_does_not_reject_a_contained_word[4.5600000000000005-True] _
+
+word_end = 4.5600000000000005, accepted = True
+
+    @pytest.mark.parametrize('word_end,accepted', [(4.5600000000000005, True), (4.560001, False)])
+    def test_flux_real_decimal_roundoff_does_not_reject_a_contained_word(word_end, accepted):
+        """D-059: permit machine representation noise, never a real timing overrun."""
+        parser = normalizer('deepgram', 'flux-general-en')
+        result = parser.normalize({'event': 'Update', 'turn_index': 0, 'transcript': 'to',
+                                  'audio_window_start': 0., 'audio_window_end': 4.56,
+                                  'words': [{'word': 'to', 'start': 4.4, 'end': word_end}]})
+>       assert bool(result) is accepted
+E       assert False is True
+E        +  where False = bool(())
+
+tests/test_td_asr_events.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_flux_real_decimal_roundoff_does_not_reject_a_contained_word[4.5600000000000005-True]
+1 failed, 1 passed, 40 deselected in 0.05s

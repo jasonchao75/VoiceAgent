@@ -1,0 +1,92 @@
+
+Running 2 tests using 1 worker
+
+(node:12083) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtp-serial.spec.js:7:47 › D-064 RTP serial final waits for actual stop (1.1s)
+(node:12096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-rtp-serial.spec.js:7:47 › D-064 RTP serial identifier waits for actual stop (821ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-rtp-serial.spec.js:7:47 › D-064 RTP serial final waits for actual stop 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 7
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "event": "candidate_failed",
+    +     "reason": "decode_coordinate_unproven",
+    +     "side": "bridge",
+    +   },
+    + ]
+
+      58 |   expect(result.errors).toEqual([]);
+      59 |   expect(result.server.job_errors).toEqual([]);
+    > 60 |   expect(result.events.filter(e=>e.event==='candidate_failed')).toEqual([]);
+         |                                                                 ^
+      61 |   const receipts=result.server.receipts;
+      62 |   expect(receipts.every(e=>e.accepted)).toBe(true);
+      63 |   const oldStarted=receipts.find(e=>e.event==='task_started');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtp-serial.spec.js:60:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtp-serial-D-064-RTP-serial-final-waits-for-actual-stop-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtp-serial-D-064-RTP-serial-final-waits-for-actual-stop-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtp-serial-D-064-RTP-serial-final-waits-for-actual-stop-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtp-serial-D-064-RTP-serial-final-waits-for-actual-stop-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-rtp-serial.spec.js:7:47 › D-064 RTP serial identifier waits for actual stop 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 7
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "event": "candidate_failed",
+    +     "reason": "decode_coordinate_unproven",
+    +     "side": "bridge",
+    +   },
+    + ]
+
+      58 |   expect(result.errors).toEqual([]);
+      59 |   expect(result.server.job_errors).toEqual([]);
+    > 60 |   expect(result.events.filter(e=>e.event==='candidate_failed')).toEqual([]);
+         |                                                                 ^
+      61 |   const receipts=result.server.receipts;
+      62 |   expect(receipts.every(e=>e.accepted)).toBe(true);
+      63 |   const oldStarted=receipts.find(e=>e.event==='task_started');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtp-serial.spec.js:60:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtp-serial-D-064-RTP-se-9b418-ifier-waits-for-actual-stop-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtp-serial-D-064-RTP-se-9b418-ifier-waits-for-actual-stop-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtp-serial-D-064-RTP-se-9b418-ifier-waits-for-actual-stop-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtp-serial-D-064-RTP-se-9b418-ifier-waits-for-actual-stop-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-rtp-serial.spec.js:7:47 › D-064 RTP serial final waits for actual stop 
+    [desktop-chromium] › tests/ui/td-rtp-serial.spec.js:7:47 › D-064 RTP serial identifier waits for actual stop 

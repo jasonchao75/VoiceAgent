@@ -66,10 +66,16 @@ def test_asr_catalog_exposes_confirmed_provider_and_turn_capabilities() -> None:
     assert set(providers) == {"deepgram", "speechmatics", "soniox", "assemblyai"}
 
     deepgram_models = {model["id"]: model for model in providers["deepgram"]["models"]}
-    assert deepgram_models["nova-3"]["turn_sources"] == ["off"]
-    assert deepgram_models["flux-general-en"]["turn_sources"] == ["provider_native"]
-    assert providers["soniox"]["models"][0]["turn_sources"] == ["provider_native"]
-    assert providers["assemblyai"]["models"][0]["turn_sources"] == ["provider_native"]
+    assert deepgram_models["nova-3"]["turn_sources"] == ["off", "self_developed"]
+    assert deepgram_models["flux-general-en"]["turn_sources"] == [
+        "provider_native",
+        "self_developed",
+    ]
+    assert providers["soniox"]["models"][0]["turn_sources"] == ["provider_native", "self_developed"]
+    assert providers["assemblyai"]["models"][0]["turn_sources"] == [
+        "provider_native",
+        "self_developed",
+    ]
     assert len(SPEECHMATICS_LANGUAGE_PACKS) == 62
     assert len(SONIOX_LANGUAGES) == 60
     assert len(ASSEMBLYAI_LANGUAGES) == 18

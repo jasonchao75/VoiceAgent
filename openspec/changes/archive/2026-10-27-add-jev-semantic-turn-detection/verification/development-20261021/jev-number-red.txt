@@ -1,0 +1,379 @@
+FFFFFFFFFFFFFFFF                                                         [100%]
+=================================== FAILURES ===================================
+_____ test_strict_local_accepts_whole_identifier_without_minimum[123-123] ______
+
+text = '123', expected = '123'
+
+    @pytest.mark.parametrize('text,expected', [('123', '123'), ('one two', '12'), ('一二三', '123'),
+                                              ('1', '1'), ('12', '12'), ('1，2-3', '123')])
+    def test_strict_local_accepts_whole_identifier_without_minimum(text, expected):
+        """Single units and two units do not gain an artificial minimum gate."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 00:33:59.703 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+____ test_strict_local_accepts_whole_identifier_without_minimum[one two-12] ____
+
+text = 'one two', expected = '12'
+
+    @pytest.mark.parametrize('text,expected', [('123', '123'), ('one two', '12'), ('一二三', '123'),
+                                              ('1', '1'), ('12', '12'), ('1，2-3', '123')])
+    def test_strict_local_accepts_whole_identifier_without_minimum(text, expected):
+        """Single units and two units do not gain an artificial minimum gate."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+_ test_strict_local_accepts_whole_identifier_without_minimum[\u4e00\u4e8c\u4e09-123] _
+
+text = '一二三', expected = '123'
+
+    @pytest.mark.parametrize('text,expected', [('123', '123'), ('one two', '12'), ('一二三', '123'),
+                                              ('1', '1'), ('12', '12'), ('1，2-3', '123')])
+    def test_strict_local_accepts_whole_identifier_without_minimum(text, expected):
+        """Single units and two units do not gain an artificial minimum gate."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+_______ test_strict_local_accepts_whole_identifier_without_minimum[1-1] ________
+
+text = '1', expected = '1'
+
+    @pytest.mark.parametrize('text,expected', [('123', '123'), ('one two', '12'), ('一二三', '123'),
+                                              ('1', '1'), ('12', '12'), ('1，2-3', '123')])
+    def test_strict_local_accepts_whole_identifier_without_minimum(text, expected):
+        """Single units and two units do not gain an artificial minimum gate."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+______ test_strict_local_accepts_whole_identifier_without_minimum[12-12] _______
+
+text = '12', expected = '12'
+
+    @pytest.mark.parametrize('text,expected', [('123', '123'), ('one two', '12'), ('一二三', '123'),
+                                              ('1', '1'), ('12', '12'), ('1，2-3', '123')])
+    def test_strict_local_accepts_whole_identifier_without_minimum(text, expected):
+        """Single units and two units do not gain an artificial minimum gate."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+__ test_strict_local_accepts_whole_identifier_without_minimum[1\uff0c2-3-123] __
+
+text = '1，2-3', expected = '123'
+
+    @pytest.mark.parametrize('text,expected', [('123', '123'), ('one two', '12'), ('一二三', '123'),
+                                              ('1', '1'), ('12', '12'), ('1，2-3', '123')])
+    def test_strict_local_accepts_whole_identifier_without_minimum(text, expected):
+        """Single units and two units do not gain an artificial minimum gate."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+____________ test_mixed_input_is_not_locally_extracted[one moment] _____________
+
+text = 'one moment'
+
+    @pytest.mark.parametrize('text', ['one moment', '我的号码是123', '不是123，是124',
+                                      '123，嗯，12', '123，接下来还要几位', '把第4位改成3'])
+    def test_mixed_input_is_not_locally_extracted(text):
+        """Presence of a substring is insufficient for the local path."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+_ test_mixed_input_is_not_locally_extracted[\u6211\u7684\u53f7\u7801\u662f123] _
+
+text = '我的号码是123'
+
+    @pytest.mark.parametrize('text', ['one moment', '我的号码是123', '不是123，是124',
+                                      '123，嗯，12', '123，接下来还要几位', '把第4位改成3'])
+    def test_mixed_input_is_not_locally_extracted(text):
+        """Presence of a substring is insufficient for the local path."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+__ test_mixed_input_is_not_locally_extracted[\u4e0d\u662f123\uff0c\u662f124] ___
+
+text = '不是123，是124'
+
+    @pytest.mark.parametrize('text', ['one moment', '我的号码是123', '不是123，是124',
+                                      '123，嗯，12', '123，接下来还要几位', '把第4位改成3'])
+    def test_mixed_input_is_not_locally_extracted(text):
+        """Presence of a substring is insufficient for the local path."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+______ test_mixed_input_is_not_locally_extracted[123\uff0c\u55ef\uff0c12] ______
+
+text = '123，嗯，12'
+
+    @pytest.mark.parametrize('text', ['one moment', '我的号码是123', '不是123，是124',
+                                      '123，嗯，12', '123，接下来还要几位', '把第4位改成3'])
+    def test_mixed_input_is_not_locally_extracted(text):
+        """Presence of a substring is insufficient for the local path."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+_ test_mixed_input_is_not_locally_extracted[123\uff0c\u63a5\u4e0b\u6765\u8fd8\u8981\u51e0\u4f4d] _
+
+text = '123，接下来还要几位'
+
+    @pytest.mark.parametrize('text', ['one moment', '我的号码是123', '不是123，是124',
+                                      '123，嗯，12', '123，接下来还要几位', '把第4位改成3'])
+    def test_mixed_input_is_not_locally_extracted(text):
+        """Presence of a substring is insufficient for the local path."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+_ test_mixed_input_is_not_locally_extracted[\u628a\u7b2c4\u4f4d\u6539\u62103] __
+
+text = '把第4位改成3'
+
+    @pytest.mark.parametrize('text', ['one moment', '我的号码是123', '不是123，是124',
+                                      '123，嗯，12', '123，接下来还要几位', '把第4位改成3'])
+    def test_mixed_input_is_not_locally_extracted(text):
+        """Presence of a substring is insufficient for the local path."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+__________ test_repetition_revision_and_local_tool_dedup_share_state ___________
+
+    def test_repetition_revision_and_local_tool_dedup_share_state():
+        """Distinct positions count, same range replaces, local/tool cannot double append."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+__________ test_tool_rejects_hallucinated_or_cross_generation_content __________
+
+    def test_tool_rejects_hallucinated_or_cross_generation_content():
+        """A tool must prove its number comes from the current source and generation."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+_______ test_unfinished_reminder_preserves_and_success_new_start_clears ________
+
+    def test_unfinished_reminder_preserves_and_success_new_start_clears():
+        """Only explicit next collection after confirmed success clears old values."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+_____________________ test_duplicate_aliases_are_rejected ______________________
+
+    def test_duplicate_aliases_are_rejected():
+        """Ambiguous aliases cannot produce different audio or collected values."""
+>       state = collection()
+                ^^^^^^^^^^^^
+
+tests/test_td_identifier.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def collection():
+        """Create a production collection with explicit vocabulary and no cloud calls."""
+>       assert util.find_spec('src.pipeline.identifier') is not None, 'Identifier state absent'
+E       AssertionError: Identifier state absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104dee8e0>('src.pipeline.identifier')
+E        +    where <function find_spec at 0x104dee8e0> = util.find_spec
+
+tests/test_td_identifier.py:10: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[123-123]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[123-123]
+FAILED tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[one two-12]
+FAILED tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[\u4e00\u4e8c\u4e09-123]
+FAILED tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[1-1]
+FAILED tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[12-12]
+FAILED tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[1\uff0c2-3-123]
+FAILED tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted[one moment]
+FAILED tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted[\u6211\u7684\u53f7\u7801\u662f123]
+FAILED tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted[\u4e0d\u662f123\uff0c\u662f124]
+FAILED tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted[123\uff0c\u55ef\uff0c12]
+FAILED tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted[123\uff0c\u63a5\u4e0b\u6765\u8fd8\u8981\u51e0\u4f4d]
+FAILED tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted[\u628a\u7b2c4\u4f4d\u6539\u62103]
+FAILED tests/test_td_identifier.py::test_repetition_revision_and_local_tool_dedup_share_state
+FAILED tests/test_td_identifier.py::test_tool_rejects_hallucinated_or_cross_generation_content
+FAILED tests/test_td_identifier.py::test_unfinished_reminder_preserves_and_success_new_start_clears
+FAILED tests/test_td_identifier.py::test_duplicate_aliases_are_rejected - Ass...
+16 failed, 1 warning in 0.74s

@@ -1,0 +1,23 @@
+{
+  "scope": "offline audit of the already completed local-real RTC trace; no rerun or new connection",
+  "ranges": [
+    {
+      "response_id": "1:1",
+      "range_ms": [
+        0,
+        32.97520798514597
+      ],
+      "strict_same_clock_frame_bracket": true,
+      "e2e_missing_reason": "source_end_clock_unavailable"
+    },
+    {
+      "response_id": "1:2",
+      "range_ms": [
+        19.04062498942949,
+        68.78883298486471
+      ],
+      "strict_same_clock_frame_bracket": true,
+      "e2e_missing_reason": "source_end_clock_unavailable"
+    }
+  ]
+}

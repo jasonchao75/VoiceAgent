@@ -1,0 +1,211 @@
+...F.F...F.F                                                             [100%]
+=================================== FAILURES ===================================
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-assemblyai-universal-streaming-english] _
+
+provider = 'assemblyai', model = 'universal-streaming-english'
+range_kind = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('assemblyai', 'universal-streaming-english'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v4'),
+    ])
+    @pytest.mark.parametrize("range_kind", ["missing", "invalid"])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model, range_kind,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        from src.asr.config import validate_asr_options
+    
+>       validate_asr_options(
+            provider=provider, model=model, turn_detection_source="self_developed", options={},
+        )
+
+tests/test_td_runtime.py:928: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+>           raise ValueError("Unsupported ASR provider/model combination")
+E           ValueError: Unsupported ASR provider/model combination
+
+src/asr/config.py:1002: ValueError
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-soniox-stt-rt-v4] _
+
+provider = 'soniox', model = 'stt-rt-v4', range_kind = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('assemblyai', 'universal-streaming-english'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v4'),
+    ])
+    @pytest.mark.parametrize("range_kind", ["missing", "invalid"])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model, range_kind,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        from src.asr.config import validate_asr_options
+    
+>       validate_asr_options(
+            provider=provider, model=model, turn_detection_source="self_developed", options={},
+        )
+
+tests/test_td_runtime.py:928: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+>           raise ValueError("Unsupported ASR provider/model combination")
+E           ValueError: Unsupported ASR provider/model combination
+
+src/asr/config.py:1002: ValueError
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[invalid-assemblyai-universal-streaming-english] _
+
+provider = 'assemblyai', model = 'universal-streaming-english'
+range_kind = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('assemblyai', 'universal-streaming-english'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v4'),
+    ])
+    @pytest.mark.parametrize("range_kind", ["missing", "invalid"])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model, range_kind,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        from src.asr.config import validate_asr_options
+    
+>       validate_asr_options(
+            provider=provider, model=model, turn_detection_source="self_developed", options={},
+        )
+
+tests/test_td_runtime.py:928: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+>           raise ValueError("Unsupported ASR provider/model combination")
+E           ValueError: Unsupported ASR provider/model combination
+
+src/asr/config.py:1002: ValueError
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[invalid-soniox-stt-rt-v4] _
+
+provider = 'soniox', model = 'stt-rt-v4', range_kind = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('assemblyai', 'universal-streaming-english'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v4'),
+    ])
+    @pytest.mark.parametrize("range_kind", ["missing", "invalid"])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model, range_kind,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        from src.asr.config import validate_asr_options
+    
+>       validate_asr_options(
+            provider=provider, model=model, turn_detection_source="self_developed", options={},
+        )
+
+tests/test_td_runtime.py:928: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+>           raise ValueError("Unsupported ASR provider/model combination")
+E           ValueError: Unsupported ASR provider/model combination
+
+src/asr/config.py:1002: ValueError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-deepgram-flux-general-en]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-assemblyai-universal-streaming-english]
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-soniox-stt-rt-v4]
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[invalid-assemblyai-universal-streaming-english]
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[invalid-soniox-stt-rt-v4]
+4 failed, 8 passed, 35 deselected, 1 warning in 1.06s

@@ -1,0 +1,116 @@
+{
+  "baseline": {
+    "style": {
+      "display": "none",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "识别词（逗号分隔）",
+      "跟读内容",
+      "音频 / 试听",
+      ""
+    ],
+    "header": [
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1091.46875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1091.46875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1091.46875,
+        "width": 0
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 173,
+        "top": 59.5,
+        "width": 173
+      },
+      {
+        "left": 195,
+        "right": 257,
+        "top": 59.5,
+        "width": 62
+      },
+      {
+        "left": 0,
+        "right": 257,
+        "top": 99.5,
+        "width": 257
+      }
+    ],
+    "audioGridRow": "2",
+    "overflow": false
+  },
+  "production": {
+    "style": {
+      "display": "none",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "识别词（逗号分隔）",
+      "跟读内容",
+      "音频 / 试听",
+      ""
+    ],
+    "header": [
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1038.6875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1038.6875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1038.6875,
+        "width": 0
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 173,
+        "top": 67.5,
+        "width": 173
+      },
+      {
+        "left": 195,
+        "right": 257,
+        "top": 67.5,
+        "width": 62
+      },
+      {
+        "left": 0,
+        "right": 257,
+        "top": 107.5,
+        "width": 257
+      }
+    ],
+    "audioGridRow": "2",
+    "overflow": false
+  }
+}

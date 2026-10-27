@@ -1,0 +1,15 @@
+
+Running 10 tests using 1 worker
+
+  ✓   1 [desktop-chromium] › tests/ui/td-history-baseline.spec.js:8:32 › formal Sessions retains frozen turn hierarchy at 1440px (674ms)
+  ✓   2 [desktop-chromium] › tests/ui/td-history-baseline.spec.js:8:32 › formal Sessions retains frozen turn hierarchy at 390px (594ms)
+  ✓   3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 1440px (530ms)
+  ✓   4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 390px (492ms)
+  ✓   5 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 1440px (726ms)
+  ✓   6 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 390px (658ms)
+  ✓   7 [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 1440px (537ms)
+  ✓   8 [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 390px (427ms)
+  ✓   9 [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 1440px (533ms)
+  ✓  10 [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 390px (471ms)
+
+  10 passed (6.0s)

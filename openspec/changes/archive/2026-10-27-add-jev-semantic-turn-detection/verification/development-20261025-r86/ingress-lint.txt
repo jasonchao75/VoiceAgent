@@ -1,0 +1,36 @@
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/test_td_rtp_input.py:102:5
+    |
+100 |   async def test_native_timestamp_mapper_wrap_is_bound_to_exact_codec_payload_before_dequeue():
+101 |       """Use the actual aiortc mapper and queue boundary without touching payloads."""
+102 | /     import queue
+103 | |     from aiortc.rtcrtpreceiver import TimestampMapper
+104 | |     from aiortc.rtp import RtpPacket
+105 | |     from src.pipeline.rtp_input import RTPInputLedger, bind_receiver_coordinates
+    | |________________________________________________________________________________^
+106 |       receiver = SimpleNamespace(_RTCRtpReceiver__timestamp_mapper=TimestampMapper(),
+107 |                                  _RTCRtpReceiver__decoder_queue=queue.Queue())
+    |
+help: Organize imports
+    |
+102 |     import queue
+103 +
+104 |     from aiortc.rtcrtpreceiver import TimestampMapper
+105 |     from aiortc.rtp import RtpPacket
+106 +
+107 |     from src.pipeline.rtp_input import RTPInputLedger, bind_receiver_coordinates
+    |
+
+E501 Line too long (104 > 100)
+   --> tests/test_td_rtp_input.py:130:101
+    |
+128 |         assert proof[0]['rtp_timestamp'] == 480
+129 |         assert proof[0]['ssrc'] == 7
+130 |         assert proof[0]['payload_sha256'] == __import__('hashlib').sha256(b'unchanged opus').hexdigest()
+    |                                                                                                     ^^^^
+131 |     finally:
+132 |         restore()
+    |
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option.

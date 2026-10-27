@@ -1,0 +1,17 @@
+
+Running 7 tests using 1 worker
+
+(node:10539) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:27:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history (6.1s)
+  ✓  2 [desktop-chromium] › tests/ui/td-runtime.spec.js:99:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.3s)
+  ✓  3 [desktop-chromium] › tests/ui/td-runtime.spec.js:145:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (636ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-runtime.spec.js:175:1 › failed TD save retains draft and retries against the actual API (820ms)
+  -  5 [desktop-chromium] › tests/ui/td-runtime.spec.js:196:1 › formal configuration and audio survive an explicitly coordinated process restart
+  ✓  6 [desktop-chromium] › tests/ui/td-runtime.spec.js:227:1 › late save failure stays with its original Bot after selection changes (683ms)
+(node:10568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  7 [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings (1.5s)
+
+  1 skipped
+  6 passed (11.9s)

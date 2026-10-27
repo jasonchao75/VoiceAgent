@@ -1,0 +1,47 @@
+✖ saved 1253499us output remains bound to its own 1253500us decode job without a tolerance (12.491916ms)
+✔ real output extent disagreement remains rejected instead of guessing ownership (6.38425ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2061.3935
+
+✖ failing tests:
+
+test at frontend/tests/unit/td-rtp-decode-job.test.js:59:1
+✖ saved 1253499us output remains bound to its own 1253500us decode job without a tolerance (12.491916ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   {
+  +     details: {
+  +       expected: null,
+  +       observed: {
+  +         sample_rate: 48000,
+  +         samples: 960,
+  +         timestamp: 1253499
+  +       },
+  +       pending_timestamps: [
+  +         1253500
+  +       ]
+  +     },
+  +     event: 'mapping_failed',
+  +     reason: 'decode_coordinate_unproven'
+  +   }
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///Volumes/work/OpenCode/VoiceAgent/frontend/tests/unit/td-rtp-decode-job.test.js:61:10)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { event: 'mapping_failed', reason: 'decode_coordinate_unproven', details: [Object] } ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

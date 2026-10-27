@@ -1,0 +1,28 @@
+{
+  "mode": "wire-fixture",
+  "status": "ok",
+  "connections": 1,
+  "speak_attempts": 2,
+  "sessions": 1,
+  "old_terminal": false,
+  "cancel_ack": true,
+  "render_gate_released": true,
+  "incoming": [
+    "SpeechStarted",
+    "SpeechInterrupted",
+    "SpeechStarted",
+    "SpeechMetadata"
+  ],
+  "outgoing": [
+    "Speak",
+    "Flush",
+    "Interrupt",
+    "Speak",
+    "Flush"
+  ],
+  "audio_bytes": 120480,
+  "speech_id_hashes": [
+    "042896dc1966b8a6214e5383aba5b8b931cfa049d17aafa37eb8a77c859b95da",
+    "dba0082ec68e72d47fa926dcc91fb9b00961ceb4342554a0c2aa567144a5a6d3"
+  ]
+}

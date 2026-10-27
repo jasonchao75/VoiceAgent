@@ -1,0 +1,118 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+__ test_soniox_unknown_range_recovers_only_within_the_same_sdk_snapshot_scope __
+
+    def test_soniox_unknown_range_recovers_only_within_the_same_sdk_snapshot_scope():
+        """A complete replacement proves recovery; a subsequent provider turn does not."""
+        from pipecat.frames.frames import InterimTranscriptionFrame, TranscriptionFrame
+        from pipecat.processors.frame_processor import FrameProcessor
+    
+        from src.asr.factory import ASRService
+    
+        parser = normalizer('soniox', 'stt-rt-v5')
+        service = ASRService(FrameProcessor(), source_normalizer=parser)
+        unknown = {'text': 'one', 'is_final': False}
+        valid = {**unknown, 'start_ms': 0, 'end_ms': 100}
+        assert service.normalize_source_frame(InterimTranscriptionFrame('one', '', '', result=[unknown])) == ()
+>       assert parser.unresolved_sources
+E       assert set()
+E        +  where set() = <src.asr.turn_events.SourceNormalizer object at 0x10d888ad0>.unresolved_sources
+
+tests/test_td_asr_events.py:26: AssertionError
+__ test_missing_provider_payload_preserves_unowned_transcript_evidence[None] ___
+
+result = None
+
+    @pytest.mark.parametrize("result", [None, "unstructured"])
+    async def test_missing_provider_payload_preserves_unowned_transcript_evidence(result):
+        """Missing provenance must remain visible without borrowing the active turn."""
+        events = []
+        td = coordinator(evidence_sink=events.append)
+        frame = InterimTranscriptionFrame("raw text without range", "", "", result=result)
+        await td.receive_transcript(frame)
+        assert td.unranged_text == frame.text
+        record = next(event for event in events if event["event"] == "unranged_transcript")
+        assert record["text"] == frame.text
+        assert record["turn_id"] is None
+        assert record["reason"] == "source_payload_unavailable"
+        assert record["stream_epoch"] == 0
+        assert td.ledger.view().text == ""
+        await td.receive_transcript(interim('later valid text'))
+>       assert td._current_view().missing_reason == 'unresolved_source_audio_range'
+E       AssertionError: assert None == 'unresolved_source_audio_range'
+E        +  where None = TranscriptView(text='later valid text', final=False, segments=(SourceSegment(epoch=0, source_id='0', revision=1, start...words=(TimedWord(text='later valid text', start_ms=0.0, end_ms=1000.0),), timing_reliable=True),), missing_reason=None).missing_reason
+E        +    where TranscriptView(text='later valid text', final=False, segments=(SourceSegment(epoch=0, source_id='0', revision=1, start...words=(TimedWord(text='later valid text', start_ms=0.0, end_ms=1000.0),), timing_reliable=True),), missing_reason=None) = _current_view()
+E        +      where _current_view = <src.pipeline.custom_td.CustomTDCoordinator object at 0x117e0dd30>._current_view
+
+tests/test_td_runtime.py:862: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-23 03:41:46.360 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+_ test_missing_provider_payload_preserves_unowned_transcript_evidence[unstructured] _
+
+result = 'unstructured'
+
+    @pytest.mark.parametrize("result", [None, "unstructured"])
+    async def test_missing_provider_payload_preserves_unowned_transcript_evidence(result):
+        """Missing provenance must remain visible without borrowing the active turn."""
+        events = []
+        td = coordinator(evidence_sink=events.append)
+        frame = InterimTranscriptionFrame("raw text without range", "", "", result=result)
+        await td.receive_transcript(frame)
+        assert td.unranged_text == frame.text
+        record = next(event for event in events if event["event"] == "unranged_transcript")
+        assert record["text"] == frame.text
+        assert record["turn_id"] is None
+        assert record["reason"] == "source_payload_unavailable"
+        assert record["stream_epoch"] == 0
+        assert td.ledger.view().text == ""
+        await td.receive_transcript(interim('later valid text'))
+>       assert td._current_view().missing_reason == 'unresolved_source_audio_range'
+E       AssertionError: assert None == 'unresolved_source_audio_range'
+E        +  where None = TranscriptView(text='later valid text', final=False, segments=(SourceSegment(epoch=0, source_id='0', revision=1, start...words=(TimedWord(text='later valid text', start_ms=0.0, end_ms=1000.0),), timing_reliable=True),), missing_reason=None).missing_reason
+E        +    where TranscriptView(text='later valid text', final=False, segments=(SourceSegment(epoch=0, source_id='0', revision=1, start...words=(TimedWord(text='later valid text', start_ms=0.0, end_ms=1000.0),), timing_reliable=True),), missing_reason=None) = _current_view()
+E        +      where _current_view = <src.pipeline.custom_td.CustomTDCoordinator object at 0x117e0bc50>._current_view
+
+tests/test_td_runtime.py:862: AssertionError
+__ test_partially_unranged_snapshot_preserves_full_text_beside_known_segments __
+
+    async def test_partially_unranged_snapshot_preserves_full_text_beside_known_segments():
+        """A valid sibling segment cannot hide a missing range in the same raw frame."""
+        events = []
+        td = coordinator(evidence_sink=events.append)
+        td.asr.source_normalizer = SourceNormalizer("speechmatics", "enhanced")
+        frame = InterimTranscriptionFrame("1234", "", "", result={
+            "message": "AddPartialSegment", "segments": [
+                {"speaker_id": "a", "text": "12", "metadata": {"start_time": 0, "end_time": .2}},
+                {"speaker_id": "a", "text": "34", "metadata": None},
+            ],
+        })
+        await td.receive_transcript(frame)
+        assert td.ledger.view().text == "12"
+        assert td.unranged_text == "1234"
+        record = next(event for event in events if event["event"] == "unranged_transcript")
+        assert record["text"] == "1234"
+        assert record["turn_id"] is None
+        assert record["normalized_segment_count"] == 1
+        await td.receive_transcript(InterimTranscriptionFrame('56', '', '', result={
+            'message': 'AddPartialSegment', 'segments': [
+                {'speaker_id': 'b', 'text': '56', 'metadata': {'start_time': .4, 'end_time': .6}},
+            ],
+        }))
+>       assert td._current_view().missing_reason == 'unresolved_source_audio_range'
+E       AssertionError: assert None == 'unresolved_source_audio_range'
+E        +  where None = TranscriptView(text='1256', final=False, segments=(SourceSegment(epoch=0, source_id='a:0.0', revision=1, start_ms=0.0,...evision=1, start_ms=400.0, end_ms=600.0, text='56', final=False, words=(), timing_reliable=True)), missing_reason=None).missing_reason
+E        +    where TranscriptView(text='1256', final=False, segments=(SourceSegment(epoch=0, source_id='a:0.0', revision=1, start_ms=0.0,...evision=1, start_ms=400.0, end_ms=600.0, text='56', final=False, words=(), timing_reliable=True)), missing_reason=None) = _current_view()
+E        +      where _current_view = <src.pipeline.custom_td.CustomTDCoordinator object at 0x117e0b890>._current_view
+
+tests/test_td_runtime.py:888: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_missing_provider_payload_preserves_unowned_transcript_evidence[None]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_soniox_unknown_range_recovers_only_within_the_same_sdk_snapshot_scope
+FAILED tests/test_td_runtime.py::test_missing_provider_payload_preserves_unowned_transcript_evidence[None]
+FAILED tests/test_td_runtime.py::test_missing_provider_payload_preserves_unowned_transcript_evidence[unstructured]
+FAILED tests/test_td_runtime.py::test_partially_unranged_snapshot_preserves_full_text_beside_known_segments
+4 failed, 86 deselected, 1 warning in 1.15s

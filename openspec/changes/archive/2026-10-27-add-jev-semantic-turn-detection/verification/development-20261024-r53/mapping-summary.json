@@ -1,0 +1,52 @@
+{
+  "evidence_level": "local-real",
+  "scope": "isolated D-064 loopback native SDK track/Opus/RTP -> Chromium encoded transform/WebCodecs -> existing AudioWorklet",
+  "normal_totals": {
+    "partial-A": 1440,
+    "final-B": 1440
+  },
+  "actual_render_receipts": [
+    {
+      "event": "task_started",
+      "playback_id": "partial-A",
+      "rendered_samples": 128,
+      "render_frame": 6656,
+      "render_sample_rate": 48000
+    },
+    {
+      "event": "task_started",
+      "playback_id": "final-B",
+      "rendered_samples": 96,
+      "render_frame": 8096,
+      "render_sample_rate": 48000
+    },
+    {
+      "event": "task_finished",
+      "playback_id": "partial-A",
+      "rendered_samples": 1440,
+      "started": true,
+      "render_frame": 8096,
+      "render_sample_rate": 48000
+    },
+    {
+      "event": "task_finished",
+      "playback_id": "final-B",
+      "rendered_samples": 1440,
+      "started": true,
+      "render_frame": 9536,
+      "render_sample_rate": 48000
+    }
+  ],
+  "mapping_wait_ms": {
+    "min": 0.10000000009313226,
+    "max": 0.5,
+    "count": 4,
+    "meaning": "encoded-frame receipt through control/hash binding before decode, not added E2E latency"
+  },
+  "final_cancel": "NOT_RUN",
+  "identifier_arbitration": "NOT_RUN",
+  "production_route_integrated": false,
+  "formal_adoption_authorized": false,
+  "paid_calls": false,
+  "mobile_or_safari": "NOT_RUN"
+}

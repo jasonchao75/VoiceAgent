@@ -1,0 +1,123 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_late_old_identifier_range_revises_without_submitting_new_speech[False] __
+
+after_reminder = False
+
+    @pytest.mark.parametrize("after_reminder", [False, True])
+    async def test_late_old_identifier_range_revises_without_submitting_new_speech(after_reminder):
+        """An old range survives next speech/reminder, yet never becomes a new LLM turn."""
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_rule_settings import priority_settings
+    
+        state = IdentifierCollection(
+            IdentifierVocabulary({"1": ["1"], "2": ["2"], "3": ["3"]}),
+            target_length=3,
+        )
+        td = coordinator(
+            identifier_rules=IdentifierRules(
+                IdentifierRuleSettings.model_validate(priority_settings()),
+                state,
+            )
+        )
+        frames, events = [], []
+        td._sink = events.append
+    
+        async def push(frame, *args, **kwargs):
+            frames.append(frame)
+    
+        td.push_frame = push
+        td.assistant_context("请提供编号")
+        await td.speech_started()
+        await td.receive_transcript(interim("1"))
+        await td.speech_stopped(1000)
+        await td.advance(9000 if after_reminder else 1350)
+        await td.speech_started()
+        following = interim("2")
+        following.result.update(
+            turn_index=1,
+            audio_window_start=10,
+            audio_window_end=11,
+            words=[{"word": "2", "start": 10, "end": 11}],
+        )
+        await td.receive_transcript(following)
+        await td.speech_stopped(11000)
+        assert state.value == "12"
+        old_final = interim("3")
+        old_final.result["event"] = "EndOfTurn"
+        await td.receive_transcript(old_final)
+>       assert state.value == "32"
+E       AssertionError: assert '12' == '32'
+E         
+E         - 32
+E         + 12
+
+tests/test_td_runtime.py:622: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 19:03:46.768 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+__ test_late_old_identifier_range_revises_without_submitting_new_speech[True] __
+
+after_reminder = True
+
+    @pytest.mark.parametrize("after_reminder", [False, True])
+    async def test_late_old_identifier_range_revises_without_submitting_new_speech(after_reminder):
+        """An old range survives next speech/reminder, yet never becomes a new LLM turn."""
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_rule_settings import priority_settings
+    
+        state = IdentifierCollection(
+            IdentifierVocabulary({"1": ["1"], "2": ["2"], "3": ["3"]}),
+            target_length=3,
+        )
+        td = coordinator(
+            identifier_rules=IdentifierRules(
+                IdentifierRuleSettings.model_validate(priority_settings()),
+                state,
+            )
+        )
+        frames, events = [], []
+        td._sink = events.append
+    
+        async def push(frame, *args, **kwargs):
+            frames.append(frame)
+    
+        td.push_frame = push
+        td.assistant_context("请提供编号")
+        await td.speech_started()
+        await td.receive_transcript(interim("1"))
+        await td.speech_stopped(1000)
+        await td.advance(9000 if after_reminder else 1350)
+        await td.speech_started()
+        following = interim("2")
+        following.result.update(
+            turn_index=1,
+            audio_window_start=10,
+            audio_window_end=11,
+            words=[{"word": "2", "start": 10, "end": 11}],
+        )
+        await td.receive_transcript(following)
+        await td.speech_stopped(11000)
+        assert state.value == "12"
+        old_final = interim("3")
+        old_final.result["event"] = "EndOfTurn"
+        await td.receive_transcript(old_final)
+>       assert state.value == "32"
+E       AssertionError: assert '12' == '32'
+E         
+E         - 32
+E         + 12
+
+tests/test_td_runtime.py:622: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_late_old_identifier_range_revises_without_submitting_new_speech[False]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_late_old_identifier_range_revises_without_submitting_new_speech[False]
+FAILED tests/test_td_runtime.py::test_late_old_identifier_range_revises_without_submitting_new_speech[True]
+2 failed, 17 deselected, 1 warning in 1.31s

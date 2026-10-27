@@ -1,0 +1,24 @@
+{
+  "id": "rtc-fixed-candidate-confirmation-v1",
+  "status": "authorization_requested_pending",
+  "connections_max": 3,
+  "order": [
+    "one-second fixed mapping gate with the same 30ms A/B and native silence",
+    "Final actual stop then replacement, max2seconds source",
+    "Identifier continuation/question/clear actual arbitration, max2seconds source"
+  ],
+  "total_source_media_seconds_max": 5,
+  "scope": "same isolated Opus/RTP candidate, no production replacement; same fixed local synthesized resources",
+  "stop_condition": "Any first failure or mapping/extent/codec ambiguity stops the whole batch; mapping gate must succeed before either combination; --retries=0 --max-failures=1 and serial mode",
+  "cost_ceiling_usd": "0.00",
+  "external_services": false,
+  "datachannel_audio": false,
+  "architecture_change": false,
+  "root_fix": "verified packet-specific decode+flush ownership, no microsecond tolerance or timestamp matching",
+  "risks_to_report": [
+    "native Opus state across flush not yet verified",
+    "packet flush cost and added E2E latency unverified",
+    "mobile/Safari/weak network remain out of this local batch"
+  ],
+  "old_grants_replay": false
+}

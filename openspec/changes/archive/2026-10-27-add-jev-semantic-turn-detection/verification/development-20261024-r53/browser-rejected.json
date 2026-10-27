@@ -1,0 +1,26 @@
+{
+  "events": [
+    {
+      "event": "decoder_configured"
+    },
+    {
+      "event": "mapping_failed",
+      "reason": "payload_identity_mismatch"
+    }
+  ],
+  "receipts": [
+    {
+      "event": "offset",
+      "requestId": "mapping-failed",
+      "trackId": null,
+      "offset": 0
+    },
+    {
+      "event": "stop"
+    }
+  ],
+  "totals": {},
+  "failures": [],
+  "connection": "connected",
+  "sample_rate": 48000
+}

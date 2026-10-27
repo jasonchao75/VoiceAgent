@@ -1,0 +1,40 @@
+WARNING: Open known_issues[1]: 当前普通TD/编号工具/缓存/WS及开发RTC实际回执/Final/编号仲裁/认证源端E2E有本地证据，r87完整739通过；剩余真实重连/效果、硬件/弱网/默认采用/独立验收见22ID矩阵。
+WARNING: Open known_issues[12]: 四家六模型SDK桥接及r85 external-real英文数字基本范围/Partial/Final通过；多场景/多语种/真实重连/完整时间与WPM效果仍未验证。
+WARNING: Open known_issues[15]: 来源代次/跨提交/缺口恢复与D061有界失败本地SDK通过，r85六模型基本真实范围通过；跨连接绝对钟和真实重连仍未验证。
+WARNING: Open known_issues[17]: 严格全输入编号/WPM/保护/提醒/工具与混合修订已有SDK及正式WS/受控RTC证据；r84研发B本地真实API存储矩阵完成。真实模型语速、设备及独立C仍未验证。
+WARNING: Open known_issues[20]: 不可变来源/工具幂等/Final结果共享SDK及WS/开发RTC清空停止/编号组合通过；真实LLM/TTS取消残留及弱网硬件仍未验证。
+WARNING: Open known_issues[25]: 正式normalizer/coordinator/唯一提交/编号工具/WS与开发RTC已接，本地来源缺失Tmax失败与RTC认证源端E2E通过；仍缺实际厂商重连/跨连接时钟与完整效果，不再称集成未接。
+WARNING: Open known_issues[33]: WS/开发RTC由实际Worklet任务身份/认证回执和两端因果锚证明播放停止/延迟范围，r87历史重启通过；硬件声学/真实厂商/弱网手机/默认采用仍未验证。
+WARNING: Open known_issues[37]: WS及受控正式RTC编号串行/清空旧代次停止/续说保留和混合排队已有r69/r83证据；实际厂商/弱网/硬件与默认采用未验证。
+WARNING: Open known_issues[38]: SDK纯混合/成功换代/旧范围回流/迟到隔离通过，WS/开发RTC编号清空停止及r83缓存故障继续通过；真实厂商网络/硬件未验证。
+WARNING: Open known_issues[47]: r82正式fixture A与r84真实本地API/存储B矩阵及发布缓存正负故障闭合；真实TTS音质与独立C可访问性/跨浏览器未验证。
+WARNING: Open known_issues[59]: 全目录mypy在numpy/__init__.pyi:737遇到Python3.12 type语法，项目mypy目标3.11；未将该失败宣称通过。需分离本次相关源文件检查与既有全目录依赖环境问题。 本次相关34源文件检查已通过，保留全目录环境限制。
+WARNING: Open known_issues[79]: 正式TD/Jev、新旧历史语言入口已接；原对话/事件值/来源ID排除翻译，动态候选状态和普通回复标签分片翻译。旧指标不重算，重复打开单控件，8历史视口通过。全部动态文案/全状态及视觉可访问性矩阵仍未闭环。
+WARNING: Open known_issues[80]: 旧原音轨清队列取消与D-068开发候选的实际任务停止/Final接续、完整编号串行均有本地正式入口证据。仍不证明硬件零残留/弱网实机或默认采用；这些剩余边界继续Open。
+WARNING: Open known_issues[101]: 2026-10-22官方models页称jev-latest指向jev-1.13.0，但D-053两次真实响应均为jev-1.14.0。接口与基本概率格式通过；别名版本与文档不一致，后续校准必须保留实际版本，不能据两例保证版本稳定或语言质量。
+WARNING: Open known_issues[179]: r79默认mypy目标3.11与本机3.13 numpy存根type语法不兼容，检查在依赖解析阶段停止。显式3.13无增量本模块通过；部署3.11未验证，不以此替代。
+WARNING: Open known_issues[218]: 返修后正常正式RTC播放/停止/Final及播放范围通过，但5秒等待仍缺E2E源范围（live metric 0）；保留失败，不宣称正常组合全通过。需核对本地fixture来源元数据环境和已留日志，不扩大调查或厂商调用。
+WARNING: Open known_issues[219]: 实际客户端错误关闭且stop未知；错误遥测故意挂起后server顶层history仍completed/error_category为空，只能证明已接started与ended_started/未知stop，不能说服务端取得确定失败原因。需核查记录送达/结果含义边界，不自改正常用户结束语义。
+WARNING: Open unverified_items[1]: Jev正式客户端两条虚构英文文本真实接口测试通过；仅基本连通/概率格式与两例区分，不证明语言效果、P95、真实音频流水线、并发或全部异常兼容。
+WARNING: Open unverified_items[2]: SDK/WS及开发RTC编号仲裁已验证，六模型基本范围external-real通过；真实WPM/物理回声/真人双讲未验证。
+WARNING: Open unverified_items[3]: 研发A(r82)与B(r84)已完成正式路由fixture/真实本地API存储矩阵；独立C及真实厂商效果/设备待验证，不以原型冒充。
+WARNING: Open unverified_items[4]: SDK/fixture与r85四家六模型external-real英文数字基本范围通过；真实多场景/重连/WPM/多语种完整覆盖未验证。
+WARNING: Open unverified_items[5]: 正式缓存发布/双单元试听/间隔/版本隔离/重启及r83公开入口缓存恢复成功失败矩阵已有本地真实API/浏览器证据；真实TTS音质/动态语速实际效果未测。
+WARNING: Open unverified_items[6]: r84/85四家六模型新固定数字素材基本来源范围/Partial/Final实际通过；真实多场景修订/重连、跨连接时钟/语言效果仍未验证，不扩大单例结论。
+WARNING: Open unverified_items[8]: D049同范围首有效Final替换：SDK/WS及受控正式RTC实播取消/新答/r87两响应历史通过；真实厂商LLM/TTS取消残留和硬件弱网未验证。
+WARNING: Open unverified_items[9]: AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。
+WARNING: Open unverified_items[12]: D073认证因果双锚已建立WS/开发RTC采集→VAD源端→实际Worklet范围，持久化和重启通过；硬件出声不在证据内，范围宽不代表精确延迟。
+WARNING: Open unverified_items[13]: 本地.env Key已在D-053两次真实Jev请求成功使用；未打印/入库/写证据。正式Bot尚未配置、不自动读取该变量；其他调用仍须逐批授权。
+WARNING: Open unverified_items[15]: 旧失败批次保留且不复用授权；后续D075/076三模型基本ASR与D065 one TTS真实成功。旧剩余文本/新场景未执行，范围见r85/22ID矩阵。
+WARNING: Open unverified_items[17]: 原r45草稿会话边界保留；r83公开发布入口固定配置/manifest缓存恢复成功与失败继续实际RTC组合已通过。真实厂商/硬件设备未测。
+WARNING: Open unverified_items[18]: D-062首条范围兼容通过，但虚构Albert合成英文实际识别明显偏离固定原文（如booking被识别为putty here）；仅一次人工可见错误，不据此报告整体WER、语言/语义效果或真实说话人质量通过。
+WARNING: Open unverified_items[19]: r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。
+WARNING: Open unverified_items[20]: D-065只证明flux-alexis-en/24k mono PCM16/one单次真实单元合成。未试听/实播、未测其他文本/音色/采样率/厂商取消或正式缓存/RTC全链；3计费字符不是实际账户美元账单。
+WARNING: Open unverified_items[22]: r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。
+WARNING: Open unverified_items[23]: 本地同输入有效观测原链41.1ms/候选25.9ms（控制消息→输出探针回调），但原链captureStream额外延迟未校准、n=1，不能解释为改善或精确新增E2E/P95/硬件/手机结论。
+WARNING: Open unverified_items[26]: r81 WS及r87开发RTC配置VAD源样本→Worklet E2E范围/两端证据与应用重启通过；硬件ADC/声学、真实厂商效果/手机/弱网未验证。
+WARNING: Open unverified_items[32]: r87同worker认证采集锚、严格同包processed输入区间、VAD冻结与渲染锚及持久化重启通过；新增旁路延迟/设备兼容/默认采用未验证。
+WARNING: Open unverified_items[33]: 本机Python3.13 NumPy存根语法导致默认3.11目标mypy失败；实际3.13检查79源通过。目标3.11环境仍未验证。
+WARNING: Open unverified_items[34]: 本地RTC两响应保守E2E为598–1335ms、815–1841ms，误差边界宽；只证明有界来源关联，不证明精确延迟或低延迟目标达标。新增链路同输入延迟对照仍未验证。
+WARNING: 61 tasks remain unchecked
+PASS: 0 errors, 39 warning(s)

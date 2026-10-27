@@ -1,0 +1,33 @@
+........F                                                                [100%]
+=================================== FAILURES ===================================
+______ test_invalid_tool_arguments_do_not_change_collection_success_proof ______
+
+    async def test_invalid_tool_arguments_do_not_change_collection_success_proof():
+        """A rejected tool call cannot silently authorize a future collection reset."""
+        from src.asr.transcript import SourceSegment, TranscriptView
+        handlers, boundary, owner, state = tools()
+        restart = owner.finalize(turn_id='1', source_ids=((0, 'a'),), revision=2, text='号码123')
+        snapshot = TranscriptView('号码123', True,
+                                  (SourceSegment(0, 'a', 2, 0, 1000, '号码123', True),))
+        handlers.bind_snapshot(restart.new_response, snapshot, '编号')
+        source = state.bind_snapshot(snapshot)
+        state.submit_tool(source, '123')
+        assert not state.successful
+        output = []
+        await handlers.submit(params(boundary, 'submit_identifier',
+                                      {'identifier': '123', 'unexpected': True}, output))
+>       assert output[-1]['status'] == 'invalid' and not state.successful
+E       AssertionError: assert ('invalid' == 'invalid'
+E         
+E           invalid and not True)
+E        +  where True = <src.pipeline.identifier.IdentifierCollection object at 0x115b5db50>.successful
+
+tests/test_td_identifier_tools.py:164: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_invalid_tool_arguments_do_not_change_collection_success_proof
+1 failed, 8 passed, 1 warning in 0.67s

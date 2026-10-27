@@ -1,0 +1,16 @@
+{
+  "call_ids": [
+    "229e84a0-9af1-43a3-a155-2c6778454f9b",
+    "7fcf4340-689c-46e6-9212-40892d9b18d3"
+  ],
+  "source_epochs": [
+    [
+      "a83605f1fa9b4dc6a70763da8f39573e"
+    ],
+    [
+      "848c4bbe1df64fb8b2b4ffdbb10faeff"
+    ]
+  ],
+  "independent_epochs": true,
+  "each_two_response_ranges": true
+}

@@ -1,0 +1,37 @@
+F.F                                                                      [100%]
+=================================== FAILURES ===================================
+___ test_speechmatics_complete_fragments_supply_actual_missing_segment_range ___
+
+    def test_speechmatics_complete_fragments_supply_actual_missing_segment_range():
+        parser = normalizer("speechmatics", "enhanced")
+        segments = parser.normalize({"message": "AddPartialSegment", "segments": [{
+            "speaker_id": "S1", "text": "12", "metadata": None,
+            "fragments": [{"text": "1", "start_time": .1, "end_time": .2},
+                          {"text": "2", "start_time": .2, "end_time": .4}],
+        }]})
+>       assert len(segments) == 1
+E       assert 0 == 1
+E        +  where 0 = len(())
+
+tests/test_td_asr_events.py:218: AssertionError
+_____ test_cross_commit_partial_word_coverage_cannot_silently_erase_a_word _____
+
+    def test_cross_commit_partial_word_coverage_cannot_silently_erase_a_word():
+        from src.asr.transcript import SourceSegment, TimedWord, TranscriptLedger
+    
+        ledger = TranscriptLedger()
+        ledger.apply(SourceSegment(0, "a", 1, 0, 100, "1", False, (TimedWord("1", 0, 100),)))
+        ledger.consume()
+        ledger.apply(SourceSegment(0, "a", 2, 0, 300, "123", False,
+                                   (TimedWord("1", 0, 100), TimedWord("3", 200, 300))))
+        view = ledger.view()
+>       assert view.text == ""
+E       AssertionError: assert '3' == ''
+E         
+E         + 3
+
+tests/test_td_transcript.py:159: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_speechmatics_complete_fragments_supply_actual_missing_segment_range
+FAILED tests/test_td_transcript.py::test_cross_commit_partial_word_coverage_cannot_silently_erase_a_word
+2 failed, 1 passed, 19 deselected in 0.06s

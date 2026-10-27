@@ -1,0 +1,68 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'playback queued',
++   'playback task prepared',
++   'playback dispatched',
++   'playback client started',
++   'playback queued',
++   'playback task prepared',
++   'playback task prepared',
++   'playback queued',
++   'playback cancelled',
++   'playback cancelled',
++   'playback stop requested',
++   'playback client stopped',
++   'playback task prepared',
++   'playback queued',
++   'playback dispatched',
++   'playback client started',
++   'playback client finished',
++   'playback task prepared',
++   'playback queued',
++   'playback dispatched',
++   'playback client started',
++   'playback client finished'
++ ]
+- []
+
+    at file:///Volumes/work/OpenCode/VoiceAgent/frontend/[eval1]:3:519
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:472:9) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'playback queued',
+    'playback task prepared',
+    'playback dispatched',
+    'playback client started',
+    'playback queued',
+    'playback task prepared',
+    'playback task prepared',
+    'playback queued',
+    'playback cancelled',
+    'playback cancelled',
+    'playback stop requested',
+    'playback client stopped',
+    'playback task prepared',
+    'playback queued',
+    'playback dispatched',
+    'playback client started',
+    'playback client finished',
+    'playback task prepared',
+    'playback queued',
+    'playback dispatched',
+    'playback client started',
+    'playback client finished'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.9.0

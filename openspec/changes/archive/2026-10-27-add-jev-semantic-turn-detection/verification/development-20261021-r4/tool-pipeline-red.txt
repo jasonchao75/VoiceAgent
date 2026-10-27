@@ -1,0 +1,128 @@
+......F                                                                  [100%]
+=================================== FAILURES ===================================
+____ test_custom_td_uses_local_audio_before_asr_and_owned_aggregator[True] _____
+
+with_identifier = True
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11760b2b0>
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+runtime_config = RuntimeConfig(language='en', audio=AudioConfig(encoding='linear16', input_sample_rate=16000, output_sample_rate=24000,...nLimits(pending_token_ttl_seconds=120, idle_timeout_seconds=300, max_duration_seconds=1800, max_concurrent_sessions=3))
+voice_catalog = VoiceCatalog(source_url='https://developers.deepgram.com/docs/flux-tts/voices', listen_url='https://talk.deepgram.com/..., accent='British', gender='Male', age='Mature', traits=['friendly', 'kind', 'caring', 'calming'], use_cases=['IVR'])])
+llm_catalog = LLMProviderCatalog(verified_at='2026-09-15', providers=[LLMProviderEntry(id='openai', name='OpenAI', base_url='https:/...authentication', models_url='https://platform.openai.com/docs/api-reference/models/list', supports_custom_model=True)])
+
+    @pytest.mark.parametrize("with_identifier", [False, True])
+    async def test_custom_td_uses_local_audio_before_asr_and_owned_aggregator(
+        with_identifier,
+        monkeypatch,
+        session_request,
+        runtime_config,
+        voice_catalog,
+        llm_catalog,
+    ):
+        """The production pipeline must use the new stages, not merely expose a catalog choice."""
+        from tests.test_td_config import td_settings
+    
+        from tests.test_td_rule_settings import priority_settings
+    
+        settings = td_settings()
+        if with_identifier:
+            settings["priority_rule"] = priority_settings()
+        request = SessionRequest.model_validate(
+            {
+                **session_request.model_dump(),
+                "turn_detection_source": "self_developed",
+                "td_config": settings,
+                "jev_api_key": "fixture-jev-inert-key",
+            }
+        )
+        store = SessionStore(token_ttl_seconds=120, max_sessions=1)
+        pending = await store.create(
+            request=request,
+            runtime=runtime_config,
+            voice_catalog=voice_catalog,
+            llm_catalog=llm_catalog,
+        )
+        lease = await store.claim(pending.token)
+        transport = _FakeTransport()
+        context, worker = _FakeContext(), _FakeWorker()
+        stt, local_audio, user, llm, tts, assistant = [object() for _ in range(6)]
+        captured = []
+    
+        class Coordinator:
+            """Inert coordinator used only for production assembly verification."""
+    
+            authority = object()
+    
+            def assistant_context(self, text):
+                self.opening = text
+    
+        coordinator = Coordinator()
+    
+        class HTTP:
+            """Record client cleanup without creating a socket."""
+    
+            closed = False
+    
+            async def aclose(self):
+                self.closed = True
+    
+        http = HTTP()
+    
+        async def prepare(**kwargs):
+            assert kwargs["api_key"] == "fixture-jev-inert-key"
+            assert kwargs["settings"].maximum_ms == 2500
+            assert (kwargs.get("bind_input") is not None) == with_identifier
+            return local_audio, coordinator, http
+    
+        def aggregators(actual_context, authority):
+            assert actual_context is context and authority is coordinator.authority
+            return user, assistant
+    
+        monkeypatch.setattr(voice_agent, "prepare_custom_td", prepare)
+        monkeypatch.setattr(voice_agent, "create_custom_aggregators", aggregators)
+        captured_tools = []
+    
+        def context_factory(**kwargs):
+            captured_tools.extend(kwargs.get("tools", []))
+            return context
+    
+        monkeypatch.setattr(voice_agent, "LLMContext", context_factory)
+        monkeypatch.setattr(voice_agent, "create_llm_service", lambda **kwargs: llm)
+        monkeypatch.setattr(voice_agent, "Pipeline", lambda processors: captured.extend(processors))
+        monkeypatch.setattr(voice_agent, "PipelineWorker", lambda *args, **kwargs: worker)
+        monkeypatch.setattr(voice_agent, "WorkerRunner", _FakeRunner)
+>       await voice_agent.run_voice_agent_pipeline(
+            transport=transport,
+            lease=lease,
+            runtime=runtime_config,
+            asr_registry=_FakeRegistry(ASRService(processor=stt)),
+            tts_registry=_FakeRegistry(tts),
+            event_buffer=SessionEventBuffer(),
+        )
+
+tests/test_pipeline.py:308: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/pipeline/voice_agent.py:245: in run_voice_agent_pipeline
+    td_input, custom_td, td_http = await prepare_custom_td(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kwargs = {'api_key': 'fixture-jev-inert-key', 'asr': ASRService(processor=<object object at 0x1130bb110>, context_updates_enabl...ne), 'evidence_sink': None, 'responses': <src.pipeline.response_revision.ResponseRevisions object at 0x1175d1950>, ...}
+@py_assert0 = None, @py_assert3 = 'bind_input', @py_assert2 = None
+@py_assert5 = None, @py_assert4 = None
+
+    async def prepare(**kwargs):
+        assert kwargs["api_key"] == "fixture-jev-inert-key"
+        assert kwargs["settings"].maximum_ms == 2500
+>       assert (kwargs.get("bind_input") is not None) == with_identifier
+E       AssertionError: assert (None is not None) == True
+E        +  where None = <built-in method get of dict object at 0x1176cb900>('bind_input')
+E        +    where <built-in method get of dict object at 0x1176cb900> = {'api_key': 'fixture-jev-inert-key', 'asr': ASRService(processor=<object object at 0x1130bb110>, context_updates_enabl...ne), 'evidence_sink': None, 'responses': <src.pipeline.response_revision.ResponseRevisions object at 0x1175d1950>, ...}.get
+
+tests/test_pipeline.py:288: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_pipeline.py::test_custom_td_uses_local_audio_before_asr_and_owned_aggregator[True]
+1 failed, 6 passed, 1 warning in 1.15s

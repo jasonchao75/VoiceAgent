@@ -1,0 +1,3353 @@
+{
+  "phase": "archived",
+  "product_acceptance": "accepted",
+  "ui_change": true,
+  "external_calls": [
+    {
+      "batch_id": "jev-synthetic-smoke-v1",
+      "request_sha256": "b6554bcff188a37790374b6a93b3b92b9a569f2b2f1fd7dd6afe99233cf0254d",
+      "max_calls": 2,
+      "cost_ceiling_usd": "0.01",
+      "provider": "TypeSafe Jev",
+      "data_scope": "Only two synthetic English utterances and fixed instructions in verification/jev-smoke-plan.json; no audio/customer data",
+      "cost_ceiling": "USD 0.01 total",
+      "stop_condition": "No retries; stop on auth/rate limit/timeout/invalid response; maximum two requests",
+      "authorization_decision_id": "D-053",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "pricing_source": "https://docs.typesafe.ai/models",
+      "actual_calls": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "actual_model": "jev-1.14.0",
+      "input_tokens": 756,
+      "estimated_cost_usd": "0.000031752",
+      "result_evidence": "verification/development-20261022-r38/external-results.json"
+    },
+    {
+      "batch_id": "deepgram-td-asr-synthetic-v1",
+      "request_sha256": "9cdcc4452e8437028f98abccd35814f25885af33dfa53a95759de19c8e93a74b",
+      "max_calls": 9,
+      "cost_ceiling_usd": "0.10",
+      "provider": "Deepgram ASR",
+      "data_scope": "Only three pinned synthetic English WAV files, 18.405375 seconds unique audio, across three models; 3-second silence tail per connection; no customer data/LLM/Jev/TTS",
+      "cost_ceiling": "USD 0.10 total",
+      "stop_condition": "Maximum 9 connections, 30 seconds each, no retry/reconnect; stop entire batch on any error or missing range evidence",
+      "authorization_decision_id": "D-055",
+      "authorization_status": "confirmed",
+      "execution_status": "stopped_on_first_failure",
+      "actual_calls": 1,
+      "statuses": [
+        "transcript_or_range_missing"
+      ],
+      "result_evidence": "verification/development-20261023-r41/deepgram-asr-results.jsonl"
+    },
+    {
+      "batch_id": "deepgram-td-asr-range-diagnostic-v1",
+      "request_sha256": "c61570be335b03ef781bec4b5ce2077a727979cb3fbf21fb6589f2c6571c9365",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "provider": "Deepgram ASR",
+      "data_scope": "Only pinned continuation synthetic English WAV 6.18925 seconds plus 3 seconds silence; flux-general-en; no other vendor calls",
+      "cost_ceiling": "USD 0.02 total",
+      "stop_condition": "One connection <=30 seconds, first gap/error immediately stops; no retries/reconnect",
+      "authorization_decision_id": "D-057",
+      "authorization_status": "confirmed",
+      "execution_status": "stopped_on_first_failure",
+      "actual_calls": 1,
+      "statuses": [
+        "transcript_or_range_missing"
+      ],
+      "result_evidence": "verification/development-20261023-r41/deepgram-range-diagnostic.jsonl"
+    },
+    {
+      "batch_id": "deepgram-td-tts-synthetic-v1",
+      "request_sha256": "f3be9f7f46eb51762b88569e4f50d92a304e208c51a083d94700cdc87efa6761",
+      "max_calls": 3,
+      "cost_ceiling_usd": "0.10",
+      "provider": "Deepgram TTS",
+      "data_scope": "Only fixed three synthetic texts, 35 characters; flux-alexis-en; mono PCM16 24kHz; no ASR/LLM/Jev",
+      "cost_ceiling": "USD 0.10 total",
+      "stop_condition": "Maximum 3 requests, 15 seconds each; first auth/rate/timeout/format error stops entire batch; no retry or voice substitution",
+      "authorization_decision_id": "D-058",
+      "authorization_status": "confirmed",
+      "execution_status": "stopped_on_first_failure",
+      "actual_calls": 1,
+      "statuses": [
+        "timeout"
+      ],
+      "result_evidence": "verification/development-20261023-r41/deepgram-tts-results.jsonl"
+    },
+    {
+      "batch_id": "deepgram-td-asr-range-diagnostic-v1",
+      "request_sha256": "c61570be335b03ef781bec4b5ce2077a727979cb3fbf21fb6589f2c6571c9365",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "provider": "Deepgram ASR",
+      "data_scope": "Pinned continuation synthetic audio 6.18925 seconds plus 3 seconds silence, flux-general-en only",
+      "cost_ceiling": "USD 0.02 total",
+      "stop_condition": "One connection <=30 seconds; stop first error/gap; no retry/reconnect/other services",
+      "authorization_decision_id": "D-059",
+      "authorization_status": "confirmed",
+      "execution_status": "stopped_on_first_failure",
+      "actual_calls": 1,
+      "statuses": [
+        "transcript_or_range_missing"
+      ],
+      "result_evidence": "verification/development-20261023-r41/deepgram-overlap-confirmation.jsonl"
+    },
+    {
+      "batch_id": "deepgram-td-asr-synthetic-v1",
+      "request_sha256": "9cdcc4452e8437028f98abccd35814f25885af33dfa53a95759de19c8e93a74b",
+      "max_calls": 9,
+      "cost_ceiling_usd": "0.10",
+      "provider": "Deepgram ASR",
+      "data_scope": "Only three pinned synthetic English WAV files, 18.405375 seconds unique audio, across three models; 3-second silence tail per connection; no customer data/LLM/Jev/TTS",
+      "cost_ceiling": "USD 0.10 total",
+      "stop_condition": "Maximum 9 connections, 30 seconds each, no retry/reconnect; stop entire batch on any error or missing range evidence",
+      "authorization_decision_id": "D-062",
+      "authorization_status": "confirmed",
+      "execution_status": "stopped_on_first_failure",
+      "authorization_source": "request_user_input_async call_0cc945e8a4a54365aa11631d7c034e31, item 0",
+      "actual_calls": 2,
+      "statuses": [
+        "ok",
+        "transcript_or_range_missing"
+      ],
+      "result_evidence": "verification/development-20261023-r47/deepgram-td-asr-synthetic-v1-D-062.jsonl",
+      "process_exit_code": 1
+    },
+    {
+      "batch_id": "deepgram-td-tts-synthetic-v1",
+      "request_sha256": "f3be9f7f46eb51762b88569e4f50d92a304e208c51a083d94700cdc87efa6761",
+      "max_calls": 3,
+      "cost_ceiling_usd": "0.10",
+      "provider": "Deepgram TTS",
+      "data_scope": "Only fixed three synthetic texts, 35 characters; flux-alexis-en; mono PCM16 24kHz; no ASR/LLM/Jev",
+      "cost_ceiling": "USD 0.10 total",
+      "stop_condition": "Maximum 3 requests, 15 seconds each; first auth/rate/timeout/format error stops entire batch; no retry or voice substitution",
+      "authorization_decision_id": "D-063",
+      "authorization_status": "confirmed",
+      "execution_status": "stopped_on_first_failure",
+      "authorization_source": "request_user_input_async call_0cc945e8a4a54365aa11631d7c034e31, item 1",
+      "actual_calls": 1,
+      "statuses": [
+        "synthesis_or_format_error"
+      ],
+      "result_evidence": "verification/development-20261023-r47/deepgram-td-tts-synthetic-v1-D-063.jsonl",
+      "process_exit_code": 1
+    },
+    {
+      "batch_id": "deepgram-td-tts-one-confirmation-v1",
+      "request_sha256": "7ffeb382d2409fc1cf79165bdad55ee1533429af2ba9658fb13c65499e488a35",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "recipient": "api.deepgram.com",
+      "authorization_decision_id": "D-065",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "Only synthetic text one, 3 characters; fixed flux-alexis-en, 24kHz mono PCM16",
+      "stop_condition": "First auth/rate-limit/timeout/protocol/format error stops; one call, no retries; 15-second synthesis deadline",
+      "cost_ceiling": "USD 0.02 total",
+      "pricing_recheck_evidence": "verification/development-20261024-r55/price-recheck.json",
+      "authorization_source": "request_user_input_async call_9b2d2cd5108c4172b0576a5e419cfe17 item0",
+      "confirmation_quote": "授权此 TTS 单例（上限 US$0.02）",
+      "provider": "Deepgram TTS",
+      "actual_calls": 1,
+      "statuses": [
+        "ok"
+      ],
+      "reported_billable_characters": 3,
+      "estimated_cost_usd": "0.000135",
+      "actual_cost_usd": null,
+      "cost_evidence": "Provider SpeechMetadata reported 3 billable characters; monetary invoice not checked",
+      "result_evidence": "verification/development-20261024-r57/external-results.jsonl"
+    },
+    {
+      "batch_id": "deepgram-td-fresh-digits-confirmation-v1",
+      "request_sha256": "9ca5f2e2c4fad0e811d67ac63b22d05ab2e1ac1c0a3044bb8b81ee02aa10d2ec",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "recipient": "api.deepgram.com",
+      "authorization_decision_id": "D-075",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "provider": "Deepgram ASR Flux English",
+      "data_scope": "new synthetic digits 5.1675 seconds plus 3-second silence; pinned SHA in plan; no customer data",
+      "cost_ceiling": "USD0.02 total",
+      "stop_condition": "one connection <=30 seconds; first error/missing source stops; no retries or other services",
+      "authorization_source": "request_user_input_async call_2d4f597296ca42d5946e2af1cca717c0 item0",
+      "confirmation_quote": "授权本次单例（上限US$0.02）",
+      "actual_calls": 1,
+      "statuses": [
+        "ok"
+      ],
+      "process_exit_code": 0,
+      "result_evidence": "verification/development-20261025-r84/deepgram-fresh-digits-D075.jsonl",
+      "estimated_public_price_upper_usd": "0.00385",
+      "actual_billed_cost_usd": null,
+      "cost_evidence": "30-second connection envelope at regular USD0.0077/min; no bill/usage confirmation"
+    },
+    {
+      "batch_id": "deepgram-td-remaining-models-v1",
+      "request_sha256": "45eeec12974c070878819db599b4765d3f7c42da1cf240f579ab5bd4e5e4b4ce",
+      "max_calls": 2,
+      "cost_ceiling_usd": "0.02",
+      "recipient": "api.deepgram.com",
+      "authorization_decision_id": "D-076",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "provider": "Deepgram ASR",
+      "data_scope": "same pinned new synthetic digits 5.1675s plus 3s silence each; Flux multilingual and Nova3 English only",
+      "cost_ceiling": "USD0.02 total",
+      "stop_condition": "max2 connections <=30s each; first error/missing range stops whole batch; no retries or other services",
+      "authorization_source": "request_user_input_async call_09323e7e86894caf8873808c7aa72001 item0",
+      "confirmation_quote": "授权两模型批次（上限US$0.02）",
+      "actual_calls": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "process_exit_code": 0,
+      "result_evidence": "verification/development-20261025-r84/deepgram-remaining-D076.jsonl",
+      "estimated_public_price_upper_usd": "0.00850",
+      "actual_billed_cost_usd": null,
+      "cost_evidence": "30s each at conservative public regular upper rates; actual invoice/usage unavailable"
+    },
+    {
+      "batch_id": "assemblyai-td-single-digits-v1",
+      "request_sha256": "95a9f76c14329c4f349ef0ea51093470627bb0cfdbd78f0eacb199b17a4ad435",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "recipient": "streaming.assemblyai.com",
+      "provider": "AssemblyAI",
+      "authorization_decision_id": "D-077",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "fixed synthetic5.1675s English digits+3s silence; universal-3-5-pro only",
+      "cost_ceiling": "USD0.02 total",
+      "stop_condition": "one connection <=30s; first error/range gap stops; no retries, upgrades, other services",
+      "authorization_source": "request_user_input_async call_d90c7ddae5a64b4a84cd88f428ee7173 item0",
+      "confirmation_quote": "授权AssemblyAI单例（上限US$0.02）",
+      "actual_calls": 1,
+      "statuses": [
+        "ok"
+      ],
+      "result_evidence": "verification/development-20261025-r85/assemblyai-D077.jsonl",
+      "actual_billed_cost_usd": null,
+      "estimated_public_price_upper_usd": "0.00375"
+    },
+    {
+      "batch_id": "speechmatics-td-single-digits-v1",
+      "request_sha256": "e6b441f523d565fda1c93d3f9e241ee25464873343941c99428b093909d92776",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "recipient": "eu2.rt.speechmatics.com",
+      "provider": "Speechmatics",
+      "authorization_decision_id": "D-078",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "fixed synthetic5.1675s English digits+3s silence; Enhanced only",
+      "cost_ceiling": "USD0.02 total",
+      "stop_condition": "one connection <=30s; first error/range gap stops; no retry/model change/other service",
+      "authorization_source": "request_user_input_async call_741d5adf47734120b50ff9179262255a item0",
+      "confirmation_quote": "授权Speechmatics单例（上限US$0.02）",
+      "actual_calls": 1,
+      "statuses": [
+        "ok"
+      ],
+      "result_evidence": "verification/development-20261025-r85/speechmatics-D078.jsonl",
+      "actual_billed_cost_usd": null,
+      "estimated_public_price_upper_usd": "0.00667"
+    },
+    {
+      "batch_id": "soniox-td-single-digits-v1",
+      "request_sha256": "be727c61f699bd59c443273f68aa7ad717467c99897187f76e3eeb130f96a907",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "recipient": "stt-rt.soniox.com",
+      "provider": "Soniox",
+      "authorization_decision_id": "D-079",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "fixed synthetic5.1675s English digits+3s silence; stt-rt-v5 English hints; no context/translation",
+      "cost_ceiling": "USD0.02 budget; client stop protection, not vendor-enforced cap",
+      "stop_condition": "one connection <=30s; first error/range gap/>1000 reported tokens stops; no retry or other services",
+      "authorization_source": "request_user_input_async call_2f8d8d6c5e2e4de39eadc634dc8c7759 item0",
+      "confirmation_quote": "授权Soniox单例（预算US$0.02）",
+      "vendor_enforced_cost_cap": false,
+      "estimated_reserve_usd": "0.018",
+      "actual_calls": 1,
+      "statuses": [
+        "ok"
+      ],
+      "result_evidence": "verification/development-20261025-r85/soniox-D079.jsonl",
+      "actual_billed_cost_usd": null,
+      "receive_budget": {
+        "reported_tokens_including_revisions": 64,
+        "limit": 1000,
+        "exhausted": false
+      }
+    },
+    {
+      "batch_id": "deepgram-negation-continuation-r91-v1",
+      "request_sha256": "ec8070080abcd19bf988b079055ce91c07c857c2e21b46d917baf3209a5836ac",
+      "max_calls": 1,
+      "cost_ceiling_usd": "0.02",
+      "recipient": "api.deepgram.com",
+      "provider": "Deepgram",
+      "authorization_decision_id": "D-081",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "frozen local synthetic5.8576875s English negation/continuation +3s silence; flux-general-en",
+      "stop_condition": "first error/range gap; one connection <=30s; no retries or other services",
+      "authorization_source": "request_user_input_async call_2015902983f5481a881e2a20a25fe1d4 item0",
+      "confirmation_quote": "授权本批（上限US$0.02）",
+      "vendor_enforced_cost_cap": false,
+      "actual_billed_cost_usd": null,
+      "cost_ceiling": "USD0.02; estimate<=USD0.00385 using 30-second regular-rate envelope; no vendor hard cap verified",
+      "actual_calls": 1,
+      "statuses": [
+        "ok"
+      ],
+      "result_evidence": "verification/development-20261026-r91/deepgram-D081.jsonl",
+      "elapsed_ms": 11737.979166995501,
+      "observed_partial_lexical_revision": true
+    },
+    {
+      "batch_id": "jev-d080-recorded-asr-replay-r92-v1",
+      "request_sha256": "37366f09654e4f3f93565137e61bcf473180da107fe958fd0a34427270db7a1d",
+      "max_calls": 2,
+      "cost_ceiling_usd": "0.01",
+      "cost_ceiling": "USD0.01; two default64k-context requests at USD0.042/Mtok <=USD0.005376; no vendor hard account cap verified",
+      "recipient": "https://api.typesafe.ai/v1/systemone",
+      "provider": "TypeSafe Jev",
+      "authorization_decision_id": "D-082",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "two exact frozen D081 synthetic ASR partial texts with fixed assistant/questions; no audio",
+      "stop_condition": "first error/invalid response/range gap; no retry; max2 each3s; no ASR/LLM/TTS",
+      "authorization_source": "request_user_input_async call_f115da4a2e6745e5934ab4157210d66c item0",
+      "confirmation_quote": "授权本批（上限US$0.01）",
+      "vendor_enforced_cost_cap": false,
+      "actual_billed_cost_usd": null,
+      "actual_calls": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "result_evidence": "verification/development-20261026-r92/jev-D082.jsonl",
+      "reported_input_tokens": 764,
+      "estimated_token_cost_usd": "0.000032088"
+    },
+    {
+      "batch_id": "deepgram-flux-cancel-replace-r94-v1",
+      "request_sha256": "3be31d39bd9b083a0d0c680d0226452e7557e87cc69d3137fc86ff61a5649432",
+      "max_calls": 2,
+      "max_connections": 1,
+      "cost_ceiling_usd": "0.02",
+      "cost_ceiling": "USD0.02; exact196 characters at USD0.045/1000 estimatedUSD0.00882; not vendor-enforced hard cap",
+      "recipient": "api.deepgram.com/v2/speak",
+      "provider": "Deepgram Flux TTS",
+      "authorization_decision_id": "D-084",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "two frozen fictional English texts196 characters, flux-alexis-en 24kmonoPCM16; no user audio/data",
+      "stop_condition": "first error/scope/identity/format/budget anomaly; lifecycle30s, ack2s; no retry/reconnect/ASR/Jev/LLM; completed old speech or absent residual recorded untriggered without replay",
+      "authorization_source": "request_user_input_async call_0dec3f8bfce648a9a72f07aac6b7496d item0",
+      "confirmation_quote": "授权本批（上限US$0.02）",
+      "vendor_enforced_cost_cap": false,
+      "actual_billed_cost_usd": null,
+      "actual_calls": 2,
+      "actual_connections": 1,
+      "statuses": [
+        "ok"
+      ],
+      "result_evidence": "verification/development-20261026-r95/deepgram-D084.jsonl",
+      "inflight_audio_bytes": 19200,
+      "old_output_after_cancel_samples": 0,
+      "new_output_samples": 49920,
+      "acknowledged_cancel": true
+    },
+    {
+      "batch_id": "deepgram-tts-formal-browser-r96-v1",
+      "request_sha256": "8cfd5bd5465d747373e6d81bf10dbdc513198e026dec9badbfc962c3aae7eb56",
+      "max_calls": 2,
+      "max_connections": 1,
+      "cost_ceiling_usd": "0.02",
+      "cost_ceiling": "USD0.02; 196 chars estimatedUSD0.00882; not vendor hard cap",
+      "recipient": "api.deepgram.com/v2/speak",
+      "provider": "Deepgram Flux TTS",
+      "authorization_decision_id": "D-085",
+      "authorization_status": "confirmed",
+      "execution_status": "completed",
+      "data_scope": "two frozen fictional English texts196 characters, flux-alexis-en 24kmonoPCM16; no audio/client data; ASR/VAD/Jev/LLM offline",
+      "stop_condition": "first error/format/scope/identity/budget failure; missing render proof stops batch; no retry or reconnection; server already-finished old synthesis is valid only if browser old task actually stops; connection30s/ack2s",
+      "authorization_source": "request_user_input_async call_d748adb0a44f4fea9ea2d5958ea926c8 item0",
+      "confirmation_quote": "授权本批（上限US$0.02）",
+      "vendor_enforced_cost_cap": false,
+      "actual_billed_cost_usd": null,
+      "actual_calls": 2,
+      "actual_connections": 1,
+      "statuses": [
+        "ok"
+      ],
+      "result_evidence": "verification/development-20261026-r97/D085/probe-state.json",
+      "acknowledged_cancel": true,
+      "browser_old_stopped_samples": 2624,
+      "browser_new_finished_samples": 51840
+    }
+  ],
+  "known_issues": [
+    {
+      "id": "REVIEW-BOUNDARY-CONTRACTS-20261020",
+      "summary": "当前普通TD/编号工具/缓存/WS及开发RTC实际回执/Final/编号仲裁/认证源端E2E有本地证据，r87完整739通过；剩余真实重连/效果、硬件/弱网/默认采用/独立验收见22ID矩阵。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "REVIEW-CORRECTIONS-20261020",
+      "summary": "本轮澄清已同步当前设计与Delta：one moment不收集；有效123先跟读再回答；成功后下次新采集清空。决策D-037至D-039有本轮原话。原型与实现仍待同步，沿用CONFIRMED-RULES-UI-SYNC跟踪。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "DECISIONS-OPEN",
+      "summary": "9项产品问题已确认并迁入D-026至D-034；原始用户答案已归档，当前开放产品问题为0。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "ECHO-POLICY-OPEN",
+      "summary": "已确认整段生成文本任一关键词必需门槛；缓存故障、语速和更正等分支见D-026至D-034；实现仍列tasks。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PROTO-NARROW-001",
+      "summary": "首次视口调整瞬间的 572px 读数在稳定 UI 后为 375px；390px 各页和弹窗复测无持久横向溢出。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "JEV-CONNECTION-UI-MISSING",
+      "summary": "v0.3 原型已补 Jev 独立连接、指令、枚举和请求预览入口；仅原型，不代表后端集成完成。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PROBABILITY-PREVIEW-GAP",
+      "summary": "此前缺少明确的 Jev 概率数值和等待映射展示；v0.4 已补模拟输出及策略试算，实际映射仍待产品确认。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "FUSION-POLICY-OPEN",
+      "summary": "等待融合方向已确认；参数仍为示例，校准移工程任务，原Q-003已拆除。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "NUMBER-COLLECTION-BOUNDARY",
+      "summary": "已确认跨提醒保留编号、待播跟读让位超位提醒及局部更正请求直接清空；未宣称状态机实现。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "UI-REFERENCE-GAP",
+      "summary": "v0.9 已参照线上修复 Sessions 列表/详情抽屉与 Share 卡片，并补全四家六种模型来源选择和 Advanced 显隐；正式系统尚未实现。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "LOCALE-OFF-CONTEXT",
+      "summary": "通用 Off 已改为“关闭”，话轮来源使用独立说明；浏览器已确认 TTS 动态语速文案正常。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "ASR-EVENT-ADAPTER-GAPS",
+      "summary": "四家六模型SDK桥接及r85 external-real英文数字基本范围/Partial/Final通过；多场景/多语种/真实重连/完整时间与WPM效果仍未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "SESSION-TURN-COVERAGE",
+      "summary": "v0.10 已补三会话和8个交互分组：每组有独立TD区，普通语义四轮含5次判断，编号两组含4次判断，旧厂商原生两轮明确无自建证据；保留普通回复与原有指标。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "OVERLENGTH-UI-OMISSION",
+      "summary": "用户指出已提出的超位话术未进入原型。v0.13补独立可编辑字段及触发说明；真实状态机、更正与去重尚未实现。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "TIMESTAMP-OWNERSHIP-AUDIT",
+      "summary": "来源代次/跨提交/缺口恢复与D061有界失败本地SDK通过，r85六模型基本真实范围通过；跨连接绝对钟和真实重连仍未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "CONFIRMED-RULES-UI-SYNC",
+      "summary": "v0.14经D-046/D-047清理后，已按D-048用户确认并冻结；功能仍待实现验证。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PREFIX-SEGMENT-PARSING",
+      "summary": "严格全输入编号/WPM/保护/提醒/工具与混合修订已有SDK及正式WS/受控RTC证据；r84研发B本地真实API存储矩阵完成。真实模型语速、设备及独立C仍未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "DESIGN-CONSISTENCY-20261020",
+      "summary": "文档审阅发现片段分流易误解为先调用云端、旧细节稿保留过期未决描述、缓存职责未说明运行时合成兜底；本轮统一当前文档并为历史稿补显著效力说明。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "STRICT-ROUTING-SPEC-SYNC",
+      "summary": "已同步严格分流、编号工具与播放选择（D-040至D-042）；Q-039现已按D-043选择B并关闭。仅文档同步，原型与功能未实现。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "REVISION-TOOL-SIDE-EFFECTS",
+      "summary": "不可变来源/工具幂等/Final结果共享SDK及WS/开发RTC清空停止/编号组合通过；真实LLM/TTS取消残留及弱网硬件仍未验证。 r95/D084已补Flux单voice真实取消与19200在途旧字节隔离证据；该有限子场景已验证，真实LLM/正式浏览器组合/其他voice/弱网仍保持未验证。 2026-10-27收尾校正：r97/D085已验证单voice真实TTS接正式WS浏览器的Final实停与新答接续，先前“待授权/浏览器未测”为历史状态；真实LLM、完整真实链、其他voice和设备弱网仍未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "PROTO-V014-NARROW-CHECK",
+      "summary": "已定位390px长版本提示挤出顶部操作按钮；增加原型局部移动端收缩规则后复测：文档390/390、会话/ASR抽屉358/358、弹窗356/356；截图及数据见prototype-v014。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PROTO-ROUTING-DEMO-CONFIG-CONFUSION",
+      "status": "Resolved",
+      "summary": "额外分流演示选择器误放配置表单，用户要求删除；已删除整个区块及脚本，不新增替代入口。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PROTOTYPE-ENGINEERING-COPY",
+      "status": "Resolved",
+      "summary": "用户指出设置页面混入播放仲裁、Final修订、计时、上下文及AEC验收等研发说明；本轮统一清理，业务规则保留于规格文档。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "FINAL-MEANING-CLASSIFIER-CONTRACT",
+      "summary": "Q-040已由D-049关闭：不判断改义，Partial提交后的首个有效同范围Final直接取消旧答并重新请求，无新增语义比较调用。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "M1-NORMALIZER-INTEGRATION-PENDING",
+      "summary": "正式normalizer/coordinator/唯一提交/编号工具/WS与开发RTC已接，本地来源缺失Tmax失败与RTC认证源端E2E通过；仍缺实际厂商重连/跨连接时钟与完整效果，不再称集成未接。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "TD-COMMIT-PRIORITY-RACE",
+      "summary": "已由真实Pipecat测试修复：TDSubmissionFrame通过现有用户聚合器专用子类按同一数据任务先聚合再停止；厂商metadata/Endpoint不旁路提交；Final替换上下文后总用户提交数仍为1。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "SELF-TD-EXISTING-TOOL-REVISION-FENCE",
+      "summary": "现有语速工具已绑定不可变LLM上下文/回答/来源；同输入Final重答复用已执行结果，旧轮次拒绝，已发送操作有界结算。6项测试含真实Pipecat后台调度通过；不证明真实厂商取消/客户端残留已验证。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "TD-CANDIDATE-HISTORY-ASSOCIATION",
+      "summary": "已修复候选/提交记录轮次ID不一致；新增回归通过。来源修订事件单独保存并带source_id/epoch/revision，不把Partial提交伪造为Final。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "TOOL-PRESTART-FINAL-RACE",
+      "summary": "已披露并修复：Final在工具调度后执行前到达时，未执行结果不再占用幂等缓存；回归先失败后通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "CROSS-COMMIT-FINAL-EXTENT",
+      "summary": "已披露并修复：跨TD提交的尾部快照同步保存裁剪后音频范围/词证据，Final按原提交范围替换；回归先失败后通过，第二次提交不恢复旧前缀。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R3-PYTEST-COLLECTION",
+      "summary": "已披露并修复新增模块引起的循环导入：作用域服务延迟加载，API全量测试收集恢复；全量466项通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PLAYBACK-READY-ORDER",
+      "summary": "已披露并修复：正常回答/超位提醒先就绪、跟读后返回的反向到达顺序也不恢复未播旧末段。回归先失败后通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "BROWSER-PLAYBACK-SERVER-ECHO",
+      "summary": "WS/开发RTC由实际Worklet任务身份/认证回执和两端因果锚证明播放停止/延迟范围，r87历史重启通过；硬件声学/真实厂商/弱网手机/默认采用仍未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "IDENTIFIER-AUDIO-RANGE-GROUPS",
+      "summary": "接正式编号流水线发现原共享状态只按厂商source_id计值；同一source跨提交的相邻尾段会覆盖前段，多源混合输入也无法绑定工具。已披露，正在按有证据的音频范围组修复并补红绿测试。 已修复并通过定向回归；证据将写入development-20261021-r4。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RESOLVED-FINAL-TOOL-EXTENT",
+      "summary": "接工具快照发现Final解析虽然裁剪文字，却向调用方返回完整厂商段元数据，可能把下一范围误当旧轮工具权限。已登记，补范围/文字同时裁剪及跨词边界拒绝测试。 已修复并通过定向回归；证据将写入development-20261021-r4。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "TOOL-FINAL-STATE-VALIDATION",
+      "summary": "已修复并验证：相同混合Final保留已成功值；幂等复用前及回调前检查当前输入；非法额外参数不能刷新成功标志。红绿证据在r4/r5。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PRIORITY-OUTPUT-INTEGRATION-PENDING",
+      "summary": "WS及受控正式RTC编号串行/清空旧代次停止/续说保留和混合排队已有r69/r83证据；实际厂商/弱网/硬件与默认采用未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "NUMBER-SUCCESS-AND-OLD-REVISION-PENDING",
+      "summary": "SDK纯混合/成功换代/旧范围回流/迟到隔离通过，WS/开发RTC编号清空停止及r83缓存故障继续通过；真实厂商网络/硬件未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R5-REGRESSION-PARAMETER-WIRING",
+      "summary": "已披露并修正测试接线：当前本地修订确实覆盖混合句/刚满两个输入，成功换代覆盖Final已提交/Partial/未提交；最终全量519项通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "TD-EVIDENCE-TRUNCATION-MARKER",
+      "summary": "已披露并修复：保留既有10000条实际事件，加一条有界截断标记及丢弃计数；10002次事件测试证明不静默丢失，也不覆盖已保留事实。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R6-CACHE-CONFIG-SNAPSHOT",
+      "summary": "缓存接入审查发现异步存取前尚未复制传入TTS配置，调用方同时修改设置时可能使生成资源指纹/音色漂移；补请求入口快照与并发测试。 已修复并有离线失败后通过回归；不证明真实付费合成或客户端播放。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R6-CACHE-WRITE-FAILURE",
+      "summary": "缓存首版仅捕获合成失败，文件原子落盘失败会中断整批；应返回该单元failed且不伪造试听资源，已补失败回归。 已修复并有离线失败后通过回归；不证明真实付费合成或客户端播放。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R6-CACHE-PUBLISH-RACE",
+      "summary": "原Publish在异步校验后未复核Bot配置，期间编辑可能发布旧配置资源；本轮已增加事务内完整配置复核，正在补并发编辑测试。 已修复并有离线失败后通过回归；不证明真实付费合成或客户端播放。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R6-ECHO-UNIT-BOUNDARIES",
+      "summary": "跟读必须保留词表目标边界；拼接后的采集字符串不能恢复非数字单元，新增失败回归后修复。 已修复并有离线失败后通过回归；不证明真实付费合成或客户端播放。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R7-TTS-UNBOUND-CONTEXT",
+      "summary": "已修复TTS后台未知上下文误当开场/借用新轮次身份的问题：显式未绑定状态拒绝输出，原context_id绑定不可变回复身份。定向及真实SDK离线管线通过；不证明客户端缓冲已停止。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R8-CLEAR-CANDIDATE-REINSERT",
+      "summary": "候选已绑定采集代次：清空后在ASR/推进/新语音入口消费并失效旧候选，防止旧回包触发另一旧片段重新收集或提交。跨提醒/下一段旧范围回归通过；实际停播仍未完成。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R9-UI-DRAFT-AND-PREVIEW",
+      "summary": "r82正式fixture A与r84真实本地API/存储B矩阵及发布缓存正负故障闭合；真实TTS音质与独立C可访问性/跨浏览器未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "Q041-JEV-CALL-LIMIT",
+      "summary": "用户选择A并记录D-050：后台统一每会话100次，无新控件；缺省/历史正数配置规范为100，失败占预算，耗尽后最长等待继续。离线模型/MockTransport/正式页面fixture回归通过；不授权付费测试。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R9-FORMAL-ADVANCED-NARROW-OVERFLOW",
+      "summary": "390px初始207>72来自视口变化的rail padding过渡帧；等待布局稳定后正式Jev页无持续横向溢出，1440/390截图保留。未将这些截图当完整A/B通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R9-ADVANCED-SAVE-RACE",
+      "summary": "保存响应按Bot身份与草稿revision检查；等待期间新编辑仍标记未保存，旧响应不清空新草稿，下一次保存正常。Playwright延迟响应回归通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R10-TRANSPORT-RECHUNK-IDENTITY",
+      "summary": "已接正式自建TD的音频tagger与WebSocket专用原生Protobuf适配：重分块身份保留、Python协议到真实浏览器渲染、匹配回执捕获分别通过。完整网络会话/播放仲裁不由本项宣称完成。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R11-CONTEXT-REUSE-AFTER-STOP",
+      "summary": "集成检查发现SDK同一回复的后续句子可能复用provider context_id；任务结束后永久封锁该ID会丢后续音频。需以明确新TTSStarted边界重新分配任务，结束后的无边界迟到包仍拒绝。 已修复并有真实SDK tagger/浏览器AudioWorklet回归。未证明完整WS网络通话或WebRTC。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R11-LATE-STOPPED-TASK-REENTRY",
+      "summary": "客户端检查发现：worklet结束/全局中断后可能新建渲染节点，若客户端不保留任务墓碑，旧包可重新开播；先到停止消息也不能因尚未知任务而丢弃。正在增加跨节点任务封锁与断线后拒绝。 已修复并有真实SDK tagger/浏览器AudioWorklet回归。未证明完整WS网络通话或WebRTC。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R11-RENDERER-ERROR-DETAIL",
+      "summary": "失败原因白名单已通过正式API保存；非法原因拒绝，有ASGI/历史回归。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-CLEAR-ORDINARY-REPLY",
+      "summary": "只失效旧编号/提醒，普通回复独立验证身份；底座及SDK组合回归通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-OLD-RANGE-TURN-ATTRIBUTION",
+      "summary": "保留范围、缓存任务及回执固定原turn；跨下一轮迟到Final、缓存串行组合回归通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-UNSCOPED-TTS-GENERATION",
+      "summary": "开场/提醒上下文绑定speech generation、类型及原turn；旧无作用域音频拒绝，实际SDK开场兼容回归通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-TERMINAL-OUTPUT-TRUTH",
+      "status": "Resolved",
+      "disclosed_to_user": true,
+      "summary": "task_failed/task_stopped/task_finished分别保存失败/停止/完成状态；底座/串行回归通过。"
+    },
+    {
+      "id": "R12-TYPECHECK-DEPENDENCY",
+      "status": "Resolved",
+      "disclosed_to_user": true,
+      "summary": "全目录mypy在numpy/__init__.pyi:737遇到Python3.12 type语法，项目mypy目标3.11；未将该失败宣称通过。需分离本次相关源文件检查与既有全目录依赖环境问题。 本次相关34源文件检查已通过，保留全目录环境限制。 r91在独立实际Python3.11.15环境按锁定依赖：756后端通过，mypy3.11目标79源通过，pip check通过；历史3.13存根失败保留。此关闭不代表Linux1核1GB容量/部署验证。",
+      "evidence": "verification/development-20261026-r91/README.md"
+    },
+    {
+      "id": "R12-FORMAL-WS-PROBE",
+      "summary": "新增保留正式路由/transport/SDK的离线WS探针首次失败，关闭1011并报告ValueError；正在定位是fixture接线还是正式集成缺陷，尚不宣称完整WS可用。 首次1011来自fixture缺Origin，补齐后继续暴露正式传输边界身份丢失，转R12-WS-WRITE-IDENTITY跟踪。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-WS-WRITE-IDENTITY",
+      "summary": "实际WS writer会重新封装PCM丢name；专用serializer已以ContextVar跨原生write携带不可变身份。正式API/transport/SDK离线探针及并发写入/普通音频无串号回归通过；不是浏览器网络或RTC证据。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-LOCAL-CHECK-FIXES",
+      "summary": "本轮检查修复串行pump缓冲字段改名残留、类型收窄/导入及lint错误；Node fixture改自身URL路径；WS fixture补Origin和正确TTSSettings，异步并发断言改按PCM身份而非完成顺序。均为开发/测试工程缺陷，逐项回归，不属于产品决定。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-HISTORY-RESPONSE-PROVENANCE",
+      "summary": "原Turn/Response版本关联、真实历史API进程停启查询及D-073批准的逐回复播放范围已在r78闭环。旧不精确标量不回填。E2E源端映射未实现另列R78-E2E-SOURCE-END-CLOCK，不以本项关闭代表完整延迟指标。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-UI-MEDIA-SCOPE",
+      "summary": "正式CSS已恢复冻结700/760px媒体条件；桌面双列先红后绿及窄屏无横向溢出通过，baseline未改。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-HISTORY-BROWSER-RERUN",
+      "summary": "逐轮历史浏览器首轮因本地Vite退出4项未执行；重启后3项通过、旧历史桌面1项超时，期间代码热更新可能干扰。已披露，稳定代码后重跑全部六项，不将失败记录删去。 稳定后六项全部通过，4.1秒；首轮失败日志保留。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R12-HISTORY-STICKY-COVER",
+      "summary": "实际390px截图发现跳转到后续轮次后，抽屉标题上方padding区域仍可透出前面的记录文字；需补顶端命中/截图回归并修复遮挡，不以无横向溢出代替视觉检查。 已补固定桌面/窄屏顶部命中回归，先红后绿；截图上方padding由标题背景遮挡。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R13-JEV-HISTORY-AUDIT",
+      "summary": "Jev后端判断尝试固定原turn/文本修订/上下文，迟到discard不误贴新turn；实际耗时和Noul/Choice/目标/剩余等待分解已记录。历史设置快照不含endpoint/凭证，ASGI持久化与UI字段回归通过；不把后端尝试冒充收费HTTP调用。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R13-RETAINED-MIXED-ROUTING",
+      "summary": "同一未提交逻辑turn内，旧本地纯片段改混合句已回流当前TD；真实SDK验证整句工具续生成、只提交/写入一次。已提交旧turn的混合修订不重开、不进入新候选，有参数化隔离回归。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R13-WS-HISTORY-CLOSE-PROBE",
+      "summary": "持久化探针首轮因TestClient退出立即取消ASGI任务而读到尚未收尾记录。改显式断线，等待原finish_call实际完成再读取；正式设置快照/回执持久化及无凭证断言通过，未修改生产持久化语义。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R14-LOCAL-FIXTURE-SETUP",
+      "summary": "本地替代registry补齐health注册属性后，隔离标记检查及正式浏览器完整WS/假麦克风/实际渲染回执/Final取消/历史持久化探针通过；首轮500日志保留，不作为业务结果。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R15-HEADER-PUBLISH-UNWIRED",
+      "summary": "核对正式页面发现顶部Publish按钮只有DOM没有事件绑定，Share页已有正式发布处理；需接回同一既有发布流程并覆盖缺缓存阻止，不新增验收页。",
+      "status": "Resolved",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r15/browser-all.txt"
+    },
+    {
+      "id": "R15-DYNAMIC-ROW-REVISION",
+      "summary": "动态词表/选项新增和删除只标dirty而不推进草稿revision，慢保存期间这些操作可能被误标Saved；需补竞态回归并使结构变化也参与草稿代次保护。",
+      "status": "Resolved",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r15/browser-all.txt"
+    },
+    {
+      "id": "R15-TD-SAVE-FULL-PAYLOAD",
+      "status": "Resolved",
+      "summary": "正式TD保存仅发送局部字段，但Bot PUT要求完整配置，真实API返回422；fixture未暴露此偏差。修复必须保留其他Bot配置和已保存凭证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r15/browser-all.txt"
+    },
+    {
+      "id": "R15-STALE-SAVE-ERROR",
+      "status": "Resolved",
+      "summary": "真实本地失败/重试回归发现TD重试保存成功后Jev子页仍残留旧错误；隐藏父页会掩盖问题，改用元素hidden属性断言确认失败。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r15/browser-recovery-red.txt; verification/development-20261022-r15/browser-recovery-green.txt"
+    },
+    {
+      "id": "R16-STALE-SAVE-FAILURE-CONTEXT",
+      "status": "Resolved",
+      "summary": "检查保存异步处理发现成功分支有Bot身份保护，但失败catch无保护，切换Bot后旧请求失败可能污染新Bot错误提示；需真实页面延迟失败回归。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r15/late-failure-red.txt; verification/development-20261022-r15/late-failure-green-suite.txt"
+    },
+    {
+      "id": "R16-WEBRTC-ARCHITECTURE-DECISION",
+      "status": "Resolved",
+      "summary": "D-052撤回A后完成工程调查；原音轨清待发队列并接正式播放出口，本地浏览器验证取消可行。Q-042因强迫换传输的前提不足撤下，不记用户选择B；精确回执/编号仲裁/实机验证继续工程Open。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R16-NARROW-GAP-VALUE-CLIPPED",
+      "status": "Resolved",
+      "summary": "390px正式截图显示Gap数值框被通用55px单位内边距挤压，虽无横向滚动但数字可视空间不足；需数值可读性断言而非只测溢出。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r16/narrow-red.txt; verification/development-20261022-r16/narrow-green.txt"
+    },
+    {
+      "id": "R17-UI-CHECKLIST-STALE-HEADER",
+      "status": "Resolved",
+      "summary": "UI checklist开头仍写Checkpoint A/B/C not started，与现有正式路由fixture和真实本地API增量证据不一致；需明确部分进行中并把原型检查与正式页面证据分开，不直接勾完整通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/ui-checklist.md"
+    },
+    {
+      "id": "R18-FORMAL-LANGUAGE-SWITCH",
+      "status": "Excluded",
+      "summary": "正式TD/Jev、新旧历史语言入口已接；原对话/事件值/来源ID排除翻译，动态候选状态和普通回复标签分片翻译。旧指标不重算，重复打开单控件，8历史视口通过。全部动态文案/全状态及视觉可访问性矩阵仍未闭环。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R18-WEBRTC-TRACK-QUEUE-CANCEL",
+      "status": "Excluded",
+      "summary": "旧原音轨清队列取消与D-068开发候选的实际任务停止/Final接续、完整编号串行均有本地正式入口证据。仍不证明硬件零残留/弱网实机或默认采用；这些剩余边界继续Open。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R19-RTP-ADAPTER-TYPE",
+      "status": "Resolved",
+      "summary": "最小RTP清队列适配器定向测试12通过、ruff通过，但mypy不能确定继承SDK的_output类型；需显式标注后复验，不宣称类型检查通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r19/rtp-integration-second.txt; verification/development-20261022-r19/mypy-final.txt"
+    },
+    {
+      "id": "R19-NATIVE-OUTPUT-PROBE",
+      "status": "Resolved",
+      "summary": "新增原生SDK输出队列集成探针首次失败（3个独立队列测试通过）；须定位测试管线/实现原因并复验，不能把独立队列测试扩大为正式取消闭环。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261022-r19/rtp-integration-second.txt; verification/development-20261022-r19/mypy-final.txt"
+    },
+    {
+      "id": "R20-RTC-BROWSER-PROBE",
+      "status": "Resolved",
+      "summary": "正式移动入口本地信令/RTP/原生audio播放、Partial测试音截短/Final测试音到达且700ms观察窗旧音不回流、结束音频释放和历史收尾通过。实际本地NLTK资源复验通过；厂商/假麦克风仍替代，不证明硬件零尾音或完整任务仲裁。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R20-RTC-FIXTURE-ICE-DEFAULT",
+      "status": "Resolved",
+      "summary": "锁定SDK SmallWebRTCConnection将None/空ICE规范为[]，RTCConfiguration显式iceServers=[]，因此无默认STUN。前一项“可能默认STUN”为已排除假设；fixture TCP阻断不等于通用UDP防火墙，隔离声明按实际修正。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R20-NLTK-LOCAL-RESOURCE",
+      "status": "Resolved",
+      "summary": "既有NLTK punkt_tab资源已从官方固定地址经certifi TLS及官方SHA-256验证安装至Git忽略的.venv/nltk_data。未关闭安全开关，早期代理/系统CA失败记录保留。移除分句替代后10项RTC/WS配置回归通过；其他部署环境是否预置仍未验证，见runtime-prerequisites.md。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R20-MOBILE-REMOTE-AUDIO-NOT-ATTACHED",
+      "status": "Resolved",
+      "summary": "正式mobile-demo已把既有远端RTP音轨接至单一隐藏原生audio元素，拒绝本地麦克风轨/旧连接回调；结束时pause并清srcObject。原先仅连接无声音红测后，本地浏览器远端440/880测试音及音频元素播放/释放通过，不改传输。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R23-UNRANGED-EVIDENCE-LOSS",
+      "status": "Resolved",
+      "summary": "缺结构化result显式标source_payload_unavailable；混合有/无范围帧保留完整原文、连接代次/帧种类/已更新片段数，归属turn=None并在会话级历史显示。3个红测后通过，不捏造音频范围；未知范围可靠恢复/提交总体仍未闭环。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R23-INCOMPLETE-WORD-COVERAGE",
+      "status": "Resolved",
+      "summary": "跨已消费边界按逐词时间切尾前校验全文覆盖（仅允许大小写/Unicode/空白格式差异），缺词拒绝切尾并显式缺证据；即使新有效尾部存在也不提交残缺输入。Speechmatics完整fragments补实际缺失范围，不完整不推断。红绿/全量584与后续1安全测试通过；长行格式缺陷已修。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R24-NUMERIC-SOURCE-IDENTITY",
+      "status": "Resolved",
+      "summary": "时间来源ID按真实数值规范，0/0.0/-0.0与2/2.0分别保持同一来源及递增修订；Speechmatics/Nova先红后绿，60相关测试通过。不做文本去重、不合并不同位置；真实厂商和未知范围恢复仍未证明。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R26-NORMALIZER-PARTIAL-MUTATION",
+      "status": "Resolved",
+      "disclosed_to_user": true,
+      "summary": "已用Speechmatics/Soniox红绿回归修复：整帧异常回滚内部来源缓存，正常片段重发不会被误判重复；覆盖首次出现与已有来源修订。未知范围整体恢复仍Open。"
+    },
+    {
+      "id": "R27-STABLE-SOURCE-RANGE-GAP",
+      "status": "Resolved",
+      "summary": "稳定ID缺时间路径已修复：Flux/Assembly以epoch+turn ID保留缺口，阻止后续已知片段掩盖；同来源可靠范围恢复后一次提交完整文本，66项相关回归通过。未知身份、非法时间及跨连接恢复仍未闭环。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R28-SETTINGS-NAV-ACCESSIBILITY",
+      "status": "Resolved",
+      "summary": "正式TD/Jev子页新增aria-pressed，Advanced导航新增aria-current；原CSS视觉状态保持不变。两项目缺状态红测后修复，12项浏览器回归通过，最终导航另行复核。仍非完整可访问性审计。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R29-START-IDENTIFIED-RANGE-GAP",
+      "summary": "Speechmatics/Soniox已有可靠起点但缺终点按epoch+现有来源身份保留缺口，同来源补回范围后恢复；异常整帧不能误消除旧缺口。目标先红后绿，72项相关与603项全后端通过；首轮分支变量类型错误已修复。未知身份/非法范围/重连恢复仍未闭环。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R30-INVALID-RANGE-KNOWN-SOURCE",
+      "status": "Resolved",
+      "summary": "六模型已有可靠身份的非法范围保留epoch+来源缺口，只能同来源可靠范围恢复；整帧失败不能清除其他行缺口。Nova缺duration不再默认0。四家非法范围与Nova缺duration先红，最终相关80项通过，ruff/相关mypy通过；完全未知身份/跨连接恢复仍Open。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R31-VAD-INFLIGHT-DEADLINE",
+      "status": "Resolved",
+      "summary": "已修复VAD分析中与截止竞争：输入分析及状态转换未完成不提交，STARTING保护、QUIET恢复一次提交、异常/取消释放计数且media不健康均已回归。目标先红后绿，含pipeline相关67项通过，ruff/相关mypy通过。完整队列积压/真实语音覆盖仍待验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R32-QUEUED-AUDIO-DEADLINE",
+      "status": "Resolved",
+      "summary": "SDK队列积压截止竞争已修复：正式queue_frame计数待处理PCM，VAD完成/异常/cleanup后安全释放，保留原生callback；实际SDK暂停队列先红后绿。全后端616通过，后补真实watchdog/PCM矩阵70通过，ruff/相关mypy通过。真实音频效果与目标容量仍未验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R33-ASR-EVIDENCE-MODEL-IDS",
+      "status": "Resolved",
+      "summary": "范围恢复测试旧Soniox/Assembly模型ID标注已更正，正式Catalog校验先红后绿，89项相关配置/范围回归通过；历史日志限制已单独更正。来源隐藏草稿桌面/窄屏2项通过，初次窄屏遗漏收起抽屉的测试步骤已修正，无生产UI改动。真实兼容仍未验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R34-LATE-PARTIAL-RANGE-GAP",
+      "status": "Resolved",
+      "summary": "已Final来源的迟到缺时间/非法时间Partial不再重开缺口：六模型身份检查在旧Partial时间解析前执行。12项先红，修复后相关98项通过，ruff/相关mypy通过。仅已证明的相同身份有效，未知身份及跨连接恢复仍未闭环。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R35-RTP-RENDER-IDENTITY-BRIDGE",
+      "status": "Resolved",
+      "summary": "D-068 r68/r69已证明正式开发入口保留RTP的任务/解码/Worklet对应、Final取消与编号仲裁；r78再次证明范围/真实回执及重启历史。旧r35/r36失败原样保留。仅关闭桥接实现缺口，平台/默认采用/硬件声学另有Open边界。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R37-RENDER-SAMPLE-COORDINATES",
+      "status": "Resolved",
+      "summary": "正式WS Worklet首/尾/停止采样坐标、采样率和端口时钟作用域已接认证API与原轮次历史；字段完整/范围/同钟/重复篡改校验及旧客户端兼容通过。先红后绿，全后端635/Node5/实际浏览器10通过；不将原始坐标当跨时钟或硬件毫秒延迟，精确指标/RTC仍Open。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R38-JEV-LATEST-ALIAS-DRIFT",
+      "summary": "2026-10-22官方models页称jev-latest指向jev-1.13.0，但D-053两次真实响应均为jev-1.14.0。接口与基本概率格式通过；别名版本与文档不一致，后续校准必须保留实际版本，不能据两例保证版本稳定或语言质量。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R39-RTC-TASK-IDENTITY-LOSS",
+      "summary": "r68/r69受控正式RTP入口任务身份、实播/停止、Final/编号仲裁已接；r87认证源端E2E及历史重启通过。默认链保留，采用/设备范围另列未验证。",
+      "status": "Resolved",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md"
+    },
+    {
+      "id": "R39-SYNTHETIC-PREP-SCIPY",
+      "summary": "原say沙箱生成0采样AIFF已识别为无效；允许本机离线语音服务后直接输出16kHz PCM16 WAV三段，共18.405375秒，格式/非空/hash已核验，无需scipy/PyAV转换；无厂商调用。无效旧文件保留隔离，不在发送清单。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R39-RTC-MAPPING-GATE-NOT-PROVEN",
+      "summary": "原D-054有限关口失败保留为历史，未偷跑其后续。后获独立D-067有限确认后隔离映射/Final/编号通过，D-068正式开发入口r68/r69核心组合通过；原映射工程缺陷已闭环。默认采用/设备/RTC源时钟仍另列未完成。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R39-VENDOR-PRICING-SCOPE",
+      "summary": "四家六模型基本单例当前费率/预算/守卫已逐批准备并经D075–079独立授权执行。Soniox明确token预算非厂商硬封顶；未来其他voice/更多矩阵仍需新精确计划，不沿用旧价或授权。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-PROBE-VALIDATION",
+      "summary": "ASR探针9项离线守卫/SDK边界通过；TTS固定35字符/3次及Speak守卫已补，独立入口循环另按R40-TTS-PROBE-STANDALONE修复。ruff通过，实际3.13目标6源文件mypy通过；默认3.11目标NumPy问题仍单独Open。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-RENDER-CAUSALITY",
+      "summary": "首尾渲染坐标/样本因果校验已修复；正常乱序可接收，矛盾回执拒绝且不推进仲裁。历史/API19通过、正式WS实际回执通过，数值跨钟指标仍缺失不伪算。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-WS-RECEIPT-REGRESSION",
+      "summary": "失败来自测试应用来源白名单硬编码旧端口；测试实例新增显式回环ui-origin并重启后，正式WS/真实Worklet/Final取消/历史回执浏览器通过。未放宽正式来源策略。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-UI-BASELINE-AUDIT",
+      "summary": "已按冻结基线修复窄屏外层64px差异、Jev独立页头/语言控件位置、词表/枚举/概率输入布局，五种配置状态在1440/390px控件签名一致且无溢出；保存Key控件差异单独Q-044，严格A测试仍失败，未标Checkpoint A通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-JEV-KEY-SAVE-BASELINE",
+      "summary": "D-056明确保留保存Key复选框，批准仅此一处基线差异；对照测试需验证授权范围及其余控件严格匹配。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-HISTORY-RENDER-REASON",
+      "summary": "真实渲染回执只更新原TD turn的renderer_observed；缺跨钟映射时原因render_clock_uncorrelated，未播新turn仍client_playback_unconfirmed；19项历史/API及实际WS持久历史断言通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-SONIOX-TAIL-RESEGMENTATION",
+      "summary": "SDK完整列表由正式ASRService显式标记，缺席旧非Final来源撤销，稳定Final前缀保留；原始增量不按缺席删除，撤销留source_withdrawn。初版6失败保留，修正后ASR/ledger/runtime/工具99通过，未知身份/跨连接仍Open。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-TTS-PROBE-STANDALONE",
+      "summary": "TTS工厂注解依赖移入TYPE_CHECKING，修复独立导入循环；增加新进程导入回归，探针/工厂/单元合成13通过。此前完整658通过只是当时快照，不冒充修复后的最终整包回归。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-TTS-IMPORT-SPACING",
+      "status": "Resolved",
+      "summary": "最终ruff发现TTS TYPE_CHECKING导入块缺空行，已补空行；相关10文件ruff重跑通过，7源文件Python3.13类型检查及最终前端构建通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R41-DEEPGRAM-REAL-RANGE",
+      "status": "Resolved",
+      "summary": "原D055/057/059失败保留；重叠词/浮点边界适配修复后D075/076新冻结数据三模型基本范围单连接通过，见r85矩阵。旧失效数据不重放；多场景/重连另列未验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md"
+    },
+    {
+      "id": "R41-PROBE-STOP-DIAGNOSTICS",
+      "status": "Resolved",
+      "summary": "真实批次发现范围缺失未即时停与诊断字段不足；探针已在首个缺口置停止事件、停止后续PCM输入并保留白名单时间/词字段，独立诊断批次不能借D-055重放。先红（坏例仍送151帧/缺字段），后绿；真实问题原因仍Open，未重新调用。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R41-KEY-ACCESSIBLE-ASSERT",
+      "status": "Resolved",
+      "summary": "D-056后新增断言未允许中文名称空格，已修复正则；正式1440/390px六状态严格比较2项通过，唯一额外Key控件按D-056单独断言。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R41-FLUX-OVERLAPPING-WORDS",
+      "status": "Resolved",
+      "summary": "D-057真实Flux的I/was词时间重叠，曾被误判乱序；已保留原值、仅按起点检查顺序且继续拒绝跨界切词。目标先红后绿，相关流水线100项通过；尚未再次真实调用确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R41-DEEPGRAM-TTS-TIMEOUT",
+      "status": "Resolved",
+      "summary": "原D058失败保留；D065新授权one单例真实PCM成功，见r57/external-results.jsonl，关闭one基本连通故障。其余文本/音质/全流水线未测见D065-TTS-SCOPE，不假称原整批通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md"
+    },
+    {
+      "id": "R41-TTS-UPSTREAM-ERROR",
+      "status": "Resolved",
+      "summary": "真实SDK worker离线复现上游错误被误当超时；已监听on_pipeline_error并在启动失败时及时结束、仅返回安全错误。目标先因错误fixture失败，修正后真正TimeoutError红，再10项合成/API/探针绿；尚未证明D-058实际超时原因。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R41-FLUX-FLOAT-CONTAINMENT",
+      "status": "Resolved",
+      "summary": "D-059前15事件证明重叠修复后有效，第16事件4.5600000000000005对4.56的机器误差再次阻断；现仅容忍4 ULP比较误差、保留原值，真实超范围仍拒绝。目标先红后绿，相关102项通过；未再次外部验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R41-RTC-COORDINATE-ONLY",
+      "status": "Resolved",
+      "summary": "旧D060有限实验未证明的记录保留。后续独立授权D067隔离组合及D068受控正式入口r68/r69已证明任务实际渲染/停止，r87补来源E2E；不认定旧实验技术不可行。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md"
+    },
+    {
+      "id": "R42-ASR-CONNECTION-PROVENANCE",
+      "status": "Resolved",
+      "summary": "已将epoch绑定接收任务ContextVar；socket真实打开及Nova SDK lazy context入口覆盖绕过_connect的重试。旧任务保持旧epoch，正式TD拒绝旧帧，新帧只进入新epoch；native模式不加标签。目标3红后绿，相关128项通过；不证明六厂商实际重连/绝对时钟/未知范围恢复。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R42-ENGLISH-STATIC-COPY",
+      "status": "Resolved",
+      "summary": "人工截图审阅发现4条Jev静态提示/标题英文模式仍中文；新增静态文字断言先红，改用既有字典英文source后，中英×1440/390六状态及设置请求/键盘回归5项通过。中文基线/用户输入原文保留，未改冻结HTML。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R43-UNKNOWN-SOURCE-STALL",
+      "status": "Resolved",
+      "summary": "D-061已实现：未知范围保留为未归属原文，同SDK快照可在截止前恢复；达到现有最长等待以安全ASR错误取消并记failed，不提交或执行工具。本地核心/SDK/API及正式浏览器链路通过；跨连接绝对时钟和真实厂商范围仍另项Open。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R43-TTS-SETUP-DEADLINE",
+      "status": "Resolved",
+      "summary": "真实SDK慢setup用例曾暴露0.1秒截止后仍等待20秒；已对齐worker setup/cancel预算，12项相关通过（1.52秒），资源释放且单例小于1秒。未证明这是D-058真实超时原因。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R43-ORCHESTRATOR-TYPES",
+      "status": "Resolved",
+      "summary": "保留既有tools列表及aggregator迭代接口，明确LLM返回/ThinkingConfig/speed delta类型并更新新错误能力fixture；76项编排回归及8文件实际Python3.13类型检查通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R43-WS-ERROR-DOUBLE-CLOSE",
+      "status": "Resolved",
+      "summary": "真实浏览器错误取消暴露WS已关闭后API重复关闭；已检查双方状态避免二次关闭。正式网络复测无ASGI异常，API回归在WS测试上下文内等待持久化，78项相关通过；初次pending是测试上下文退出取消后台收尾，未修改生产历史契约。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R43-EMPTY-TURN-HISTORY",
+      "status": "Resolved",
+      "summary": "正式历史抽屉在没有已提交轮次时提前退出，漏显示未归属事件；已修复为空turn失败展示session证据且不伪造turn。正式浏览器先失败后通过（6.5秒），保留原文、ASR失败原因且抽屉无横向溢出，旧会话仍走原渲染。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R44-HISTORY-EVIDENCE-PATH",
+      "status": "Resolved",
+      "summary": "六个TD UI模块派生证据原硬编码旧轮次目录；已改默认忽略的test-results及显式本轮目录。本轮历史4项、配置1项及六模块发现通过，人工复核桌面/390px；未覆盖冻结或旧证据，不重新执行RTC有界实验。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R45-CACHE-RECOVERY-HISTORY",
+      "status": "Resolved",
+      "summary": "正式缓存恢复事件resource_ready/recovery_path此前未被历史正确映射，资源耗时误标静音。已补正确事件/降级/指纹/资源版本及中英标签，按资源事件标资源处理耗时。真实本地WS/SDK/Worklet/SQLite组合先红后绿（10.2秒）：一次恢复合成、清空实际停止，历史可读；初次422、瞬时故障被重读恢复及父级locator重复匹配均保留为测试准备失败，不冒充产品红灯。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R45-HISTORY-EVENT-LABELS",
+      "status": "Resolved",
+      "summary": "人工截图发现实际播放/工具事件标题在中文回落英文；已映射捕获到的事件标题并补中英，还补受控操作/值/计数/代次/来源范围字段，原始状态值不翻译。只读正式历史先红后绿，1440/390各352个dd原始值中英一致、无横溢，实际截图已人工复核；不代表全UI检查点。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R46-UNBOUND-SOURCE-EPOCH",
+      "status": "Resolved",
+      "summary": "无ContextVar的SDK回调原回填当前epoch，显式None又被当stale丢原文；已保留None、不归一化为已知来源，并记录未归属原文/缺连接原因。新连接有效帧不能消除该缺口，D-061截止失败且零提交。2项先红，118相关及683完整后端通过；不能据本地结果宣称真实六模型兼容。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R47-D-062-REAL-FAILURE",
+      "status": "Resolved",
+      "summary": "原D062第二例来源边界失败保留；r49采样坐标修复后D075以新独立授权数字素材实际1连接18事件范围通过。仅关闭Flux英文范围修复确认，其他模型/准确率/重连仍另列未验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r84/deepgram-fresh-digits-D075.jsonl"
+    },
+    {
+      "id": "R47-D-063-REAL-FAILURE",
+      "status": "Resolved",
+      "summary": "D-063原首条one连接后无音频失败保留。尾空格修复后D-065新独立授权one单例实际成功：一次连接/Speak+Flush/3计费字符/24k mono PCM16/0.72秒非零音频。仅关闭该固定单元兼容缺口，不逆推D-063唯一根因，不代表其余文本/voice/取消/运行时整链通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261024-r57/external-results.jsonl"
+    },
+    {
+      "id": "STAGE-RTC-EVIDENCE-THRESHOLD",
+      "status": "Resolved",
+      "summary": "已按后续明确授权完成可靠任务映射/实际Worklet回执，r68/r69/r87证据；不重放旧停止批次，硬件样本排他归属未冒充。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md"
+    },
+    {
+      "id": "STAGE-STATUS-DRIFT",
+      "status": "Resolved",
+      "summary": "阶段审计发现development_run残留r40旧状态，与真实调用/最新结果矛盾；已保留prior-development-run.json并完整重写为本轮与历史范围分开的状态。外部授权执行账本原记录保留，不以round数字冒充状态更新。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "STAGE-D061-SPEC-STRUCTURE",
+      "status": "Resolved",
+      "summary": "D-061原追加块无Requirement且Scenario层级错误；已修正为统一Requirement/h4 Scenario结构，正文行为不变。阶段矩阵已枚举并静态核对代表符号；不当作业务测试通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R50-CONSUMED-AUTHORIZATION",
+      "status": "Resolved",
+      "summary": "ASR/TTS公共授权校验原只检查confirmed/hash，依赖本地独占日志阻止重放；已在读取Key前要求authorized_not_started，拒绝完成/已停止/正在执行/缺状态。离线先红后绿，已消费记录即使没有本地日志仍拒绝；现有独占claim仍保留。没有重放真实授权。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R51-HISTORY-RETRY",
+      "status": "Resolved",
+      "summary": "正式Sessions失败原写入隐藏通话容器；新增历史页本地alert，成功重试清除。可见性断言先2失败后2通过，覆盖1440/390px；初次不完整断言假绿保留，不当作修复证据。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261023-r51/README.md"
+    },
+    {
+      "id": "R53-DECODE-ORDER",
+      "status": "Resolved",
+      "summary": "候选代码审查发现异步hash可能乱序进入有状态Opus解码；已按编码帧接收顺序单泵处理，并拒绝来源时钟缺口、限制队列和1秒候选证据等待。不是正式产品默认超时。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R54-RTP-EOS",
+      "status": "Resolved",
+      "summary": "候选接串行器前必须补EOS音频覆盖屏障：控制消息到达不等于对应RTP样本已解码/渲染，不能直接把task_end转给Worklet释放槽；本轮按实际样本总数和真实终态关闭。 D-067新独立有限确认3关口全部实际通过：原精确键误拒修复原生验证、真实完整样本EOS及续说/提问顺序/清空已通过。范围仅隔离候选，正式入口仍未接。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261024-r59/combination-summary.json"
+    },
+    {
+      "id": "R54-CANDIDATE-DECODE-COORDINATE",
+      "status": "Resolved",
+      "summary": "D-066已唯一定位精确微秒键误拒：AudioData1253499us对应pending1253500us，帧960/48k正确。现离线修复为已校验RTP包单次decode+flush输出范围关联，不匹配微秒标签/不加容差；同worker保存值重放先红后绿且真实样本数差仍拒绝。原生复测未授权，整体候选继续Open/停止。 D-067新独立有限确认3关口全部实际通过：原精确键误拒修复原生验证、真实完整样本EOS及续说/提问顺序/清空已通过。范围仅隔离候选，正式入口仍未接。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261024-r59/combination-summary.json"
+    },
+    {
+      "id": "R54-FIXTURE-ORDER",
+      "status": "Resolved",
+      "summary": "编号fixture入队续说后未等SDK处理即准备question导致cancelled_unplayed；现改为先等待流水线marker再准备question，静态修复未重跑，仍Open待验证。 D-067新独立有限确认3关口全部实际通过：原精确键误拒修复原生验证、真实完整样本EOS及续说/提问顺序/清空已通过。范围仅隔离候选，正式入口仍未接。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261024-r59/combination-summary.json"
+    },
+    {
+      "id": "R54-FAILFAST",
+      "status": "Resolved",
+      "summary": "已停止候选并披露首失败未停批偏差；测试文件改serial且后续复现要求--max-failures=1，未再执行，因此仅静态修复，不回写本轮为按约停批。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R55-ASR-FIXTURE-MISSING",
+      "status": "Resolved",
+      "summary": "旧冻结文件缺失且不可恢复，旧计划不改不重放；新素材独立hash经D075授权实测通过。以后仍不得用新hash冒充旧音频。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261024-r56/recovery-check.json"
+    },
+    {
+      "id": "R57-PRECALL-GATE-ORDER",
+      "status": "Resolved",
+      "summary": "D-065执行前门禁因授权记录遗漏provider非零，但同一工具编排未按退出码停止，仍执行了已获明确授权的唯一one请求。遗漏已补，原非零记录保留；以后门禁与调用必须分开、读取退出码后再调用，不能以末命令成功盖前门禁失败。本批无超范围/重复调用。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R61-RECEIPT-SCHEMA",
+      "status": "Resolved",
+      "summary": "严格API 422因started内部字段；已白名单映射，后续两条停止回执204，但零渲染不证明播放闭环。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R61-NATIVE-WRITER-TIMEOUT",
+      "status": "Resolved",
+      "summary": "旧失败定位为worker安装顺序/分析器抢消费；后续批准修复确认及受控正式r68/r69/r87组合有实际开播停止证据。原失败保留，不重复泛用调查。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md"
+    },
+    {
+      "id": "R62-EMPTY-SENDER-TRACK",
+      "status": "Resolved",
+      "summary": "真实aiortc空track sender红灯已修，按audio transceiver识别；8项定向回归通过，浏览器现收到映射控制消息，正式开播仍失败。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R62-FORMAL-MAPPING-UNPROVEN",
+      "status": "Resolved",
+      "summary": "D-071联合安装时序/移除测试抢先分析器后，正式开场实际start/end鉴权204，结束5760与真实task_end5760精确一致；只关闭短开场入口问题，不代表Final/编号/延迟通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R64-FORMAL-RTP-NO-ENCODED-INPUT",
+      "status": "Resolved",
+      "summary": "D-071联合安装时序/移除测试抢先分析器后，正式开场实际start/end鉴权204，结束5760与真实task_end5760精确一致；只关闭短开场入口问题，不代表Final/编号/延迟通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r64/README.md"
+    },
+    {
+      "id": "REVIEW-20261025-STALE-PROGRESS-SUMMARY",
+      "status": "Resolved",
+      "summary": "已同步主README、自测报告首段、tasks RTC边界及development_run到r71；历史逐轮失败保留，不用于当前完成声明。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R66-TRANSFORM-ENTRY-NO-FRAMES",
+      "status": "Resolved",
+      "summary": "D-071联合安装时序/移除测试抢先分析器后，正式开场实际start/end鉴权204，结束5760与真实task_end5760精确一致；只关闭短开场入口问题，不代表Final/编号/延迟通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r66/README.md"
+    },
+    {
+      "id": "R67-EXPECTED-RENDER-EXTENT",
+      "status": "Resolved",
+      "summary": "已从失败trace取实际task_end expected_samples5760并与结束5760精确核对；锁定SDK默认40ms补齐解释0.1s源变0.12s。原浏览器硬编码4800失败保留，无重跑。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R68-RTP-LEDGER-LIFETIME",
+      "status": "Resolved",
+      "summary": "已绑定来源记录按真实packet end释放，独立_source_end持续严守来源连续性；10010包离线红绿通过，实际时长/弱网仍未验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R68-UI-STATE-ASSERTION",
+      "status": "Resolved",
+      "summary": "按正式aria-hidden/active状态修正误判后，正式RTC Final浏览器组合1passed/7.2s；实际204回执与持久历史留证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R69-IDENTIFIER-FIXTURE-ACTIVATION",
+      "status": "Resolved",
+      "summary": "fixture开场修正为已确认编号关键词后正式RTC组合1passed/11.5s，来源采集1/12、clear工具、实播停播、未播旧echo拒绝及真实持久历史均核对。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R70-OBSERVER-DOUBLE-REGISTER",
+      "status": "Resolved",
+      "summary": "测试模块去重已修；后续捕获支路有效输出，不将仪器失败解释成产品故障。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R70-NATIVE-OBSERVATION-BRIDGE",
+      "status": "Resolved",
+      "summary": "停止无输出MediaElementAudioSource观察法，改为HTML captureStream只读支路；同输入原链/候选各1有效观测。捕获桥误差独立保留unverified。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R71-ASR-PROBE-TEST-TEMP-DATA",
+      "status": "Resolved",
+      "summary": "守卫测试生成自身临时160帧PCM并计算hash，保留实际verify_files及未授权前不读Key；完整后端698passed/39.79s。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R71-LEGACY-UI-AUTH-FIXTURE",
+      "status": "Resolved",
+      "summary": "旧Bot用例补齐本地鉴权/目录fixture后16passed，剩余2个过期Turn断言定向修正后2passed；不依赖后台、不触碰厂商。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R71-LEGACY-TURN-EXPECTATION",
+      "status": "Resolved",
+      "summary": "Nova-3默认off/self_developed可选/provider_native不存在的契约断言桌面与窄屏2passed，未回退产品行为。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R71-MOBILE-SHELL-BASELINE-DIFFERENCE",
+      "status": "Resolved",
+      "summary": "D-072用户明确选择B：手机保留内容在前、Bot列表在后。仅此布局差异获准，冻结文件未变；不自动认定完整UI检查点通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R71-FULL-TYPE-CHECK",
+      "status": "Resolved",
+      "summary": "已修本Change TD覆写direction与cache Row注解；4个相关模块mypy通过、60项定向回归通过。当前全src47错误/9文件，按文件+消息逐项在隔离HEAD基线53错误中复现，未新增剩余错误；全仓检查仍失败，独立保留未验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R72-LEGACY-EVENT-TD-TIMING",
+      "status": "Resolved",
+      "summary": "旧first_playback可向TD填收件时间的目标测试先失败（误填0.0ms）；已禁止TD提交轮使用该旧入口，相关历史23项通过，保留原native旧行为。真实跨钟精确指标仍缺。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R73-SCENARIO-REFERENCE-DRIFT",
+      "status": "Resolved",
+      "summary": "静态匹配的1项是检查器对模板测试名的误报：源码${width}px及[1440,390]生成目标名，r71日志有执行证据；索引补充解析依据，不新增覆盖声明。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R74-REVIEW-PACKAGE-MISSING-INPUTS",
+      "status": "Resolved",
+      "summary": "r74新包补runtime配置/正确探针/冻结原型/guard，312文件逐项hash验证；新临时目录解包配置加载与原型SHA smoke通过。旧r73包保留，不用哈希自证输入完整。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R74-REVIEW-MISSING-ASR-FIXTURE",
+      "status": "Resolved",
+      "summary": "r75闭包包344文件，新目录解包完整离线607 passed/92私有Evaluation素材按既有规则skipped/0失败，14.85秒。原ASR缺项评审独立单例1通过；旧包和所有失败日志保留。此关闭仅审核输入依赖闭包，不代表全范围独立PASS。",
+      "disclosed_to_user": true,
+      "independent_stage_recheck": "r75/closure审核包独立新目录解包包含原JSONL且hash一致；原失败单例1 passed/0.03s。具体缺失已修复，整体输入闭包待主任务全离线回归；非最终独立PASS。证据stage-review/r74-review-evidence/r75-recheck.json。",
+      "closure_progress": "r75首次解包10个收集错误（归档prompt缺失），closure补后7失败/600通过/92跳过（Dockerfile、requirements.lock、vendor数据清单缺失），均为同一审核输入依赖闭包P1。closure-complete补齐后全量解包验证进行中，原失败包/日志保留。独立评审已复核ASR原单例1通过。 closure-complete首次606通过/1失败/92私有素材跳过，仅缺.dockerignore；已补并保留前包before-dockerignore-*，新解包验证中。"
+    },
+    {
+      "id": "R76-METRIC-PRECISION-CONTRACT",
+      "status": "Resolved",
+      "summary": "D-073用户明确接受带误差边界的延迟范围；产品口径已关闭，认证时钟协议/持久化/正式UI实现仍在tasks待完成，不因此勾指标实现。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R76-D072-UI-LAUNCH",
+      "status": "Resolved",
+      "summary": "首次沙箱Chromium启动失败未执行断言；获得本机启动权限后D-072正式Share390px单例1 passed/1.3秒，内容卡片保持冻结结构，明确核对正式列表在后/冻结列表在前。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R78-BUILD-CWD",
+      "status": "Resolved",
+      "summary": "一次构建误在根目录执行，未实际构建；已在frontend目录正确完成生产构建，日志r78/build-final.txt。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R78-IDLE-CLOCK-EVIDENCE-VOLUME",
+      "status": "Resolved",
+      "summary": "空闲锚污染证据上限已先红后绿修复；仅实际任务范围持久化其两锚，空闲采样保留32条有界内存。相关38项/实际两通道通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R78-FORMAL-RTC-CLOCK-FAILURE",
+      "status": "Resolved",
+      "summary": "首次范围集成失败定位为测试token字段误用及原生global函数类成员调用接收者问题；修复后正式开发RTC1通过7.4秒、WS1通过6.7秒，原映射/Final仍成立，实际进程重启经API原样读回。原失败全部保留。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R78-STAGE-LIVE-RANGE-ORIGIN",
+      "status": "Resolved",
+      "summary": "D-073阶段审查P2已修：共享formatPlaybackMetric明示server audio task ready→client render及response；390px实际起点缺失红灯→修复1 passed/871ms，独立阶段只读核查函数/红绿证据确认。未扩大为最终UI/实时通话验收。",
+      "disclosed_to_user": true,
+      "independent_stage_recheck": "verification/stage-review/preliminary-d073.md：P2修复只读复核"
+    },
+    {
+      "id": "R78-MYPY-ENCODER-PTS",
+      "status": "Resolved",
+      "summary": "MappedOpusEncoder继承属性补明确int|None类型，不改编解码逻辑；RTP8项回归通过1.17秒，无增量Python3.13全src76文件mypy通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R78-PACKAGE-UNIT-INPUTS",
+      "status": "Resolved",
+      "summary": "r78包补完整frontend/tests目录，405文件核验；新目录客户端9项通过。前包后端46项已通过，两个包后端输入哈希完全相同，未重复全量。原缺目录失败及输入包保留。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R79-SOURCE-GAP-BOUNDARY",
+      "status": "Resolved",
+      "summary": "新增输入样本账本定向测试暴露：未知音频段后的首个已知边界被错误视作完整源端证据。已要求非零目标边界具有左侧样本证据，6项源映射/因果时钟测试通过。账本尚未接入客户端或正式pipeline，不据此宣称E2E完成。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R79-MYPY-RUNTIME-TARGET",
+      "status": "Resolved",
+      "summary": "r79默认mypy目标3.11与本机3.13 numpy存根type语法不兼容，检查在依赖解析阶段停止。显式3.13无增量本模块通过；部署3.11未验证，不以此替代。 r91在独立实际Python3.11.15环境按锁定依赖：756后端通过，mypy3.11目标79源通过，pip check通过；历史3.13存根失败保留。此关闭不代表Linux1核1GB容量/部署验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r91/README.md"
+    },
+    {
+      "id": "R81-UI-FIXTURE-REASON",
+      "status": "Resolved",
+      "summary": "新E2E fixture仍标source_end_clock_unavailable，且旧检查只覆盖播放卡片。已改bounded_timing_only并断言E2E原回复绑定/来源/中文及无横溢，实际双视口2项通过。一次更新目录错误后纠正，不以旧断言冒充新证据。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R81-MYPY-API-FIVE",
+      "status": "Resolved",
+      "summary": "项目默认skip导入全源77项通过；额外silent导入检查暴露5项API静态类型欠账。已明确可空凭证类型、厂商Literal边界和诊断SecretStr包装；当前相同额外模式5源通过，API/鉴权14项回归通过。未改变厂商值或密钥保存规则。失败输出保留。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R81-DELIVERY-HEADER-STALE",
+      "status": "Resolved",
+      "summary": "交接首页与自测报告顶部仍写E2E全未实现/旧47类型错误，与r78/r81证据冲突。已修正最新摘要，区分r78旧全量、r81当前定向及RTC/设备剩余；阶段快照明确仍是r78。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R82-HISTORY-FROZEN-HIERARCHY",
+      "status": "Resolved",
+      "summary": "正式历史按冻结原型补Turn头/实际结果徽标/User角色、14px标题及完整源锚字段；元信息作用域也恢复。双视口冻结计算样式及原文/语言/范围回归通过，标题可见性另以几何检查修复。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R82-SESSIONS-LIST-SCOPE",
+      "status": "Resolved",
+      "summary": "实际红灯确认标题及窄屏列表规则未应用；只为正式Sessions加入冻结局部作用域，双视口对照通过，保留D-072全局顺序。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R82-SOURCE-ENTRY-PROBE-TAB",
+      "status": "Resolved",
+      "summary": "脚本补显式Semantic页签后，六模型self_developed/native-off、草稿保留和抽屉无横溢在1440/390全部通过；首次不是产品行为红灯。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R82-HISTORY-TITLE-OCCLUSION",
+      "status": "Resolved",
+      "summary": "实际几何红灯为title.y=67<header.bottom=75，补正式内容8px padding防止margin折叠/遮挡；修复后双视口title.y=89>=75，截图人工复核完整可见，冻结文件不改。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R82-VALIDATION-ERROR-LOCALE",
+      "status": "Resolved",
+      "summary": "实际中文关键词错误红灯后补静态校验词条；四类错误×中英×双视口通过，无无效保存、草稿保持，修正后唯一保存。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R82-SHARE-STATE-MATRIX",
+      "status": "Resolved",
+      "summary": "前次2失败均是中断后旧5177进程不存在、ERR_CONNECTION_REFUSED，未执行产品断言。新本机5178同矩阵2项通过；冻结卡片/D-072及禁用/恢复/草稿保持均通过，非真实持久化证据。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R83-REPAIR-FAILURE-PRODUCT-GAP",
+      "status": "Resolved",
+      "summary": "Q-049已由用户明确选A并记录D-074：失败只跳过本次跟读，保留编号继续，不伪报播放；不授权费用。正在验证正式公开入口失败组合。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R83-LOCAL-UDP-GUARD",
+      "status": "Resolved",
+      "summary": "已修复connect/connect_ex/sendto/有地址sendmsg守卫并显式清空STUN；惰性mock红绿无外发，真实受控RTC ICE空且组合通过。未据旧缺陷认定发生外传。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r83/README.md"
+    },
+    {
+      "id": "R83-FAILED-ECHO-SETTLEMENT",
+      "status": "Resolved",
+      "summary": "已修复部分PCM源失败误发task_end，改请求实际stop并等确认；失败来源不因同文Final重试。21项SDK回归与正式公开RTC零PCM补合成失败/后续工具/持久历史通过。部分PCM实际RTC故障组合仍非本轮证据。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r83/README.md"
+    },
+    {
+      "id": "R83-FULL-REGRESSION-DRAWER",
+      "status": "Resolved",
+      "summary": "静态DOM约束改为保留必须类；真实导航/Escape缺陷已修，715项后端通过，正式导航两视口及本轮25项页面/组件通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r83/README.md"
+    },
+    {
+      "id": "R83-ASR-DRAWER-ESCAPE",
+      "status": "Resolved",
+      "summary": "已将Escape委派至现有关闭按钮清理；实际来源抽屉双视口含在25项通过。此JS增量晚于715项后端，以当前静态15项/浏览器25项/构建验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r83/README.md"
+    },
+    {
+      "id": "R83-B-BROWSER-LAUNCH",
+      "status": "Resolved",
+      "summary": "首次浏览器启动/macOS端口绑定均被执行权限限制，未触及产品；正确权限后7配置用例通过，剩余1在匹配ordinary场景通过。原启动失败日志保留。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R83-B-SCENARIO-PRECONDITION",
+      "status": "Resolved",
+      "summary": "未放宽0.1秒试听断言；匹配ordinary场景并确认服务ready后单项1通过2.2秒。另7配置路径已通过，实际失败会话重启后事件/指标完全一致。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R84-AUTH-DATE-FIELD",
+      "status": "Resolved",
+      "summary": "登记D075误用Confirmation date字段，结构门禁在任何外部调用前拦截；已改为项目要求Date，无请求发生。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R85-PROBE-LINT",
+      "status": "Resolved",
+      "summary": "新探针用例签名超出100字符，被Ruff拦截；只换行修复，非运行行为缺陷，重新检查。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R85-SONIOX-SOCKET-ITERATOR",
+      "status": "Resolved",
+      "summary": "原生async-generator接收协议已红绿修复为anext(socket.__aiter__())；超token后禁止继续接收和发送。Ruff行长同步修复，当前离线验证后才申请单例授权，无Soniox调用。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R85-PACKAGE-CWD",
+      "status": "Resolved",
+      "summary": "首次错误cwd原运行保留且不引用；已绝对路径解包928文件逐hash核验，新r85 cwd25项通过4.44秒。仅文档计数更正待v2封包，不改生产源。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R85-INDEPENDENT-EVENT-COUNT-CLAIM",
+      "status": "Resolved",
+      "summary": "独立评审识别转写帧与changed-ranges更新措辞混淆；确认Assembly5帧/Speechmatics1帧为同文本同时间重复快照正常去重，非缺范围。已修README并添加帧/非空事件/段数/去重帧四计数；原日志保留，不改src/不重测收费。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R86-RTC-UPLINK-COORDINATES",
+      "status": "Resolved",
+      "summary": "新增有界旁路保留实际编码payload/原RTP timestamp/decoderPTS/processed PCM区间；真实Opus/PyAV/锁定SDK字节一致与跨包尾部通过，受控正式RTC到ASR流水线已取得对应证据。未修改原raw pts/厂商时钟，不等于已算RTC E2E。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r86/README.md"
+    },
+    {
+      "id": "R86-INPUT-LINT",
+      "status": "Resolved",
+      "summary": "新文件import排序和行长已修，当前4源Ruff/2源mypy通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r86/README.md"
+    },
+    {
+      "id": "R86-INPUT-NULL-FRAME",
+      "status": "Resolved",
+      "summary": "保留原SDK None/非AudioFrame容错，真实目标红灯后修复，相关16项通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r86/README.md"
+    },
+    {
+      "id": "R86-FIXTURE-PROXY-PATH",
+      "status": "Resolved",
+      "summary": "测试证据端点移至既有/api代理；初次在开通话前退出，无RTC映射失败。修正后正式输入/Final组合1通过7.9秒。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r86/README.md"
+    },
+    {
+      "id": "R86-SSRC-CHANGE-OWNERSHIP",
+      "status": "Resolved",
+      "summary": "从首次接收就要求连接内SSRC稳定；变化即清旁路映射并保持缺失，原音频不变。已用真实拒绝行为红绿核对，不声称跨SSRC/重连时钟已解决。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r86/README.md"
+    },
+    {
+      "id": "R87-SOURCE-TYPE-LINT",
+      "status": "Resolved",
+      "summary": "新来源关联16项后端初步通过，但Ruff发现import排序、Mypy发现两种cache key联合迭代类型不匹配；不报全绿，先拆开有界清理循环与格式修复。 已修复，mypy-current.txt和lint-fixed.txt通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R87-RTC-E2E-MISSING",
+      "status": "Resolved",
+      "evidence": "/tmp/voiceagent-r87-browser.txt",
+      "disclosed_to_user": true,
+      "summary": "r87正式RTC本地组合失败：5秒等待后e2e_timing_bounds响应数为0，预期2；原测试失败保留。当前方案尚未证明认证源时钟到渲染闭环，不代表RTP技术不可行。 已定位测试脚本在通话结束前读取仅结束后落库的历史；改读认证live metrics，实际落库已有两个响应的范围。仍待修复后组合验证。 修复后读取live指标为1（同轮汇总），不是两个响应的2；已纠正断言，结束后仍严格要求两响应各自证据。 修复后正式RTC组合1 passed (7.9s)，结束历史严格验证两响应及来源/渲染双锚。"
+    },
+    {
+      "id": "R87-INDEPENDENT-HANDOFF-TRACEABILITY",
+      "status": "Resolved",
+      "summary": "22ID当前矩阵、主任务剩余分类及过时Open项逐项收口已完成，独立评审只读核对通过；见preliminary-r87.md收口附录。非最终验收PASS。",
+      "disclosed_to_user": true,
+      "evidence": "verification/stage-review/preliminary-r87.md"
+    },
+    {
+      "id": "REVIEW-20261026-TRANSCRIPT-SPACING",
+      "status": "Resolved",
+      "summary": "独立段词边界及原文切片修复，Soniox subword不插空格；数字/CJK/已有空格、pending混合与正式原复现回归通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/README.md",
+      "reviewed_failure": "独立复现：TranscriptLedger多个独立英文片段直接拼接，one/two成为onetwo，编号路由失败；跨提交word切片同类问题。",
+      "independent_repair_review": "verification/stage-review/repair-review-r88.md"
+    },
+    {
+      "id": "REVIEW-20261026-FINAL-WORD-COVERAGE",
+      "status": "Resolved",
+      "summary": "跨范围Final先校验全文词覆盖，缺do/not不切片重答，原Final保留；正式适配器提交后回归通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/README.md",
+      "reviewed_failure": "独立复现：resolve_snapshot跨范围Final未检查词级时间覆盖全文，缺do/not的words可将否定Final切片为肯定，错误重答。",
+      "independent_repair_review": "verification/stage-review/repair-review-r88.md"
+    },
+    {
+      "id": "REVIEW-20261026-STALE-SEMANTIC-DEADLINE",
+      "status": "Resolved",
+      "summary": "按D080当前target始终优先于旧Final窗口，2000前不交、无新结果走原2500，窗口不重启。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/README.md",
+      "reviewed_failure": "D-080已由用户确认：修订后采用新Jev目标且保留原最长上限；当前旧Final窗口在新目标2000ms时仍800ms提交，需修复。",
+      "independent_repair_review": "verification/stage-review/repair-review-r88.md"
+    },
+    {
+      "id": "REVIEW-20261026-RTC-RECEIPT-HANG",
+      "status": "Resolved",
+      "summary": "回执3秒有界/abort/close/失败一次、桥接实际interrupt；服务端5秒stop确认未知则永久错误不放行；非阻塞错误遥测；实际正式入口响应丢失+遥测挂起组合通过，不伪造停止或服务端确定错误。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/README.md",
+      "reviewed_failure": "独立复现：RTC播放回执HTTP无超时且串行发送，单次请求悬挂会阻塞后续停止回执；后端持续占用播放槽，Final新答不能播放，仅整通话超时兜底。",
+      "independent_repair_review": "verification/stage-review/repair-review-r88.md"
+    },
+    {
+      "id": "REVIEW-20261026-README-STALE",
+      "status": "Resolved",
+      "summary": "Change README当前已指r88返修、真实软件结果与Open，r87/86仅历史。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/README.md",
+      "reviewed_failure": "Change README仍将r86作为当前增量/原子包，称认证采集锚与RTC E2E待实现，与r87已交包及实际证据矛盾，交接入口应同步。",
+      "independent_repair_review": "verification/stage-review/repair-review-r88.md"
+    },
+    {
+      "id": "REVIEW-20261026-COLLECTION-DISABLED",
+      "status": "Resolved",
+      "summary": "正式页加载/切换正确禁用启用4字段，保存开启16/关闭null及刷新，1440/390通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/README.md",
+      "reviewed_failure": "正式页面关闭编号完整性收集后，目标位数/等待/两提醒字段仍可编辑，保存却丢弃为null；与冻结基线和Delta禁用要求不符。保存本身成功，不是阻止保存问题。",
+      "independent_repair_review": "verification/stage-review/repair-review-r88.md"
+    },
+    {
+      "id": "R88-UI-FIXTURE-INVALID",
+      "status": "Resolved",
+      "summary": "新增完整性UI用例误只填1个Jev选项，正式校验要求至少2项，保存正确被拦；两个视口失败保留。修正fixture，不放宽生产校验。 两选项fixture修正后双视口通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R88-FAILURE-TELEMETRY-BLOCK",
+      "status": "Resolved",
+      "summary": "RTC回执故障调用failCall时先await无截止遥测，可能延迟媒体清理及错误页面；将错误上报改为非阻塞，实际播放先中断/关闭，不伪造停止。 已经正式RTC真实故障红绿证明媒体关闭不等待遥测。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R88-TYPE-NARROWING",
+      "status": "Resolved",
+      "summary": "Final安全切片返回Optional文本，类型检查发现旧str变量直接承接Optional；35项行为回归通过但类型检查未过，需先判None后赋值。 已先判空再赋值，最终实际3.13 mypy79源通过；仅工程类型修复。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R88-NORMAL-RTC-SOURCE-BOUNDS",
+      "status": "Resolved",
+      "summary": "晚到/替换track丢decoded来源的实际SDK红灯已修复：观察点改到原resampler输入，PCM/匹配不变；19相关研发回归、21独立复核、新源码严格冷暖各两响应及重启/1440/390历史通过。r88当次缺native快照无法唯一回溯全部原因，旧失败保留。",
+      "disclosed_to_user": true,
+      "previous_summary": "返修后正常正式RTC播放/停止/Final及播放范围通过，但5秒等待仍缺E2E源范围（live metric 0）；保留失败，不宣称正常组合全通过。需核对本地fixture来源元数据环境和已留日志，不扩大调查或厂商调用。",
+      "evidence": "verification/development-20261026-r89/README.md",
+      "independent_repair_review": "verification/stage-review/repair-review-r89.md"
+    },
+    {
+      "id": "R88-ERROR-DELIVERY-HISTORY-BOUNDARY",
+      "status": "Resolved",
+      "summary": "独立r88复审确认这不是新的已确认规范缺陷：故意阻断错误遥测时后端保留completed/ended_started与未知stop，不能声称已取得确定失败原因；报告与证据原值一致。错误遥测送达可靠性保留为未验证边界，不自行改变正常用户结束语义。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/rtc-fault-evidence/receipt-response-lost-history.json"
+    },
+    {
+      "id": "R89-DIAGNOSTIC-SLOTS-FAILURE",
+      "status": "Resolved",
+      "summary": "首轮fixture探针给slots CallCapture动态赋fixture_input_count，触发AttributeError使observer任务退出；因此该诊断的输入0不构成生产根因证据。修为外部按capture身份计数，再作一次限定确认；原探针失败/误定位已主动更正。 外部sidecar计数离线slots检查及限定诊断通过。有效诊断证明实际观察/同包/源锚能成立；不把旧无效0当根因。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r89/diagnostic-probe-error.txt"
+    },
+    {
+      "id": "R89-LATE-TRACK-PROVENANCE-LOSS",
+      "status": "Resolved",
+      "summary": "晚到/替换track丢decoded来源的实际SDK红灯已修复：观察点改到原resampler输入，PCM/匹配不变；19相关研发回归、21独立复核、新源码严格冷暖各两响应及重启/1440/390历史通过。r88当次缺native快照无法唯一回溯全部原因，旧失败保留。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r89/README.md",
+      "previous_summary": "锁定SDK真实reader晚到音轨及同连接音轨替换两条离线复现均丢td_rtp_input；观察器仅一次包装启动时track，后续SDK实际track未被记录。拟在原生resampler入口观察实际decoded帧，保持原track/PCM/匹配严格。原r88未存native当时快照，不能唯一反推该次全部根因。",
+      "independent_repair_review": "verification/stage-review/repair-review-r89.md"
+    },
+    {
+      "id": "R89-DIAGNOSTIC-STYLE",
+      "status": "Resolved",
+      "summary": "诊断fixture两行超长已换行修复并披露，最终Ruff src/tests通过；首次失败原样保留。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R89-PACKAGE-NPM-PREREQUISITE",
+      "status": "Resolved",
+      "summary": "独立目录缺node_modules前置、离线缓存不全与原npm缓存写权限失败均保留；未改原缓存权限，改/tmp独立缓存按原lock npm ci，不执行脚本、不改依赖版本。随后25客户端及完整构建通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R89-PACKAGE-MISSING-HTML-ENTRIES",
+      "status": "Resolved",
+      "summary": "组包清单已补frontend/demo.html/login.html；独立目录补入与最终清单相同的精确源文件后前端构建通过，126核心后端/25客户端通过；初始遗漏构建失败与assembly-snapshot原清单保留，最终冻结包检查必含两入口。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r89/package-build-missing-entries.txt"
+    },
+    {
+      "id": "RECHECK-R89-VOCAB-HEADER-LAYOUT",
+      "status": "Resolved",
+      "summary": "独立正式页面截图/计算样式确认P2：词表三列表头display:block、16px而冻结为grid、10px，缺少display/font/color/margin样式，标题挤在一起未分列；frontend/src/td-settings.css:43。 r90定向红绿及Chromium/Google Chrome通过；未签完整独立C。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r90/README.md"
+    },
+    {
+      "id": "R90-HEADER-ORACLE-701",
+      "status": "Resolved",
+      "summary": "修复后1440/390/650五场景通过，701失败来自新测试额外要求表头中心落输入范围；冻结原型在701自身相差3px，而正式与冻结坐标完全一致。应按冻结列相对坐标核对，不修改基线或凭此扩大产品布局。 已用与冻结相同的列相对坐标验证，6场景通过，1440保留列中心对应断言。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R90-KEYBOARD-FOCUS-DESTINATIONS",
+      "status": "Resolved",
+      "summary": "新增正式页面真实键盘回归确认：进入Jev后焦点未落可见返回/连接入口；新增词表行后未聚焦新输入。继续核查删除和Sessions drawer打开/Escape的焦点去向，工程修复不改业务规则。 ASR组件抽屉打开同样焦点仍在背景；两视口红灯已记录，补打开/关闭焦点。 r90定向红绿及Chromium/Google Chrome通过；未签完整独立C。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r90/README.md"
+    },
+    {
+      "id": "R90-KEYBOARD-TEST-SELECTOR",
+      "status": "Resolved",
+      "summary": "焦点修复后四条路径通过，增删测试旧行同时有Listen/Delete，泛button定位触发严格多元素错误；测试改明确.td-remove，不改业务代码来迁就测试。 r90定向红绿及Chromium/Google Chrome通过；未签完整独立C。 Sessions等待不能证明生产竞态已修，独立发现后另记R90-SESSIONS-REFRESH-FOCUS。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r90/README.md"
+    },
+    {
+      "id": "R90-SESSIONS-REFRESH-FOCUS",
+      "status": "Resolved",
+      "summary": "独立复审复现列表刷新替换原row后，详情Escape焦点滞留隐藏close；此前等待列表的测试避开该真实窗口，需按会话身份恢复当前row或可见Sessions入口，不能仅算测试时序。 修复按callId恢复重建行/可见入口；独立原复现确认visible:true，最终两视口键盘10通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/stage-review/repair-review-r90.md"
+    },
+    {
+      "id": "R91-LOCAL-SYNTH-EMPTY",
+      "status": "Resolved",
+      "summary": "本地say命令退出0但两个输出均无PCM样本，计划素材校验发现仅剩插入0.8秒静音；不是有效ASR素材，禁止授权或外发。先定位本地合成权限再重新冻结。 本机语音服务权限下重新生成后PCM非空、峰值/格式/样本数检查通过；新素材重新冻结，未外发。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R92-PROBE-MAXIMUM-UNTRIGGERED",
+      "status": "Resolved",
+      "summary": "离线审读新Jev专项执行器发现：第一目标已到Tmax时无旧Final窗口，不能继续声称D080已触发或继续第二步；补明确未触发停止分支。尚无收费调用。 失败回归后补未触发停止，4项离线通过，未作真实场景通过声明。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R92-DOCKER-CONTEXT-INPUTS",
+      "status": "Resolved",
+      "summary": "准备目标Linux镜像时静态确认.dockerignore仅放行frontend/index.html，但Vite还需demo/evaluation/login三HTML；Dockerfile COPY的verify_webrtc_production.py也未放行。标准构建上下文缺必需输入，尚未运行Docker构建。属于构建配置缺陷，不改变原型或默认RTC。 已仅补四个精确放行条目；当前锚定规则静态wildmatch审计4红→4绿，不声称Docker实际构建通过，等待可运行daemon。 r93 Docker原生微型上下文证伪“原来四输入缺失”；Gitwildmatch审计不代表Docker，原结论撤回；四行仅冗余显式化，真正父目录放行过宽另见R93-DOCKERIGNORE-SEMANTICS。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r92/README.md"
+    },
+    {
+      "id": "R93-READONLY-FIXTURE-COPY",
+      "status": "Resolved",
+      "summary": "资源检查容器已创建但未启动：Docker拒绝向只读rootfs执行docker cp。尚未运行Silero或资源场景，不能记失败为产品容量。改用仅测试脚本的只读绑定，不挂载真实DB/Key。 只读绑定后Silero真实模型通过，无网络/1CPU/1GiB，原空容器按自建ID清理。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R93-INTERNAL-NETWORK-PUBLISH",
+      "status": "Resolved",
+      "summary": "新1核1GB容器内部health健康，但Docker internal网络下宿主127.0.0.1:18993拒绝连接（有权限后仍复现），浏览器资源测试未开始。仅定位本机测试网络发布，不是TD/容量失败。 实际Ports为空确认internal网络未发布；只替换自建容器为普通bridge+127.0.0.1发布，应用socket非回环拦截启动自检通过，health200。无旧容器改动。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R93-SAMPLER-LIFESPAN",
+      "status": "Resolved",
+      "summary": "资源通话开始前检查发现临时sampler使用on_event不会在现有FastAPI显式lifespan下运行，尚无采样结果；需在测试wrapper包裹原lifespan，不能用缺失数据算通过。未改生产代码。 包裹原lifespan后采样实际有171条，才启动首个正式用例。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R93-DOCKERIGNORE-SEMANTICS",
+      "status": "Resolved",
+      "summary": "标准构建上下文达176MB，审读发现Gitwildmatch与Docker对父目录否定规则可能不同；r92静态四缺项结论可能不成立，需用不含真实数据的微型Docker上下文实证，暂不以Git审计当Docker排除事实。 原版和加四行版实际Docker输出一致，均包含四输入及frontend/.env、node_modules哨兵，根.env排除。旧缺项归因撤回；真正缺陷是父目录放行过宽，需严格白名单和Docker原生回归。 已移除父目录!放行，只保留具体文件/**与全局.env/node_modules/pycache排除；Docker原生3红6绿→9绿，strict标准镜像构建及资源冷暖复验通过。旧Git测试已替换，未发现真实frontend.env，根.env哨兵始终排除。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R94-FLUX-INTERRUPT-ACK-FENCE",
+      "status": "Resolved",
+      "summary": "准备真实TTS取消时发现静态风险：Flux二进制音频不带speech_id，SDK仅按当前音频context归属，Interrupt到SpeechInterrupted前未见新Speak/旧audio屏障；先做实际适配器离线复现，尚未调用厂商。 实际factory/scopedSDK两条离线复现已失败：旧wire PCM进入新context并获新response身份；新Speak在ack前发出。最初缺voice的测试准备错误另存，不作产品红灯。 已加原取消截止2秒的确认屏障、旧audio/metadata丢弃、单Interrupt及永久失败；actualSDK队列＋原配置回归10通过、相关TTS18通过、mypy79通过；真实厂商取消未测，待严格批次和独立复核。 补审发现同一路径await网络发送会推迟SDK向本地输出传递Interruption，回压失败回归已补；需将有界Interrupt发送任务独立于本地停播，不等待厂商I/O后才传本地控制。 原独立复现已转绿并支持关闭；当前773后端通过、9可选Docker未启用，mypy79/Ruff通过。无真实厂商调用，不代表真实取消或客户端播放通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/stage-review/repair-review-r94.md"
+    },
+    {
+      "id": "R94-INTERRUPT-SENDER-LIFECYCLE",
+      "status": "Resolved",
+      "summary": "独立复审离线复现：ACK先于send/drain完成后新取消覆盖_interrupt_sender，cleanup只join新task，旧task存活并可晚写共享error；需任务集合和代次隔离。未调用厂商。 原独立复现已转绿并支持关闭；当前773后端通过、9可选Docker未启用，mypy79/Ruff通过。无真实厂商调用，不代表真实取消或客户端播放通过。",
+      "disclosed_to_user": true,
+      "evidence": "verification/stage-review/repair-review-r94.md"
+    },
+    {
+      "id": "R96-FIXTURE-EGRESS",
+      "status": "Resolved",
+      "summary": "新混合浏览器测试夹具的授权TCP能力尚未排除UDP connect；仅离线检查发现，尚未启动厂商连接，修复并补失败回归后才允许申请新批。 已限制SOCK_STREAM，原负例先失败后通过；3项离线定向通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R96-BROWSER-LAUNCH",
+      "status": "Resolved",
+      "summary": "本轮正式浏览器离线组合首次未进入页面：Chromium被macOS进程权限拒绝（MachPortRendezvous Permission denied），不是业务验证失败；需放行本地浏览器进程后执行。未调用厂商。 本机进程权限放行后同正式入口组合已通过，端口权限同因。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R96-PROBE-ROUTE",
+      "status": "Resolved",
+      "summary": "新夹具遥测路由被正式SPA兜底路由遮蔽；已将仅测试进程的遥测路由置于兜底前。未改变正式生产路由或页面。待组合确认。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R96-METADATA-IDENTITY",
+      "status": "Resolved",
+      "summary": "已在old_terminal置位前严格匹配首SpeechStarted身份；缺失/空/错误id fail并抛错，独立7项中3个身份负例通过；支持Resolved，未执行真实厂商。",
+      "disclosed_to_user": true,
+      "evidence": "verification/stage-review/preflight-review-r96.md"
+    },
+    {
+      "id": "R96-FAILURE-TEARDOWN",
+      "status": "Resolved",
+      "summary": "已加浏览器try/finally、有界loopback+固定Origin本批stop和关页；只abort/close owned连接，stopped后拒绝新registry/connect/session/Speak。独立7项及正常/故意失败1Speak+stopped=true证据核对相符，支持Resolved。",
+      "disclosed_to_user": true,
+      "evidence": "verification/stage-review/preflight-review-r96.md"
+    },
+    {
+      "id": "GATE2-INTAKE-BROWSER-LAUNCH",
+      "status": "Resolved",
+      "summary": "首次浏览器启动/服务bind权限阻止业务测试；获准本地执行环境后，同一离线正式页面测试1 passed/6.2s，服务已停止。无产品代码修复。",
+      "disclosed_to_user": true,
+      "evidence": "verification/gate2-intake/README.md"
+    },
+    {
+      "id": "G2-02-BROWSER-PROBE-KIND",
+      "status": "Resolved",
+      "summary": "独立浏览器探针普通回复任务类型误写ordinary，修正为normal并按response_id排除开场白后满位通过。初始失败证据保留。另一次证据复制相对目录错误已从仓库根目录重试成功。未修改生产代码。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "G2-02-OVERFLOW-HISTORY",
+      "status": "Resolved",
+      "summary": "已修复无普通提交的编号轮次被旧历史fallback清空：真实编号采集/提醒/跟读事件保留轮次，不造普通提交或指标。2目标红例→8正式组件绿例；原满位/超位实际WS/Worklet/认证历史组合2项通过；独立复审支持关闭。真实厂商/设备不由此通过。 主审独立再次运行原失败断言及历史8项，共10通过/32.2s，确认修复；证据gate2-intake/identifier/reviewer-recheck。",
+      "disclosed_to_user": true,
+      "evidence": "verification/gate2-intake/identifier/history-repair/independent-review.md"
+    },
+    {
+      "id": "G2-CLOSEOUT-STALE-EVIDENCE",
+      "status": "Resolved",
+      "summary": "已同步r96重复任务勾选：r97/D085真实TTS+正式WS浏览器单例早已完成；补充风险摘要当前证据，仍保留真实LLM/完整真实链/设备/其他voice未验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RELEASE-FORMAT-CHECK",
+      "status": "Resolved",
+      "summary": "发布前50文件纯格式修正完成，全部Python AST逐文件比较无变化。lint/mypy通过，完整后端780通过9跳过；发布构建仍待CI。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RELEASE-SAFETY-SCAN",
+      "status": "Resolved",
+      "summary": "确认均为无效测试占位值，改为现有扫描允许的test-前缀；两份重复历史运行脚本和全部审阅tar.gz只保留本地并忽略。干净发布快照安全扫描通过，未放宽扫描规则。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "RELEASE-WHITESPACE",
+      "status": "Resolved",
+      "summary": "diff --check报告历史原始测试日志空白和1处探针行尾空白。探针已修正；原始日志保留不改写，非功能失败，发布源码差异空白检查通过。",
+      "disclosed_to_user": true
+    }
+  ],
+  "unverified_items": [
+    {
+      "id": "JEV-NOT-TESTED",
+      "summary": "Jev正式客户端两条虚构英文文本真实接口测试通过；仅基本连通/概率格式与两例区分，不证明语言效果、P95、真实音频流水线、并发或全部异常兼容。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "ECHO-NOT-TESTED",
+      "summary": "SDK/WS及开发RTC编号仲裁已验证，六模型基本范围external-real通过；真实WPM/物理回声/真人双讲未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "PROTOTYPE-ONLY",
+      "summary": "研发A(r82)与B(r84)已完成正式路由fixture/真实本地API存储矩阵；独立C及真实厂商效果/设备待验证，不以原型冒充。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "ASR-EVENT-MAPPING-STATIC",
+      "summary": "SDK/fixture与r85四家六模型external-real英文数字基本范围通过；真实多场景/重连/WPM/多语种完整覆盖未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "ECHO-AUDIO-CACHE-PROTOTYPE",
+      "summary": "正式缓存发布/双单元试听/间隔/版本隔离/重启及r83公开入口缓存恢复成功失败矩阵已有本地真实API/浏览器证据；真实TTS音质/动态语速实际效果未测。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "TIMESTAMP-LIVE-COVERAGE",
+      "summary": "r84/85四家六模型新固定数字素材基本来源范围/Partial/Final实际通过；真实多场景修订/重连、跨连接时钟/语言效果仍未验证，不扩大单例结论。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "SDD-TDD-SCOPE-PENDING",
+      "summary": "自测范围已由D-045确认；真实费用授权、原型Gate 1及实际实现/自测/独立审核仍待完成，各自保留原未验证项，不将范围确认当作执行通过。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "FINAL-REVISION-RESTART-NOT-TESTED",
+      "summary": "D049同范围首有效Final替换：SDK/WS及受控正式RTC实播取消/新答/r87两响应历史通过；真实厂商LLM/TTS取消残留和硬件弱网未验证。 r94修复Flux取消确认边界/本地控制回压/发送任务代次，actualSDK与独立复核通过；新196字符真实TTS批次待专属授权，真实取消/确认往返延迟、共享原生off组合和实际客户端停播仍未验证。 D084/r95真实Flux单批已验证取消ACK、19200在途旧字节无旧回答输出、新49920样本归新响应；仅TTS SDK，不替代真实浏览器/物理停播或完整ASR/Jev/LLM组合，其他范围保持Open。 2026-10-27收尾校正：r97/D085已验证单voice真实TTS接正式WS浏览器的Final实停与新答接续，先前“待授权/浏览器未测”为历史状态；真实LLM、完整真实链、其他voice和设备弱网仍未验证。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "BROWSER-AEC-RUNTIME-UNVERIFIED",
+      "summary": "AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R3-HISTORY-BROWSER-CHECK",
+      "summary": "已披露：受限沙箱首次浏览器启动失败；允许的本机fixture重跑2项通过。正式历史抽屉1440/390px来源标记及无横向滚动通过，截图已人工查看；不代表完整A/B。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PARALLEL-IDENTIFIER-RESULT-TRUTH",
+      "summary": "已披露并验证：SDK并行提交/清空或替换，回调报告当时当前值/计数/代次，旧状态明确superseded；原操作事实与提供结果分开记录，不伪造回调或客户端确认。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R11-RENDER-CLOCK-CORRELATION",
+      "summary": "D073认证因果双锚已建立WS/开发RTC采集→VAD源端→实际Worklet范围，持久化和重启通过；硬件出声不在证据内，范围宽不代表精确延迟。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R14-EXTERNAL-CREDENTIALS-NOT-PREPARED",
+      "summary": "本地.env Key已在D-053两次真实Jev请求成功使用；未打印/入库/写证据。正式Bot尚未配置、不自动读取该变量；其他调用仍须逐批授权。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R38-JEV-SMOKE-AUTHORIZATION",
+      "status": "Resolved",
+      "summary": "D-053仅两次授权请求已执行，两次ok，无重试；实际jev-1.14.0，756输入token，公开单价估算US$0.000031752，低于US$0.01。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R40-DEEPGRAM-PROBE-PREPARATION",
+      "summary": "旧失败批次保留且不复用授权；后续D075/076三模型基本ASR与D065 one TTS真实成功。旧剩余文本/新场景未执行，范围见r85/22ID矩阵。",
+      "status": "Excluded",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R40-WS-IDENTIFIER-NETWORK-COMBINATION",
+      "summary": "正式WS编号网络组合已通过，源为替身厂商、实际SDK/ASGI/缓存/浏览器WS/Worklet；未扩大为RTC或外部真实效果。",
+      "status": "Resolved",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R45-PUBLICATION-TRANSPORT",
+      "status": "Excluded",
+      "summary": "原r45草稿会话边界保留；r83公开发布入口固定配置/manifest缓存恢复成功与失败继续实际RTC组合已通过。真实厂商/硬件设备未测。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R47-ASR-SYNTHETIC-ACCURACY",
+      "status": "Excluded",
+      "summary": "D-062首条范围兼容通过，但虚构Albert合成英文实际识别明显偏离固定原文（如booking被识别为putty here）；仅一次人工可见错误，不据此报告整体WER、语言/语义效果或真实说话人质量通过。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R53-CANDIDATE-SCOPE",
+      "status": "Excluded",
+      "summary": "r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "D065-TTS-SCOPE",
+      "status": "Excluded",
+      "summary": "D-065只证明flux-alexis-en/24k mono PCM16/one单次真实单元合成。未试听/实播、未测其他文本/音色/采样率/厂商取消或正式缓存/RTC全链；3计费字符不是实际账户美元账单。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R58-PACKET-FLUSH-CANDIDATE",
+      "status": "Resolved",
+      "summary": "D-067原生浏览器实际包级decode+flush及Final/编号组合通过，局部decode-job耗时有真实记录；不证明波形听感、全E2E新增延迟、正式入口或手机。其余范围另列R59-ADOPTION-GAPS。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R59-ADOPTION-GAPS",
+      "status": "Excluded",
+      "summary": "r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R70-LATENCY-MEASUREMENT-BOUNDARY",
+      "status": "Excluded",
+      "summary": "本地同输入有效观测原链41.1ms/候选25.9ms（控制消息→输出探针回调），但原链captureStream额外延迟未校准、n=1，不能解释为改善或精确新增E2E/P95/硬件/手机结论。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R71-FULL-MYPY-BASELINE",
+      "status": "Resolved",
+      "summary": "旧47错误日志保留追溯；当前r78实际无增量Python3.13全src76文件mypy通过。此结论仅实际3.13环境，不声称部署3.11验证。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R77-D073-INTEGRATION-PENDING",
+      "status": "Resolved",
+      "summary": "D-073客户端/Worklet、WS/受控RTC、原响应范围、SQLite及正式双视口中英已接，实际API进程停启通过；完整E2E源端点另列未实现，不以此关闭总体交付。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R78-E2E-SOURCE-END-CLOCK",
+      "status": "Excluded",
+      "summary": "r81 WS及r87开发RTC配置VAD源样本→Worklet E2E范围/两端证据与应用重启通过；硬件ADC/声学、真实厂商效果/手机/弱网未验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R80-INPUT-SOURCE-INTEGRATION",
+      "status": "Resolved",
+      "summary": "r80正式WS/假麦克风与既有Final/回执组合通过；7实际上行包28672样本的源标记、精确offset及span数量经Python protobuf全部验证。源时钟区间与完整E2E尚未实现，继续由R78-E2E-SOURCE-END-CLOCK跟踪。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R81-E2E-CAPTURE-CLOCK",
+      "status": "Resolved",
+      "summary": "r81正式WS认证采集/渲染独立锚、停声源范围冻结、Final两回复范围、原页面双视口与实际API进程重启通过；RTC/设备剩余另由R78-E2E-SOURCE-END-CLOCK跟踪，非全端完成。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R83-PUBLISHED-CACHE-FAILURE-COMBINATION",
+      "status": "Resolved",
+      "summary": "公开发布缓存读取失败→补合成成功→实际播放/停播/后续清空通过；草稿速度1.2不影响固定发布指纹/版本。真实HTTP/SQLite停启证据保存于r83。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r83/README.md"
+    },
+    {
+      "id": "R83-REPAIR-FAILURE-COMBINATION",
+      "status": "Resolved",
+      "summary": "D-074公开固定发布配置补合成失败组合通过：保留编号、失败任务无伪回执、后续采集/清空继续，历史记录resource_failed/job_failed；SDK补部分PCM实际停止协议。仅本地替身，不证明厂商及手机。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r83/README.md"
+    },
+    {
+      "id": "R86-BROWSER-CAPTURE-METADATA",
+      "status": "Resolved",
+      "summary": "当前Chromium正式开发RTC已观察原生captureTime，并以SSRC/RTP timestamp/payload hash匹配4个实际同包、7段processed PCM；时间按20ms递增。只证明此环境前置对应，未建立认证采集锚/端到端范围或手机兼容。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r86/capture-entry/joined-browser-native-source.json"
+    },
+    {
+      "id": "R86-RTC-CAPTURE-ANCHOR-JOIN",
+      "status": "Excluded",
+      "summary": "r87同worker认证采集锚、严格同包processed输入区间、VAD冻结与渲染锚及持久化重启通过；新增旁路延迟/设备兼容/默认采用未验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/current-scenario-matrix-r87.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R87-PY311-TYPING",
+      "status": "Resolved",
+      "summary": "本机Python3.13 NumPy存根语法导致默认3.11目标mypy失败；实际3.13检查79源通过。目标3.11环境仍未验证。 r91在独立实际Python3.11.15环境按锁定依赖：756后端通过，mypy3.11目标79源通过，pip check通过；历史3.13存根失败保留。此关闭不代表Linux1核1GB容量/部署验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r91/README.md"
+    },
+    {
+      "id": "R87-RTC-TIMING-PRECISION",
+      "status": "Excluded",
+      "summary": "本地RTC两响应保守E2E为598–1335ms、815–1841ms，误差边界宽；只证明有界来源关联，不证明精确延迟或低延迟目标达标。新增链路同输入延迟对照仍未验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261025-r87/formal-final-history.json",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R89-ERROR-TELEMETRY-DELIVERY",
+      "status": "Excluded",
+      "summary": "故意阻断客户端错误遥测时，UI实际错误/媒体关闭而服务端仅持有已播与未知stop，顶层可能completed/error_category为空；不承诺后端已取得确定客户端失败原因，不以此伪造failed/stop；独立r88认定非新增确认规范缺陷，完整送达/异常归因效果未验证。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r88/rtc-fault-evidence/receipt-response-lost-history.json",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R89-HISTORICAL-SOURCE-CAUSE",
+      "status": "Excluded",
+      "summary": "r88原来源缺失当时未留server native覆盖快照，无法唯一回溯全部原因；当前已确认并修复晚到/替换track缺陷且严格冷暖和重启通过，不能把无效诊断的0计数当生产事实或断言历史只有一种原因。",
+      "disclosed_to_user": true,
+      "evidence": "verification/stage-review/repair-review-r89.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R93-RESOURCE-SCOPE",
+      "status": "Excluded",
+      "summary": "r93实际Linuxarm64/1CPU1GiB下strict镜像真实Silero静音及两通正式WS替身通过，无OOM；100ms队列采样不证明短暂峰值，真实厂商负载/并发分布/完整真实VAD同跑/RTC资源/手机弱网/成对新增链路延迟/x86_64仍未验证。 r94取消屏障新路径的资源开销尚无实测，r93镜像仅代表其冻结版本。",
+      "disclosed_to_user": true,
+      "evidence": "verification/development-20261026-r93/README.md",
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    },
+    {
+      "id": "R97-PY311-NLTK-RESOURCE",
+      "status": "Resolved",
+      "summary": "本批独立Python3.11运行时未预置既有NLTK punkt_tab路径，启动时尝试下载被安全校验拒绝；固定文本单例通过不证明任意LLM分句兼容。需只用既有本地资源离线核对，不收费重跑。 离线NLTK_DATA显式指向既有.venv/nltk_data后，punkt_tab路径与两句分段通过；未下载/未更改安全开关，不重跑真实批。未来临时环境需明确加载该路径，原本批警告保留。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "G2-02-REAL-REMINDER-PLAYBACK",
+      "status": "Excluded",
+      "summary": "已补满位/超位正式WS浏览器播放组合：实际开播/结束、串行、未播末段跳过、单次提醒已验证（本地厂商替身）。超位历史UI缺陷另见G2-02-OVERFLOW-HISTORY；真实TTS听感、真实ASR/LLM工具选择/设备声学仍未验证。",
+      "disclosed_to_user": true,
+      "previous_status": "Open",
+      "verification_status": "unverified",
+      "release_disposition": "D-088 user accepted residual risk; follow-up online, not technically resolved",
+      "acceptance_decision_id": "D-088"
+    }
+  ],
+  "ui_delivery": {
+    "model": "two-user-gates-three-engineering-checkpoints",
+    "fixture_uses_production_ui": true,
+    "fixture_uses_production_ui_status": "verified by formal routes/components with intercepted fixture adapters; no separate acceptance shell",
+    "production_routes": [
+      "/ (Bot Advanced / TD / Jev)",
+      "/ (ASR component drawer)",
+      "/ (Sessions list/detail)",
+      "/ (Share)"
+    ],
+    "engineering_checkpoints": [
+      "A",
+      "B",
+      "C"
+    ],
+    "user_gate_1": "confirmed",
+    "user_gate_2": "confirmed",
+    "user_gate_1_confirmation": {
+      "date": "2026-10-21",
+      "decision": "D-048",
+      "source": "Current Codex chat, after D-047 cleanup",
+      "quote": "行，这回差不多了。那么User Gate1是不是算完成了",
+      "prototype_version": "v0.14",
+      "prototype_path": "prototypes/index.html",
+      "sha256": "657d49b9abf71c872eeaf7f6ccc0b3dfd96b1e4dc9bcd52bb92f43b0778902b4"
+    },
+    "checkpoint_a": {
+      "status": "developer_fixture_checks_complete",
+      "evidence": "verification/development-20261025-r82/checkpoint-a-matrix.json",
+      "scope": "normal and validation states; fixed desktop/narrow Chromium; approved D-056/D-072/D-073 differences",
+      "independent_review": false,
+      "product_acceptance": false
+    },
+    "checkpoint_b": {
+      "status": "developer_local_api_storage_checks_complete",
+      "evidence": "verification/development-20261025-r84/checkpoint-b-matrix.json",
+      "scope": "same formal components; actual HTTP/SQLite/restart/failure/retry/published-cache combinations; inference and cache synthesis local replacements",
+      "independent_review": false,
+      "product_acceptance": false
+    },
+    "user_gate_2_confirmation": {
+      "date": "2026-10-27",
+      "decision": "D-088",
+      "source": "codex://threads/01a15c6b-12a0-7103-8ac7-8d41556c6731",
+      "quote": "我拍板通过了，这几项我没法在测试环境测。直接上线吧。我去线上测试",
+      "scope": "user risk acceptance; online follow-up; not technical full PASS"
+    }
+  },
+  "documentation_review": {
+    "scope": "Gate 1 confirmation recorded; unique v0.14 prototype frozen, ready for M1.",
+    "evidence": "fixture browser plus static documentation",
+    "production_changes": false,
+    "external_paid_calls": false
+  },
+  "self_test_scope_review": {
+    "status": "confirmed_D-045",
+    "documents": [
+      "verification/self-test-scope.md",
+      "verification/self-test-plan.md",
+      "decisions/playback-decisions.md"
+    ],
+    "checks": [
+      "D-043 recorded and Q-039 removed from open questions",
+      "verify_change.py: exit 0, PASS with 14 warnings; planning structure only, no functional or product acceptance"
+    ],
+    "functional_tests_run": false,
+    "external_calls_made": false
+  },
+  "documentation_reorganization": {
+    "status": "complete",
+    "source_to_destination": {
+      "design-appendix.md": "appendices/behavior-details.md",
+      "asr-event-mapping.md": "appendices/asr-event-mapping.md",
+      "echo-audio-cache.md": "appendices/echo-audio-cache.md",
+      "corrections-and-cautions.md": "appendices/corrections-and-cautions.md",
+      "playback-decisions.md": "decisions/playback-decisions.md",
+      "design-history.md": "history/design-history.md",
+      "design-details.md": "history/design-details.md",
+      "tasks-history.md": "history/tasks-history.md",
+      "self-test-plan.md": "history/review-feedback-20261020.md"
+    },
+    "prototype_sha256_before": "645a450281b013036467da166e82f44c9ad5c2ea995679a110690db45146ce84",
+    "scope": "Documentation only; preserve decisions, original sources, production files and prototype bytes.",
+    "local_markdown_links_checked": 108,
+    "broken_local_links": 0,
+    "prototype_sha256_unchanged": true,
+    "change_gate": "PASS: 0 errors, 15 warnings; planning structure only",
+    "functional_tests_run": false,
+    "independent_implementation_review_run": false
+  },
+  "m0_ownership": "Current reviewing Codex plus user; developer starts M1 after complete Gate 1.",
+  "prototype_candidate_review": {
+    "version": "v0.14",
+    "status": "confirmed_frozen",
+    "user_confirmation": "D-048",
+    "scope": "Synchronize confirmed rules in existing prototype only; no production implementation or external calls.",
+    "browser_check_attempt": "Initial sandbox browser launch failed; allowed local browser execution succeeded. Mobile header overflow corrected and final checks passed.",
+    "sha256": "657d49b9abf71c872eeaf7f6ccc0b3dfd96b1e4dc9bcd52bb92f43b0778902b4",
+    "browser_checks": "verification/prototype-v014/browser-check.json",
+    "changes": "verification/prototype-v014/changes.md",
+    "production_changes": false,
+    "external_calls": false,
+    "local_link_checks": {
+      "status": "previous check; not rerun for this text-only cleanup"
+    },
+    "gate_result": "PASS: 0 errors, 14 pending implementation/verification warnings. User Gate 1 confirmed D-048; User Gate 2 pending.",
+    "latest_revision": "D-047: remove backend/acceptance explanation from settings; keep configuration fields and concise input help."
+  },
+  "development_run": {
+    "round": 78,
+    "scope": "D-073播放范围实际WS/开发RTC/持久化/正式UI闭环；E2E源端时钟未实现，总体交付未完成",
+    "baseline_sha256_verified": true,
+    "latest_decision": "D-073",
+    "external_calls_made": true,
+    "this_round_external_calls_made": false,
+    "external_calls_executed": true,
+    "tests": [
+      "完整后端706 passed/38.99s，随后仅编码器类型注解，RTP8项回归通过",
+      "客户端9项通过；正式历史双视口中英2项通过；原生组件1项通过",
+      "受控正式RTC/Final/回执/范围1通过7.4s；WS1通过6.7s；真实本机API进程重启两会话原样",
+      "Ruff/生产构建通过；无增量Python3.13全src76文件mypy通过；不是部署Python3.11验证"
+    ],
+    "not_ready_for_independent_review": true,
+    "ready_for_stage_review": true,
+    "formal_pipeline_integrated": true,
+    "formal_pipeline_scope": "普通TD/编号工具/WS与受控正式RTC任务回执/缓存与历史已接；默认RTC未替换，精确跨钟指标未实现",
+    "ui_checkpoints_AB_complete": false,
+    "functional_tests_run": true,
+    "production_changes": false,
+    "report": "verification/self-test-report.md",
+    "evidence": "verification/development-20261025-r78/",
+    "final_candidate_frozen": false,
+    "review_repair": "r88: B1/B2/B3/RTC/P2 UI/README under repair; no external calls"
+  },
+  "delivery_milestones": [
+    {
+      "id": "R1",
+      "title": "RTC播放闭环",
+      "status": "local_core_verified_platform_and_adoption_pending",
+      "depends_on": [],
+      "completed": [
+        "D-052原音轨旧队列取消修复；r19 SDK与r20正式RTC旧答截短/Final接续证据",
+        "WS逐任务播放/停止回执和编号仲裁已有实现，不冒充RTC",
+        "D-060隔离真实来源账本/编码原PTS/RTP payload hash/解码坐标留证，未证明实际渲染，不作为R1通过",
+        "D-067隔离候选实际映射、Final旧stop后新完整播放、编号续说/提问排队/清空真实终态放行通过",
+        "r68正式public RTC Final实际停播/新答接续/manifest/鉴权历史通过",
+        "r69正式public RTC编号续说/提问排队/清空停播/旧echo隔离通过",
+        "r70同输入本地输出对照与误差/兼容风险报告",
+        "r78受控RTC实际任务播放范围；r81正式WS源样本E2E区间和实际API进程重启通过，不扩展为RTC源端。",
+        "r86真实native decoder/resampler输入坐标旁路与浏览器reported captureTime同包对应4包/7段，正式RTC/Final仍通过；无认证RTC E2E。"
+      ],
+      "blockers": [
+        {
+          "id": "R1-PLATFORM",
+          "summary": "正式RTC核心组合/播放范围本地通过；默认采用、RTC上行源时钟/同输入新增延迟、真实重连/弱网/手机仍缺。D-073接受有证据范围，不再以精确单值作为未确认门槛。",
+          "done_when": "报告已交；正式采用遵循D-064/D-068用户决定，平台/时钟边界有真实证据或用户明确接受风险"
+        }
+      ],
+      "exit_condition": "全部组合场景满足P01-P11及D-049；否则交有证据的能力限制和最小替代方案，暂停受影响架构实现，不能标完成",
+      "deliverable": "r68/r69正式RTC核心组合、r70同输入仪器对照及局限",
+      "bounded_probe_authorization": "D-054/D-060 stopped historically; D-064 limited candidate, D-066 diagnostic, D-067 finite repair confirmation consumed",
+      "bounded_probe_result": "D-071短开场真实manifest与实际渲染一致；D-068正式Final/编号组合通过",
+      "next_action": "认证同worker源时钟锚→严格有界回填→VAD源端冻结→同正式入口RTC E2E范围/API重启；不扩架构、不猜值或默认采用"
+    },
+    {
+      "id": "R2",
+      "title": "真实厂商兼容性",
+      "status": "six_model_basic_ranges_verified_full_matrix_pending",
+      "depends_on": [
+        "R1（不阻塞授权清单准备）"
+      ],
+      "completed": [
+        "D-053两条虚构文本Jev真实请求成功，授权已用完",
+        "D-055首条Flux英文真实连接返回转写，但范围归一化失败，按停止条件终止整批；结果已留证",
+        "D-057定位Flux重叠词误拒、D-059确认后发现ULP边界误拒，两项已离线修复；D-058 TTS首条超时停止，实际兼容仍失败/未验证",
+        "三段虚构合成音/hash、Deepgram ASR9连接及TTS3文本精确计划/费用守卫已准备；r43已提出新的两批独立授权，等待答复，未重放旧批次。",
+        "D-062新批次实际2连接：Flux英文continuation范围成功、digits精度边界失败后停；D-063新TTS首连接失败后停，SDK尾空格与精确文本守卫冲突已离线复现/修复，无真实重跑。",
+        "D-065实际TTS one单例成功（3字符/0.72秒PCM），未证明其他文本或取消",
+        "ASR冻结原音频已消失，新生成数据hash不同且未获新授权，不能重用旧批次",
+        "D-062 Flux英文continuation真实范围兼容通过，digits样本边界失败停批；已离线修复但未新外呼。D-065 one/24k单声道PCM16单次真实TTS成功，其余文本/型号/取消未证。",
+        "r84/r85 D075–079四家六模型同一数字素材基本范围/Partial/Final真实通过；独立单批授权全部消费，不证明完整重连/效果。"
+      ],
+      "blockers": [
+        {
+          "id": "R2-SCOPE",
+          "summary": "既有批次授权均已使用且不得重放；原ASR WAV已缺失，替换素材需新hash/范围/费用/停止条件及单独授权，其他厂商同样逐批。",
+          "done_when": "每批记录文件hash/内容/时长、厂商模型、最大次数/计费单位/费用上限、停止条件及用户明确授权；执行无扩量/重试"
+        },
+        {
+          "id": "R2-COMPAT",
+          "summary": "Flux continuation及TTS one已有单次真实成功；digits修复确认、其余ASR目标/重连与TTS其他文本/取消仍无外部实证。",
+          "done_when": "逐模型报告原始事件→范围/修订→TD结果；TTS采样率/格式/取消残留和缓存结果有真实证据，失败修复后新批授权再测"
+        }
+      ],
+      "exit_condition": "授权范围内每个目标明确通过/失败/未验证，禁止将fixture当真实兼容",
+      "deliverable": "逐批原始脱敏证据及vendor-integration-batches；D-062/D-065已分别部分成功，失败停止和未执行项分列，不再称所有TTS均未证明。",
+      "next_action": "只补真实修订/重连/语言效果及完整取消矩阵的新场景；先冻结数据/费用/守卫，不重复已过基本单例。"
+    },
+    {
+      "id": "R3",
+      "title": "完整自测与独立审核输入包",
+      "status": "in_progress",
+      "depends_on": [
+        "R1",
+        "R2"
+      ],
+      "completed": [
+        "正式路由fixture与本地真实API、历史持久化和WS实际Worklet已有部分证据",
+        "正式WS编号缓存/受控清空/实际Worklet回执完整网络组合通过",
+        "历史矛盾回执拒绝及旧turn真实渲染原因修复；合法网络乱序保留",
+        "UI B保存/失败/缓存/隔离/语言及真实进程重启通过；UI A历史五状态双视口已对齐；Q-044随后由D-056关闭",
+        "D-056批准单一Key复选框差异后，正式页面六状态1440/390px对照2项通过；仅此A子矩阵，不代表完整UI/独立审核",
+        "连接接收任务原epoch与SDK底层重试入口已隔离；本地正式协调器拒绝旧连接文本，相关128项通过",
+        "正式配置六状态×中英×1440/390px留证，静态英文残留修复，含键盘/设置请求5项通过；不代替整体Checkpoint A/C",
+        "D-061未知来源持久化/同快照截止前恢复/截止失败结束已接正式WS/API/SQLite；681项本地后端通过，真实ASR未因此视为通过。",
+        "r43失败通话无用户轮次历史遗漏已修；r44旧会话/逐轮中英/1440与390px四项回归通过，截图不再覆盖旧证据。",
+        "r45缓存恢复历史字段漏显/耗时误标修复；正式本地WS一次SDK补合成→Worklet开播/清空停播→中英历史通过，不代表发布RTC入口。",
+        "r46无连接上下文回调不借用当前epoch，原文未归属保留；新连接不掩盖缺口并按D-061失败，2项先红、完整后端683通过。",
+        "r71候选后端完整698通过、lint/build通过；相关正式UI fixture和旧Bot路径定向闭环，Q-047窄屏共用壳差异待确认",
+        "全src类型47项均在隔离HEAD基线复现；本Change相关模块4项检查通过，未称全仓绿",
+        "r81 WS E2E范围、两端源跨度/锚审计与实际API进程重启；r82正式固定fixture Checkpoint A完整主要矩阵闭环，见checkpoint-a-matrix.json。",
+        "r83完整后端715及当前UI25；r84 Checkpoint B真实本地API/存储矩阵闭合",
+        "r85核对具体JUnit和r83后核心源hash无变，8项实现任务证据补勾，六模型基本外部矩阵已齐"
+      ],
+      "blockers": [
+        {
+          "id": "R3-SOURCE",
+          "summary": "六模型同一数字素材基本来源范围/Partial/Final真实通过；实际多场景修订/重连和跨连接绝对时钟仍缺。",
+          "done_when": "来源范围和重连验收矩阵无丢文/串轮/重复提交；无法可靠归属明确保留未知，不猜时间"
+        },
+        {
+          "id": "R3-UI",
+          "summary": "A研发fixture与B真实本地API/存储矩阵已闭合；剩独立C、设备/跨浏览器，不重复已过配置状态。",
+          "done_when": "最终候选独立功能/可访问性/视觉审查及设备兼容，不能开发Agent自签"
+        },
+        {
+          "id": "R3-METRICS",
+          "summary": "WS源/渲染区间已有证明；r86 RTC同包上行来源/processed PCM已证明，但认证采集锚/回填/候选VAD冻结与RTC E2E仍未实现，硬件/跨连接/设备仍缺。",
+          "done_when": "每项指标公式/时钟/来源可追溯；真实可计算值有端到端证据，不可计算值保留缺失原因；既有数值不伪改"
+        },
+        {
+          "id": "R3-REGRESSION",
+          "summary": "r86新开发候选源代码相关16后端/18客户端及正式RTC新路径通过；独立16/6定向核查无新增缺陷。旧r83完整715不是当前全量；待E2E候选收敛后统一回归。",
+          "done_when": "Delta场景→正式路径→测试→结果→证据逐项映射，现有相关检查一次统一执行；缺陷闭环后才复跑受影响项"
+        }
+      ],
+      "exit_condition": "自测包包含实现范围、实际运行版本/命令/结果、证据、未验证范围和回退；门禁通过，交独立评审，不自填PASS/Gate2",
+      "deliverable": "verification/self-test-report.md、task-evidence-matrix.md、ui-checklist.md及handoff.md"
+    }
+  ],
+  "stage_review": {
+    "status": "prepared_for_early_review",
+    "purpose": "user-requested blocker convergence and implementation/evidence inspection, not final independent acceptance",
+    "entry": "verification/stage-review/README.md",
+    "blocker_report": "verification/stage-review/blocker-report.md",
+    "vendor_analysis": "verification/stage-review/vendor-analysis.md",
+    "source_snapshot": "verification/stage-review/snapshot.json",
+    "review_input_copy": "verification/stage-review/review-inputs.tar.gz",
+    "reviewer_result": "not_performed",
+    "independent_pass": false,
+    "checkpoint_C": false,
+    "user_gate_2": false,
+    "product_question": "Q-046",
+    "no_new_paid_authorization_requested": true,
+    "later_development": {
+      "entry": "verification/development-20261023-r49/README.md",
+      "patch_against_sealed_inputs": "verification/development-20261023-r49/delta-from-stage.patch",
+      "original_archive_unchanged": true,
+      "current_tree_differs": true,
+      "final_acceptance": false
+    },
+    "followup_preparation": {
+      "entry": "verification/development-20261023-r50/README.md",
+      "status": "offline_only",
+      "old_authorized_batches_unusable": true,
+      "new_fee_request": false
+    },
+    "followup_ui_repair": {
+      "round": 51,
+      "evidence": "verification/development-20261023-r51/README.md",
+      "checkpoint_AB_complete": false
+    },
+    "reconstruction_check": {
+      "evidence": "verification/development-20261023-r52/reconstruction-check.json",
+      "patches_apply": true,
+      "changed_source_files_match": 11,
+      "independent_review": false
+    },
+    "rtc_combination_followup": {
+      "status": "failed_stopped",
+      "evidence": "verification/development-20261024-r54/README.md",
+      "candidate_adopted": false
+    },
+    "tts_one_confirmation": {
+      "decision": "D-065",
+      "status": "single_scope_external_success",
+      "evidence": "verification/development-20261024-r57/README.md",
+      "full_vendor_milestone_complete": false
+    },
+    "rtc_coordinate_diagnosis": {
+      "decision": "D-066",
+      "root_cause_confirmed": true,
+      "runtime_fix_verified": false,
+      "evidence": "verification/development-20261024-r58/README.md"
+    },
+    "rtc_fixed_candidate_confirmation": {
+      "decision": "D-067",
+      "status": "isolated_local_passed",
+      "formal_entry_complete": false,
+      "adoption_approved": false,
+      "evidence": "verification/development-20261024-r59/README.md"
+    },
+    "latest_package": "verification/development-20261025-r78/review-package/review-inputs.tar.gz",
+    "preliminary_independent_report": "verification/stage-review/preliminary-d073.md",
+    "package_reproduction": {
+      "backend": "46 passed/2.18s in first extracted package",
+      "client": "9 passed in complete extracted package",
+      "backend_inputs_identical_across_package_fix": true,
+      "scope": "changed code and direct impact only; same installed Python environment, no private customer fixtures or paid calls",
+      "evidence": "verification/development-20261025-r78/review-package/",
+      "final_independent_review": false
+    }
+  },
+  "external_call_proposals": [
+    {
+      "batch_id": "deepgram-td-asr-digits-confirmation-v1",
+      "plan": "verification/deepgram-asr-digits-confirmation-plan.json",
+      "status": "prepared_not_requested",
+      "calls": 1,
+      "data": "Pinned digits synthetic WAV5.1675s plus3s silence, Flux English only, connection<=30s",
+      "proposed_cost_ceiling_usd": "0.02",
+      "prerequisites": "Stage technical review of r49; historical public price reference must be reverified before an authorization request; no existing grant may be reused"
+    },
+    {
+      "batch_id": "deepgram-td-tts-one-confirmation-v1",
+      "plan": "verification/deepgram-tts-one-confirmation-plan.json",
+      "status": "executed_completed",
+      "calls": 1,
+      "data": "one, 3 characters; flux-alexis-en,24kHz mono PCM16,15s deadline",
+      "proposed_cost_ceiling_usd": "0.02",
+      "prerequisites": "Stage review of exact text/guard/protocol path; reverify price before requesting new authorization; no existing grant reuse",
+      "pricing_recheck_evidence": "verification/development-20261024-r55/price-recheck.json",
+      "asr_not_in_this_request": true,
+      "authorization_decision": "D-065",
+      "result_evidence": "verification/development-20261024-r57/external-results.jsonl"
+    }
+  ],
+  "continuation_blocked_audit": {
+    "status": "cleared_by_user",
+    "decision": "D-068"
+  },
+  "rtc_candidate_authorization": {
+    "decision": "D-064",
+    "status": "confirmed",
+    "formal_adoption": false,
+    "paid_calls": false,
+    "datachannel_audio": false,
+    "stop_on_unproven_mapping": true,
+    "mapping_evidence": "verification/development-20261024-r53/mapping-summary.json",
+    "mapping_status": "fixed_native_decode_job_passed",
+    "final_cancel": "isolated_real_renderer_passed",
+    "identifier_arbitration": "isolated_real_renderer_passed",
+    "combination_status": "isolated_local_passed",
+    "stop_reason": "decode_coordinate_unproven",
+    "further_runs_authorized": false,
+    "diagnostic_proposal": "verification/development-20261024-r54/local-diagnostic-proposal.json",
+    "diagnostic_authorized": false,
+    "root_cause_status": "confirmed_from_D066",
+    "offline_fix": "packet_decode_flush_job_ownership",
+    "repair_confirmation_authorized": false,
+    "repair_confirmation_proposal": "verification/development-20261024-r58/repair-confirmation-proposal.json"
+  },
+  "direction_check_20261024": {
+    "scope": "limited direction review; not final independent acceptance",
+    "report": "verification/stage-review/direction-check-20261024.md",
+    "tests": "ASR transcript and normalization 61 passed in 1.13s",
+    "new_confirmed_defects": 0,
+    "unverified": "RTC candidate, repaired real ASR/TTS, full UI/network/device/whole-package regression",
+    "external_calls": false
+  },
+  "rtc_diagnostic_authorization": {
+    "decision": "D-066",
+    "status": "confirmed",
+    "execution_status": "completed_stopped_at_first_mismatch",
+    "max_connections": 1,
+    "media_seconds_max": 1,
+    "cost_ceiling_usd": "0.00",
+    "scope": "verification/development-20261024-r54/local-diagnostic-proposal.json",
+    "source": "User 授权 immediately after r57 final RTC diagnostic-only pending request",
+    "formal_adoption": false,
+    "paid_vendor_calls": false,
+    "claim_evidence": "verification/development-20261024-r58/diagnostic-claimed.json",
+    "actual_connections": 1,
+    "result": "observed_timestamp_1253499_pending_1253500_rate48000_samples960",
+    "evidence": "verification/development-20261024-r58/decoder-diagnostic.json"
+  },
+  "rtc_repair_confirmation_request": {
+    "status": "confirmed",
+    "proposal": "verification/development-20261024-r58/repair-confirmation-proposal.json",
+    "max_connections": 3,
+    "source_media_seconds_max": 5,
+    "paid_calls": false,
+    "decision": "D-067"
+  },
+  "rtc_repair_confirmation_authorization": {
+    "decision": "D-067",
+    "status": "confirmed",
+    "execution_status": "completed",
+    "connections_max": 3,
+    "source_media_seconds_max": 5,
+    "cost_ceiling_usd": "0.00",
+    "stop_first_failure": true,
+    "scope": "verification/development-20261024-r58/repair-confirmation-proposal.json",
+    "confirmation_quote": "允许这批本地修复确认（推荐）",
+    "source": "request_user_input_async call_b582248f1f024c22a6c81199cc2dfcac item0",
+    "formal_adoption": false,
+    "actual_connections": 3,
+    "mapping_gate": "passed",
+    "results": [
+      "mapping_passed",
+      "final_passed",
+      "identifier_passed"
+    ],
+    "evidence": "verification/development-20261024-r59/combination-summary.json"
+  },
+  "formal_entry_integration_request": {
+    "status": "authorized_in_progress_after_short_mapping_repair",
+    "decision": "D-068",
+    "source": "call_8e0902bad4bb42be977e1fa1f22b39cf item 0",
+    "quote": "允许受控正式入口集成（推荐）",
+    "scope": "development only; formal route/authenticated receipts/history; same-input latency comparison",
+    "default_replacement": false,
+    "paid_calls": false,
+    "deployment": false,
+    "progress": "formal Final and identifier combinations local-real passed; same-input latency comparison, restart/compatibility and candidate delivery remain incomplete"
+  },
+  "rtc_formal_diagnostic_request": {
+    "status": "consumed_stopped_first_failure",
+    "decision": "D-069",
+    "source": "call_2afda2084c644c06a8f54383fafd5f1d item 0",
+    "quote": "允许这次有限本地定位（推荐）",
+    "connections": 1,
+    "source_seconds": 2,
+    "retry": false,
+    "cost_usd": 0,
+    "result": "packet_deadline; 51 mappings, 0 encoded input, 0 decoded; stopped",
+    "evidence": "verification/development-20261025-r64/README.md"
+  },
+  "formal_entry_build_validation": {
+    "evidence": "verification/development-20261024-r63/README.md",
+    "build": "passed",
+    "targeted_mypy": "passed",
+    "existing_pipeline_and_receipt_regression": "12 passed",
+    "rtc_execution": "not run; diagnostic authorization pending"
+  },
+  "rtc_diagnostic_blocked_audit": {
+    "status": "cleared_by_D-069"
+  },
+  "rtc_delivery_diagnostic_request": {
+    "status": "consumed_stopped_first_failure",
+    "decision_id_reserved": "D-070; not confirmed",
+    "data": "same synthetic opening PCM 2400 samples/24kHz plus native silence; no transcription inference",
+    "receiver": "local machine only",
+    "connections_max": 1,
+    "source_media_seconds_max": 2,
+    "cost_usd": 0,
+    "retry": false,
+    "stop": "first mapping failure immediately closes; no Final/identifier combination",
+    "added_evidence": [
+      "completed native RTP send count after await",
+      "browser inbound audio packet/byte count and codec MIME before close",
+      "native audio sink paused/muted/ready state",
+      "existing transform packet/decoded counters"
+    ],
+    "no_architecture_or_tolerance_change": true,
+    "decision": "D-070",
+    "source": "call_354a271fc0cf4f9aa2be429369588cbf item 0",
+    "quote": "允许本批分界定位（推荐）",
+    "result": "send completed51; received48 Opus packets/2620bytes/lost0; sink running; transform packets0",
+    "evidence": "verification/development-20261025-r66/README.md"
+  },
+  "direction_check_20261025": {
+    "scope": "read-only code/evidence direction check; not final independent acceptance",
+    "report": "verification/stage-review/direction-check-20261025.md",
+    "current_evidence": "r59 isolated three gates passed; r64 formal encoded input zero; integration remains blocked",
+    "tests_rerun": false,
+    "external_calls": false,
+    "latest_followup": "r67 formal short-task start/finish proven; r68 Final evidence in progress, UI assertion and bounded ledger lifetime remain Open; direction appropriate, no new independent runtime tests."
+  },
+  "rtc_delivery_diagnostic_blocked_audit": {
+    "status": "cleared_by_D-070"
+  },
+  "rtc_transform_order_repair": {
+    "status": "native_short_opening_verified",
+    "change": "install transform immediately after SDK initial audio transceiver creation before SDP; remove native analyzer from future confirmation",
+    "evidence": "verification/development-20261025-r66/README.md",
+    "new_execution_authorized": false
+  },
+  "rtc_transform_order_confirmation": {
+    "status": "consumed_actual_playback_verified_recorded_audit",
+    "decision": "D-071",
+    "source": "call_132970f8b8d04c8d839a9eb5371808d0 item 0",
+    "quote": "允许这次安装顺序修复确认（推荐）",
+    "connections": 1,
+    "source_seconds_max": 2,
+    "cost_usd": 0,
+    "retry": false,
+    "evidence": "verification/development-20261025-r67/recorded-manifest-audit.json",
+    "original_browser_test": "failed hardcoded extent; preserved"
+  },
+  "formal_entry_final_combination": {
+    "status": "local_real_passed",
+    "evidence": "verification/development-20261025-r68/formal-final-passed.txt",
+    "scope": "formal page; mock inference; real RTP/renderer/auth receipts/persisted history; no providers"
+  },
+  "formal_entry_identifier_combination": {
+    "status": "local_real_passed",
+    "evidence": "verification/development-20261025-r69/formal-identifier-passed.txt",
+    "scope": "formal public page/publish cache; local ASR/LLM/TTS replacements; real RTC/renderer/auth API/history"
+  },
+  "formal_entry_latency_comparison": {
+    "status": "local_instrumented_comparison_completed_with_limitations",
+    "evidence": "verification/development-20261025-r70/README.md",
+    "precise_added_e2e_verified": false
+  },
+  "candidate_local_regression": {
+    "evidence": "verification/development-20261025-r83/README.md",
+    "backend": "715 passed, 5 warnings, 37.90s; subsequent ASR Escape-only JS delta separately verified",
+    "frontend": "25 formal fixture/component cases; public RTC repair success and failure one each; real history HTTP recovery 2+2; navigation 2",
+    "lint": "Ruff src/tests passed",
+    "build": "passed current source",
+    "owned_mypy": "4 modules passed",
+    "full_mypy": "Success: no issues found in 77 source files; Python3.13; 3.11 deployment unverified",
+    "independent_review": "r83 independent stage BLOCKED; not final acceptance; no new implementation defect found"
+  },
+  "source_clock_e2e": {
+    "phase": "ws-local-real-verified-rtc-source-pending",
+    "evidence": "verification/development-20261025-r81/README.md",
+    "external_calls": false,
+    "independent_review": "not_final_reviewed"
+  },
+  "current_stage_review": {
+    "evidence": "verification/development-20261025-r83/README.md",
+    "scope": "implementation and self-test snapshot; incomplete scope explicit; not final acceptance",
+    "paid_calls_this_round": 0,
+    "checkpoint_b": "r84 developer local API/storage matrix complete; independent C/whole Change still BLOCKED",
+    "configuration_b_increment": "8 paths passed: 7 in config-b-fixed plus cache preview 1 in config-b-ordinary-ready; process restart actual failed history exact. Full B audit not yet declared.",
+    "status": "BLOCKED",
+    "report": "verification/independent-review.md",
+    "new_implementation_defects": 0,
+    "independent_worktree_checks": "9 passed 1.03s",
+    "independent_extracted_checks": "9 passed 0.72s",
+    "checkpoint_c": false,
+    "user_gate_2": false
+  },
+  "pending_fresh_asr_confirmation": {
+    "status": "consumed_completed",
+    "plan": "verification/deepgram-fresh-digits-confirmation-plan.json",
+    "request_sha256": "9ca5f2e2c4fad0e811d67ac63b22d05ab2e1ac1c0a3044bb8b81ee02aa10d2ec",
+    "scope": "new synthetic digits 5.1675s plus 3s silence; Deepgram Flux English; one connection <=30s; no retry; stop first error or missing range",
+    "cost_ceiling_usd": "0.02",
+    "reason": "saved D062 failure fixed offline; original authorized audio unavailable, replacement must be independently authorized",
+    "decision": "D-075",
+    "result": "ok"
+  },
+  "pending_remaining_deepgram": {
+    "status": "consumed_completed",
+    "plan": "verification/deepgram-remaining-models-plan.json",
+    "request_sha256": "45eeec12974c070878819db599b4765d3f7c42da1cf240f579ab5bd4e5e4b4ce",
+    "max_calls": 2,
+    "cost_ceiling_usd": "0.02",
+    "scope": "same new pinned digits, Flux multilingual and Nova3 English; first failure stops all; no retries; no passing English Flux repeat",
+    "decision": "D-076",
+    "statuses": [
+      "ok",
+      "ok"
+    ]
+  },
+  "vendor_compatibility_latest": {
+    "evidence": "verification/development-20261025-r85/six-model-basic-compatibility.json",
+    "level": "external-real",
+    "deepgram_english_flux": "D075 1 connection18 events source ranges ok",
+    "deepgram_multilingual_flux": "D076 1 connection18 events source ranges ok",
+    "deepgram_nova3_english": "D076 1 connection7 events source ranges ok",
+    "tts_one": "D065 PCM24k mono passed",
+    "remaining": "actual revision/reconnect matrix, quality/performance/full chain and full TTS/cancel",
+    "do_not_replay_consumed_grants": true,
+    "assemblyai": "D077 fixed3.5 English 1 connection13 events ok",
+    "speechmatics": "D078 Enhanced English 1 connection14 events ok",
+    "soniox": "D079 v5 English hints 1 connection 18 source events ok",
+    "phase": "six_model_basic_source_ranges_passed_full_matrix_unverified"
+  },
+  "current_review_package": {
+    "status": "developer_handoff_ready_after_six_repairs_and_source_fix",
+    "path": "verification/development-20261026-r89/review-package",
+    "scenario_matrix": "verification/current-scenario-matrix.md",
+    "delta_scenarios": "verification/delta-scenario-map.md",
+    "remaining_scope": "verification/development-20261026-r89/README.md",
+    "independent_review": "verification/stage-review/repair-review-r89.md",
+    "independent_pass": false,
+    "isolated_reproduction": "verification/development-20261026-r89/package-reproduction-check.json"
+  },
+  "pending_assemblyai_single": {
+    "status": "consumed",
+    "plan": "verification/assemblyai-single-digits-plan.json",
+    "request_sha256": "95a9f76c14329c4f349ef0ea51093470627bb0cfdbd78f0eacb199b17a4ad435",
+    "max_calls": 1,
+    "cost_ceiling_usd": "0.02",
+    "scope": "fixed universal-3-5-pro English, same synthetic5.1675s+3s silence; <=30s; first error/missing range stops; no retry",
+    "decision": "D-077",
+    "result": "ok"
+  },
+  "pending_speechmatics_single": {
+    "status": "consumed",
+    "plan": "verification/speechmatics-single-digits-plan.json",
+    "request_sha256": "e6b441f523d565fda1c93d3f9e241ee25464873343941c99428b093909d92776",
+    "max_calls": 1,
+    "cost_ceiling_usd": "0.02",
+    "scope": "enhanced English same synthetic digits5.1675s+3s silence; one<=30s; eu2.rt.speechmatics.com; first error or range gap stop",
+    "decision": "D-078",
+    "result": "ok"
+  },
+  "pending_soniox_single": {
+    "status": "consumed",
+    "plan": "verification/soniox-single-digits-plan.json",
+    "request_sha256": "be727c61f699bd59c443273f68aa7ad717467c99897187f76e3eeb130f96a907",
+    "max_calls": 1,
+    "cost_ceiling_usd": "0.02",
+    "budget": "estimated reserve USD0.018, not a vendor-enforced account cap; 1000 reported tokens including revisions triggers stop; fixed input/30s",
+    "scope": "stt-rt-v5 English hints, same synthetic5.1675s+3s silence; stt-rt.soniox.com only; no context/translation",
+    "decision": "D-079",
+    "result": "ok"
+  },
+  "stage_review_r85": {
+    "status": "BLOCKED_whole_change",
+    "report": "verification/stage-review/preliminary-r85.md",
+    "new_implementation_defects": 0,
+    "evidence_wording_issue": "Resolved and independently rechecked",
+    "independent_offline_checks": "25 passed /4.43s",
+    "independent_checkpoint_c": false,
+    "user_gate_2": false
+  },
+  "rtc_ingress_current": {
+    "status": "local_real_strict_cold_warm_and_restart_pass",
+    "evidence": "verification/development-20261026-r89/README.md",
+    "default_adoption": false,
+    "physical_capture_or_sound_proven": false
+  },
+  "stage_review_r86": {
+    "status": "BLOCKED_whole_change",
+    "report": "verification/stage-review/preliminary-r86.md",
+    "new_implementation_defects": 0,
+    "independent_checks": "16 backend/1.05s and 6 relevant client tests",
+    "verified_scope": "same-packet native capture metadata to decoder/resampler provenance only; not authenticated RTC E2E",
+    "independent_checkpoint_c": false,
+    "user_gate_2": false
+  },
+  "independent_review_20261026": {
+    "result": "BLOCKED",
+    "report": "verification/independent-review.md",
+    "confirmed_implementation_findings": 5,
+    "documentation_findings": 1,
+    "new_decision": "D-080 confirmed",
+    "backend_tests": "739 passed; reviewer regression probes 3 failed",
+    "frontend_unit_tests": "20 passed",
+    "checkpoint_c": false,
+    "user_gate_2": false
+  },
+  "rtc_source_gap_diagnostic": {
+    "status": "complete_with_invalid_first_probe_preserved_and_source_fix_reviewed",
+    "scope": "One loopback production RTC connection; 15 second test timeout; at most 16 metadata-only candidate snapshots; no external providers/audio/customer data; unchanged production mapping; diagnose r88 source gap, not replay old D069/070/071",
+    "evidence": "verification/development-20261026-r89/",
+    "diagnostic_connections": 2,
+    "invalid_probe_connections": 1,
+    "strict_confirmation_connections": 2,
+    "paid_calls": 0
+  },
+  "stage_review_r89": {
+    "status": "no_new_confirmed_implementation_defect_current_source_gap_closure_supported",
+    "evidence": "verification/stage-review/repair-review-r89.md",
+    "full_product_acceptance": "insufficient_evidence",
+    "checkpoint_c": false,
+    "user_gate_2": false
+  },
+  "r89_user_requested_recheck": {
+    "date": "2026-10-26",
+    "result": "BLOCKED",
+    "previous_six_findings": "Resolved; independently rechecked",
+    "new_findings": [
+      "RECHECK-R89-VOCAB-HEADER-LAYOUT"
+    ],
+    "backend": "756 passed /39.02s",
+    "client": "25 passed",
+    "ui": "19 passed; manual visual comparison found header mismatch",
+    "source_hashes": "235 source/frontend/tests files match r89 snapshot",
+    "checkpoint_c": false,
+    "user_gate_2": false,
+    "report": "verification/independent-review.md"
+  },
+  "r90_ui_repair": {
+    "header_fixture": "6 passed; frozen comparison zh/en 1440/390 +650/701",
+    "keyboard_fixture": "10 passed Chromium including list-refresh identity regression",
+    "chrome_fixture": "14 passed initial combination + 4 affected Sessions after identity repair",
+    "build": "passed",
+    "paid_calls": 0,
+    "prototype_sha256": "657d49b9abf71c872eeaf7f6ccc0b3dfd96b1e4dc9bcd52bb92f43b0778902b4",
+    "vendor_plan": "verification/vendor-specialist-test-plan.md",
+    "device_plan": "verification/device-performance-test-plan.md",
+    "independent_review": "limited increment no remaining confirmed defect; whole Change INSUFFICIENT EVIDENCE; stage-review/repair-review-r90.md",
+    "scope": "CSS and focus repair; no backend/media changes; previous six issues remain independently closed"
+  },
+  "r91_environment_and_vendor_preparation": {
+    "python311": "actual Python3.11.15 isolated env: pip check passed; 756 backend passed/9 dependency warnings/67.20s; mypy target3.11 79 source files passed; no existing env changes",
+    "vendor_batch": "verification/deepgram-negation-continuation-r91-plan.json",
+    "authorization_status": "D-081 consumed; no replay",
+    "calls": 1,
+    "data": "local synthetic English 5.8576875 seconds +3 seconds silence; one 0.8 second inserted pause",
+    "recipient": "api.deepgram.com / flux-general-en",
+    "max_connections": 1,
+    "connection_seconds": 30,
+    "cost_ceiling_usd": "0.02",
+    "stop": "first error/range gap; no retry; no other services",
+    "device_tests": "not executed; no device or default RTC adoption assumed",
+    "linux_resource_environment": "Docker context desktop-linux; actual local socket daemon unavailable even with access; no containers started; 1core1GB unverified",
+    "pre_call_gate_correction": "initial authorization record lacked display cost_ceiling field; gate blocked before execution, corrected without changing confirmed scope",
+    "vendor_result": "one connection ok; 26 ranged events, actual Partial test→cancel rewrite and continuation observed; final retains not; TD/Jev/LLM/TTS not exercised",
+    "independent_evidence_review": "stage-review/evidence-review-r91.md; limited evidence checked, no new confirmed defect; not full C/Gate2"
+  },
+  "r92_jev_replay": {
+    "scope": "real Jev with recorded ASR and controlled clock; no live ASR/media/LLM/TTS",
+    "offline": "4 passed; missing authorization cannot load key; first error stops; maximum-first untriggered stops",
+    "authorization": "D082 consumed; no replay",
+    "evidence": "verification/development-20261026-r92/README.md",
+    "result": "targets963→1952.5ms; old Final deadline0 commits; original Tmax1 commit; controlled clock, not live ASR/media timing",
+    "docker_preparation": "four missing context inputs fixed; static anchored-pattern audit passed; Docker build not run; waiting environment permission",
+    "independent_review": "stage-review/evidence-review-r92.md; exact requests/guard/controlled clock and Docker static fix checked; whole Change insufficient evidence"
+  },
+  "r92_environment_request": {
+    "status": "confirmed D083",
+    "question": "allow starting installed Docker Desktop (may resume existing containers), provide isolated Linux, or defer resource test",
+    "started_docker": true,
+    "existing_containers_modified": false,
+    "source": "request_user_input_async call_0fb9baa336e94fcda9d796249444850e item0",
+    "confirmation_quote": "允许启动本机Docker Desktop，准备隔离测试",
+    "scope": "local Docker Desktop start, read-only existing inventory, separate1core1GiB test; no existing container modifications or production mounts",
+    "existing_container_status": "voiceagent-platform-voice-agent-1 auto-resumed healthy by Docker startup; existing exited container unchanged; no existing container commands mutated state"
+  },
+  "r93_resource_test": {
+    "status": "limited evidence independently reviewed; full performance not accepted",
+    "authorization": "D083",
+    "image_tag": "voiceagent-td-resource-r93:strict",
+    "daemon": "Linux aarch64 VM10CPU8GiB; runtime test will be constrained1CPU/1GiB independently",
+    "production_mounts": false,
+    "paid_calls": 0,
+    "scope": "Linux arm64 Python3.11.17 actual1CPU/1GiB cgroup; real Silero separate silence + two formal WS calls with fixture inference; not full capacity/RTC/physical/vendor performance",
+    "evidence": "verification/development-20261026-r93/README.md",
+    "image_build": "standard Dockerfile build succeeded after four input fixes",
+    "cold": "1 passed6.5s",
+    "warm": "1 passed6.4s",
+    "memory_peak_bytes": 187940864,
+    "oom_kill": 0,
+    "sampled_loop_delay_max_ms": 11.281791999999763,
+    "queue_proof": "100ms samples zero; transient maximum not proven",
+    "image_digest": "sha256:92223298f87b16a086451fd91f1fafed1472a8b3495abdc8268d46b36fd727b1",
+    "context_audit": "native Docker9 passed; r92 Git attribution retracted",
+    "cleanup": "all four own test containers exited0/OOMfalse; original container healthy still running; no old data/commands changed",
+    "independent_review": "stage-review/evidence-review-r93.md; native Docker9 independently passed, strict two container configs/histories/samples checked"
+  },
+  "r94_llm_scope": {
+    "status": "deferred_by_user",
+    "source": "request_user_input_async call_9af4c3d5a35f4a1096c96e5bdb48e78c item0",
+    "quote": "先做TTS取消",
+    "llm_key": "not confirmed; no value loaded/decrypted; local Bot table empty",
+    "external_calls_authorized": false
+  },
+  "r94_tts_cancellation": {
+    "source_repair": "cancel ack barrier + nonblocking local control + all owned senders/generation isolation; independently rechecked",
+    "backend": "773 passed,9 optional Docker skipped,10 dependency warnings,37.71s",
+    "mypy": "Python3.11 target79 source files passed",
+    "ruff": "targeted4 files passed",
+    "external_proposal": "verification/deepgram-tts-cancel-r94-plan.json",
+    "authorization_status": "D084 consumed, no replay",
+    "external_calls": 2,
+    "independent_review": "verification/stage-review/repair-review-r94.md; whole Change insufficient evidence",
+    "not_proven": "browser/physical actual stop, RTC/full ASR-Jev-LLM live chain, cancellation latency distribution, other voices/providers/native complete combinations",
+    "external_connections": 1,
+    "external_result": "provider ack and19200 inflight old bytes observed; zero accepted old samples after cancellation, new49920samples; no browser playback proof"
+  },
+  "r95_tts_external_result": {
+    "decision": "D084",
+    "status": "one authorized batch completed",
+    "scope": "external-real TTS SDK only",
+    "evidence": "verification/development-20261026-r95/README.md",
+    "calls": 2,
+    "connections": 1,
+    "account_bill": "unknown; full-text estimate ceilingUSD0.00882 within authorized0.02",
+    "independent_review": "stage-review/evidence-review-r95.md; exact grant/hash/claim/control/PCM facts checked; whole product insufficient evidence"
+  },
+  "r96_formal_browser_preparation": {
+    "status": "preflight_closed_pending_user_batch_authorization",
+    "evidence_level": "local-real browser/API/storage/SDK + wire-fixture provider + fake ASR/Jev/LLM",
+    "evidence": "verification/development-20261026-r96/README.md",
+    "plan": "verification/deepgram-tts-formal-browser-r96-plan.json",
+    "external_calls_this_run": 0,
+    "authorization_status": "D085_consumed",
+    "request_sha256": "8cfd5bd5465d747373e6d81bf10dbdc513198e026dec9badbfc962c3aae7eb56",
+    "remaining": "独立预检后申请新的1连接2Speak批；D084已消费不能复用；真实厂商浏览器组合/物理声学/RTC不由离线通过证明。",
+    "independent_preflight": "verification/stage-review/preflight-review-r96.md",
+    "authorization_request_source": "call request_user_input_async 本轮真实TTS+正式浏览器196字符/1连接2Speak/US$0.02",
+    "local_results": {
+      "unit_passed": 7,
+      "normal_browser_passed": 1,
+      "failure_teardown_passed": 1
+    },
+    "gate": {
+      "errors": 0,
+      "warnings": 37
+    }
+  },
+  "r97_formal_browser_real_tts": {
+    "status": "limited_evidence_independently_verified",
+    "authorization_decision_id": "D-085",
+    "evidence": "verification/development-20261026-r97/README.md",
+    "evidence_level": "external-real TTS + local-real formal browser/API/SDK/Worklet; ASR/VAD/Jev/LLM fixture",
+    "browser_test": "1 passed10.1s, retries0",
+    "actual_calls": 2,
+    "actual_connections": 1,
+    "remaining": "不是真实ASR/Jev/LLM整链、RTC、手机/弱网/声学或成对新增延迟验证；实账未知；Gate2不变。",
+    "independent_review": "verification/stage-review/evidence-review-r97.md",
+    "whole_product_acceptance": "INSUFFICIENT EVIDENCE; Gate2 pending"
+  },
+  "r97_llm_followup": {
+    "status": "deferred_unverified",
+    "decision": "D-086",
+    "authorization_source": "request_user_input_async call_e8c8e7ade25e480da98a387da4af7e8f item0",
+    "confirmation_quote": "先保留未验证。",
+    "meaning": "不执行外部LLM工具测试，非风险接受/范围排除/最终验收通过"
+  },
+  "gate2_intake": {
+    "date": "2026-10-26",
+    "status": "intake_checked_ready_for_itemized_review",
+    "production_hashes": "r97 8/8 match",
+    "directed_tests": "27 passed",
+    "offline_formal_browser": "1 passed /6.2s",
+    "external_calls": 0,
+    "product_acceptance": false,
+    "evidence": "verification/gate2-intake/README.md",
+    "tts_independent_tests": "35 passed",
+    "new_confirmed_defects": 0,
+    "full_change_result": "INSUFFICIENT EVIDENCE"
+  },
+  "gate2_configuration_review": {
+    "date": "2026-10-26",
+    "status": "local_configuration_checks_passed_user_ui_accepted",
+    "tests": "6 passed (3.9s), desktop Chromium; includes 390px case",
+    "manual_checks": [
+      "collection disable disables dependent fields; re-enable restores values",
+      "saved minimum_ms=650; page reload and actual server process restart preserve value",
+      "formal Advanced -> TD entry and Chinese controls inspected"
+    ],
+    "evidence": "verification/gate2-intake/configuration/README.md",
+    "external_calls": 0,
+    "new_confirmed_defects": 0,
+    "product_acceptance": true,
+    "disclosed_to_user": true,
+    "acceptance_scope": "G2-01配置页面布局和操作",
+    "decision": "D-087"
+  },
+  "gate2_identifier_review": {
+    "date": "2026-10-26",
+    "status": "bounded_local_checks_passed_user_acceptance_pending",
+    "regression": "117 passed, 4 dependency warnings, 1.46s",
+    "browser": "1 passed / 10.2s; formal WS, simulated ASR/LLM/TTS",
+    "six_digit_probe": "PASS accumulation/reminder deadline/dedup/full/overflow/clear/resume",
+    "external_calls": 0,
+    "new_confirmed_defects": 0,
+    "product_acceptance": false,
+    "evidence": "verification/gate2-intake/identifier/README.md",
+    "disclosed_to_user": true
+  },
+  "gate2_identifier_browser_review": {
+    "date": "2026-10-26",
+    "result": "PASS (bounded local recheck; product acceptance pending)",
+    "complete": "playback and persisted history UI PASS",
+    "overflow": "playback and refreshed history UI PASS",
+    "external_calls": 0,
+    "production_changes": false,
+    "issue": "G2-02-OVERFLOW-HISTORY",
+    "evidence": "verification/gate2-intake/identifier/reviewer-recheck/README.md",
+    "product_acceptance": false,
+    "disclosed_to_user": true
+  },
+  "gate2_identifier_history_repair": {
+    "status": "independently_closed",
+    "issue": "G2-02-OVERFLOW-HISTORY",
+    "evidence": "verification/gate2-intake/identifier/history-repair/README.md",
+    "independent_review": "verification/gate2-intake/identifier/history-repair/independent-review.md",
+    "tests": {
+      "target_red": 2,
+      "history_browser_green": 8,
+      "original_runtime_green": 2
+    },
+    "external_calls": 0,
+    "product_gate2": "pending"
+  },
+  "gate2_reviewer_recheck": {
+    "date": "2026-10-26",
+    "browser_tests": "10 passed /32.2s",
+    "tool_logic_tests": "31 passed /1.18s",
+    "external_calls": 0,
+    "new_confirmed_defects": 0,
+    "issue_closed": "G2-02-OVERFLOW-HISTORY",
+    "whole_change": "INSUFFICIENT EVIDENCE",
+    "product_acceptance": false,
+    "disclosed_to_user": true
+  },
+  "gate2_mixed_review": {
+    "date": "2026-10-26",
+    "result": "PASS bounded local flow",
+    "browser": "1 passed /13.7s",
+    "tool_regression": "31 passed /1.10s",
+    "evidence": "verification/gate2-intake/mixed/README.md",
+    "external_calls": 0,
+    "new_confirmed_defects": 0,
+    "real_llm_intent": "unverified per D086",
+    "product_acceptance": false,
+    "disclosed_to_user": true
+  },
+  "gate2_local_closeout": {
+    "date": "2026-10-27",
+    "status": "bounded_local_review_closed",
+    "overall_verdict": "INSUFFICIENT EVIDENCE",
+    "new_tests": "87 passed + 1 browser passed",
+    "browser_duration": "6.8s",
+    "new_product_defects": 0,
+    "documentation_issue": "G2-CLOSEOUT-STALE-EVIDENCE resolved",
+    "production_snapshot": "only td-history.js differs from intake; independently reverified fix",
+    "external_calls": 0,
+    "product_acceptance": false,
+    "evidence": "verification/gate2-intake/closeout/README.md",
+    "remaining_items": "verification/gate2-intake/closeout/remaining-items.json",
+    "disclosed_to_user": true
+  },
+  "release_authorization": {
+    "decision": "D-088",
+    "target": "https://platform.voiceagentdemo.org",
+    "rtc_default_change": false,
+    "paid_vendor_test_authorized": false,
+    "status": "local_checks_passed_ready_to_push"
+  },
+  "release_checks": {
+    "local_full": "780 passed /9 optional Docker skipped",
+    "isolated_export": "688 passed /101 skipped: 92 private Evaluation fixtures unavailable and 9 optional Docker; no Voice TD tests skipped",
+    "format": "160 formatted; initial formatting AST identical",
+    "lint": "PASS",
+    "mypy": "79 source files PASS",
+    "safety": "PASS clean staged export",
+    "unrelated_changes": "not staged"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "checked_date": "2026-10-24 America/Los_Angeles",
+  "source": "https://deepgram.com/pricing",
+  "evidence_level": "official-public-web",
+  "flux_english_payg_usd_per_minute": "0.0065",
+  "flux_tts_payg_usd_per_1000_characters": "0.0450",
+  "asr_plan_maximum_public_price_usd": "0.00325",
+  "asr_meaning": "30-second cap * 0.0065/min, not the per-minute tariff",
+  "tts_text": "one",
+  "tts_characters": 3,
+  "tts_estimate_usd": "0.000135",
+  "tts_proposed_ceiling_usd": "0.02",
+  "not_actual_bill": true,
+  "original_plan_scope_hashes_unchanged": true
+}

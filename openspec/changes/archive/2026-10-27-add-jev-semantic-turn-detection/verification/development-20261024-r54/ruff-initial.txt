@@ -1,0 +1,106 @@
+F401 [*] `src.pipeline.audio_identity.audio_frame_type` imported but unused
+  --> tests/ui/td_rtp_serial_fixture.py:20:57
+   |
+18 | from src.config import TTSConfig
+19 | from src.history.capture import CallCapture
+20 | from src.pipeline.audio_identity import TaskAudioFrame, audio_frame_type
+   |                                                         ^^^^^^^^^^^^^^^^
+21 | from src.pipeline.echo_audio import EchoAudio
+22 | from src.pipeline.identifier_output import IdentifierOutput
+   |
+help: Remove unused import: `src.pipeline.audio_identity.audio_frame_type`
+   |
+19 | from src.history.capture import CallCapture
+   - from src.pipeline.audio_identity import TaskAudioFrame, audio_frame_type
+20 + from src.pipeline.audio_identity import TaskAudioFrame
+21 | from src.pipeline.echo_audio import EchoAudio
+   |
+
+E501 Line too long (123 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:143:101
+    |
+142 |         await self.output.stream_audio(playback_id=identity, kind="normal",
+143 |             generation=self.output.arbiter.generation, source_id="reply", revision=2 if response and response.final else 1,
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^
+144 |             source_order=2, samples=samples(),
+145 |             valid=(lambda: self.responses.accepts_output(response.response_id)) if response else lambda: True,
+    |
+
+E501 Line too long (110 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:145:101
+    |
+143 |             generation=self.output.arbiter.generation, source_id="reply", revision=2 if response and response.final else 1,
+144 |             source_order=2, samples=samples(),
+145 |             valid=(lambda: self.responses.accepts_output(response.response_id)) if response else lambda: True,
+    |                                                                                                     ^^^^^^^^^^
+146 |             sample_rate=24000, turn_id=1)
+    |
+
+E501 Line too long (107 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:186:101
+    |
+184 |         accepted = self.capture.playback_receipt(receipt["playback_id"], receipt["event"],
+185 |             receipt["rendered_samples"], receipt["elapsed_ms"], receipt.get("request_id"),
+186 |             render_frame=receipt.get("render_frame"), render_sample_rate=receipt.get("render_sample_rate"),
+    |                                                                                                     ^^^^^^^
+187 |             render_clock_id=receipt.get("render_clock_id"))
+188 |         self.receipts.append({**receipt, "accepted": accepted})
+    |
+
+E501 Line too long (103 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:203:101
+    |
+201 |                                                 revision=2, text="final input")
+202 |             replay = self.responses.claim_operation("1", "successful_tool", ((0, "a"),))
+203 |             self.actions.append({"event": "final_replaced", "duplicate_restart": duplicate is not None,
+    |                                                                                                     ^^^
+204 |                                  "tool_replayed": replay})
+205 |         else:
+    |
+
+E501 Line too long (107 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:208:101
+    |
+206 |             await self.worker.queue_frame(InterruptionFrame())
+207 |             await self.stream("question-Q")
+208 |             await self.worker.queue_frame(OutputTransportMessageFrame(message={"event": "fixture_marker"}))
+    |                                                                                                     ^^^^^^^
+209 |             await asyncio.wait_for(self.marker.wait(), 2)
+210 |             active = self.output.arbiter._active
+    |
+
+E501 Line too long (114 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:212:101
+    |
+210 |             active = self.output.arbiter._active
+211 |             self.actions.append({"event": "continuation_and_question", "active_kind": active.kind,
+212 |                 "active_status": active.status, "question_status": self.output.arbiter.tasks["question-Q"].status,
+    |                                                                                                     ^^^^^^^^^^^^^^
+213 |                 "stop_requests": list(self.output.arbiter.stop_requests)})
+214 |             result = self.rules.collection.clear_tool(self.rules.collection.bind_source(0, "clear", 1, "clear"))
+    |
+
+E501 Line too long (112 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:214:101
+    |
+212 |                 "active_status": active.status, "question_status": self.output.arbiter.tasks["question-Q"].status,
+213 |                 "stop_requests": list(self.output.arbiter.stop_requests)})
+214 |             result = self.rules.collection.clear_tool(self.rules.collection.bind_source(0, "clear", 1, "clear"))
+    |                                                                                                     ^^^^^^^^^^^^
+215 |             self.actions.append({"event": "clear_result", "result": result,
+216 |                                  "generation": self.rules.collection.generation})
+    |
+
+E501 Line too long (110 > 100)
+   --> tests/ui/td_rtp_serial_fixture.py:221:101
+    |
+219 |         """Expose actual actor transitions and receipts without asserting untested paths."""
+220 |         return {"scenario": self.scenario, "actions": self.actions, "receipts": self.receipts,
+221 |                 "td_events": self.capture.td_events, "user_submissions": self.responses.user_submission_count,
+    |                                                                                                     ^^^^^^^^^^
+222 |                 "tasks": {key: {"status": task.status, "kind": task.kind}
+223 |                           for key, task in self.output.arbiter.tasks.items()},
+    |
+
+Found 9 errors.
+[*] 1 fixable with the `--fix` option.

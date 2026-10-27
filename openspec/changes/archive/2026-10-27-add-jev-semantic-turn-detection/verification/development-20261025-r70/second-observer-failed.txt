@@ -1,0 +1,45 @@
+
+Running 1 test using 1 worker
+
+(node:32942) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtc-latency-entry.spec.js:15:1 › same opening PCM local playback timing with an explicit output observer (13.4s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [desktop-chromium] › tests/ui/td-rtc-latency-entry.spec.js:15:1 › same opening PCM local playback timing with an explicit output observer 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      100 |   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);
+      101 |   await expect(page.locator('[data-screen="live"]')).toBeVisible({timeout:20000});
+    > 102 |   await expect.poll(()=>page.evaluate(()=>Number.isFinite(window.__timing.firstOutput)),{timeout:10000}).toBe(true);
+          |                                                                                                          ^
+      103 |   const timing=await page.evaluate(()=>window.__timing);
+      104 |   writeFileSync(`${evidence}/timing-${process.env.VOICE_AGENT_TIMING_MODE || 'unknown'}.json`,JSON.stringify(timing,null,2));
+      105 |   await page.locator('#end').click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtc-latency-entry.spec.js:102:106
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-latency-entry-same--fcc83-an-explicit-output-observer-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtc-latency-entry-same--fcc83-an-explicit-output-observer-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-latency-entry-same--fcc83-an-explicit-output-observer-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtc-latency-entry-same--fcc83-an-explicit-output-observer-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtc-latency-entry.spec.js:15:1 › same opening PCM local playback timing with an explicit output observer 
+  1 error was not a part of any test, see above for details

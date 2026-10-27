@@ -1,0 +1,78 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_actual_sdk_handshake_failure_has_safe_diagnostics_without_a_paid_call __
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1085f5e00>
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-317/test_actual_sdk_handshake_fail0')
+
+    async def test_actual_sdk_handshake_failure_has_safe_diagnostics_without_a_paid_call(
+        monkeypatch, tmp_path,
+    ):
+        """A failed real adapter must expose a safe stage/status instead of a blind retry."""
+        from types import SimpleNamespace
+    
+        from websockets.exceptions import InvalidStatus
+    
+        from src.tts import factory
+    
+        registry = factory.create_default_tts_registry()
+        create = registry.create
+        calls = []
+    
+        def offline_create(**kwargs):
+            processor = create(**kwargs)
+    
+            async def handshake(*args, **kwargs):
+                calls.append(True)
+                raise InvalidStatus(SimpleNamespace(
+                    status_code=403, reason_phrase='fixture-private-key-do-not-record',
+                ))
+    
+            processor._websocket_connect = handshake
+            return processor
+    
+        registry.create = offline_create
+        monkeypatch.setattr(factory, 'create_default_tts_registry', lambda: registry)
+        result = await probe().run_case({'id': '1', 'text': 'one'}, 'fixture-private-key', tmp_path,
+                                        timeout=2)
+        assert result['status'] == 'synthesis_or_format_error'
+        assert calls == [True] and result['connections'] == 1
+>       assert result['protocol']['connection_failure'] == {'type': 'InvalidStatus', 'http_status': 403}
+               ^^^^^^^^^^^^^^^^^^
+E       KeyError: 'protocol'
+
+tests/test_td_tts_vendor_probe.py:110: KeyError
+----------------------------- Captured stderr call -----------------------------
+2026-10-23 03:47:25.073 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+2026-10-23 03:47:25.394 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> ScopedDeepgramFluxTTSService#0
+2026-10-23 03:47:25.395 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking ScopedDeepgramFluxTTSService#0 -> Sink#0
+2026-10-23 03:47:25.395 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-23 03:47:25.395 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-23 03:47:25.396 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-10-23 03:47:25.396 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-a3d65fb5': added worker 'PipelineWorker#0'
+2026-10-23 03:47:25.396 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-a3d65fb5': started running
+2026-10-23 03:47:25.397 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-a3d65fb5': starting worker 'PipelineWorker#0'
+2026-10-23 03:47:25.397 | DEBUG    | pipecat.services.deepgram.flux.tts:_connect_websocket:173 - Connecting to Deepgram Flux WebSocket
+2026-10-23 03:47:25.398 | ERROR    | pipecat.services.deepgram.flux.tts:_connect_websocket:192 - ScopedDeepgramFluxTTSService#0 exception: server rejected WebSocket connection: HTTP 403
+2026-10-23 03:47:25.398 | ERROR    | pipecat.processors.frame_processor:push_error_frame:1001 - ScopedDeepgramFluxTTSService#0 error: ScopedDeepgramFluxTTSService#0 error: server rejected WebSocket connection: HTTP 403
+2026-10-23 03:47:25.398 | WARNING  | pipecat.pipeline.worker:_source_push_frame:1480 - PipelineWorker#0: Something went wrong: ErrorFrame#0(error: ScopedDeepgramFluxTTSService#0 error: server rejected WebSocket connection: HTTP 403, fatal: False)
+2026-10-23 03:47:25.399 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-23 03:47:25.443 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-10-23 03:47:25.443 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-10-23 03:47:25.443 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#0: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-23 03:47:25.444 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#0' ready (local)
+2026-10-23 03:47:25.444 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-a3d65fb5': broadcasting registry: ['PipelineWorker#0']
+2026-10-23 03:47:25.444 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'PipelineWorker#0': activated
+2026-10-23 03:47:25.445 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - PipelineWorker#0: CancelFrame#0(reason: None) reached the end of the pipeline.
+2026-10-23 03:47:25.445 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#0: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-23 03:47:25.446 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#0 is finishing...
+2026-10-23 03:47:25.446 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#0 has finished
+2026-10-23 03:47:25.447 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-a3d65fb5': finished running
+=============================== warnings summary ===============================
+tests/test_td_tts_vendor_probe.py::test_actual_sdk_handshake_failure_has_safe_diagnostics_without_a_paid_call
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_vendor_probe.py::test_actual_sdk_handshake_failure_has_safe_diagnostics_without_a_paid_call
+1 failed, 5 deselected, 1 warning in 0.72s

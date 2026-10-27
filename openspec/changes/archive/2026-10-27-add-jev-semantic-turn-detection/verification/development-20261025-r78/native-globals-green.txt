@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:38349) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-clock-sampler.spec.js:2:1 › browser clock sampler uses native fetch without losing its Window receiver (221ms)
+
+  1 passed (505ms)

@@ -1,0 +1,17 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_renderer_receipts_require_prepared_identity_and_never_target_current_turn _
+
+    def test_renderer_receipts_require_prepared_identity_and_never_target_current_turn():
+        from src.history.capture import CallCapture
+    
+        capture = CallCapture(provider="fixture", model="fixture")
+>       assert hasattr(capture, "playback_receipt"), "Task-bound renderer capture absent"
+E       AssertionError: Task-bound renderer capture absent
+E       assert False
+E        +  where False = hasattr(CallCapture(provider='fixture', model='fixture', recorder=None, chat_mode=False, started=1273626.111159083, turns=[], ...tokens=None, context_applied=None, context_failure_reason=None), _states=[], _assistant_chunks=[], _input_audio_ms=0.0), 'playback_receipt')
+
+tests/test_td_history.py:125: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_renderer_receipts_require_prepared_identity_and_never_target_current_turn
+1 failed, 6 deselected in 0.77s

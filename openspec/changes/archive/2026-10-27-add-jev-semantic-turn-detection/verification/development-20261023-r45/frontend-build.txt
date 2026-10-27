@@ -1,0 +1,28 @@
+
+> voice-agent-frontend@0.1.0 build
+> vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 189 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                   0.84 kB │ gzip:  0.39 kB
+dist/demo.html                                    0.85 kB │ gzip:  0.40 kB
+dist/login.html                                   2.31 kB │ gzip:  0.93 kB
+dist/assets/td-audio-worklet-BXAdgzHg.js          4.77 kB
+dist/evaluation.html                            303.74 kB │ gzip: 82.16 kB
+dist/assets/login-BNVcW8Ri.css                    3.63 kB │ gzip:  1.36 kB
+dist/assets/evaluation-CWcc11kK.css               9.94 kB │ gzip:  2.76 kB
+dist/assets/demo-tByE4cBr.css                    10.16 kB │ gzip:  3.09 kB
+dist/assets/app-QeHlk0qI.css                     54.80 kB │ gzip: 11.52 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js          0.58 kB │ gzip:  0.36 kB
+dist/assets/modulepreload-polyfill-P2Xu9kJm.js    0.67 kB │ gzip:  0.38 kB
+dist/assets/login-1oQnc6c6.js                     1.25 kB │ gzip:  0.71 kB
+dist/assets/pipecat-client-hDXXxSQD.js           84.91 kB │ gzip: 22.07 kB
+dist/assets/demo-ENS1ftjA.js                     96.89 kB │ gzip: 25.68 kB
+dist/assets/evaluation-BvclxGAq.js              136.37 kB │ gzip: 39.50 kB
+dist/assets/app-BS9N8klr.js                     205.53 kB │ gzip: 63.92 kB
+dist/assets/pipecat-transport-BHhNioJV.js       359.49 kB │ gzip: 94.69 kB
+
+✓ built in 146ms

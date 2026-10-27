@@ -1,0 +1,116 @@
+{
+  "baseline": {
+    "style": {
+      "display": "grid",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "识别词（逗号分隔）",
+      "跟读内容",
+      "音频 / 试听",
+      ""
+    ],
+    "header": [
+      {
+        "left": 0,
+        "right": 286.96875,
+        "top": 65.5,
+        "width": 286.96875
+      },
+      {
+        "left": 308.96875,
+        "right": 420.5625,
+        "top": 65.5,
+        "width": 111.59375
+      },
+      {
+        "left": 442.5625,
+        "right": 602,
+        "top": 65.5,
+        "width": 159.4375
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 297.25,
+        "top": 85.5,
+        "width": 297.25
+      },
+      {
+        "left": 327.25,
+        "right": 442.84375,
+        "top": 85.5,
+        "width": 115.59375
+      },
+      {
+        "left": 450.84375,
+        "right": 616,
+        "top": 89.5,
+        "width": 165.15625
+      }
+    ],
+    "audioGridRow": "auto",
+    "overflow": false
+  },
+  "production": {
+    "style": {
+      "display": "grid",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "识别词（逗号分隔）",
+      "跟读内容",
+      "音频 / 试听",
+      ""
+    ],
+    "header": [
+      {
+        "left": 0,
+        "right": 286.96875,
+        "top": 73.5,
+        "width": 286.96875
+      },
+      {
+        "left": 308.96875,
+        "right": 420.5625,
+        "top": 73.5,
+        "width": 111.59375
+      },
+      {
+        "left": 442.5625,
+        "right": 602,
+        "top": 73.5,
+        "width": 159.4375
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 297.25,
+        "top": 93.5,
+        "width": 297.25
+      },
+      {
+        "left": 327.25,
+        "right": 442.84375,
+        "top": 93.5,
+        "width": 115.59375
+      },
+      {
+        "left": 450.84375,
+        "right": 616,
+        "top": 97.5,
+        "width": 165.15625
+      }
+    ],
+    "audioGridRow": "auto",
+    "overflow": false
+  }
+}

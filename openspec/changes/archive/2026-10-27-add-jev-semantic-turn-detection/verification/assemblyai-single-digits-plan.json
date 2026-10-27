@@ -1,0 +1,34 @@
+{
+  "batch_id": "assemblyai-td-single-digits-v1",
+  "cases": [
+    {
+      "id": "fresh-digits",
+      "path": "/Volumes/work/OpenCode/VoiceAgent/test-results/td-vendor-inputs/20261024/digits-ready.wav",
+      "sha256": "a93499196b16dd1e9307ba97bedd24d246dedf995755e05bc9f20e382139966e",
+      "duration_seconds": 5.1675,
+      "text": "One two three. Four five six. Seven eight nine.",
+      "provider": "assemblyai",
+      "model": "universal-3-5-pro",
+      "options": {
+        "language_codes": [
+          "en"
+        ]
+      },
+      "silence_tail_seconds": 3
+    }
+  ],
+  "max_calls": 1,
+  "connection_wall_seconds": 30,
+  "connect_timeout_seconds": 5,
+  "cost_ceiling_usd": "0.02",
+  "maximum_public_price_usd": "0.00375",
+  "price_verified": "2026-10-25",
+  "pricing_source": "https://www.assemblyai.com/products/streaming-speech-to-text",
+  "turn_detection_source": "self_developed",
+  "retries": 0,
+  "recipient": "streaming.assemblyai.com",
+  "llm_jev_tts_calls": 0,
+  "public_price_bound": "30s at USD0.45/hr",
+  "source_evidence": "new pinned PCM; existing sample-boundary repair; stop first gap",
+  "request_sha256": "95a9f76c14329c4f349ef0ea51093470627bb0cfdbd78f0eacb199b17a4ad435"
+}

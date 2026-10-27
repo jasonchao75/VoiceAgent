@@ -1,0 +1,16 @@
+2026-10-24 06:39:49.457 | INFO     | pipecat:<module>:54 - ᓚᘏᗢ Pipecat 1.8.1 (Python 3.13.2 (v3.13.2:4f8bb3947cf, Feb  4 2025, 11:51:10) [Clang 15.0.0 (clang-1500.3.9.4)]) ᓚᘏᗢ
+2026-10-24 06:39:49.673 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+INFO:     Started server process [10066]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8791 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52605 - "POST /offer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52605 - "POST /close HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52732 - "POST /offer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52732 - "POST /close HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52740 - "POST /offer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52740 - "POST /close HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [10066]

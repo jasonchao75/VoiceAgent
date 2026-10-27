@@ -1,0 +1,13 @@
+{
+  "evidence_level": "local-real recorded trace + offline audit",
+  "checks": [
+    {
+      "playback_id": "9915eb864ade42b388f536510764fd45",
+      "expected_samples": 5760,
+      "actual_samples": 5760,
+      "exact_match": true
+    }
+  ],
+  "sdk_padding": "2400 source samples -> ceil(2400/960)*960=2880 at24k, converted to5760 at48k; native40ms chunks",
+  "browser_test_original": "FAILED hardcoded4800; no rerun"
+}

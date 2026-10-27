@@ -1,0 +1,18 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_speechmatics_probe_preserves_null_timing_details_without_arbitrary_metadata _
+
+    def test_speechmatics_probe_preserves_null_timing_details_without_arbitrary_metadata():
+        """Keep enough raw evidence to distinguish missing provider timing from parsing errors."""
+        payload = {'message': 'AddPartialSegment', 'headers': {'Authorization': 'never-save'},
+                   'segments': [{'text': 'One', 'speaker_id': 'S1', 'api_key': 'never-save',
+                                 'metadata': {'start_time': .1, 'end_time': None, 'secret': 'never'},
+                                 'fragments': None}]}
+>       result = probe().source_evidence(payload)
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'scripts.evaluation.probe_td_compatibility' has no attribute 'source_evidence'
+
+tests/test_td_vendor_probe.py:374: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_speechmatics_probe_preserves_null_timing_details_without_arbitrary_metadata
+1 failed, 21 deselected in 0.05s

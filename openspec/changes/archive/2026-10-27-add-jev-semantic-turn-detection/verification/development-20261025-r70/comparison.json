@@ -1,0 +1,21 @@
+{
+  "synthetic_source": {
+    "samples": 2400,
+    "sample_rate": 24000,
+    "pcm16_sha256": "29294aa07e292f3a5921ad790140225efede8e80960302ec45ce4c9432154694"
+  },
+  "values": {
+    "native": {
+      "marker_to_observer_ms": 41.099999994039536,
+      "marker_to_output_timestamp_estimate_ms": 65.60733332439258,
+      "n": 1
+    },
+    "candidate": {
+      "marker_to_observer_ms": 25.900000005960464,
+      "marker_to_output_timestamp_estimate_ms": 47.46166667262696,
+      "n": 1
+    }
+  },
+  "claim": "instrumented local comparison only; not precise added E2E, improvement or P95",
+  "native_capture_latency_calibrated": false
+}

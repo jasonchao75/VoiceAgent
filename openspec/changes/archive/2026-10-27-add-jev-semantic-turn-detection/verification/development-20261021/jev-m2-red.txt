@@ -1,0 +1,235 @@
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+_______________ test_distribution_fusion_subtracts_elapsed_once ________________
+
+    def test_distribution_fusion_subtracts_elapsed_once():
+        """The frozen 825/375 example uses the entire Choice distribution."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 00:25:43.300 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+______ test_invalid_distribution_never_becomes_valid_wait[probabilities0] ______
+
+probabilities = {'complete': 0.8}
+
+    @pytest.mark.parametrize('probabilities', [
+        {'complete': .8}, {'complete': float('nan'), 'incomplete': .2},
+        {'complete': -.1, 'incomplete': 1.1}, {'complete': .4, 'incomplete': .4},
+    ])
+    def test_invalid_distribution_never_becomes_valid_wait(probabilities):
+        """Missing/invalid probabilities cannot become a fabricated semantic decision."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+______ test_invalid_distribution_never_becomes_valid_wait[probabilities1] ______
+
+probabilities = {'complete': nan, 'incomplete': 0.2}
+
+    @pytest.mark.parametrize('probabilities', [
+        {'complete': .8}, {'complete': float('nan'), 'incomplete': .2},
+        {'complete': -.1, 'incomplete': 1.1}, {'complete': .4, 'incomplete': .4},
+    ])
+    def test_invalid_distribution_never_becomes_valid_wait(probabilities):
+        """Missing/invalid probabilities cannot become a fabricated semantic decision."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+______ test_invalid_distribution_never_becomes_valid_wait[probabilities2] ______
+
+probabilities = {'complete': -0.1, 'incomplete': 1.1}
+
+    @pytest.mark.parametrize('probabilities', [
+        {'complete': .8}, {'complete': float('nan'), 'incomplete': .2},
+        {'complete': -.1, 'incomplete': 1.1}, {'complete': .4, 'incomplete': .4},
+    ])
+    def test_invalid_distribution_never_becomes_valid_wait(probabilities):
+        """Missing/invalid probabilities cannot become a fabricated semantic decision."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+______ test_invalid_distribution_never_becomes_valid_wait[probabilities3] ______
+
+probabilities = {'complete': 0.4, 'incomplete': 0.4}
+
+    @pytest.mark.parametrize('probabilities', [
+        {'complete': .8}, {'complete': float('nan'), 'incomplete': .2},
+        {'complete': -.1, 'incomplete': 1.1}, {'complete': .4, 'incomplete': .4},
+    ])
+    def test_invalid_distribution_never_becomes_valid_wait(probabilities):
+        """Missing/invalid probabilities cannot become a fabricated semantic decision."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+________________ test_independent_maximum_and_single_submission ________________
+
+    def test_independent_maximum_and_single_submission():
+        """A missing Jev result and missing Final cannot extend the deadline."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+_________ test_final_wait_begins_after_semantic_target_and_is_bounded __________
+
+    def test_final_wait_begins_after_semantic_target_and_is_bounded():
+        """Final wait is a separate window starting only once the target permits ending."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+_____________ test_resume_invalidates_late_results_and_commit_race _____________
+
+    def test_resume_invalidates_late_results_and_commit_race():
+        """Old semantic results, transcript and deadline cannot commit newer speech."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+_______ test_revision_invalidates_semantic_result_but_not_hard_deadline ________
+
+    def test_revision_invalidates_semantic_result_but_not_hard_deadline():
+        """A text update must not reuse Jev's verdict for the old text."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+_________________ test_media_gap_and_empty_text_cannot_commit __________________
+
+    def test_media_gap_and_empty_text_cannot_commit():
+        """Disconnected or backlogged input is not evidence of continuous silence."""
+>       td = types()
+             ^^^^^^^
+
+tests/test_td_timing.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def types():
+        """Load the real controller only after checking the required behavior exists."""
+>       assert util.find_spec('src.pipeline.turn_detection') is not None, 'Custom TD timing is absent'
+E       AssertionError: Custom TD timing is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1033a68e0>('src.pipeline.turn_detection')
+E        +    where <function find_spec at 0x1033a68e0> = util.find_spec
+
+tests/test_td_timing.py:10: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_timing.py::test_distribution_fusion_subtracts_elapsed_once
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_timing.py::test_distribution_fusion_subtracts_elapsed_once
+FAILED tests/test_td_timing.py::test_invalid_distribution_never_becomes_valid_wait[probabilities0]
+FAILED tests/test_td_timing.py::test_invalid_distribution_never_becomes_valid_wait[probabilities1]
+FAILED tests/test_td_timing.py::test_invalid_distribution_never_becomes_valid_wait[probabilities2]
+FAILED tests/test_td_timing.py::test_invalid_distribution_never_becomes_valid_wait[probabilities3]
+FAILED tests/test_td_timing.py::test_independent_maximum_and_single_submission
+FAILED tests/test_td_timing.py::test_final_wait_begins_after_semantic_target_and_is_bounded
+FAILED tests/test_td_timing.py::test_resume_invalidates_late_results_and_commit_race
+FAILED tests/test_td_timing.py::test_revision_invalidates_semantic_result_but_not_hard_deadline
+FAILED tests/test_td_timing.py::test_media_gap_and_empty_text_cannot_commit
+10 failed, 1 warning in 2.23s

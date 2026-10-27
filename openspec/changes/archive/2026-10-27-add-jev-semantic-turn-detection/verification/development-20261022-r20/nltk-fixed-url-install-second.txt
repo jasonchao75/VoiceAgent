@@ -1,0 +1,2 @@
+Verified official punkt_tab SHA-256: e57f64187974277726a3417ca6f181ec5403676c717672eef6a748a7b20e0106
+Installed existing dependency data under ignored .venv/nltk_data; no provider credentials used.

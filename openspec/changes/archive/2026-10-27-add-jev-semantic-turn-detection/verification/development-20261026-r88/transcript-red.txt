@@ -1,0 +1,72 @@
+...........F....F.F                                                      [100%]
+=================================== FAILURES ===================================
+_ test_segment_join_preserves_word_boundaries_without_rewriting_spacing[parts0-one two] _
+
+parts = ['one', 'two'], expected = 'one two'
+
+    @pytest.mark.parametrize(('parts', 'expected'), [
+        (['one', 'two'], 'one two'), (['one ', 'two'], 'one two'),
+        (['one', ' two'], 'one two'), (['一', '二'], '一二'),
+        (['12', '34'], '1234'), (['hello,', 'world'], 'hello, world'),
+    ])
+    def test_segment_join_preserves_word_boundaries_without_rewriting_spacing(parts, expected):
+        """Independent word segments need boundaries; digits and unspaced scripts do not."""
+        Ledger, Segment, _ = ledger_types()
+        ledger = Ledger()
+        for index, text in enumerate(parts):
+            ledger.apply(Segment(0, str(index), 1, index * 1000, (index + 1) * 1000, text, True))
+>       assert ledger.view().text == expected
+E       AssertionError: assert 'onetwo' == 'one two'
+E         
+E         - one two
+E         ?    -
+E         + onetwo
+
+tests/test_td_transcript.py:199: AssertionError
+_ test_segment_join_preserves_word_boundaries_without_rewriting_spacing[parts5-hello, world] _
+
+parts = ['hello,', 'world'], expected = 'hello, world'
+
+    @pytest.mark.parametrize(('parts', 'expected'), [
+        (['one', 'two'], 'one two'), (['one ', 'two'], 'one two'),
+        (['one', ' two'], 'one two'), (['一', '二'], '一二'),
+        (['12', '34'], '1234'), (['hello,', 'world'], 'hello, world'),
+    ])
+    def test_segment_join_preserves_word_boundaries_without_rewriting_spacing(parts, expected):
+        """Independent word segments need boundaries; digits and unspaced scripts do not."""
+        Ledger, Segment, _ = ledger_types()
+        ledger = Ledger()
+        for index, text in enumerate(parts):
+            ledger.apply(Segment(0, str(index), 1, index * 1000, (index + 1) * 1000, text, True))
+>       assert ledger.view().text == expected
+E       AssertionError: assert 'hello,world' == 'hello, world'
+E         
+E         - hello, world
+E         ?       -
+E         + hello,world
+
+tests/test_td_transcript.py:199: AssertionError
+_____ test_cross_commit_and_final_slice_keep_original_english_word_spacing _____
+
+    def test_cross_commit_and_final_slice_keep_original_english_word_spacing():
+        """Timed word selection must use the original covered text instead of concatenating words."""
+        Ledger, Segment, Word = ledger_types()
+        ledger = Ledger()
+        ledger.apply(Segment(0, 'a', 1, 0, 1000, 'one two', False))
+        first = ledger.consume()
+        words = tuple(Word(text, index * 500, (index + 1) * 500)
+                      for index, text in enumerate(['one', 'two', 'three', 'four']))
+        ledger.apply(Segment(0, 'a', 2, 0, 2000, 'one two three four', True, words))
+>       assert ledger.view().text == 'three four'
+E       AssertionError: assert 'threefour' == 'three four'
+E         
+E         - three four
+E         ?      -
+E         + threefour
+
+tests/test_td_transcript.py:225: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_transcript.py::test_segment_join_preserves_word_boundaries_without_rewriting_spacing[parts0-one two]
+FAILED tests/test_td_transcript.py::test_segment_join_preserves_word_boundaries_without_rewriting_spacing[parts5-hello, world]
+FAILED tests/test_td_transcript.py::test_cross_commit_and_final_slice_keep_original_english_word_spacing
+3 failed, 16 passed in 0.05s

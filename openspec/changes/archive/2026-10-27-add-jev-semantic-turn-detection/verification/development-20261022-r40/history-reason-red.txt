@@ -1,0 +1,34 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_late_render_receipt_explains_missing_clock_on_its_original_turn_only ___
+
+    def test_late_render_receipt_explains_missing_clock_on_its_original_turn_only():
+        """Observed rendering and measured cross-clock latency are different evidence levels."""
+        from pipecat.frames.frames import TTSAudioRawFrame, TTSStartedFrame, UserStartedSpeakingFrame
+    
+        capture = CallCapture(provider='openai', model='fixture')
+        for turn_id in (7, 8):
+            capture.observe(UserStartedSpeakingFrame())
+            commit = TranscriptionFrame('12', '', '')
+            commit.metadata.update(td_commit=True, td_source_final=False, td_turn_id=turn_id)
+            capture.observe(commit)
+            capture.observe(LLMContextFrame(LLMContext()))
+            capture.observe(LLMTextFrame('answer'))
+            capture.observe(TTSStartedFrame())
+            capture.observe(TTSAudioRawFrame(bytes(256), 24000, 1))
+        capture.record_td_event({'event': 'playback_task_prepared', 'playback_id': 'old',
+                                 'turn_id': 7, 'response_id': '7:1', 'kind': 'normal'})
+        assert capture.playback_receipt('old', 'task_started', 128, 15,
+                                        render_frame=1024, render_sample_rate=24000,
+                                        render_clock_id='a' * 32)
+        metrics = capture.metrics_snapshot()
+>       assert metrics[0].incomplete_reason == 'render_clock_uncorrelated'
+E       AssertionError: assert 'client_playback_unconfirmed' == 'render_clock_uncorrelated'
+E         
+E         - render_clock_uncorrelated
+E         + client_playback_unconfirmed
+
+tests/test_td_history.py:56: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_late_render_receipt_explains_missing_clock_on_its_original_turn_only
+1 failed, 10 deselected in 0.72s

@@ -1,0 +1,124 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+_____________ test_partial_replaces_and_late_final_preserves_tail ______________
+
+    def test_partial_replaces_and_late_final_preserves_tail():
+        """An older final cannot finalize or erase newer speech."""
+>       Ledger, Segment, _ = ledger_types()
+                             ^^^^^^^^^^^^^^
+
+tests/test_td_transcript.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def ledger_types():
+        """Require the production transcript boundary, rather than a test-only model."""
+>       assert util.find_spec("src.asr.transcript") is not None, "TD source range ledger is absent"
+E       AssertionError: TD source range ledger is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1030fa8e0>('src.asr.transcript')
+E        +    where <function find_spec at 0x1030fa8e0> = util.find_spec
+
+tests/test_td_transcript.py:10: AssertionError
+__________________ test_duplicate_out_of_order_and_reconnect ___________________
+
+    def test_duplicate_out_of_order_and_reconnect():
+        """Revision identity and connection identity prevent stale writes."""
+>       Ledger, Segment, _ = ledger_types()
+                             ^^^^^^^^^^^^^^
+
+tests/test_td_transcript.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def ledger_types():
+        """Require the production transcript boundary, rather than a test-only model."""
+>       assert util.find_spec("src.asr.transcript") is not None, "TD source range ledger is absent"
+E       AssertionError: TD source range ledger is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1030fa8e0>('src.asr.transcript')
+E        +    where <function find_spec at 0x1030fa8e0> = util.find_spec
+
+tests/test_td_transcript.py:10: AssertionError
+________ test_provider_turn_crosses_td_commit_without_repeating_prefix _________
+
+    def test_provider_turn_crosses_td_commit_without_repeating_prefix():
+        """Consumed audio is excluded using word positions, never string prefix guesses."""
+>       Ledger, Segment, Word = ledger_types()
+                                ^^^^^^^^^^^^^^
+
+tests/test_td_transcript.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def ledger_types():
+        """Require the production transcript boundary, rather than a test-only model."""
+>       assert util.find_spec("src.asr.transcript") is not None, "TD source range ledger is absent"
+E       AssertionError: TD source range ledger is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1030fa8e0>('src.asr.transcript')
+E        +    where <function find_spec at 0x1030fa8e0> = util.find_spec
+
+tests/test_td_transcript.py:10: AssertionError
+__________ test_unknown_cross_commit_range_is_explicitly_unavailable ___________
+
+    def test_unknown_cross_commit_range_is_explicitly_unavailable():
+        """No word timing means a crossing snapshot cannot safely be split."""
+>       Ledger, Segment, _ = ledger_types()
+                             ^^^^^^^^^^^^^^
+
+tests/test_td_transcript.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def ledger_types():
+        """Require the production transcript boundary, rather than a test-only model."""
+>       assert util.find_spec("src.asr.transcript") is not None, "TD source range ledger is absent"
+E       AssertionError: TD source range ledger is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1030fa8e0>('src.asr.transcript')
+E        +    where <function find_spec at 0x1030fa8e0> = util.find_spec
+
+tests/test_td_transcript.py:10: AssertionError
+_________________ test_real_repetition_and_formatting_revision _________________
+
+    def test_real_repetition_and_formatting_revision():
+        """Different audio with identical text remains distinct; formatting replaces."""
+>       Ledger, Segment, _ = ledger_types()
+                             ^^^^^^^^^^^^^^
+
+tests/test_td_transcript.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def ledger_types():
+        """Require the production transcript boundary, rather than a test-only model."""
+>       assert util.find_spec("src.asr.transcript") is not None, "TD source range ledger is absent"
+E       AssertionError: TD source range ledger is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1030fa8e0>('src.asr.transcript')
+E        +    where <function find_spec at 0x1030fa8e0> = util.find_spec
+
+tests/test_td_transcript.py:10: AssertionError
+_____________________ test_invalid_audio_range_is_rejected _____________________
+
+    def test_invalid_audio_range_is_rejected():
+        """Malformed timing cannot become speed evidence."""
+>       _, Segment, Word = ledger_types()
+                           ^^^^^^^^^^^^^^
+
+tests/test_td_transcript.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def ledger_types():
+        """Require the production transcript boundary, rather than a test-only model."""
+>       assert util.find_spec("src.asr.transcript") is not None, "TD source range ledger is absent"
+E       AssertionError: TD source range ledger is absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1030fa8e0>('src.asr.transcript')
+E        +    where <function find_spec at 0x1030fa8e0> = util.find_spec
+
+tests/test_td_transcript.py:10: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_transcript.py::test_partial_replaces_and_late_final_preserves_tail
+FAILED tests/test_td_transcript.py::test_duplicate_out_of_order_and_reconnect
+FAILED tests/test_td_transcript.py::test_provider_turn_crosses_td_commit_without_repeating_prefix
+FAILED tests/test_td_transcript.py::test_unknown_cross_commit_range_is_explicitly_unavailable
+FAILED tests/test_td_transcript.py::test_real_repetition_and_formatting_revision
+FAILED tests/test_td_transcript.py::test_invalid_audio_range_is_rejected - As...
+6 failed in 0.04s

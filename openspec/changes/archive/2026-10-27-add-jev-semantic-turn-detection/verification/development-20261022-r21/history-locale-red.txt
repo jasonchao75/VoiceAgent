@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:14313) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 1440px (5.8s)
+
+
+  1) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 1440px 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#history-dialog').locator('#td-history-language')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#history-dialog').locator('#td-history-language') with timeout 5000ms
+      - waiting for locator('#history-dialog').locator('#td-history-language')
+
+
+      101 |     const literalValues=()=>dialog.locator(".message p,.td-record dd").allTextContents();
+      102 |     const before=await literalValues();
+    > 103 |     await expect(dialog.locator("#td-history-language")).toBeVisible();
+          |                                                          ^
+      104 |     await dialog.locator("#td-history-language").selectOption("zh");
+      105 |     await expect(original.locator(".turn-td>summary")).toContainText("TD 判断记录");
+      106 |     expect(await literalValues()).toEqual(before);
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:103:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 1440px 

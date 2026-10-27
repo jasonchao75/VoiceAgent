@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:8477) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:26:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history (295ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:26:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "td-local-offline"
+    Received: undefined
+
+      21 |   expect(["localhost","127.0.0.1"]).toContain(new URL(baseURL).hostname);
+      22 |   const health=await request.get("/health");
+    > 23 |   expect(health.headers()["x-voiceagent-test-fixture"]).toBe("td-local-offline");
+         |                                                         ^
+      24 | }
+      25 |
+      26 | test("formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history",async({page,request,baseURL})=>{
+        at verifyFixture (/Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:23:57)
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:28:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-browser--e8835-pts-reach-persisted-history-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-browser--e8835-pts-reach-persisted-history-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-browser--e8835-pts-reach-persisted-history-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-browser--e8835-pts-reach-persisted-history-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:26:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history 

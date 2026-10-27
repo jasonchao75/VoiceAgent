@@ -1,0 +1,184 @@
+{
+  "evidence_level": "local-real native SDK/Opus/RTP serialization/native decode",
+  "network_browser_hardware": false,
+  "sources": [
+    {
+      "identity": {
+        "playback_id": "partial-A",
+        "kind": "normal",
+        "response_id": "partial-A"
+      },
+      "start_24k": 0,
+      "samples_24k": 720
+    },
+    {
+      "identity": {
+        "playback_id": "final-B",
+        "kind": "normal",
+        "response_id": "final-B"
+      },
+      "start_24k": 720,
+      "samples_24k": 720
+    }
+  ],
+  "resampled": [
+    {
+      "pts": 0,
+      "samples": 960,
+      "rate": 48000
+    },
+    {
+      "pts": 960,
+      "samples": 960,
+      "rate": 48000
+    },
+    {
+      "pts": 1920,
+      "samples": 960,
+      "rate": 48000
+    },
+    {
+      "pts": 2880,
+      "samples": 960,
+      "rate": 48000
+    },
+    {
+      "pts": 3840,
+      "samples": 960,
+      "rate": 48000
+    }
+  ],
+  "first_actual_encoder_pts": -312,
+  "packets": [
+    {
+      "rtp_timestamp": 3175784561,
+      "relative_rtp": 0,
+      "source_pts": -312,
+      "encoder": {
+        "raw_pts": -312,
+        "duration": 960,
+        "sha256": "57dbbac1257275e055b94fe907930ea9c959635888c4295f39e26f3b16458781"
+      },
+      "decoded": [
+        {
+          "pts": -312,
+          "samples": 960,
+          "rate": 48000,
+          "coordinate_spans": [
+            {
+              "task": "partial-A",
+              "coordinate_start_48k": 0,
+              "coordinate_end_48k": 648
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rtp_timestamp": 3175785521,
+      "relative_rtp": 960,
+      "source_pts": 648,
+      "encoder": {
+        "raw_pts": 648,
+        "duration": 960,
+        "sha256": "2a4e53c9185de3e7989fd1213220c4de04222c03c21694841e6da607ca2af62b"
+      },
+      "decoded": [
+        {
+          "pts": 648,
+          "samples": 960,
+          "rate": 48000,
+          "coordinate_spans": [
+            {
+              "task": "partial-A",
+              "coordinate_start_48k": 648,
+              "coordinate_end_48k": 1440
+            },
+            {
+              "task": "final-B",
+              "coordinate_start_48k": 1440,
+              "coordinate_end_48k": 1608
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rtp_timestamp": 3175786481,
+      "relative_rtp": 1920,
+      "source_pts": 1608,
+      "encoder": {
+        "raw_pts": 1608,
+        "duration": 960,
+        "sha256": "78a1bd79e957885089722c77d34c35749a4364f96e7c139e2f4b2603c6b7bb6f"
+      },
+      "decoded": [
+        {
+          "pts": 1608,
+          "samples": 960,
+          "rate": 48000,
+          "coordinate_spans": [
+            {
+              "task": "final-B",
+              "coordinate_start_48k": 1608,
+              "coordinate_end_48k": 2568
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rtp_timestamp": 3175787441,
+      "relative_rtp": 2880,
+      "source_pts": 2568,
+      "encoder": {
+        "raw_pts": 2568,
+        "duration": 960,
+        "sha256": "367dea351517a9d499a58c7f59f32da0982feb5e96ff25fbf93dba6a7439ae49"
+      },
+      "decoded": [
+        {
+          "pts": 2568,
+          "samples": 960,
+          "rate": 48000,
+          "coordinate_spans": [
+            {
+              "task": "final-B",
+              "coordinate_start_48k": 2568,
+              "coordinate_end_48k": 2880
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rtp_timestamp": 3175788401,
+      "relative_rtp": 3840,
+      "source_pts": 3528,
+      "encoder": {
+        "raw_pts": 3528,
+        "duration": 960,
+        "sha256": "f2b65333cff700b33de008fd7ef248e569bf46848323805bbee4f7120819e9c7"
+      },
+      "decoded": [
+        {
+          "pts": 3528,
+          "samples": 960,
+          "rate": 48000,
+          "coordinate_spans": []
+        }
+      ]
+    }
+  ],
+  "coordinate_bridge_proven": true,
+  "mixed_task_decoded_frames": 1,
+  "exclusive_decoded_sample_ownership_proven": false,
+  "gate": "STOP_RENDER_TASK_OWNERSHIP_NOT_PROVEN",
+  "reason": "PTS sidecar traces coordinates and shared packet spans, but does not prove codec/resampler boundary sample attribution or browser render identity. No fixed offset, packet-trigger task, or receipt was invented.",
+  "later_cases": {
+    "Final_cancel": "NOT_RUN",
+    "identifier_arbitration": "NOT_RUN",
+    "latency_mobile": "NOT_RUN"
+  },
+  "production_changes": false
+}

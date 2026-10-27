@@ -1,0 +1,28 @@
+{
+  "stage_snapshot": "96e44d90c51aad49186d638334391f779aad8067ffa97af8a03b339f64870ad7",
+  "stage_archive_unchanged": true,
+  "source_files": [
+    {
+      "path": "scripts/evaluation/probe_td_compatibility.py",
+      "stage_sha256": "2bc4d52c2acda14e73a12418f853518a2fd2ecdc2120df2d06e051552a85ea68",
+      "current_sha256": "c37980250fcc20aa98e641b060b278f9bf7e97213f68f28bdb389217847a6b6c"
+    },
+    {
+      "path": "scripts/evaluation/probe_td_tts.py",
+      "stage_sha256": "91b473730241c9b2a4740c0c371825e128985f6ea8d01556d36a74ac80805d55",
+      "current_sha256": "cc46129d79e99b1a1e716e650d2cc1e879762a724f3457c5a5908aee404aaa48"
+    },
+    {
+      "path": "tests/test_td_vendor_probe.py",
+      "stage_sha256": "e5deb1c36ff3d3c5f7091d375190c309a6f41d43d2df077b69239b1426e2903b",
+      "current_sha256": "43d317d8754281a30f6d3a88c92a618636cdbd68f21a165c8e47b1128acdb43b"
+    },
+    {
+      "path": "tests/test_td_tts_vendor_probe.py",
+      "stage_sha256": "29c0c19dcbcd67a7dd3cf883fdd532e318d69a0fa98d02ef70c44e047dc80094",
+      "current_sha256": "2ca57a765ae20f614d64b9729eb5b26e0bbb73310ab6e44867873bb96b87188b"
+    }
+  ],
+  "requires_r49_source_delta": true,
+  "patch_sha256": "f69064a415d928dc8148720a4db63565f230a59da3dae10ce3283776afeffc94"
+}

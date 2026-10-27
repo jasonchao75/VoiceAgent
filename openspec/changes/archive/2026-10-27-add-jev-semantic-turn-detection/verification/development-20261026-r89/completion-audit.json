@@ -1,0 +1,22 @@
+{
+  "audit": "developer implementation/self-test handoff; not product acceptance",
+  "delta_scenarios": 68,
+  "self_test_ids": 22,
+  "backend_cases_passed": 756,
+  "client_unit_passed": 25,
+  "current_strict_cold_warm_each_two_responses": true,
+  "unique_td_commit_each_call": true,
+  "both_histories_exact_after_restart": true,
+  "formal_history_ui_1440_390": true,
+  "frozen_v014_sha_verified": true,
+  "all_open_items_disclosed": true,
+  "handoff_artifacts_present": true,
+  "independent_final_pass": false,
+  "checkpoint_c": false,
+  "user_gate_2": false,
+  "remaining_unverified_scope": "README.md#明确未验证及审批边界",
+  "requires_current_final_change_gate_and_package_hash_check": true,
+  "isolated_package_core_backend_passed": 126,
+  "isolated_package_client_passed": 25,
+  "isolated_package_frontend_build_passed": true
+}

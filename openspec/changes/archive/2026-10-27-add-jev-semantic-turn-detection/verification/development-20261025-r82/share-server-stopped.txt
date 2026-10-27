@@ -1,0 +1,70 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 1440px (327ms)
+  ✘  2 [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 390px (113ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 1440px 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5177/?share_fixture=1
+    Call log:
+      - navigating to "http://127.0.0.1:5177/?share_fixture=1", waiting until "load"
+
+
+      14 |     return route.fulfill({contentType:'application/json',body:JSON.stringify(data)});
+      15 |   });
+    > 16 |   await page.goto('/?share_fixture=1');
+         |              ^
+      17 |   await page.locator('.bot-card').first().click();
+      18 |   await page.getByRole('button',{name:'Share',exact:true}).click();
+      19 |   const baseline=await context.newPage();await baseline.setViewportSize({width,height:1000});
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-shell-baseline.spec.js:16:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-shell-baseline-formal-S-fa38c-QR-and-link-cards-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-shell-baseline-formal-S-fa38c-QR-and-link-cards-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-shell-baseline-formal-S-fa38c-QR-and-link-cards-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-shell-baseline-formal-S-fa38c-QR-and-link-cards-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 390px 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5177/?share_fixture=1
+    Call log:
+      - navigating to "http://127.0.0.1:5177/?share_fixture=1", waiting until "load"
+
+
+      14 |     return route.fulfill({contentType:'application/json',body:JSON.stringify(data)});
+      15 |   });
+    > 16 |   await page.goto('/?share_fixture=1');
+         |              ^
+      17 |   await page.locator('.bot-card').first().click();
+      18 |   await page.getByRole('button',{name:'Share',exact:true}).click();
+      19 |   const baseline=await context.newPage();await baseline.setViewportSize({width,height:1000});
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-shell-baseline.spec.js:16:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-shell-baseline-formal-S-680c3--QR-and-link-cards-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-shell-baseline-formal-S-680c3--QR-and-link-cards-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-shell-baseline-formal-S-680c3--QR-and-link-cards-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-shell-baseline-formal-S-680c3--QR-and-link-cards-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 1440px 
+    [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 390px 

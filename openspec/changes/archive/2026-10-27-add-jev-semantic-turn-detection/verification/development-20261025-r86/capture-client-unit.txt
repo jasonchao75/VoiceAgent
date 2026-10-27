@@ -1,0 +1,13 @@
+✔ renderer-only state does not escape strict API receipt schema (0.323959ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (0.151875ms)
+✔ capture metadata observation binds the sender without changing the receiver worker (0.07325ms)
+✔ missing native captureTime stays missing instead of using observation time (1.765625ms)
+✔ native bytes are unchanged while async payload proof is bounded and acknowledged (0.469959ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 33.469375

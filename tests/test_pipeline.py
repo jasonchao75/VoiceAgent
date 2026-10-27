@@ -222,3 +222,124 @@ async def test_pipeline_order_and_opening_behavior_without_paid_apis(
         assert fake_context.messages == []
 
     await store.close(lease.session_id)
+
+
+@pytest.mark.parametrize("with_identifier", [False, True])
+@pytest.mark.parametrize("playback_protocol", [None, "websocket"])
+async def test_custom_td_uses_local_audio_before_asr_and_owned_aggregator(
+    playback_protocol,
+    tmp_path,
+    with_identifier,
+    monkeypatch,
+    session_request,
+    runtime_config,
+    voice_catalog,
+    llm_catalog,
+):
+    """The production pipeline must use the new stages, not merely expose a catalog choice."""
+    from tests.test_td_config import td_settings
+    from tests.test_td_rule_settings import priority_settings
+
+    settings = td_settings()
+    if with_identifier:
+        settings["priority_rule"] = priority_settings()
+    request = SessionRequest.model_validate(
+        {
+            **session_request.model_dump(),
+            "turn_detection_source": "self_developed",
+            "td_config": settings,
+            "jev_api_key": "fixture-jev-inert-key",
+        }
+    )
+    store = SessionStore(token_ttl_seconds=120, max_sessions=1)
+    pending = await store.create(
+        request=request,
+        runtime=runtime_config,
+        voice_catalog=voice_catalog,
+        llm_catalog=llm_catalog,
+    )
+    lease = await store.claim(pending.token)
+    transport = _FakeTransport()
+    context, worker = _FakeContext(), _FakeWorker()
+    stt, local_audio, user, llm, tts, assistant = [object() for _ in range(6)]
+    captured = []
+
+    class Coordinator:
+        """Inert coordinator used only for production assembly verification."""
+
+        authority = object()
+        source_evidence_error = None
+
+        def assistant_context(self, text):
+            self.opening = text
+
+    coordinator = Coordinator()
+
+    class HTTP:
+        """Record client cleanup without creating a socket."""
+
+        closed = False
+
+        async def aclose(self):
+            self.closed = True
+
+    http = HTTP()
+
+    async def prepare(**kwargs):
+        assert kwargs["api_key"] == "fixture-jev-inert-key"
+        assert kwargs["settings"].maximum_ms == 2500
+        assert (kwargs.get("bind_input") is not None) == with_identifier
+        assert (kwargs.get("identifier_output") is not None) == (
+            with_identifier and playback_protocol == "websocket"
+        )
+        return local_audio, coordinator, http
+
+    def aggregators(actual_context, authority):
+        assert actual_context is context and authority is coordinator.authority
+        return user, assistant
+
+    monkeypatch.setattr(voice_agent, "prepare_custom_td", prepare)
+    monkeypatch.setattr(voice_agent, "create_custom_aggregators", aggregators)
+    captured_tools = []
+
+    def context_factory(**kwargs):
+        captured_tools.extend(kwargs.get("tools", []))
+        return context
+
+    monkeypatch.setattr(voice_agent, "LLMContext", context_factory)
+    monkeypatch.setattr(voice_agent, "create_llm_service", lambda **kwargs: llm)
+    monkeypatch.setattr(voice_agent, "Pipeline", lambda processors: captured.extend(processors))
+    monkeypatch.setattr(voice_agent, "PipelineWorker", lambda *args, **kwargs: worker)
+    monkeypatch.setattr(voice_agent, "WorkerRunner", _FakeRunner)
+    from src.tts.echo_cache import EchoAudioCache
+
+    cache = EchoAudioCache(tmp_path / "echo")
+    await voice_agent.run_voice_agent_pipeline(
+        playback_protocol=playback_protocol,
+        echo_cache=cache,
+        transport=transport,
+        lease=lease,
+        runtime=runtime_config,
+        asr_registry=_FakeRegistry(ASRService(processor=stt)),
+        tts_registry=_FakeRegistry(tts),
+        event_buffer=SessionEventBuffer(),
+    )
+    assert captured[:6] == [transport.input_processor, local_audio, stt, coordinator, user, llm]
+    from src.pipeline.audio_identity import AudioTaskTagger
+    from src.pipeline.serial_output import SerialAudioOutput
+
+    if playback_protocol == "websocket":
+        assert isinstance(captured[-3], SerialAudioOutput)
+        assert isinstance(captured[-4], AudioTaskTagger)
+        assert captured[-5] is tts
+    else:
+        assert captured[-4] is tts
+        assert isinstance(captured[-3], AudioTaskTagger)
+    await cache.close()
+    assert captured[-2:] == [transport.output_processor, assistant]
+    assert http.closed
+    assert coordinator.opening == request.opening_script
+    assert {tool.name for tool in captured_tools} == (
+        {"submit_identifier", "clear_identifier"} if with_identifier else set()
+    )
+    await store.close(lease.session_id)

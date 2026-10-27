@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:37777) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 390px (5.7s)
+
+
+  1) [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 390px 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#history-dialog').locator('.playback-timing-range')
+    Expected: 1
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#history-dialog').locator('.playback-timing-range') with timeout 5000ms
+      - waiting for locator('#history-dialog').locator('.playback-timing-range')
+        14 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      28 |  await page.locator('.history-row').first().click();
+      29 |  const dialog=page.locator('#history-dialog'),range=dialog.locator('.playback-timing-range');
+    > 30 |  await expect(range).toHaveCount(1);
+         |                      ^
+      31 |  await expect(range).toHaveAttribute('data-response-id','7:1');
+      32 |  await expect(range).toContainText('5–25.1 ms');
+      33 |  await expect(range.getByText('Measured playback range',{exact:true})).toBeVisible();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-timing-history.spec.js:30:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 390px 

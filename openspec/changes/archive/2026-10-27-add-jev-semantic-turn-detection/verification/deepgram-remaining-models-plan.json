@@ -1,0 +1,43 @@
+{
+  "batch_id": "deepgram-td-remaining-models-v1",
+  "cases": [
+    {
+      "id": "fresh-digits",
+      "path": "/Volumes/work/OpenCode/VoiceAgent/test-results/td-vendor-inputs/20261024/digits-ready.wav",
+      "sha256": "a93499196b16dd1e9307ba97bedd24d246dedf995755e05bc9f20e382139966e",
+      "duration_seconds": 5.1675,
+      "text": "One two three. Four five six. Seven eight nine.",
+      "provider": "deepgram",
+      "model": "flux-general-multi",
+      "options": {},
+      "silence_tail_seconds": 3
+    },
+    {
+      "id": "fresh-digits",
+      "path": "/Volumes/work/OpenCode/VoiceAgent/test-results/td-vendor-inputs/20261024/digits-ready.wav",
+      "sha256": "a93499196b16dd1e9307ba97bedd24d246dedf995755e05bc9f20e382139966e",
+      "duration_seconds": 5.1675,
+      "text": "One two three. Four five six. Seven eight nine.",
+      "provider": "deepgram",
+      "model": "nova-3",
+      "options": {
+        "language": "en"
+      },
+      "silence_tail_seconds": 3
+    }
+  ],
+  "max_calls": 2,
+  "connection_wall_seconds": 30,
+  "connect_timeout_seconds": 5,
+  "cost_ceiling_usd": "0.02",
+  "maximum_public_price_usd": "0.00850",
+  "price_verified": "2026-10-25",
+  "pricing_source": "https://deepgram.com/pricing",
+  "turn_detection_source": "self_developed",
+  "retries": 0,
+  "recipient": "api.deepgram.com",
+  "llm_jev_tts_calls": 0,
+  "public_price_bound": "30s each at USD0.0078/min Flux multilingual and USD0.0092/min conservative Nova3 upper regular rate",
+  "source_evidence": "new pinned PCM; existing sample-boundary repair; stop first gap",
+  "request_sha256": "45eeec12974c070878819db599b4765d3f7c42da1cf240f579ab5bd4e5e4b4ce"
+}

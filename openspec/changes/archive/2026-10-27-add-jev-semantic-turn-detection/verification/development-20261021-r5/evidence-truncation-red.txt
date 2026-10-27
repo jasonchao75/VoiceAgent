@@ -1,0 +1,18 @@
+.....F                                                                   [100%]
+=================================== FAILURES ===================================
+____ test_bounded_td_history_exposes_dropped_events_instead_of_silent_loss _____
+
+    def test_bounded_td_history_exposes_dropped_events_instead_of_silent_loss():
+        """A long call must preserve its retained facts and declare missing later evidence."""
+        capture = CallCapture(provider='openai', model='gpt-4.1-mini')
+        for index in range(10002):
+            capture.record_td_event({'event': 'source_transcript', 'source_revision': index})
+>       assert len(capture.td_events) == 10001
+E       AssertionError: assert 10000 == 10001
+E        +  where 10000 = len([{'created_ms': 0.00200001522898674, 'event': 'source_transcript', 'source_revision': 0}, {'created_ms': 0.00291690230...', 'source_revision': 4}, {'created_ms': 0.00400003045797348, 'event': 'source_transcript', 'source_revision': 5}, ...])
+E        +    where [{'created_ms': 0.00200001522898674, 'event': 'source_transcript', 'source_revision': 0}, {'created_ms': 0.00291690230...', 'source_revision': 4}, {'created_ms': 0.00400003045797348, 'event': 'source_transcript', 'source_revision': 5}, ...] = CallCapture(provider='openai', model='gpt-4.1-mini', recorder=None, chat_mode=False, started=1212895.224224583, turns=...tokens=None, context_applied=None, context_failure_reason=None), _states=[], _assistant_chunks=[], _input_audio_ms=0.0).td_events
+
+tests/test_td_history.py:113: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_bounded_td_history_exposes_dropped_events_instead_of_silent_loss
+1 failed, 5 passed in 0.72s

@@ -1,0 +1,7 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 1440px (927ms)
+  ✓  2 [desktop-chromium] › tests/ui/td-shell-baseline.spec.js:8:32 › formal Share keeps frozen profile QR and link cards at 390px (649ms)
+
+  2 passed (1.9s)

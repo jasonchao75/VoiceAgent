@@ -1,0 +1,25 @@
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+_____ test_no_client_ack_is_unknown_not_proof_that_playback_never_started ______
+
+    def test_no_client_ack_is_unknown_not_proof_that_playback_never_started():
+        """P11 keeps missing client evidence separate from server-side synthesis completion."""
+        from pipecat.frames.frames import TTSStartedFrame, TTSAudioRawFrame
+        capture = CallCapture(provider='openai', model='gpt-4.1-mini')
+        capture.chat_text('hello')
+        capture.observe(LLMContextFrame(LLMContext()))
+        capture.observe(LLMTextFrame('answer'))
+        capture.observe(TTSStartedFrame())
+        capture.observe(TTSAudioRawFrame(b'\x00\x00' * 160, 16000, 1))
+        metric = capture.finalize()[1][0]
+        assert metric.playback_ms is None
+>       assert metric.incomplete_reason == 'client_playback_unconfirmed'
+E       AssertionError: assert 'session_ende...fore_playback' == 'client_playback_unconfirmed'
+E         
+E         - client_playback_unconfirmed
+E         + session_ended_before_playback
+
+tests/test_td_history.py:105: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_no_client_ack_is_unknown_not_proof_that_playback_never_started
+1 failed, 4 passed in 0.71s

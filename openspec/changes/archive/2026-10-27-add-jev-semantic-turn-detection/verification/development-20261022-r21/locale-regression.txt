@@ -1,0 +1,25 @@
+
+Running 15 tests using 1 worker
+
+(node:14471) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (707ms)
+  ✓   2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (394ms)
+  ✓   3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 1440px (601ms)
+  ✓   4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 390px (494ms)
+  ✓   5 [desktop-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings (1.4s)
+(node:14531) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   6 [desktop-chromium] › tests/ui/td-runtime.spec.js:30:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history (5.8s)
+  ✓   7 [desktop-chromium] › tests/ui/td-runtime.spec.js:102:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.5s)
+  ✓   8 [desktop-chromium] › tests/ui/td-runtime.spec.js:148:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (813ms)
+  ✓   9 [desktop-chromium] › tests/ui/td-runtime.spec.js:178:1 › failed TD save retains draft and retries against the actual API (853ms)
+  -  10 [desktop-chromium] › tests/ui/td-runtime.spec.js:199:1 › formal configuration and audio survive an explicitly coordinated process restart
+  ✓  11 [desktop-chromium] › tests/ui/td-runtime.spec.js:230:1 › late save failure stays with its original Bot after selection changes (697ms)
+  ✓  12 [desktop-chromium] › tests/ui/td-runtime.spec.js:251:1 › formal TD settings remain operable at 390px with actual saved configuration (633ms)
+  ✓  13 [desktop-chromium] › tests/ui/td-runtime.spec.js:272:1 › audio generation failure permits an explicit retry without publishing or losing settings (541ms)
+  ✓  14 [desktop-chromium] › tests/ui/td-runtime.spec.js:291:1 › formal language switch changes labels without changing TD request or user values (667ms)
+  ✓  15 [desktop-chromium] › tests/ui/td-runtime.spec.js:313:1 › formal TD language defaults to Chinese without replacing user prompts (423ms)
+
+  1 skipped
+  14 passed (16.4s)

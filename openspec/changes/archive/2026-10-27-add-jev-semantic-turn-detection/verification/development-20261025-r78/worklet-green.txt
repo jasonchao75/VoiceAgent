@@ -1,0 +1,12 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (0.880792ms)
+✔ targeted clear removes future samples without claiming they rendered (0.631ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (0.474334ms)
+✔ clock challenge is observed in an actual later quantum without changing audio (0.410542ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 32.222625

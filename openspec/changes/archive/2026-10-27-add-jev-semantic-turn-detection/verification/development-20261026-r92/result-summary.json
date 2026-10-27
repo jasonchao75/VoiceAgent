@@ -1,0 +1,172 @@
+{
+  "status": "ok",
+  "calls": 2,
+  "decisions": [
+    {
+      "attempt": 1,
+      "status": "ok",
+      "noul": 0.7,
+      "probabilities": {
+        "complete": 0.93,
+        "incomplete": 0.07
+      },
+      "model": "jev-1.14.0",
+      "input_tokens": 380,
+      "output_tokens": 50
+    },
+    {
+      "attempt": 2,
+      "status": "ok",
+      "noul": 0.05,
+      "probabilities": {
+        "complete": 0.0,
+        "incomplete": 1.0
+      },
+      "model": "jev-1.14.0",
+      "input_tokens": 384,
+      "output_tokens": 52
+    }
+  ],
+  "first_target_ms": 963.0,
+  "second_target_ms": 1952.5,
+  "d080_longer_wait_observed": true,
+  "old_deadline_commits": 0,
+  "maximum_deadline_commits": 1,
+  "events": [
+    {
+      "event": "speech_resumed",
+      "turn_id": 1,
+      "audio_ms": 0.0
+    },
+    {
+      "event": "source_transcript",
+      "turn_id": 1,
+      "audio_ms": 0.0,
+      "related_turn_ids": [
+        1
+      ],
+      "source_id": "0",
+      "stream_epoch": 0,
+      "source_revision": 1,
+      "text": "please do not cancel my booking.",
+      "source_final": false,
+      "source_withdrawn": false
+    },
+    {
+      "event": "candidate_created",
+      "turn_id": 1,
+      "audio_ms": 0.0,
+      "candidate": 2,
+      "speech_end_audio_ms": 6000
+    },
+    {
+      "event": "jev_decision_attempt",
+      "turn_id": 1,
+      "audio_ms": 0.0,
+      "candidate": 2,
+      "source_revision": 1,
+      "text": "please do not cancel my booking.",
+      "assistant": "How can I help you?",
+      "transcript_status": "Partial"
+    },
+    {
+      "event": "jev_result",
+      "turn_id": 1,
+      "audio_ms": 0.0,
+      "source_revision": 1,
+      "duration_ms": 929.755750024924,
+      "candidate": 2,
+      "status": "ok",
+      "noul": 0.7,
+      "probabilities": {
+        "complete": 0.93,
+        "incomplete": 0.07
+      }
+    },
+    {
+      "event": "jev_wait_calculated",
+      "turn_id": 1,
+      "audio_ms": 0.0,
+      "candidate": 2,
+      "source_revision": 1,
+      "noul_ms": 1170.0,
+      "choice_ms": 756.0,
+      "target_ms": 963.0,
+      "remaining_ms": 963.0,
+      "conflict": false,
+      "alpha": 0.5
+    },
+    {
+      "event": "source_transcript",
+      "turn_id": 1,
+      "audio_ms": 6963.0,
+      "related_turn_ids": [
+        1
+      ],
+      "source_id": "0",
+      "stream_epoch": 0,
+      "source_revision": 2,
+      "text": "please do not cancel my booking. I would like to",
+      "source_final": false,
+      "source_withdrawn": false
+    },
+    {
+      "event": "jev_decision_attempt",
+      "turn_id": 1,
+      "audio_ms": 6963.0,
+      "candidate": 2,
+      "source_revision": 2,
+      "text": "please do not cancel my booking. I would like to",
+      "assistant": "How can I help you?",
+      "transcript_status": "Partial"
+    },
+    {
+      "event": "jev_result",
+      "turn_id": 1,
+      "audio_ms": 6963.0,
+      "source_revision": 2,
+      "duration_ms": 305.2127080154605,
+      "candidate": 2,
+      "status": "ok",
+      "noul": 0.05,
+      "probabilities": {
+        "complete": 0.0,
+        "incomplete": 1.0
+      }
+    },
+    {
+      "event": "jev_wait_calculated",
+      "turn_id": 1,
+      "audio_ms": 6963.0,
+      "candidate": 2,
+      "source_revision": 2,
+      "noul_ms": 2405.0,
+      "choice_ms": 1500.0,
+      "target_ms": 1952.5,
+      "remaining_ms": 989.5,
+      "conflict": false,
+      "alpha": 0.5
+    },
+    {
+      "event": "td_commit",
+      "turn_id": 1,
+      "audio_ms": 8500,
+      "text": "please do not cancel my booking. I would like to",
+      "source_final": false,
+      "reason": "maximum_silence",
+      "candidate": 2,
+      "sources": [
+        {
+          "epoch": 0,
+          "source_id": "0",
+          "revision": 2
+        }
+      ]
+    }
+  ],
+  "scope": "controlled audio clock; not live ASR arrival or measured media latency",
+  "asr_llm_tts_media_calls": 0,
+  "evidence_level": "external-real Jev + recorded ASR fixture + controlled clock",
+  "estimated_token_cost_usd": "0.000032088",
+  "actual_billed_cost_usd": null
+}

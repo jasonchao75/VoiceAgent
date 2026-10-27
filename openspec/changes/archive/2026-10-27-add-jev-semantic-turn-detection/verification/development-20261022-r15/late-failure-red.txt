@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:10456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:227:1 › late save failure stays with its original Bot after selection changes (6.2s)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:227:1 › late save failure stays with its original Bot after selection changes 
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('#form-error')
+    Expected: true
+    Received: false
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('#form-error') with timeout 5000ms
+      - waiting for locator('#form-error')
+        14 × locator resolved to <p role="alert" id="form-error" class="td-error">Old Bot save failed</p>
+           - unexpected value "false"
+
+
+      241 |   const response=page.waitForResponse(r=>r.url().endsWith(`/api/bots/${original.id}`) && r.request().method()==="PUT");
+      242 |   release();await response;
+    > 243 |   await expect(page.locator("#form-error")).toHaveJSProperty("hidden",true);
+          |                                             ^
+      244 |   await expect(page.locator("#jev-error")).toHaveJSProperty("hidden",true);
+      245 |   await expect(page.locator("#echo-gap")).toHaveValue("50");
+      246 | });
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:243:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-late-save-failu-1fbbc-Bot-after-selection-changes-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-late-save-failu-1fbbc-Bot-after-selection-changes-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-late-save-failu-1fbbc-Bot-after-selection-changes-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-late-save-failu-1fbbc-Bot-after-selection-changes-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:227:1 › late save failure stays with its original Bot after selection changes 

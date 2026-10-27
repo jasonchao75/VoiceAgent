@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import io
 import logging
 import os
 import secrets
 import time
 import uuid
+import wave
 from collections import deque
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
@@ -29,10 +31,12 @@ from pipecat.transports.smallwebrtc.request_handler import (
 )
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 from starlette.responses import Response
+from starlette.websockets import WebSocketState
 
 from src.asr import create_default_asr_registry
 from src.asr.catalog import discover_asr_model_catalog
-from src.asr.config import asr_provider_catalog
+from src.asr.config import ASRProvider, asr_provider_catalog
+from src.asr.transcript import ASRSourceEvidenceError
 from src.auth import (
     AUTH_COOKIE,
     AuthSessionStore,
@@ -50,7 +54,7 @@ from src.bots.models import (
 )
 from src.bots.storage import BotStore
 from src.bots.validation import validate_asr_account_catalog, validate_bot_config
-from src.config import load_llm_provider_catalog, load_runtime_config, load_voice_catalog
+from src.config import TTSConfig, load_llm_provider_catalog, load_runtime_config, load_voice_catalog
 from src.evaluation import EvaluationStore, create_evaluation_router
 from src.evaluation.connections import ASRConnectionError, test_asr_connection
 from src.evaluation.executor import EvaluationRunner
@@ -81,6 +85,8 @@ from src.session import (
     SessionTokenError,
 )
 from src.tts import create_default_tts_registry
+from src.tts.echo_cache import EchoAudioCache, fingerprint, tts_for_bot, units_for_values
+from src.tts.unit_synthesis import synthesize_unit
 from src.webrtc import SessionBoundSmallWebRTCHandler
 
 
@@ -137,6 +143,14 @@ class SessionResponse(BaseModel):
     expires_in_seconds: int
 
 
+class EchoGenerateRequest(BaseModel):
+    """Generate configured units only; keys and arbitrary synthesis text are never accepted."""
+
+    model_config = ConfigDict(extra="forbid")
+    units: tuple[str, ...] | None = None
+    expected_fingerprint: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+
+
 class PublishRequest(BaseModel):
     """Public copy saved with one immutable Bot publication."""
 
@@ -168,6 +182,7 @@ class PublicSessionResponse(BaseModel):
     connection_url: str
     ice_servers: list[dict[str, str]]
     expires_in_seconds: int
+    playback_mode: Literal["native", "rtp_candidate"] = "native"
 
 
 class PublicDemoEvent(BaseModel):
@@ -216,6 +231,65 @@ class LoginRequest(BaseModel):
     next: str = Field(default="/", max_length=2000)
 
 
+class PlaybackClockProbe(BaseModel):
+    """One live-session challenge for a single immutable render clock."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    clock_kind: Literal["render", "capture"] = "render"
+    render_clock_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    render_sample_rate: int = Field(ge=8000, le=384000, strict=True)
+
+
+class PlaybackClockAck(PlaybackClockProbe):
+    """A frame observation made after receiving the server's opaque challenge."""
+
+    render_frame: int = Field(ge=0, le=9_007_199_254_740_991, strict=True)
+
+
+class RTPCaptureRecord(BaseModel):
+    """One native sender report; it carries neither audio nor free-form metadata."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    clock_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    ssrc: int = Field(ge=0, lt=2**32, strict=True)
+    rtp_timestamp: int = Field(ge=0, lt=2**32, strict=True)
+    payload_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    capture_time_ms: float = Field(strict=True, ge=-562949953421311, le=562949953421311)
+    capture_clock: Literal["worker_performance"]
+
+
+class RTPCaptureBatch(BaseModel):
+    """A bounded report batch tied to a server-created connection epoch."""
+
+    model_config = ConfigDict(extra="forbid")
+    connection_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    records: list[RTPCaptureRecord] = Field(min_length=1, max_length=16)
+
+
+class PlaybackReceipt(BaseModel):
+    """A bounded task-specific render acknowledgement, with no transcript or audio."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    playback_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    event: Literal["task_started", "task_finished", "task_stopped", "task_failed"]
+    rendered_samples: int = Field(ge=0, le=691200000)
+    elapsed_ms: float = Field(ge=0, le=7_200_000)
+    request_id: str | None = Field(default=None, max_length=128)
+    evidence_source: Literal["audio_worklet_render"]
+    failure_reason: Literal["render_queue_limit"] | None = None
+    render_frame: int | None = Field(default=None, ge=0, le=9_007_199_254_740_991, strict=True)
+    render_sample_rate: int | None = Field(default=None, ge=8000, le=384000, strict=True)
+    render_clock_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+
+    @model_validator(mode="after")
+    def complete_render_clock(self) -> PlaybackReceipt:
+        """Require one complete optional clock without inventing fields for legacy clients."""
+        fields = (self.render_frame, self.render_sample_rate, self.render_clock_id)
+        if any(value is not None for value in fields) and any(value is None for value in fields):
+            raise ValueError("Render clock coordinates must be supplied together")
+        return self
+
+
 class BrowserEvent(BaseModel):
     """Whitelisted browser playback event used for interruption timing."""
 
@@ -231,7 +305,11 @@ class BrowserEvent(BaseModel):
     stage: Literal["permission", "session", "signaling", "live"] | None = None
     safe_error_category: (
         Literal[
-            "microphone_unavailable", "session_unavailable", "connection_failed", "call_interrupted"
+            "microphone_unavailable",
+            "session_unavailable",
+            "connection_failed",
+            "call_interrupted",
+            "asr_source_evidence_unavailable",
         ]
         | None
     ) = None
@@ -308,6 +386,8 @@ class ASRCatalogDiscoveryRequest(BaseModel):
 class EncryptedBotKeys(TypedDict):
     """Exact encrypted columns shared by Bot create and update."""
 
+    encrypted_jev_key: str | None
+    jev_key_endpoint: str | None
     encrypted_deepgram_key: str | None
     llm_key_provider: str | None
     encrypted_llm_key: str | None
@@ -370,7 +450,7 @@ def _evaluation_data_dir() -> Path:
     return Path(os.getenv("VOICE_AGENT_EVALUATION_DATA_DIR", str(_bot_data_dir())))
 
 
-def create_app() -> FastAPI:
+def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
     """Create an application with validated configuration and isolated state."""
     runtime = load_runtime_config()
     voices = load_voice_catalog()
@@ -382,7 +462,8 @@ def create_app() -> FastAPI:
     tts_registry = create_default_tts_registry()
     asr_registry = create_default_asr_registry()
     bot_store = BotStore(_bot_data_dir() / "bots.db")
-    publication_store = DemoPublicationStore(_bot_data_dir() / "bots.db")
+    echo_cache = EchoAudioCache(_bot_data_dir() / "echo-audio")
+    publication_store = DemoPublicationStore(_bot_data_dir() / "bots.db", echo_cache)
     bot_cipher = BotKeyCipher.from_env()
     ice_server_urls = _ice_server_urls()
     _validate_webrtc_deployment(ice_server_urls)
@@ -442,6 +523,7 @@ def create_app() -> FastAPI:
             await webrtc_handler.close()
             await store.close_all()
             await evaluation_runner.close()
+            await echo_cache.close()
             event_buffers.clear()
             call_captures.clear()
 
@@ -452,6 +534,20 @@ def create_app() -> FastAPI:
     app.state.session_store = store
     app.state.event_buffers = event_buffers
     app.state.tts_registry = tts_registry
+    app.state.echo_cache = echo_cache
+
+    async def echo_synthesize(
+        unit: str,
+        config: TTSConfig,
+        rate: int,
+        *,
+        timeout: float,
+        api_key: str,
+    ) -> bytes:
+        """Use existing adapters with a separate fixed-setting synthesis lifecycle."""
+        return await synthesize_unit(tts_registry, api_key, unit, config, rate, timeout=timeout)
+
+    app.state.echo_synthesize = echo_synthesize
     app.state.asr_registry = asr_registry
     app.state.bot_store = bot_store
     app.state.publication_store = publication_store
@@ -652,6 +748,8 @@ def create_app() -> FastAPI:
             request.model_dump(
                 exclude={
                     "save_keys",
+                    "save_jev_key",
+                    "jev_api_key",
                     "save_asr_key",
                     "save_tts_key",
                     "save_llm_key",
@@ -744,6 +842,17 @@ def create_app() -> FastAPI:
             previous_provider=existing_record.llm_key_provider if existing_record else None,
             previous_ciphertext=existing_record.encrypted_llm_key if existing_record else None,
         )
+        jev_endpoint = request.td_config.jev.endpoint if request.td_config else None
+        encrypted_jev = None
+        if request.save_jev_key is not False:
+            if request.jev_api_key is not None and request.save_jev_key is True:
+                if jev_endpoint is None:
+                    raise HTTPException(
+                        status_code=400, detail="Jev connection settings are required"
+                    )
+                encrypted_jev = _encrypt_bot_key(request.jev_api_key)
+            elif existing_record and existing_record.jev_key_endpoint == jev_endpoint:
+                encrypted_jev = existing_record.encrypted_jev_key
         encrypted_deepgram = (
             encrypted_tts
             if tts_provider == "deepgram_flux"
@@ -753,6 +862,8 @@ def create_app() -> FastAPI:
         )
         encrypted_elevenlabs = encrypted_tts if tts_provider == "elevenlabs" else None
         return {
+            "encrypted_jev_key": encrypted_jev,
+            "jev_key_endpoint": jev_endpoint if encrypted_jev else None,
             "encrypted_deepgram_key": encrypted_deepgram,
             "llm_key_provider": llm_provider,
             "encrypted_llm_key": encrypted_llm,
@@ -872,6 +983,112 @@ def create_app() -> FastAPI:
             "unpublished_changes": state.unpublished_changes,
         }
 
+    async def echo_record(bot_id: str) -> BotRecord:
+        """Read the currently saved configuration before any asset operation."""
+        record = await bot_store.get(bot_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Bot not found")
+        return record
+
+    async def echo_status(record: BotRecord) -> dict[str, object]:
+        """Return verifiable per-unit state and the exact effective TTS fingerprint."""
+        rule = record.td_config.priority_rule if record.td_config else None
+        units = (
+            tuple(dict.fromkeys(units_for_values(row.value for row in rule.vocabulary)))
+            if rule
+            else ()
+        )
+        config = tts_for_bot(record)
+        rows = await echo_cache.status(record.id, units, config, runtime.audio.output_sample_rate)
+        return {
+            "fingerprint": fingerprint(config, runtime.audio.output_sample_rate),
+            "enabled": bool(rule and rule.enabled),
+            "assets": [
+                row.public() if row else {"unit": unit, "status": "missing", "url": None}
+                for unit, row in zip(units, rows, strict=True)
+            ],
+        }
+
+    @app.get("/api/bots/{bot_id}/echo-audio")
+    async def get_echo_audio(bot_id: str) -> dict[str, object]:
+        """Inspect current audio integrity without making any provider request."""
+        return await echo_status(await echo_record(bot_id))
+
+    @app.post("/api/bots/{bot_id}/echo-audio/generate")
+    async def generate_echo_audio(bot_id: str, payload: EchoGenerateRequest) -> dict[str, object]:
+        """Explicit user action prepares only missing units from the saved vocabulary."""
+        record = await echo_record(bot_id)
+        rule = record.td_config.priority_rule if record.td_config else None
+        if rule is None or not rule.enabled:
+            raise HTTPException(
+                status_code=400, detail="Enable identifier rules before generating audio"
+            )
+        config = tts_for_bot(record)
+        current_fp = fingerprint(config, runtime.audio.output_sample_rate)
+        if payload.expected_fingerprint is not None and payload.expected_fingerprint != current_fp:
+            raise HTTPException(
+                status_code=409, detail="TTS settings changed; reload before generating audio"
+            )
+        units = tuple(dict.fromkeys(units_for_values(row.value for row in rule.vocabulary)))
+        selected = payload.units if payload.units is not None else units
+        if not selected or not set(selected).issubset(units):
+            raise HTTPException(
+                status_code=400, detail="Select audio units from the saved vocabulary"
+            )
+        ciphertext = await publication_store.get_credential(record.id, "tts", record.tts_provider)
+        if bot_cipher is None or ciphertext is None:
+            raise HTTPException(
+                status_code=400, detail="Save the selected TTS key before generating audio"
+            )
+        try:
+            key = bot_cipher.decrypt(ciphertext).get_secret_value()
+        except StorageKeyError:
+            raise HTTPException(
+                status_code=400, detail="Saved TTS key cannot be decrypted"
+            ) from None
+
+        async def render(
+            unit: str,
+            settings: TTSConfig,
+            rate: int,
+            *,
+            timeout: float,
+        ) -> bytes:
+            """Keep the credential behind the server boundary, outside durable resource metadata."""
+            return await app.state.echo_synthesize(
+                unit, settings, rate, timeout=timeout, api_key=key
+            )
+
+        await echo_cache.prepare(
+            record.id, selected, config, runtime.audio.output_sample_rate, render, timeout=20.0
+        )
+        return await echo_status(record)
+
+    @app.get("/api/echo-assets/{version}")
+    async def preview_echo_audio(version: str) -> Response:
+        """Serve verified permanent PCM in a real WAV container for row-level listening."""
+        try:
+            asset = await echo_cache.asset(version)
+            pcm = await echo_cache.read(asset)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Audio resource unavailable") from None
+
+        def wav_bytes() -> bytes:
+            """Container conversion never joins encoded file headers or blocks the event loop."""
+            output = io.BytesIO()
+            with wave.open(output, "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(asset.sample_rate)
+                wav.writeframes(pcm)
+            return output.getvalue()
+
+        return Response(
+            await asyncio.to_thread(wav_bytes),
+            media_type="audio/wav",
+            headers={"Cache-Control": "private, max-age=31536000, immutable"},
+        )
+
     @app.get("/api/bots/{bot_id}/share")
     async def get_bot_share(bot_id: str, http_request: Request) -> dict[str, object]:
         """Return protected publication state for the formal Share page."""
@@ -940,6 +1157,7 @@ def create_app() -> FastAPI:
         inline_asr = request.asr_api_key or (
             request.deepgram_api_key if record.asr_provider == "deepgram" else None
         )
+        inline_tts: SecretStr | None
         if request.tts_api_key is not None:
             inline_tts = request.tts_api_key
         elif record.tts_provider == "elevenlabs":
@@ -1000,6 +1218,15 @@ def create_app() -> FastAPI:
             inline=request.llm_api_key,
         )
         assert tts_key is not None and llm_key is not None
+        jev_key = None
+        if record.turn_detection_source == "self_developed" and request.session_type != "chat_test":
+            jev_key = resolve_component_key(
+                label="Jev",
+                saved=record.has_jev_key,
+                ciphertext=record.encrypted_jev_key,
+                inline=request.jev_api_key,
+                required=True,
+            )
         return SessionRequest(
             session_type=request.session_type,
             asr_api_key=asr_key,
@@ -1015,10 +1242,12 @@ def create_app() -> FastAPI:
             system_prompt=record.system_prompt,
             opening_script=record.opening_script,
             fallback_script=record.fallback_script,
-            asr_provider=record.asr_provider,
+            asr_provider=cast(ASRProvider, record.asr_provider),
             asr_model=record.asr_model,
             turn_detection_source=record.turn_detection_source,
             asr_options=record.asr_options,
+            td_config=record.td_config,
+            jev_api_key=jev_key,
             asr_language_hints=record.asr_language_hints,
             asr_eot_threshold=record.asr_eot_threshold,
             asr_eot_timeout_ms=record.asr_eot_timeout_ms,
@@ -1027,7 +1256,7 @@ def create_app() -> FastAPI:
             asr_numerals=record.asr_numerals,
             asr_redact=record.asr_redact,
             flux_voice=record.tts_voice,
-            tts_provider=record.tts_provider,
+            tts_provider=cast(Literal["deepgram_flux", "elevenlabs"], record.tts_provider),
             tts_model=record.tts_model,
             tts_text_aggregation=record.tts_text_aggregation
             or ("sentence" if record.tts_provider == "elevenlabs" else "token"),
@@ -1174,7 +1403,7 @@ def create_app() -> FastAPI:
         assert request.llm_model is not None
         validation_key = "diagnostic-placeholder-key"
         inline = SessionRequest(
-            deepgram_api_key=validation_key,
+            deepgram_api_key=SecretStr(validation_key),
             llm_api_key=request.llm_api_key,
             llm_provider=request.llm_provider,
             llm_base_url=request.llm_base_url,
@@ -1427,6 +1656,11 @@ def create_app() -> FastAPI:
             asr_api_key=asr_key,
             tts_api_key=tts_key,
             llm_api_key=llm_key,
+            jev_api_key=(
+                bot_cipher.decrypt(demo.encrypted_jev_key)
+                if config.turn_detection_source == "self_developed" and demo.encrypted_jev_key
+                else None
+            ),
         )
 
     async def _start_history(
@@ -1522,6 +1756,7 @@ def create_app() -> FastAPI:
                 runtime=runtime,
                 voice_catalog=voices,
                 llm_catalog=llm_providers,
+                bot_id=demo.bot_id,
             )
         except SessionCapacityError as exc:
             raise HTTPException(status_code=429, detail=str(exc)) from None
@@ -1532,6 +1767,12 @@ def create_app() -> FastAPI:
         return PublicSessionResponse(
             session_id=lease.session_id,
             connection_url=f"/api/public/webrtc/{lease.token}",
+            playback_mode=(
+                "rtp_candidate"
+                if development_rtp_candidate
+                and lease.config.asr.turn_detection_source == "self_developed"
+                else "native"
+            ),
             ice_servers=[{"urls": url} for url in ice_server_urls],
             expires_in_seconds=runtime.session.pending_token_ttl_seconds,
         )
@@ -1552,8 +1793,24 @@ def create_app() -> FastAPI:
         error_category = None
         diagnostic_id = None
         try:
-            transport = create_small_webrtc_transport(connection=connection, runtime=runtime)
+            transport = create_small_webrtc_transport(
+                connection=connection,
+                runtime=runtime,
+                custom_td=lease.config.asr.turn_detection_source == "self_developed",
+                candidate_playback=(
+                    development_rtp_candidate
+                    and lease.config.asr.turn_detection_source == "self_developed"
+                ),
+            )
+            if development_rtp_candidate and hasattr(transport, "td_rtp_input_ledger"):
+                capture.rtp_source.begin_epoch(transport.td_rtp_input_ledger.connection_id)
             await run_voice_agent_pipeline(
+                playback_protocol=(
+                    "webrtc_candidate"
+                    if development_rtp_candidate
+                    and lease.config.asr.turn_detection_source == "self_developed"
+                    else "webrtc"
+                ),
                 transport=transport,
                 lease=lease,
                 runtime=runtime,
@@ -1561,13 +1818,18 @@ def create_app() -> FastAPI:
                 tts_registry=tts_registry,
                 event_buffer=event_buffers[lease.session_id],
                 call_capture=capture,
+                echo_cache=echo_cache,
             )
         except asyncio.CancelledError:
             status = "disconnected"
             raise
         except Exception as exc:
             status = "failed"
-            error_category, _, _ = classify_llm_failure(exc)
+            error_category = (
+                ASRSourceEvidenceError.code
+                if isinstance(exc, ASRSourceEvidenceError)
+                else classify_llm_failure(exc)[0]
+            )
             diagnostic_id = str(uuid.uuid4())
             logger.error(
                 "mobile_session_failed session_id=%s diagnostic_id=%s category=%s error_type=%s",
@@ -1586,6 +1848,7 @@ def create_app() -> FastAPI:
                 duration_ms=(time.monotonic() - capture.started) * 1000,
                 turns=turns,
                 metrics=metrics,
+                td_events=capture.td_events,
                 recording_path=recording_path,
                 recording_status=recorder.status,
                 error_category=error_category,
@@ -1648,6 +1911,7 @@ def create_app() -> FastAPI:
                 runtime=runtime,
                 voice_catalog=voices,
                 llm_catalog=llm_providers,
+                bot_id=request.bot_id if isinstance(request, BotSessionRequest) else None,
             )
         except SessionCapacityError as exc:
             raise HTTPException(status_code=429, detail=str(exc)) from None
@@ -1697,6 +1961,98 @@ def create_app() -> FastAPI:
             event.stage or "none",
             event.safe_error_category or "none",
         )
+
+    async def clock_capture(session_id: str, request: Request) -> CallCapture:
+        """Resolve only an authenticated live capture; clock requests cannot create one."""
+        token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        try:
+            await store.get_active(session_id=session_id, token=token)
+        except SessionTokenError:
+            raise HTTPException(
+                status_code=401, detail="Session authorization is invalid"
+            ) from None
+        capture = call_captures.get(session_id)
+        if capture is None:
+            raise HTTPException(status_code=409, detail="Live capture is not ready")
+        return capture
+
+    @app.post("/api/sessions/{session_id}/playback-clock", status_code=201)
+    async def playback_clock_probe(
+        session_id: str,
+        probe: PlaybackClockProbe,
+        request: Request,
+    ) -> dict[str, str]:
+        """Issue a bounded render challenge without waiting on any audio processing."""
+        capture = await clock_capture(session_id, request)
+        try:
+            ledger = (
+                capture.capture_clock if probe.clock_kind == "capture" else capture.render_clock
+            )
+            sample_id = ledger.issue(probe.render_clock_id, probe.render_sample_rate)
+        except ValueError:
+            raise HTTPException(status_code=429, detail="Render clock probe rejected") from None
+        return {"sample_id": sample_id}
+
+    @app.post("/api/sessions/{session_id}/rtp-input", status_code=204)
+    async def rtp_capture_batch(
+        session_id: str,
+        batch: RTPCaptureBatch,
+        request: Request,
+    ) -> Response:
+        """Match only an authenticated live connection, never client-created PCM extents."""
+        capture = await clock_capture(session_id, request)
+        if not capture.accept_rtp_packet_records(
+            batch.connection_id,
+            [record.model_dump() for record in batch.records],
+        ):
+            raise HTTPException(status_code=409, detail="RTC capture source rejected")
+        return Response(status_code=204)
+
+    @app.post("/api/sessions/{session_id}/playback-clock/{sample_id}", status_code=204)
+    async def playback_clock_ack(
+        session_id: str,
+        sample_id: str,
+        ack: PlaybackClockAck,
+        request: Request,
+    ) -> Response:
+        """Retain the first valid causal observation; replay cannot refresh its bounds."""
+        capture = await clock_capture(session_id, request)
+        acknowledge = (
+            capture.ack_capture_clock if ack.clock_kind == "capture" else capture.ack_render_clock
+        )
+        if not acknowledge(
+            sample_id,
+            ack.render_clock_id,
+            ack.render_sample_rate,
+            ack.render_frame,
+        ):
+            raise HTTPException(status_code=409, detail="Render clock acknowledgement is invalid")
+        return Response(status_code=204)
+
+    @app.post("/api/sessions/{session_id}/playback-events", status_code=204)
+    async def playback_event(session_id: str, event: PlaybackReceipt, request: Request) -> Response:
+        """Require this live session and its original prepared audio task identity."""
+        token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        try:
+            await store.get_active(session_id=session_id, token=token)
+        except SessionTokenError:
+            raise HTTPException(
+                status_code=401, detail="Session authorization is invalid"
+            ) from None
+        capture = call_captures.get(session_id)
+        if capture is None or not capture.playback_receipt(
+            event.playback_id,
+            event.event,
+            event.rendered_samples,
+            event.elapsed_ms,
+            event.request_id,
+            failure_reason=event.failure_reason,
+            render_frame=event.render_frame,
+            render_sample_rate=event.render_sample_rate,
+            render_clock_id=event.render_clock_id,
+        ):
+            raise HTTPException(status_code=409, detail="Audio task acknowledgement is invalid")
+        return Response(status_code=204)
 
     @app.get("/api/sessions/{session_id}/events")
     async def session_events(session_id: str, request: Request) -> dict[str, object]:
@@ -1764,13 +2120,18 @@ def create_app() -> FastAPI:
                 allowed_origins=_allowed_origins(),
                 event_buffer=event_buffers[lease.session_id],
                 call_capture=capture,
+                echo_cache=echo_cache,
             )
         except WebSocketDisconnect:
             call_status = "disconnected"
             logger.info("websocket_closed session_id=%s", lease.session_id)
         except Exception as exc:
             call_status = "failed"
-            error_category, _, _ = classify_llm_failure(exc)
+            error_category = (
+                ASRSourceEvidenceError.code
+                if isinstance(exc, ASRSourceEvidenceError)
+                else classify_llm_failure(exc)[0]
+            )
             diagnostic_id = str(uuid.uuid4())
             # Provider errors can contain request metadata; expose only the error class
             # and message. The message is needed for diagnosing endpoint/model issues.
@@ -1781,7 +2142,10 @@ def create_app() -> FastAPI:
                 error_category,
                 type(exc).__name__,
             )
-            if websocket.client_state.name != "DISCONNECTED":
+            if (
+                websocket.client_state != WebSocketState.DISCONNECTED
+                and websocket.application_state != WebSocketState.DISCONNECTED
+            ):
                 await websocket.close(code=1011, reason="Voice service error")
         finally:
             try:
@@ -1795,6 +2159,7 @@ def create_app() -> FastAPI:
                     duration_ms=(time.monotonic() - capture.started) * 1000,
                     turns=turns,
                     metrics=metrics,
+                    td_events=capture.td_events,
                     recording_path=None if is_chat else recording_path,
                     recording_status=recording_status,
                     error_category=error_category,

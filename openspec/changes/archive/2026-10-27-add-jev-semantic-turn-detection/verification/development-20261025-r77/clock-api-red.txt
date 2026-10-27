@@ -1,0 +1,48 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_clock_challenges_are_session_owned_bounded_and_acknowledged_once _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11610b490>
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_clock_challenges_are_session_owned_bounded_and_acknowledged_once(monkeypatch, session_request):
+        """D-073 clock evidence needs the original live lease and cannot retarget a nonce."""
+        captures = []
+    
+        async def pipeline(**kwargs):
+            captures.append(kwargs['call_capture'])
+            await kwargs['websocket'].send_json({'ready': True})
+            await kwargs['websocket'].receive_text()
+    
+        monkeypatch.setattr('src.api.run_voice_agent_session', pipeline)
+        payload = session_request.model_dump(mode='json')
+        payload.update(session_type='chat_test', deepgram_api_key='inert-no-network',
+                       llm_api_key='inert-no-network')
+        with TestClient(create_app()) as client:
+            session = client.post('/api/sessions', json=payload,
+                                  headers={'Origin': 'http://localhost:8000'}).json()
+            with client.websocket_connect(session['websocket_path'],
+                                          headers={'Origin': 'http://localhost:8000'}) as socket:
+                assert socket.receive_json()['ready']
+                url = f"/api/sessions/{session['session_id']}/playback-clock"
+                headers = {'Authorization': f"Bearer {session['session_token']}"}
+                probe = {'render_clock_id': 'a' * 32, 'render_sample_rate': 48000}
+>               assert client.post(url, json=probe).status_code == 401
+E               AssertionError: assert 405 == 401
+E                +  where 405 = <Response [405 Method Not Allowed]>.status_code
+E                +    where <Response [405 Method Not Allowed]> = post('/api/sessions/f02af44d-46b1-4bdf-97b5-43a4caed01a3/playback-clock', json={'render_clock_id': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'render_sample_rate': 48000})
+E                +      where post = <starlette.testclient.TestClient object at 0x10ad434d0>.post
+
+tests/test_playback_receipts_api.py:294: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_playback_receipts_api.py::test_clock_challenges_are_session_owned_bounded_and_acknowledged_once
+1 failed, 2 warnings in 1.46s

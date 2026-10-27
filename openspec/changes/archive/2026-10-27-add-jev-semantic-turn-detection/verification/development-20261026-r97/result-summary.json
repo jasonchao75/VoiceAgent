@@ -1,0 +1,18 @@
+{
+  "authorization": "D-085",
+  "request_sha256": "8cfd5bd5465d747373e6d81bf10dbdc513198e026dec9badbfc962c3aae7eb56",
+  "connections": 1,
+  "speak_attempts": 2,
+  "vendor_cancel_ack": true,
+  "old_terminal_before_cancel": false,
+  "old_client_stopped_samples": 2624,
+  "new_client_finished_samples": 51840,
+  "render_sample_rate": 24000,
+  "old_stop_frame": 79872,
+  "new_start_frame": 96896,
+  "stop_to_new_render_ms": 709.3333333333334,
+  "stop_to_new_render_meaning": "one observed gap including network/vendor/queues, not added latency or percentile",
+  "budget_usd": "0.02",
+  "full_text_estimate_usd": "0.00882",
+  "actual_billed_cost_usd": null
+}

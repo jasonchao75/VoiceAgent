@@ -1,0 +1,22 @@
+{
+  "mode": "wire-fixture",
+  "status": "ok",
+  "connections": 1,
+  "speak_attempts": 1,
+  "sessions": 1,
+  "old_terminal": false,
+  "cancel_ack": false,
+  "render_gate_released": true,
+  "incoming": [
+    "SpeechStarted"
+  ],
+  "outgoing": [
+    "Speak",
+    "Flush"
+  ],
+  "audio_bytes": 96000,
+  "speech_id_hashes": [
+    "042896dc1966b8a6214e5383aba5b8b931cfa049d17aafa37eb8a77c859b95da"
+  ],
+  "stopped": true
+}

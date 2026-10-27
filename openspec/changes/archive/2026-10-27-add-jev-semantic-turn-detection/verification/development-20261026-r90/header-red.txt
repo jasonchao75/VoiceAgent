@@ -1,0 +1,304 @@
+
+Running 6 tests using 1 worker
+
+(node:66258) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px zh (1.2s)
+(node:66264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px en (826ms)
+(node:66272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px zh (747ms)
+(node:66280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px en (730ms)
+(node:66287) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 650px en (745ms)
+(node:66293) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 701px en (737ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px zh 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+      Object {
+    -   "color": "rgb(143, 154, 149)",
+    +   "color": "rgb(237, 242, 239)",
+        "columnGap": "22px",
+    -   "display": "grid",
+    -   "fontSize": "10px",
+    -   "marginTop": "14px",
+    +   "display": "block",
+    +   "fontSize": "16px",
+    +   "marginTop": "0px",
+      }
+
+      23 |   await page.locator('#vocabulary').screenshot({path:`${evidence}/formal-vocabulary-${width}-${language}.png`});
+      24 |   await reference.locator('#vocabulary').screenshot({path:`${evidence}/frozen-vocabulary-${width}-${language}.png`});
+    > 25 |   expect(after.style).toEqual(before.style);expect(after.labels).toEqual(before.labels);
+         |                       ^
+      26 |   expect(after.overflow).toBe(false);
+      27 |   if(width>700) {
+      28 |    expect(after.style.display).toBe('grid');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-vocab-header.spec.js:25:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-c2a69--audio-columns-at-1440px-zh-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-c2a69--audio-columns-at-1440px-zh-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-vocab-header-frozen-voc-c2a69--audio-columns-at-1440px-zh-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-c2a69--audio-columns-at-1440px-zh-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-vocab-header-frozen-voc-c2a69--audio-columns-at-1440px-zh-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px en 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+      Object {
+    -   "color": "rgb(143, 154, 149)",
+    +   "color": "rgb(237, 242, 239)",
+        "columnGap": "22px",
+    -   "display": "grid",
+    -   "fontSize": "10px",
+    -   "marginTop": "14px",
+    +   "display": "block",
+    +   "fontSize": "16px",
+    +   "marginTop": "0px",
+      }
+
+      23 |   await page.locator('#vocabulary').screenshot({path:`${evidence}/formal-vocabulary-${width}-${language}.png`});
+      24 |   await reference.locator('#vocabulary').screenshot({path:`${evidence}/frozen-vocabulary-${width}-${language}.png`});
+    > 25 |   expect(after.style).toEqual(before.style);expect(after.labels).toEqual(before.labels);
+         |                       ^
+      26 |   expect(after.overflow).toBe(false);
+      27 |   if(width>700) {
+      28 |    expect(after.style.display).toBe('grid');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-vocab-header.spec.js:25:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-35d14--audio-columns-at-1440px-en-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-35d14--audio-columns-at-1440px-en-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-vocab-header-frozen-voc-35d14--audio-columns-at-1440px-en-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-35d14--audio-columns-at-1440px-en-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-vocab-header-frozen-voc-35d14--audio-columns-at-1440px-en-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px zh 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 3
+
+      Object {
+    -   "color": "rgb(143, 154, 149)",
+    +   "color": "rgb(237, 242, 239)",
+        "columnGap": "22px",
+        "display": "none",
+    -   "fontSize": "10px",
+    -   "marginTop": "14px",
+    +   "fontSize": "16px",
+    +   "marginTop": "0px",
+      }
+
+      23 |   await page.locator('#vocabulary').screenshot({path:`${evidence}/formal-vocabulary-${width}-${language}.png`});
+      24 |   await reference.locator('#vocabulary').screenshot({path:`${evidence}/frozen-vocabulary-${width}-${language}.png`});
+    > 25 |   expect(after.style).toEqual(before.style);expect(after.labels).toEqual(before.labels);
+         |                       ^
+      26 |   expect(after.overflow).toBe(false);
+      27 |   if(width>700) {
+      28 |    expect(after.style.display).toBe('grid');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-vocab-header.spec.js:25:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-f3368-t-audio-columns-at-390px-zh-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-f3368-t-audio-columns-at-390px-zh-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-vocab-header-frozen-voc-f3368-t-audio-columns-at-390px-zh-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-f3368-t-audio-columns-at-390px-zh-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-vocab-header-frozen-voc-f3368-t-audio-columns-at-390px-zh-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px en 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 3
+
+      Object {
+    -   "color": "rgb(143, 154, 149)",
+    +   "color": "rgb(237, 242, 239)",
+        "columnGap": "22px",
+        "display": "none",
+    -   "fontSize": "10px",
+    -   "marginTop": "14px",
+    +   "fontSize": "16px",
+    +   "marginTop": "0px",
+      }
+
+      23 |   await page.locator('#vocabulary').screenshot({path:`${evidence}/formal-vocabulary-${width}-${language}.png`});
+      24 |   await reference.locator('#vocabulary').screenshot({path:`${evidence}/frozen-vocabulary-${width}-${language}.png`});
+    > 25 |   expect(after.style).toEqual(before.style);expect(after.labels).toEqual(before.labels);
+         |                       ^
+      26 |   expect(after.overflow).toBe(false);
+      27 |   if(width>700) {
+      28 |    expect(after.style.display).toBe('grid');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-vocab-header.spec.js:25:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-f4ba6-t-audio-columns-at-390px-en-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-f4ba6-t-audio-columns-at-390px-en-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-vocab-header-frozen-voc-f4ba6-t-audio-columns-at-390px-en-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-f4ba6-t-audio-columns-at-390px-en-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-vocab-header-frozen-voc-f4ba6-t-audio-columns-at-390px-en-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 650px en 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+      Object {
+    -   "color": "rgb(143, 154, 149)",
+    +   "color": "rgb(237, 242, 239)",
+        "columnGap": "22px",
+    -   "display": "none",
+    -   "fontSize": "10px",
+    -   "marginTop": "14px",
+    +   "display": "block",
+    +   "fontSize": "16px",
+    +   "marginTop": "0px",
+      }
+
+      23 |   await page.locator('#vocabulary').screenshot({path:`${evidence}/formal-vocabulary-${width}-${language}.png`});
+      24 |   await reference.locator('#vocabulary').screenshot({path:`${evidence}/frozen-vocabulary-${width}-${language}.png`});
+    > 25 |   expect(after.style).toEqual(before.style);expect(after.labels).toEqual(before.labels);
+         |                       ^
+      26 |   expect(after.overflow).toBe(false);
+      27 |   if(width>700) {
+      28 |    expect(after.style.display).toBe('grid');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-vocab-header.spec.js:25:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-6c10b-t-audio-columns-at-650px-en-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-6c10b-t-audio-columns-at-650px-en-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-vocab-header-frozen-voc-6c10b-t-audio-columns-at-650px-en-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-6c10b-t-audio-columns-at-650px-en-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-vocab-header-frozen-voc-6c10b-t-audio-columns-at-650px-en-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 701px en 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+      Object {
+    -   "color": "rgb(143, 154, 149)",
+    +   "color": "rgb(237, 242, 239)",
+        "columnGap": "22px",
+    -   "display": "grid",
+    -   "fontSize": "10px",
+    -   "marginTop": "14px",
+    +   "display": "block",
+    +   "fontSize": "16px",
+    +   "marginTop": "0px",
+      }
+
+      23 |   await page.locator('#vocabulary').screenshot({path:`${evidence}/formal-vocabulary-${width}-${language}.png`});
+      24 |   await reference.locator('#vocabulary').screenshot({path:`${evidence}/frozen-vocabulary-${width}-${language}.png`});
+    > 25 |   expect(after.style).toEqual(before.style);expect(after.labels).toEqual(before.labels);
+         |                       ^
+      26 |   expect(after.overflow).toBe(false);
+      27 |   if(width>700) {
+      28 |    expect(after.style.display).toBe('grid');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-vocab-header.spec.js:25:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px zh 
+    [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px en 
+    [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px zh 
+    [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px en 
+    [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 650px en 
+    [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 701px en 

@@ -1,0 +1,72 @@
+..F.........                                                             [100%]
+=================================== FAILURES ===================================
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-deepgram-nova-3] _
+
+provider = 'deepgram', model = 'nova-3', range_kind = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('assemblyai', 'universal-streaming-english'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v4'),
+    ])
+    @pytest.mark.parametrize("range_kind", ["missing", "invalid"])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model, range_kind,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        td = coordinator()
+        td.asr.source_normalizer = SourceNormalizer(provider, model)
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        def frame(source, text, start=None, end=None):
+            if provider == 'deepgram' and model.startswith('flux-'):
+                payload = {'event': 'Update', 'turn_index': source, 'transcript': text}
+                if start is not None:
+                    payload.update(audio_window_start=start, audio_window_end=end)
+            elif provider == 'deepgram':
+                payload = {'start': source * .2,
+                           'channel': {'alternatives': [{'transcript': text}]}}
+                if start is not None:
+                    payload['duration'] = end - start
+            elif provider == 'speechmatics':
+                metadata = {'start_time': source * .2}
+                if end is not None:
+                    metadata['end_time'] = end
+                payload = {'message': 'AddPartialSegment', 'segments': [
+                    {'speaker_id': 'a', 'text': text, 'metadata': metadata},
+                ]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': source * 200}
+                if end is not None:
+                    token['end_ms'] = end * 1000
+                payload = {'tokens': [token]}
+            else:
+                payload = {'turn_order': source, 'transcript': text}
+                if start is not None:
+                    payload['words'] = [{'text': text, 'start': start * 1000, 'end': end * 1000}]
+            return InterimTranscriptionFrame(text, '', '', result=payload)
+    
+        td.push_frame = push
+        first = frame(0, '12') if range_kind == 'missing' else frame(0, '12', 0, -.1)
+        await td.receive_transcript(first)
+        await td.receive_transcript(frame(1, '34', .2, .4))
+        await td.speech_stopped(1000)
+        await td.advance(9999)
+>       assert not any(isinstance(item, TranscriptionFrame) for item in out)
+E       assert not True
+E        +  where True = any(<generator object test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers.<locals>.<genexpr> at 0x115eb3680>)
+
+tests/test_td_runtime.py:964: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-deepgram-flux-general-en]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-deepgram-nova-3]
+1 failed, 11 passed, 29 deselected, 1 warning in 1.03s

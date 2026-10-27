@@ -1,0 +1,54 @@
+
+Running 4 tests using 1 worker
+
+  ✓  1 [desktop-chromium] › tests/ui/td-validation-states.spec.js:7:67 › TD invalid drafts remain local at 1440px en (1.3s)
+  ✓  2 [desktop-chromium] › tests/ui/td-validation-states.spec.js:7:67 › TD invalid drafts remain local at 390px en (1.1s)
+  ✘  3 [desktop-chromium] › tests/ui/td-validation-states.spec.js:7:67 › TD invalid drafts remain local at 1440px zh (5.6s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [desktop-chromium] › tests/ui/td-validation-states.spec.js:7:67 › TD invalid drafts remain local at 1440px zh 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#form-error')
+    Expected pattern: /[\u4e00-\u9fff]/
+    Received string:  "Enter at least one keyword and vocabulary mapping."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('#form-error') with timeout 5000ms
+      - waiting for locator('#form-error')
+        14 × locator resolved to <p role="alert" id="form-error" class="td-error">Enter at least one keyword and vocabulary mapping.</p>
+           - unexpected value "Enter at least one keyword and vocabulary mapping."
+
+
+      33 |   await page.locator(submit).click();const alert=page.locator(error);
+      34 |   await expect(alert).toBeVisible();
+    > 35 |   if(language==='zh')await expect(alert).toContainText(/[\u4e00-\u9fff]/);
+         |                                          ^
+      36 |   else await expect(alert).not.toContainText(/[\u4e00-\u9fff]/);
+      37 |   expect(writes).toHaveLength(0);
+      38 |   expect(await page.locator('#advanced-empty').evaluate(node=>node.scrollWidth<=node.clientWidth)).toBe(true);
+        at invalid (/Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-validation-states.spec.js:35:42)
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-validation-states.spec.js:42:2
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-validation-states-TD-in-14bb9-s-remain-local-at-1440px-zh-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-validation-states-TD-in-14bb9-s-remain-local-at-1440px-zh-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-validation-states-TD-in-14bb9-s-remain-local-at-1440px-zh-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-validation-states-TD-in-14bb9-s-remain-local-at-1440px-zh-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-validation-states.spec.js:7:67 › TD invalid drafts remain local at 1440px zh 
+  1 did not run
+  2 passed (8.5s)
+  1 error was not a part of any test, see above for details

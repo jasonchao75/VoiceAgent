@@ -1,0 +1,4 @@
+/voiceagent-td-r93-strict-resource exited 0 false
+/voiceagent-td-r93-strict-silero exited 0 false
+/voiceagent-td-r93-resource exited 0 false
+/voiceagent-td-r93-silero exited 0 false

@@ -1,0 +1,92 @@
+
+Running 2 tests using 1 worker
+
+(node:67508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:67:2 › keyboard ASR component drawer focus and source selection at 1440px (5.8s)
+(node:67513) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:67:2 › keyboard ASR component drawer focus and source selection at 390px (5.5s)
+
+
+  1) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:67:2 › keyboard ASR component drawer focus and source selection at 1440px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: 'Collapse component drawer', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Collapse component drawer', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Collapse component drawer', exact: true })
+        14 × locator resolved to <button type="button" aria-label="Collapse component drawer">→</button>
+           - unexpected value "inactive"
+
+
+      69 |   await page.getByRole('button',{name:'Bot settings',exact:true}).focus();await page.keyboard.press('Enter');
+      70 |   const card=page.locator('.pipeline-card[data-component="asr"]');await card.focus();await page.keyboard.press('Enter');
+    > 71 |   await expect(page.getByRole('button',{name:'Collapse component drawer',exact:true})).toBeFocused();
+         |                                                                                        ^
+      72 |   await page.keyboard.press('Tab');await expect(page.locator('#bot-asr')).toBeFocused();
+      73 |   await page.locator('#bot-turn-source').focus();await page.keyboard.press('Home');await page.keyboard.press('End');
+      74 |   await expect(page.locator('#bot-turn-source')).toHaveValue('self_developed');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:71:88
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--ee927--source-selection-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--ee927--source-selection-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--ee927--source-selection-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--ee927--source-selection-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:67:2 › keyboard ASR component drawer focus and source selection at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: 'Collapse component drawer', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Collapse component drawer', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Collapse component drawer', exact: true })
+        14 × locator resolved to <button type="button" aria-label="Collapse component drawer">→</button>
+           - unexpected value "inactive"
+
+
+      69 |   await page.getByRole('button',{name:'Bot settings',exact:true}).focus();await page.keyboard.press('Enter');
+      70 |   const card=page.locator('.pipeline-card[data-component="asr"]');await card.focus();await page.keyboard.press('Enter');
+    > 71 |   await expect(page.getByRole('button',{name:'Collapse component drawer',exact:true})).toBeFocused();
+         |                                                                                        ^
+      72 |   await page.keyboard.press('Tab');await expect(page.locator('#bot-asr')).toBeFocused();
+      73 |   await page.locator('#bot-turn-source').focus();await page.keyboard.press('Home');await page.keyboard.press('End');
+      74 |   await expect(page.locator('#bot-turn-source')).toHaveValue('self_developed');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:71:88
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--c6d53-d-source-selection-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--c6d53-d-source-selection-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--c6d53-d-source-selection-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--c6d53-d-source-selection-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:67:2 › keyboard ASR component drawer focus and source selection at 1440px 
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:67:2 › keyboard ASR component drawer focus and source selection at 390px 

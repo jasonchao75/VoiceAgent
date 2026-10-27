@@ -1,0 +1,73 @@
+{
+  "evidenceLevel": "fixture",
+  "vendorCompatibilityProven": false,
+  "results": [
+    {
+      "provider": "deepgram",
+      "model": "flux-general-en",
+      "enabled": [
+        "provider_native",
+        "self_developed"
+      ],
+      "selfEntry": true,
+      "nativeOrOffHidesEntry": true,
+      "retainedDraft": true
+    },
+    {
+      "provider": "deepgram",
+      "model": "flux-general-multi",
+      "enabled": [
+        "provider_native",
+        "self_developed"
+      ],
+      "selfEntry": true,
+      "nativeOrOffHidesEntry": true,
+      "retainedDraft": true
+    },
+    {
+      "provider": "deepgram",
+      "model": "nova-3",
+      "enabled": [
+        "off",
+        "self_developed"
+      ],
+      "selfEntry": true,
+      "nativeOrOffHidesEntry": true,
+      "retainedDraft": true
+    },
+    {
+      "provider": "speechmatics",
+      "model": "enhanced",
+      "enabled": [
+        "off",
+        "provider_native",
+        "self_developed"
+      ],
+      "selfEntry": true,
+      "nativeOrOffHidesEntry": true,
+      "retainedDraft": true
+    },
+    {
+      "provider": "soniox",
+      "model": "stt-rt-v5",
+      "enabled": [
+        "provider_native",
+        "self_developed"
+      ],
+      "selfEntry": true,
+      "nativeOrOffHidesEntry": true,
+      "retainedDraft": true
+    },
+    {
+      "provider": "assemblyai",
+      "model": "universal-3-5-pro",
+      "enabled": [
+        "provider_native",
+        "self_developed"
+      ],
+      "selfEntry": true,
+      "nativeOrOffHidesEntry": true,
+      "retainedDraft": true
+    }
+  ]
+}

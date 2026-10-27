@@ -1,0 +1,396 @@
+{
+  "accumulation_and_incomplete": {
+    "values": [
+      "123",
+      "12345"
+    ],
+    "before_8000ms": 0,
+    "at_8000ms": 1,
+    "continued_silence_total": 1
+  },
+  "complete": {
+    "value": "123456",
+    "submissions": 1,
+    "new_incomplete_reminders": 0,
+    "events": [
+      {
+        "event": "speech_resumed",
+        "turn_id": 1,
+        "audio_ms": 0.0
+      },
+      {
+        "event": "source_transcript",
+        "turn_id": 1,
+        "audio_ms": 0.0,
+        "related_turn_ids": [
+          1
+        ],
+        "source_id": "0",
+        "stream_epoch": 0,
+        "source_revision": 1,
+        "text": "123",
+        "source_final": true,
+        "source_withdrawn": false
+      },
+      {
+        "event": "candidate_created",
+        "turn_id": 1,
+        "audio_ms": 0.0,
+        "candidate": 2,
+        "speech_end_audio_ms": 3000
+      },
+      {
+        "event": "identifier_evaluated",
+        "turn_id": 1,
+        "audio_ms": 0.0,
+        "candidate": 2,
+        "input_id": "range:3b8db0f1221af66f5ab5d0264ad7bc0f8093aa4b6cbcdb8791380c3c4b52bc83",
+        "collection_generation": 0,
+        "source_ranges": [
+          {
+            "epoch": 0,
+            "source_id": "0",
+            "source_revision": 1,
+            "start_ms": 0.0,
+            "end_ms": 3000.0
+          }
+        ],
+        "path": "incomplete",
+        "matched_keyword": "编号",
+        "assistant": "请提供编号",
+        "units": 3,
+        "start_ms": 0.0,
+        "end_ms": 3000.0,
+        "wpm": 60.0,
+        "wpm_threshold": 90.0,
+        "timing_reason": null,
+        "echo_eligible": true,
+        "collected": "123"
+      },
+      {
+        "event": "identifier_local_processed",
+        "turn_id": 1,
+        "audio_ms": 3350,
+        "candidate": 2,
+        "collection_generation": 0,
+        "text": "123",
+        "collected": "123",
+        "source_final": true,
+        "elapsed_ms": 350
+      },
+      {
+        "event": "identifier_echo_not_dispatched",
+        "turn_id": 1,
+        "audio_ms": 3350,
+        "reason": "audio_adapter_pending"
+      },
+      {
+        "event": "speech_resumed",
+        "turn_id": 1,
+        "audio_ms": 3350
+      },
+      {
+        "event": "source_transcript",
+        "turn_id": 1,
+        "audio_ms": 3350,
+        "related_turn_ids": [
+          1
+        ],
+        "source_id": "1",
+        "stream_epoch": 0,
+        "source_revision": 1,
+        "text": "45",
+        "source_final": true,
+        "source_withdrawn": false
+      },
+      {
+        "event": "candidate_created",
+        "turn_id": 1,
+        "audio_ms": 3350,
+        "candidate": 4,
+        "speech_end_audio_ms": 6000
+      },
+      {
+        "event": "identifier_evaluated",
+        "turn_id": 1,
+        "audio_ms": 3350,
+        "candidate": 4,
+        "input_id": "range:7cdf18aed34b954858a0fce85d149770b31a61a16bbe06de0a409c30bb3c62c5",
+        "collection_generation": 0,
+        "source_ranges": [
+          {
+            "epoch": 0,
+            "source_id": "1",
+            "source_revision": 1,
+            "start_ms": 4000.0,
+            "end_ms": 6000.0
+          }
+        ],
+        "path": "incomplete",
+        "matched_keyword": "编号",
+        "assistant": "请提供编号",
+        "units": 2,
+        "start_ms": 4000.0,
+        "end_ms": 6000.0,
+        "wpm": 60.0,
+        "wpm_threshold": 90.0,
+        "timing_reason": null,
+        "echo_eligible": true,
+        "collected": "12345"
+      },
+      {
+        "event": "identifier_local_processed",
+        "turn_id": 1,
+        "audio_ms": 6350,
+        "candidate": 4,
+        "collection_generation": 0,
+        "text": "45",
+        "collected": "12345",
+        "source_final": true,
+        "elapsed_ms": 350
+      },
+      {
+        "event": "identifier_echo_not_dispatched",
+        "turn_id": 1,
+        "audio_ms": 6350,
+        "reason": "audio_adapter_pending"
+      },
+      {
+        "event": "identifier_reminder",
+        "turn_id": 1,
+        "audio_ms": 14000,
+        "text": "请继续念完整编号",
+        "elapsed_ms": 8000,
+        "collected": "12345"
+      },
+      {
+        "event": "speech_resumed",
+        "turn_id": 1,
+        "audio_ms": 22000
+      },
+      {
+        "event": "source_transcript",
+        "turn_id": 1,
+        "audio_ms": 22000,
+        "related_turn_ids": [
+          1
+        ],
+        "source_id": "2",
+        "stream_epoch": 0,
+        "source_revision": 1,
+        "text": "6",
+        "source_final": true,
+        "source_withdrawn": false
+      },
+      {
+        "event": "candidate_created",
+        "turn_id": 1,
+        "audio_ms": 22000,
+        "candidate": 7,
+        "speech_end_audio_ms": 24000
+      },
+      {
+        "event": "identifier_evaluated",
+        "turn_id": 1,
+        "audio_ms": 22000,
+        "candidate": 7,
+        "input_id": "range:9d8f8960707db0ce0367ed8a1aae51b8eabf297938fd749d756d6a1329eceee0",
+        "collection_generation": 0,
+        "source_ranges": [
+          {
+            "epoch": 0,
+            "source_id": "2",
+            "source_revision": 1,
+            "start_ms": 23000.0,
+            "end_ms": 24000.0
+          }
+        ],
+        "path": "complete",
+        "matched_keyword": "编号",
+        "assistant": "请继续念完整编号",
+        "units": 1,
+        "start_ms": 23000.0,
+        "end_ms": 24000.0,
+        "wpm": 60.0,
+        "wpm_threshold": 90.0,
+        "timing_reason": null,
+        "echo_eligible": true,
+        "collected": "123456"
+      },
+      {
+        "event": "identifier_echo_not_dispatched",
+        "turn_id": 1,
+        "audio_ms": 26500,
+        "reason": "audio_adapter_pending"
+      },
+      {
+        "event": "td_commit",
+        "turn_id": 1,
+        "audio_ms": 26500,
+        "text": "6",
+        "source_final": true,
+        "reason": "maximum_silence",
+        "candidate": 7,
+        "sources": [
+          {
+            "epoch": 0,
+            "source_id": "2",
+            "revision": 1
+          }
+        ]
+      }
+    ]
+  },
+  "overflow": {
+    "value": "1234567",
+    "before_350ms": 0,
+    "at_350ms": 1,
+    "submissions": 0,
+    "events": [
+      {
+        "event": "speech_resumed",
+        "turn_id": 1,
+        "audio_ms": 0.0
+      },
+      {
+        "event": "source_transcript",
+        "turn_id": 1,
+        "audio_ms": 0.0,
+        "related_turn_ids": [
+          1
+        ],
+        "source_id": "0",
+        "stream_epoch": 0,
+        "source_revision": 1,
+        "text": "1234567",
+        "source_final": true,
+        "source_withdrawn": false
+      },
+      {
+        "event": "candidate_created",
+        "turn_id": 1,
+        "audio_ms": 0.0,
+        "candidate": 2,
+        "speech_end_audio_ms": 7000
+      },
+      {
+        "event": "identifier_evaluated",
+        "turn_id": 1,
+        "audio_ms": 0.0,
+        "candidate": 2,
+        "input_id": "range:3b8db0f1221af66f5ab5d0264ad7bc0f8093aa4b6cbcdb8791380c3c4b52bc83",
+        "collection_generation": 0,
+        "source_ranges": [
+          {
+            "epoch": 0,
+            "source_id": "0",
+            "source_revision": 1,
+            "start_ms": 0.0,
+            "end_ms": 7000.0
+          }
+        ],
+        "path": "overlength",
+        "matched_keyword": "编号",
+        "assistant": "请提供编号",
+        "units": 7,
+        "start_ms": 0.0,
+        "end_ms": 7000.0,
+        "wpm": 60.0,
+        "wpm_threshold": 90.0,
+        "timing_reason": null,
+        "echo_eligible": true,
+        "collected": "1234567"
+      },
+      {
+        "event": "identifier_reminder",
+        "turn_id": 1,
+        "audio_ms": 7350,
+        "text": "编号位数超过目标，请确认",
+        "elapsed_ms": 350,
+        "collected": "1234567"
+      },
+      {
+        "event": "identifier_old_candidate_invalidated",
+        "turn_id": 1,
+        "audio_ms": 20000,
+        "collection_generation": 1
+      },
+      {
+        "event": "speech_resumed",
+        "turn_id": 1,
+        "audio_ms": 20000
+      },
+      {
+        "event": "source_transcript",
+        "turn_id": 1,
+        "audio_ms": 20000,
+        "related_turn_ids": [
+          1
+        ],
+        "source_id": "1",
+        "stream_epoch": 0,
+        "source_revision": 1,
+        "text": "89",
+        "source_final": true,
+        "source_withdrawn": false
+      },
+      {
+        "event": "candidate_created",
+        "turn_id": 1,
+        "audio_ms": 20000,
+        "candidate": 6,
+        "speech_end_audio_ms": 23000
+      },
+      {
+        "event": "identifier_evaluated",
+        "turn_id": 1,
+        "audio_ms": 20000,
+        "candidate": 6,
+        "input_id": "range:e0e156c24d42fbdfc1ccd57ddc3afdbd07dae7710053b23bea4539d10732c209",
+        "collection_generation": 1,
+        "source_ranges": [
+          {
+            "epoch": 0,
+            "source_id": "1",
+            "source_revision": 1,
+            "start_ms": 21000.0,
+            "end_ms": 23000.0
+          }
+        ],
+        "path": "incomplete",
+        "matched_keyword": "编号",
+        "assistant": "请重新提供编号",
+        "units": 2,
+        "start_ms": 21000.0,
+        "end_ms": 23000.0,
+        "wpm": 60.0,
+        "wpm_threshold": 90.0,
+        "timing_reason": null,
+        "echo_eligible": true,
+        "collected": "89"
+      },
+      {
+        "event": "identifier_local_processed",
+        "turn_id": 1,
+        "audio_ms": 23350,
+        "candidate": 6,
+        "collection_generation": 1,
+        "text": "89",
+        "collected": "89",
+        "source_final": true,
+        "elapsed_ms": 350
+      },
+      {
+        "event": "identifier_echo_not_dispatched",
+        "turn_id": 1,
+        "audio_ms": 23350,
+        "reason": "audio_adapter_pending"
+      }
+    ]
+  },
+  "clear_and_resume": {
+    "clear_status": "cleared",
+    "new_value": "89",
+    "generation": 1
+  }
+}

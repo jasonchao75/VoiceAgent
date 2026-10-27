@@ -1,0 +1,12 @@
+{
+  "base": "r89/review-package/snapshot.json",
+  "changed_or_new": [
+    "frontend/src/main.js",
+    "frontend/src/td-settings.css",
+    "frontend/src/td-settings.js",
+    "frontend/tests/ui/td-keyboard-accessibility.spec.js",
+    "frontend/tests/ui/td-settings-fixture.js",
+    "frontend/tests/ui/td-vocab-header.spec.js"
+  ],
+  "note": "shared workspace; report does not establish ownership of unrelated files"
+}

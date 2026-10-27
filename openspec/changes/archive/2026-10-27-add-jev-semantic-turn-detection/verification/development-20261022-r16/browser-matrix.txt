@@ -1,0 +1,40 @@
+
+Running 26 tests using 1 worker
+
+(node:11106) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 1440px (686ms)
+  ✓   2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 390px (396ms)
+  ✓   3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 1440px (483ms)
+  ✓   4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 390px (448ms)
+  ✓   5 [desktop-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (490ms)
+  ✓   6 [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings (1.4s)
+(node:11143) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 [desktop-chromium] › tests/ui/td-runtime.spec.js:27:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history (5.8s)
+  ✓   8 [desktop-chromium] › tests/ui/td-runtime.spec.js:99:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.4s)
+  ✓   9 [desktop-chromium] › tests/ui/td-runtime.spec.js:145:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (618ms)
+  ✓  10 [desktop-chromium] › tests/ui/td-runtime.spec.js:175:1 › failed TD save retains draft and retries against the actual API (825ms)
+  -  11 [desktop-chromium] › tests/ui/td-runtime.spec.js:196:1 › formal configuration and audio survive an explicitly coordinated process restart
+  ✓  12 [desktop-chromium] › tests/ui/td-runtime.spec.js:227:1 › late save failure stays with its original Bot after selection changes (683ms)
+  ✓  13 [desktop-chromium] › tests/ui/td-runtime.spec.js:248:1 › formal TD settings remain operable at 390px with actual saved configuration (538ms)
+(node:11177) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  14 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 1440px (450ms)
+  ✓  15 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 390px (394ms)
+  ✓  16 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 1440px (487ms)
+  ✓  17 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 390px (448ms)
+  ✓  18 [narrow-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (488ms)
+  ✓  19 [narrow-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings (1.4s)
+(node:11212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  20 [narrow-chromium] › tests/ui/td-runtime.spec.js:27:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history (5.8s)
+  ✓  21 [narrow-chromium] › tests/ui/td-runtime.spec.js:99:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.4s)
+  ✓  22 [narrow-chromium] › tests/ui/td-runtime.spec.js:145:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (616ms)
+  ✓  23 [narrow-chromium] › tests/ui/td-runtime.spec.js:175:1 › failed TD save retains draft and retries against the actual API (774ms)
+  -  24 [narrow-chromium] › tests/ui/td-runtime.spec.js:196:1 › formal configuration and audio survive an explicitly coordinated process restart
+  ✓  25 [narrow-chromium] › tests/ui/td-runtime.spec.js:227:1 › late save failure stays with its original Bot after selection changes (675ms)
+  ✓  26 [narrow-chromium] › tests/ui/td-runtime.spec.js:248:1 › formal TD settings remain operable at 390px with actual saved configuration (573ms)
+
+  2 skipped
+  24 passed (28.8s)

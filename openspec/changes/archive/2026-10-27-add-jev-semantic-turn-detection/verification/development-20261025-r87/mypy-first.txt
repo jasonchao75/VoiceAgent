@@ -1,0 +1,3 @@
+src/history/rtp_source.py:51: error: Argument 1 to "__delitem__" of "dict" has incompatible type "object"; expected "int"  [arg-type]
+src/history/rtp_source.py:51: error: Argument 1 to "__delitem__" of "dict" has incompatible type "object"; expected "tuple[int, int, str]"  [arg-type]
+Found 2 errors in 1 file (checked 3 source files)

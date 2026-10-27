@@ -1,0 +1,30 @@
+
+> voice-agent-frontend@0.1.0 build
+> vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 196 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                    0.84 kB │ gzip:  0.39 kB
+dist/demo.html                                     0.85 kB │ gzip:  0.40 kB
+dist/login.html                                    2.31 kB │ gzip:  0.93 kB
+dist/assets/td-rtp-input-worker-SbEdjOj-.js        2.41 kB
+dist/assets/td-rtp-candidate-worker-DANWGN9z.js    4.10 kB
+dist/assets/td-audio-worklet-BIuzPORB.js           5.15 kB
+dist/evaluation.html                             303.74 kB │ gzip: 82.16 kB
+dist/assets/login-BNVcW8Ri.css                     3.63 kB │ gzip:  1.36 kB
+dist/assets/evaluation-CWcc11kK.css                9.94 kB │ gzip:  2.76 kB
+dist/assets/demo-tByE4cBr.css                     10.16 kB │ gzip:  3.09 kB
+dist/assets/app-7_eiuHmK.css                      55.07 kB │ gzip: 11.58 kB
+dist/assets/modulepreload-polyfill-P2Xu9kJm.js     0.67 kB │ gzip:  0.38 kB
+dist/assets/login-1oQnc6c6.js                      1.25 kB │ gzip:  0.71 kB
+dist/assets/td-render-clock-2xM6-IQT.js            2.94 kB │ gzip:  1.27 kB
+dist/assets/pipecat-client-DiCvJYhI.js            84.92 kB │ gzip: 22.07 kB
+dist/assets/demo-POt7i7m9.js                     106.09 kB │ gzip: 28.45 kB
+dist/assets/evaluation-BvclxGAq.js               136.37 kB │ gzip: 39.50 kB
+dist/assets/app-Bf6K4kl-.js                      217.97 kB │ gzip: 67.89 kB
+dist/assets/pipecat-transport-De8eyXAH.js        359.49 kB │ gzip: 94.68 kB
+
+✓ built in 164ms

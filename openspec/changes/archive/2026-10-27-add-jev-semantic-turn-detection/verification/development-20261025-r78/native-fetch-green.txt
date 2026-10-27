@@ -1,0 +1,37 @@
+
+Running 1 test using 1 worker
+
+(node:38192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-clock-sampler.spec.js:2:1 › browser clock sampler uses native fetch without losing its Window receiver (250ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-clock-sampler.spec.js:2:1 › browser clock sampler uses native fetch without losing its Window receiver 
+
+    Error: page.evaluate: Execution context was destroyed, most likely because of a navigation
+
+       8 |  });
+       9 |  await page.goto('/demo.html');
+    > 10 |  await page.evaluate(async()=>{
+         |             ^
+      11 |   const {RenderClockSampler}=await import('/src/td-render-clock.js');
+      12 |   window.__clockErrors=[];
+      13 |   let sampler;
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-clock-sampler.spec.js:10:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-clock-sampler-browser-c-b972f--losing-its-Window-receiver-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-clock-sampler.spec.js:2:1 › browser clock sampler uses native fetch without losing its Window receiver 

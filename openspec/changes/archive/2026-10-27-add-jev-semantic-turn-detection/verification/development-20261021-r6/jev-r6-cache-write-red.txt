@@ -1,0 +1,88 @@
+......F                                                                  [100%]
+=================================== FAILURES ===================================
+________ test_asset_write_failure_is_a_failed_unit_not_a_fake_ready_row ________
+
+self = <src.tts.echo_cache.EchoAudioCache object at 0x10c4c1f20>, bot_id = 'bot'
+units = ['1']
+config = TTSConfig(provider='deepgram_flux', voice='fixture-voice', model='flux-general-en', text_aggregation='token', speed=1....ment_opt_out=False, stability=0.5, similarity_boost=0.8, style=0.0, use_speaker_boost=False, text_normalization='auto')
+sample_rate = 24000
+synthesize = <function test_asset_write_failure_is_a_failed_unit_not_a_fake_ready_row.<locals>.synthesize at 0x10c5aac00>
+
+    async def prepare(
+        self,
+        bot_id: str,
+        units: Iterable[str],
+        config: TTSConfig,
+        sample_rate: int,
+        synthesize: Synthesize,
+        *,
+        timeout: float,
+    ) -> list[EchoAsset]:
+        """Generate only missing units, retaining successes and explicit per-unit failures."""
+        config = config.model_copy(deep=True)
+        rows = []
+        for unit in dict.fromkeys(units):
+            asset = await self._find(bot_id, unit, config, sample_rate)
+            try:
+                if asset:
+                    await self.read(asset)
+                else:
+>                   raise ValueError("missing")
+E                   ValueError: missing
+
+src/tts/echo_cache.py:201: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-125/test_asset_write_failure_is_a_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c032b10>
+
+    async def test_asset_write_failure_is_a_failed_unit_not_a_fake_ready_row(tmp_path, monkeypatch):
+        """A synthesis response alone is insufficient if its permanent file could not be stored."""
+        store = cache(tmp_path)
+    
+        async def synthesize(unit, config, sample_rate, *, timeout):
+            return b'\x01\x00' * 10
+    
+        def fail_replace(*args):
+            raise OSError('fixture-write-failure')
+    
+        monkeypatch.setattr(import_module('src.tts.echo_cache').os, 'replace', fail_replace)
+>       rows = await store.prepare('bot', ['1'], tts(), 24000, synthesize, timeout=2)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_echo_cache.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tts/echo_cache.py:203: in prepare
+    asset = await self._repair(bot_id, unit, config, sample_rate, synthesize, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/tts/echo_cache.py:269: in _repair
+    return await asyncio.shield(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/tts/echo_cache.py:318: in _generate
+    await asyncio.to_thread(write)
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/threads.py:25: in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py:59: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/tts/echo_cache.py:316: in write
+    os.replace(temporary, self.root / filename)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-125/test_asset_write_...chen/pytest-125/test_asset_write_failure_is_a_0/6fa0160565d795dcfd520bdb0dee1574f05620b8d166c23794c0be68fb24ba49.pcm'))
+
+    def fail_replace(*args):
+>       raise OSError('fixture-write-failure')
+E       OSError: fixture-write-failure
+
+tests/test_echo_cache.py:164: OSError
+=============================== warnings summary ===============================
+tests/test_echo_cache.py::test_durable_units_deduplicate_generation_but_not_playback
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_echo_cache.py::test_asset_write_failure_is_a_failed_unit_not_a_fake_ready_row
+1 failed, 6 passed, 1 warning in 0.08s

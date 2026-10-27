@@ -1,0 +1,306 @@
+{
+  "evidenceLevel": "local-real",
+  "joined": [
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428158901,
+        "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+        "decoded_start": 0,
+        "decoded_end": 960,
+        "segment_start": 0,
+        "segment_end": 912
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428158901,
+        "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+        "capture_time_ms": 218.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428158901,
+        "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+        "decoded_start": 0,
+        "decoded_end": 960,
+        "segment_start": 912,
+        "segment_end": 960
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428158901,
+        "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+        "capture_time_ms": 218.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428159861,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 960,
+        "decoded_end": 1920,
+        "segment_start": 960,
+        "segment_end": 1872
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428159861,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 238.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428159861,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 960,
+        "decoded_end": 1920,
+        "segment_start": 1872,
+        "segment_end": 1920
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428159861,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 238.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428160821,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 1920,
+        "decoded_end": 2880,
+        "segment_start": 1920,
+        "segment_end": 2832
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428160821,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 258.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428160821,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 1920,
+        "decoded_end": 2880,
+        "segment_start": 2832,
+        "segment_end": 2880
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428160821,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 258.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428161781,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 2880,
+        "decoded_end": 3840,
+        "segment_start": 2880,
+        "segment_end": 3792
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428161781,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 278.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428161781,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 2880,
+        "decoded_end": 3840,
+        "segment_start": 3792,
+        "segment_end": 3840
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428161781,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 278.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428162741,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 3840,
+        "decoded_end": 4800,
+        "segment_start": 3840,
+        "segment_end": 4752
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428162741,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 298.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428162741,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 3840,
+        "decoded_end": 4800,
+        "segment_start": 4752,
+        "segment_end": 4800
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428162741,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 298.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428163701,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 4800,
+        "decoded_end": 5760,
+        "segment_start": 4800,
+        "segment_end": 5712
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428163701,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 318.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428163701,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 4800,
+        "decoded_end": 5760,
+        "segment_start": 5712,
+        "segment_end": 5760
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428163701,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 318.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428164661,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 5760,
+        "decoded_end": 6720,
+        "segment_start": 5760,
+        "segment_end": 6672
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428164661,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 338.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428164661,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 5760,
+        "decoded_end": 6720,
+        "segment_start": 6672,
+        "segment_end": 6720
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428164661,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 338.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    },
+    {
+      "packet": {
+        "connection_id": "a83605f1fa9b4dc6a70763da8f39573e",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428165621,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "decoded_start": 6720,
+        "decoded_end": 7680,
+        "segment_start": 6720,
+        "segment_end": 7632
+      },
+      "record": {
+        "clock_id": "0f079efe7e6949ddbd6cafbad18b69b3",
+        "ssrc": 3481500282,
+        "rtp_timestamp": 428165621,
+        "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+        "capture_time_ms": 358.40000000596046,
+        "capture_clock": "worker_performance"
+      }
+    }
+  ],
+  "boundary": "reported browser captureTime and actual RTP/decoder/PCM join; server clock anchors not yet joined"
+}

@@ -1,0 +1,125 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_send_is_unknown_until_actual_client_start_and_serial_finish _______
+
+    def test_send_is_unknown_until_actual_client_start_and_serial_finish():
+>       player = arbiter()
+                 ^^^^^^^^^
+
+tests/test_td_playback.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def arbiter():
+        """Require the actual session arbiter rather than testing a priority list fixture."""
+>       assert util.find_spec('src.pipeline.playback') is not None, 'Playback arbiter absent'
+E       AssertionError: Playback arbiter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104cda8e0>('src.pipeline.playback')
+E        +    where <function find_spec at 0x104cda8e0> = util.find_spec
+
+tests/test_td_playback.py:8: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 01:30:25.962 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+____ test_latest_unplayed_revision_replaces_old_task_without_false_playback ____
+
+    def test_latest_unplayed_revision_replaces_old_task_without_false_playback():
+>       player = arbiter()
+                 ^^^^^^^^^
+
+tests/test_td_playback.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def arbiter():
+        """Require the actual session arbiter rather than testing a priority list fixture."""
+>       assert util.find_spec('src.pipeline.playback') is not None, 'Playback arbiter absent'
+E       AssertionError: Playback arbiter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104cda8e0>('src.pipeline.playback')
+E        +    where <function find_spec at 0x104cda8e0> = util.find_spec
+
+tests/test_td_playback.py:8: AssertionError
+_ test_normal_ready_skips_unplayed_final_echo_but_never_claims_unknown_was_unplayed _
+
+    def test_normal_ready_skips_unplayed_final_echo_but_never_claims_unknown_was_unplayed():
+>       player = arbiter()
+                 ^^^^^^^^^
+
+tests/test_td_playback.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def arbiter():
+        """Require the actual session arbiter rather than testing a priority list fixture."""
+>       assert util.find_spec('src.pipeline.playback') is not None, 'Playback arbiter absent'
+E       AssertionError: Playback arbiter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104cda8e0>('src.pipeline.playback')
+E        +    where <function find_spec at 0x104cda8e0> = util.find_spec
+
+tests/test_td_playback.py:8: AssertionError
+_ test_previous_correction_precedes_new_echo_and_overflow_skips_unplayed_tail __
+
+    def test_previous_correction_precedes_new_echo_and_overflow_skips_unplayed_tail():
+>       player = arbiter()
+                 ^^^^^^^^^
+
+tests/test_td_playback.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def arbiter():
+        """Require the actual session arbiter rather than testing a priority list fixture."""
+>       assert util.find_spec('src.pipeline.playback') is not None, 'Playback arbiter absent'
+E       AssertionError: Playback arbiter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104cda8e0>('src.pipeline.playback')
+E        +    where <function find_spec at 0x104cda8e0> = util.find_spec
+
+tests/test_td_playback.py:8: AssertionError
+_ test_continuation_preserves_active_echo_but_clear_requires_stop_ack_before_next _
+
+    def test_continuation_preserves_active_echo_but_clear_requires_stop_ack_before_next():
+>       player = arbiter()
+                 ^^^^^^^^^
+
+tests/test_td_playback.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def arbiter():
+        """Require the actual session arbiter rather than testing a priority list fixture."""
+>       assert util.find_spec('src.pipeline.playback') is not None, 'Playback arbiter absent'
+E       AssertionError: Playback arbiter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104cda8e0>('src.pipeline.playback')
+E        +    where <function find_spec at 0x104cda8e0> = util.find_spec
+
+tests/test_td_playback.py:8: AssertionError
+_ test_interrupting_normal_response_cancels_pending_echoes_and_preserves_unknown_fact _
+
+    def test_interrupting_normal_response_cancels_pending_echoes_and_preserves_unknown_fact():
+>       player = arbiter()
+                 ^^^^^^^^^
+
+tests/test_td_playback.py:94: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def arbiter():
+        """Require the actual session arbiter rather than testing a priority list fixture."""
+>       assert util.find_spec('src.pipeline.playback') is not None, 'Playback arbiter absent'
+E       AssertionError: Playback arbiter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104cda8e0>('src.pipeline.playback')
+E        +    where <function find_spec at 0x104cda8e0> = util.find_spec
+
+tests/test_td_playback.py:8: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_playback.py::test_send_is_unknown_until_actual_client_start_and_serial_finish
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_playback.py::test_send_is_unknown_until_actual_client_start_and_serial_finish
+FAILED tests/test_td_playback.py::test_latest_unplayed_revision_replaces_old_task_without_false_playback
+FAILED tests/test_td_playback.py::test_normal_ready_skips_unplayed_final_echo_but_never_claims_unknown_was_unplayed
+FAILED tests/test_td_playback.py::test_previous_correction_precedes_new_echo_and_overflow_skips_unplayed_tail
+FAILED tests/test_td_playback.py::test_continuation_preserves_active_echo_but_clear_requires_stop_ack_before_next
+FAILED tests/test_td_playback.py::test_interrupting_normal_response_cancels_pending_echoes_and_preserves_unknown_fact
+6 failed, 1 warning in 1.01s

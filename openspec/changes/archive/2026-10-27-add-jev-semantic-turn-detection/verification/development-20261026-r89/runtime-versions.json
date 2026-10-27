@@ -1,0 +1,19 @@
+{
+  "python": "3.13.2 (v3.13.2:4f8bb3947cf, Feb  4 2025, 11:51:10) [Clang 15.0.0 (clang-1500.3.9.4)]",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "node": "v25.9.0",
+  "packages": {
+    "pipecat-ai": "1.8.1",
+    "aiortc": "1.15.0",
+    "av": "17.1.0",
+    "numpy": "2.5.2",
+    "fastapi": "0.141.1",
+    "pydantic": "2.13.5",
+    "pytest": "8.4.2",
+    "mypy": "1.20.2",
+    "ruff": "0.16.5"
+  },
+  "git_head": "2aff076d07599c5352b390edf83106d49e7bb2cb",
+  "git_branch": "main",
+  "source_state": "shared uncommitted worktree; package per-file SHA is delivery version"
+}

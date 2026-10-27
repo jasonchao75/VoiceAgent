@@ -1,0 +1,9 @@
+{
+  "final_archive_sha256": "b15cf0ac6b6bd7a5faca0e575447b8d9a88615a5577c2d282375e4e854f33e8a",
+  "all_archive_files_match_manifest": true,
+  "reproduced_runtime_inputs_match_final_archive": 238,
+  "previously_missing_html_entries_present": true,
+  "current_independent_report_and_matrices_present": true,
+  "no_env_db_recording_trace_venv_node_modules": true,
+  "not_product_acceptance": true
+}

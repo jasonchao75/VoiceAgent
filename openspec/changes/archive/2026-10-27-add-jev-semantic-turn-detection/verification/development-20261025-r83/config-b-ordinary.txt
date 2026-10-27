@@ -1,0 +1,42 @@
+
+Running 1 test using 1 worker
+
+(node:46738) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:275:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (236ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:275:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "td-local-offline"
+    Received: undefined
+
+      28 |   expect(["localhost","127.0.0.1"]).toContain(new URL(baseURL).hostname);
+      29 |   const health=await request.get("/health");
+    > 30 |   expect(health.headers()["x-voiceagent-test-fixture"]).toBe("td-local-offline");
+         |                                                         ^
+      31 | }
+      32 |
+      33 | test("formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history",async({page,request,baseURL})=>{
+        at verifyFixture (/Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:30:57)
+        at createRuleBot (/Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:257:3)
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:276:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:275:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state 

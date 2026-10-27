@@ -1,0 +1,157 @@
+{
+  "checkpoint": "B",
+  "status": "developer_local_api_storage_checks_complete",
+  "routes": "same production root route and Advanced/ASR/Sessions/Share/public session components; explicit local provider adapter only",
+  "independent_checkpoint_c": false,
+  "user_gate_2": false,
+  "rows": [
+    {
+      "scope": "配置实际保存/慢保存并发编辑/失败重试/换Bot迟到隔离/390px操作/语言内容不变",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r83/config-b-fixed.txt",
+          "sha256": "090b20dc96d2bfc50666462c27561b1b6423045f3a805708d74501eebcfb0da7"
+        }
+      ],
+      "test_nodes": [],
+      "boundary": "只取该日志7条勾选通过；缓存试听失败另列正确场景最终结果，不把整文件当全通过"
+    },
+    {
+      "scope": "缓存缺失阻发布/显式生成/双单元试听间隔/保存刷新/版本不变/跨Bot隔离",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r83/config-b-ordinary-ready.txt",
+          "sha256": "ebbd4254ed07ffe2914d36cb1dbe459cb60081885e5a8899169d334b995692f4"
+        }
+      ],
+      "test_nodes": [],
+      "boundary": "ordinary替身0.1秒PCM；无真实厂商，原错误场景与服务未就绪日志保留"
+    },
+    {
+      "scope": "配置及缓存实际进程停启后恢复",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261022-r40/ui-b-restart-before.txt",
+          "sha256": "17c6cab8de8f89d932761b25fb88ce6ff561184d3a935d7af26d39922bd29148"
+        },
+        {
+          "path": "verification/development-20261022-r40/ui-b-restart-after.txt",
+          "sha256": "59108f390330d9f41305c195d15274962d197848d4fbe20ac40e703487cd1f8e"
+        },
+        {
+          "path": "verification/development-20261025-r83/restart-published-history.json",
+          "sha256": "5309d5094c06e4e31fed0aa099e89755d88e00473e2e6e756249084db1553d61"
+        }
+      ],
+      "test_nodes": [],
+      "boundary": "复用原场景进程停启，不当物理数据库损坏修复；r83另确认已发布与独立未发布草稿"
+    },
+    {
+      "scope": "已发布固定配置/缓存读取失败/临时恢复成功/实际开停及后续工具",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r83/browser-public-repair.txt",
+          "sha256": "451dbe8a59464043e3759bf6ec23876016dd2dba09d655635aec091a0e60f833"
+        },
+        {
+          "path": "verification/development-20261025-r83/browser/evidence/published-cache-repair.json",
+          "sha256": "ca85858581cac684baa91638fd588bd716da92b11766eae3f8dca7b0ef99af99"
+        },
+        {
+          "path": "verification/development-20261025-r83/restart-published-history.json",
+          "sha256": "5309d5094c06e4e31fed0aa099e89755d88e00473e2e6e756249084db1553d61"
+        }
+      ],
+      "test_nodes": [],
+      "boundary": "本地推理替身+真实RTC/HTTP/SQLite；不代表正式默认采用"
+    },
+    {
+      "scope": "D074补合成也失败保留编号继续/失败历史/重启保持",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r83/browser-public-failure.txt",
+          "sha256": "0e78f1676061ace2382d2c33e3a96aa6265b51757989fb18fe79e523af6b42bd"
+        },
+        {
+          "path": "verification/development-20261025-r83/browser/failure-fixed/published-cache-failure.json",
+          "sha256": "d867be829326aff9c089f0a1ffd96071ae732dc3a1b867370240feaa939d48a5"
+        },
+        {
+          "path": "verification/development-20261025-r83/restart-failed-history.json",
+          "sha256": "b783d3ee6f12ffd3e913ed1b2c16416afea17f74ec07b8f31ddd238d334fd566"
+        }
+      ],
+      "test_nodes": [],
+      "boundary": "失败任务零PCM；部分PCM失败是独立SDK红绿，不能冒充相同RTC故障证据"
+    },
+    {
+      "scope": "Sessions真实HTTP503重试/日期筛选空/恢复/正负历史/双视口",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r83/history-api-positive.txt",
+          "sha256": "3982053c51698224883ffde5e1923dc5764319b531d92882577c7b62a75394d8"
+        },
+        {
+          "path": "verification/development-20261025-r83/history-api-failure.txt",
+          "sha256": "5d791aa86e1f1eb8275b9b683ed6cd61b3f40880e12c6e42c7dcd9de894075c2"
+        }
+      ],
+      "test_nodes": [],
+      "boundary": "真实API中间件单次故障注入，成功存储路径原样；不是数据库物理损坏"
+    },
+    {
+      "scope": "实际逐轮范围/旧NULL兼容/两端证据/原响应归属及API重启",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r81/api-proof-process-restart.json",
+          "sha256": "17c21b3ca6e109952116834b96a42a392c56b9b6a0091c8d3ee5c9381308551b"
+        },
+        {
+          "path": "verification/development-20261025-r78/api-process-restart.json",
+          "sha256": "fda938dc55c655228b30e074560c2d07df4a1fc7a437c01c4f3decc9ab5ecb53"
+        }
+      ],
+      "test_nodes": [],
+      "boundary": "WS VAD源样本→Worklet E2E及受控RTC播放范围；RTC源端E2E仍缺失"
+    },
+    {
+      "scope": "API显式保存/加密脱敏/端点绑定及旧历史NULL兼容",
+      "status": "developer_verified",
+      "evidence_level": "local-real",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r83/backend-junit.xml",
+          "sha256": "6d9a6590b44b1d9d62db3e54bcabb033d720c0d1948b6cabf2d27b26b76b27d6"
+        }
+      ],
+      "test_nodes": [
+        "test_jev_key_is_encrypted_redacted_and_bound_to_endpoint",
+        "test_legacy_database_null_evidence_preserves_value_and_marks_unverified",
+        "test_measured_ranges_survive_storage_restart_without_backfilling_legacy_rows"
+      ],
+      "boundary": "实际TestClient/SQLite与fixture凭证；不是用户真实Key鉴权/存储灾难恢复"
+    }
+  ],
+  "exclusions": [
+    "external vendor compatibility",
+    "default RTC adoption",
+    "RTC source E2E",
+    "real phones/Safari/weak network",
+    "physical ADC/acoustic/AEC",
+    "full independent accessibility/visual review"
+  ]
+}

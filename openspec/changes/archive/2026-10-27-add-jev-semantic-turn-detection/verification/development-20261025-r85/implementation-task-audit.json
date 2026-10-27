@@ -1,0 +1,675 @@
+{
+  "scope": "task implementation evidence, not full Change acceptance",
+  "junit": "verification/development-20261025-r83/backend-junit.xml",
+  "unchanged_production_inputs_from_r83": [
+    {
+      "path": "frontend/src/evaluation-runtime.css",
+      "sha256": "890495c1e122a9193b58371fd9127d31c253c798acf260dbe6747a00978f4c9a"
+    },
+    {
+      "path": "frontend/src/evaluation-runtime.js",
+      "sha256": "bd848b9c51dc568ed037fcb74cf37c0ef7551f5919632d02ac3177d3b8968da8"
+    },
+    {
+      "path": "frontend/src/login.css",
+      "sha256": "3b1eb943592f707c10e6c62e6e5e806dbc984c39bbc08e0d307b81081748519c"
+    },
+    {
+      "path": "frontend/src/login.js",
+      "sha256": "0cf308e24ef01562a33f0e3bcec717ef1a99cb2a6bc1da48e6d6cbaa5317ebe0"
+    },
+    {
+      "path": "frontend/src/main.js",
+      "sha256": "bbe1bd6eb8497051319e497cf048fdc1d547a6e19fd3f7382697a29e14f7254f"
+    },
+    {
+      "path": "frontend/src/mobile-demo.css",
+      "sha256": "796a2d2a8109e5082f92c4701c25be156ae0911bf2000d0ed45c9ac451015833"
+    },
+    {
+      "path": "frontend/src/mobile-demo.js",
+      "sha256": "4701a92e1f8b356b6f0c5a24e4401c0af0cc56d41c79f308ec0ab65739ce9249"
+    },
+    {
+      "path": "frontend/src/styles.css",
+      "sha256": "8fdf6adb192af0659c48f3c30be46b2f30a0e2a0fb52920e795c77c79a727f90"
+    },
+    {
+      "path": "frontend/src/td-audio-worklet.js",
+      "sha256": "fe0226a9509ead6b0ebff0787cc68683a014e285f6d33287e38334dc40b203b9"
+    },
+    {
+      "path": "frontend/src/td-history.js",
+      "sha256": "491e50842a3a52701ad19e6127afafd09e6376edb15a411084ae33051fda808e"
+    },
+    {
+      "path": "frontend/src/td-input-source.js",
+      "sha256": "316ec619af800e0f1f3b154487868e647d6a48c3b544d8deb4dd627d9fac3afc"
+    },
+    {
+      "path": "frontend/src/td-locale.js",
+      "sha256": "b62048b5872d2f8e6d012be5aeb750bb33ff89536250b14eb087e1ad35e1cad2"
+    },
+    {
+      "path": "frontend/src/td-playback.js",
+      "sha256": "e6169e594383e88502115407e83c2be3855786687eab412e1684c3a5504614dc"
+    },
+    {
+      "path": "frontend/src/td-render-clock.js",
+      "sha256": "9b14d326d0fcbed183292918ce8c238d0eb1e898856fdb2219555699138b34c5"
+    },
+    {
+      "path": "frontend/src/td-rtc-entry.js",
+      "sha256": "d1486cbbe86179bc1eed0ad719fa6c834140ae6e01a8ae461655e957adbe633c"
+    },
+    {
+      "path": "frontend/src/td-rtp-candidate-playback.js",
+      "sha256": "c811ccf377a9b5632a820045411f09f60be4869d7f1773bce5077114be603411"
+    },
+    {
+      "path": "frontend/src/td-rtp-candidate-worker.js",
+      "sha256": "73ac0da1b1175fbb408ce07989c22b44dc17a40b74146a3e10d0ff4848147050"
+    },
+    {
+      "path": "frontend/src/td-rtp-decode-job.js",
+      "sha256": "4b6d8ce0ede52668172968acd30a070978a535bb3bd6c8603052c1b450e4ae8b"
+    },
+    {
+      "path": "frontend/src/td-settings.css",
+      "sha256": "8341f7e9f4835564add104d09db9186129317c409dcba3edc41d89ea1a9d2be8"
+    },
+    {
+      "path": "frontend/src/td-settings.html",
+      "sha256": "eb6500cf4293d90858defec74dfde90fbf2de83b3411cbdd6182f0ef55057b99"
+    },
+    {
+      "path": "frontend/src/td-settings.js",
+      "sha256": "f94cbdefa3f01be4f18531399a7801ebba04681c38abaf5fb29398d3519b9236"
+    },
+    {
+      "path": "frontend/src/td-timing.js",
+      "sha256": "257be6df6707614188130b87266f896209f0c79c4d95dcc23a5bcd9e50f9b2ba"
+    },
+    {
+      "path": "src/__init__.py",
+      "sha256": "3ce588459bfcf630c4bfe37a4eaa3825ef702ab758e1da4f1dd2e094f0b95b07"
+    },
+    {
+      "path": "src/api.py",
+      "sha256": "031d6933b14660efdeabb24a955ac95a5ae80eda306628b6b531d6e5b4e8a13a"
+    },
+    {
+      "path": "src/asr/__init__.py",
+      "sha256": "1d3c659ba3aca02f60f4ee937808b83826329b3bbe75f75d32bbb7f9b2b792b1"
+    },
+    {
+      "path": "src/asr/catalog.py",
+      "sha256": "54816a4d4b4dba593e4eb9cf10be7574d2392feb67f48d18234afd024c9ed52e"
+    },
+    {
+      "path": "src/asr/config.py",
+      "sha256": "791915b7065d87457352df934dc9e0d3ad0af8fee48a02b6781ed4894f8d6fda"
+    },
+    {
+      "path": "src/asr/deepgram_flux.py",
+      "sha256": "479242b66f55bb500c18622300fa28605b07a11112397ef577c6c3d7f11fdf42"
+    },
+    {
+      "path": "src/asr/factory.py",
+      "sha256": "77b5fb190c4910f864ef15182afbb363162b703fd28e27a2a77dd2d88c10a31f"
+    },
+    {
+      "path": "src/asr/source_frames.py",
+      "sha256": "01eb4208dc7551479b011e07fe465a3f66ae2d34fa65cb8f6041dc2ebf8ac21e"
+    },
+    {
+      "path": "src/asr/td_config.py",
+      "sha256": "ce920768210366a0761234d017a1fbdb227719b6adc21a7aa0b074d5d6bb3ed8"
+    },
+    {
+      "path": "src/asr/transcript.py",
+      "sha256": "d5e33401e82baf8b6c91df95cd1578261770cf083ed41b289c817d43dfcd65d2"
+    },
+    {
+      "path": "src/asr/turn_events.py",
+      "sha256": "55283c7bdedef0261b60679e409871cd78737d1770813cfb9c66368e61c02945"
+    },
+    {
+      "path": "src/auth.py",
+      "sha256": "5631d4acbee9c5f0194feaae35d2bd19578655a35326955bb0c418ae16cafc01"
+    },
+    {
+      "path": "src/bots/__init__.py",
+      "sha256": "af8fb20c3370639d93a712be7445030bae2b8dfab41d80c57c2f77a4f0c70be3"
+    },
+    {
+      "path": "src/bots/crypto.py",
+      "sha256": "3aef94681ad26ed3f6a7c85fd3bd52be820e0b59f2ae5b7f01788e4808c8d88e"
+    },
+    {
+      "path": "src/bots/models.py",
+      "sha256": "956349c4bb19221602ba59e526cf2ffeee542f96d5d916e1d21d55557eee92b0"
+    },
+    {
+      "path": "src/bots/storage.py",
+      "sha256": "281b014cb8befe09ee25c68bdea05379c23aaefb0858605256dfaadd5ec15460"
+    },
+    {
+      "path": "src/bots/validation.py",
+      "sha256": "edebd5174e7e21890b65120af359ee42beddb18c2824a9ec867da2af1f65b910"
+    },
+    {
+      "path": "src/config.py",
+      "sha256": "49b8ab3d67f5c66e91b3304e58ad0ac17f296face68ee61f2098269946524448"
+    },
+    {
+      "path": "src/evaluation/__init__.py",
+      "sha256": "446b8ef86567a1aff4ae4bc3ad6236e8132d51ceb6956d5f393a09dc54b6386a"
+    },
+    {
+      "path": "src/evaluation/alignment.py",
+      "sha256": "697b9cdbefb7128127841277ec0e9f322ff55e15a8180c6e54d0a735b9f731cc"
+    },
+    {
+      "path": "src/evaluation/asr_contract.py",
+      "sha256": "c0d29cc5a2852b3d46549abd2cff9f131e91343fde85777c080c8f41fb766b10"
+    },
+    {
+      "path": "src/evaluation/connections.py",
+      "sha256": "1b643af1cc651290de6683805c1125075e9ec7375affdb444e8cd4bda943323d"
+    },
+    {
+      "path": "src/evaluation/dataset.py",
+      "sha256": "5c5b6bd81ca590ddc77dc4e98136f5f47f7af6884e9fdbd1c2b7f111e984b560"
+    },
+    {
+      "path": "src/evaluation/executor.py",
+      "sha256": "dfc33dba6fc459d53a415b915040cfe748de0c14e03b71ee4917d41cd67ef2aa"
+    },
+    {
+      "path": "src/evaluation/imports.py",
+      "sha256": "16f190713b66744fae0c8ec9a64a64c61d48bb0534d4736de9a0133d4c1ab63f"
+    },
+    {
+      "path": "src/evaluation/models.py",
+      "sha256": "b53639e450d34c379ca8a89dafad533d3c25a2e9459e28e2435736b5f900b789"
+    },
+    {
+      "path": "src/evaluation/pass2_packing.py",
+      "sha256": "b009a616e55b6ddea42f6f7b23149e99de6b0ba8c437b97ada3be27940916904"
+    },
+    {
+      "path": "src/evaluation/pricing.py",
+      "sha256": "6303fedad6b608ece16ec0f9630d84eeb78df238febc97654d531297ee86e824"
+    },
+    {
+      "path": "src/evaluation/prompts.py",
+      "sha256": "c5aabfbd7c997df41317fd0f71c2a6bf5a1c70b87bd62625f4769cdaafa1fa3c"
+    },
+    {
+      "path": "src/evaluation/router.py",
+      "sha256": "9b52d7cf83e15093361dc7e096e5a5f1cf062dfb3a694cbe1481e6a3db9d5377"
+    },
+    {
+      "path": "src/evaluation/storage.py",
+      "sha256": "b9b25aae9e3f0a0727a72d25fcf089f3b40fc35ce1106c9f045061e51e7162e4"
+    },
+    {
+      "path": "src/history/__init__.py",
+      "sha256": "e4d4846939b7ab57a3c1161e5c0379223d850dcf45312d2e80500867afc5615c"
+    },
+    {
+      "path": "src/history/capture.py",
+      "sha256": "966e4d3f85bf40de10b53a281b734ffc6a973d3c589ad12fed1f24a89be9beb4"
+    },
+    {
+      "path": "src/history/models.py",
+      "sha256": "58cb8a7a2fba466297aa5ed4af1bd04f7b62e92192308c21344391e1bde4e730"
+    },
+    {
+      "path": "src/history/recording.py",
+      "sha256": "b60fdddd932e4877b19f5a158dc4c193353efaf896cac3b5b16e00f3e58a0dd4"
+    },
+    {
+      "path": "src/history/render_clock.py",
+      "sha256": "01a18921576489d59e3ad7f525822a3ec2fb2201b6dbd88b11a14bd48bbd9fd8"
+    },
+    {
+      "path": "src/history/source_clock.py",
+      "sha256": "2e96b2e9e021ccb03f353321ef3e1b72d134a09d2fda6d0a1a74fe46b3c84aee"
+    },
+    {
+      "path": "src/history/storage.py",
+      "sha256": "f4fd4578fca5d2536c208fd6e660852a27056add682af9a651b8e5fae0c1019c"
+    },
+    {
+      "path": "src/llm/__init__.py",
+      "sha256": "e8480501f94bd043dc415ecd700b71b91ce0d48186dc92816303e91e03ec7e73"
+    },
+    {
+      "path": "src/llm/capabilities.py",
+      "sha256": "f997b38c95ee669881de57497f716200f0eb7654cd2fcbfe458e7fe2edfbf7d1"
+    },
+    {
+      "path": "src/llm/diagnostics.py",
+      "sha256": "977fe5fd98465529c881b1ff2dd26d05a71f5244a34edfeeeab8c523857fd721"
+    },
+    {
+      "path": "src/llm/factory.py",
+      "sha256": "064435266e3f0aa42841e0fa8bc72789d48143609eba2a3e5976684c4c614c3b"
+    },
+    {
+      "path": "src/llm/openai_compatible.py",
+      "sha256": "2545698f2350decec31f07eeaa5d72d9a1a9b8c5a085281cab643ffc9e73595f"
+    },
+    {
+      "path": "src/llm/qwen_dashscope.py",
+      "sha256": "2c612f4b5f1711be9aa0eedfaa38424796801f47a6fe74e62c5a7acf1a3e4042"
+    },
+    {
+      "path": "src/llm/scoped.py",
+      "sha256": "bc6c4ca858a13d949d1c210818f5b397eef42a7de58d3248941d1102552f323a"
+    },
+    {
+      "path": "src/observability.py",
+      "sha256": "7e2a65f1a3b886b2cb33570c94b5e8233dda915dd75f5ae981284fbe9b85feb9"
+    },
+    {
+      "path": "src/pipeline/__init__.py",
+      "sha256": "11c805069533effca3345b565004251e55015a3c196a23f32116eb8fefe44659"
+    },
+    {
+      "path": "src/pipeline/assistant_context.py",
+      "sha256": "bb7ca84e3dc24ee1e44136d06b693675fa5248a36cc2cb26f0666bce63518db6"
+    },
+    {
+      "path": "src/pipeline/audio_identity.py",
+      "sha256": "6cf8c9ead35da14fbcdaaf4bb3d5a2a5bb11f3cbb726e97a248b68f783aeb8f0"
+    },
+    {
+      "path": "src/pipeline/custom_td.py",
+      "sha256": "5f95afff88fb10b15f2d34ce25b43a8d70524b7f54fd30032559d1597e12ce72"
+    },
+    {
+      "path": "src/pipeline/echo_audio.py",
+      "sha256": "423d9e57583f2feb00b44e3333f5a9fa171e4baa5bc8a6776b82552647730a7a"
+    },
+    {
+      "path": "src/pipeline/identifier.py",
+      "sha256": "701f589f0076157f862eade7ce6066f2d9542d6801fe940ec36c89716da2d7f7"
+    },
+    {
+      "path": "src/pipeline/identifier_output.py",
+      "sha256": "9e1f175e5a510c86166193d20ed456b4a6b26763c67668008ff0ec95e5049ec2"
+    },
+    {
+      "path": "src/pipeline/identifier_rules.py",
+      "sha256": "a5ab623824f00c14a26a2f7f6d72ef623c077cca58674976e276dab8f01ce944"
+    },
+    {
+      "path": "src/pipeline/identifier_tools.py",
+      "sha256": "f417baf0ad2695e8ba310ddf41ef8b495dc6d9a0af967ad10264132ba60cc58c"
+    },
+    {
+      "path": "src/pipeline/jev.py",
+      "sha256": "05bc1de8d10bbfa17ed218407b0cb3e51b62767561cfd1f710fb201471f5a099"
+    },
+    {
+      "path": "src/pipeline/playback.py",
+      "sha256": "ffb7c3cb15f7e74fe3525e51f414e5e41fbbeda10c94d825590d7415c66016f4"
+    },
+    {
+      "path": "src/pipeline/response_revision.py",
+      "sha256": "1f87bb0de795e1a79099d190325e23cd9b27c7daafe634cc113180681026bf16"
+    },
+    {
+      "path": "src/pipeline/response_scope.py",
+      "sha256": "a47e3a7c23009c1e90c4772983dce0e395a003a824cd2f16bcf3ae96efd4426d"
+    },
+    {
+      "path": "src/pipeline/rtp_mapping.py",
+      "sha256": "d8778b5ab89f54f8dd92d25467cf85637d2256d2bffbcb9fb4f4e12cc2b166b7"
+    },
+    {
+      "path": "src/pipeline/rtp_output.py",
+      "sha256": "f59c250d99ff900f050c631bea2a07e8ec420ba4215a029257e4921e28381dcd"
+    },
+    {
+      "path": "src/pipeline/serial_output.py",
+      "sha256": "3e5f975d7050138a87e23df110133d308e634003d72deb1cc815898b4d4ba4d7"
+    },
+    {
+      "path": "src/pipeline/speed_control.py",
+      "sha256": "660ed1b49b39a0fbf6bd057889c7d3a155d93faf3e39983402b3f1b5416ee307"
+    },
+    {
+      "path": "src/pipeline/td_strategies.py",
+      "sha256": "e1aceee0733c34bdb892718da07034652de9a35c96d97953c3ee9be331da3a5c"
+    },
+    {
+      "path": "src/pipeline/turn_detection.py",
+      "sha256": "e14cf606683ccbc9bd18cae1e300cd46015ea9eae560476fda16afc1082cdd07"
+    },
+    {
+      "path": "src/pipeline/voice_agent.py",
+      "sha256": "9fb82d5529379fb6537529c12891f88583bd4a7b6b1b74ba68b8a2f38134659d"
+    },
+    {
+      "path": "src/pipeline/webrtc_cancel.py",
+      "sha256": "14c43f73608cce6b712cbdea7e1eb0ab3eb09ed72d61c7b621062e0f8b2b5500"
+    },
+    {
+      "path": "src/publication.py",
+      "sha256": "1125c13577c28c2bbee78bc353ee837872e2eeb57e4073ebd60f1589c7cb947b"
+    },
+    {
+      "path": "src/session.py",
+      "sha256": "44dd7681239afd615a2702af02008019ebe993661b4c4f02a32b03486e42e04b"
+    },
+    {
+      "path": "src/tts/__init__.py",
+      "sha256": "0376192f20e2b2d0886ec5fef154e9c987a634204ae509ad59da45c770c1ab43"
+    },
+    {
+      "path": "src/tts/confirmed_flux.py",
+      "sha256": "8066aa34fcd6ade30749b6158be8948cefa7e214dc2ca7778db4bda8e52d498e"
+    },
+    {
+      "path": "src/tts/echo_cache.py",
+      "sha256": "6e5e75aeaa89b2167eaa74e5c120098cd852b1216d47f2385cce0f526aa8e7bb"
+    },
+    {
+      "path": "src/tts/factory.py",
+      "sha256": "62f986fed3c3ddfb6332e04b3f8a3c7e201d24aa53f18943a71f18aa3212f262"
+    },
+    {
+      "path": "src/tts/response_scope.py",
+      "sha256": "ce64c33d31330025045879a9b5616e5ca1d1c1a7acc51d6d8bceef9ab3ed00c5"
+    },
+    {
+      "path": "src/tts/scoped.py",
+      "sha256": "be432e9e6e3a7d22e77e59de8255705a43319c539b2dabf74985863d867c4f89"
+    },
+    {
+      "path": "src/tts/unit_synthesis.py",
+      "sha256": "5cf54cd4b1438690ba8879d09aee597ced7130fe298321da9cecf95fdc09891b"
+    },
+    {
+      "path": "src/webrtc.py",
+      "sha256": "3546abfad95839759382c7f7242a2e278cf4fc7f0ad985ee18a81a733aec851a"
+    }
+  ],
+  "new_external_basic_matrix": "verification/development-20261025-r85/six-model-basic-compatibility.json",
+  "rows": [
+    {
+      "task": "M1-2",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_td_asr_events::test_soniox_unknown_range_recovers_only_within_the_same_sdk_snapshot_scope",
+        "tests.test_td_asr_events::test_unknown_identity_cannot_be_erased_by_unrelated_valid_source_or_reconnect[deepgram-flux-general-en-unknown0-known0]",
+        "tests.test_td_asr_events::test_unknown_identity_cannot_be_erased_by_unrelated_valid_source_or_reconnect[deepgram-flux-general-multi-unknown1-known1]",
+        "tests.test_td_asr_events::test_unknown_identity_cannot_be_erased_by_unrelated_valid_source_or_reconnect[deepgram-nova-3-unknown2-known2]",
+        "tests.test_td_asr_events::test_unknown_identity_cannot_be_erased_by_unrelated_valid_source_or_reconnect[speechmatics-enhanced-unknown3-known3]",
+        "tests.test_td_asr_events::test_unknown_identity_cannot_be_erased_by_unrelated_valid_source_or_reconnect[soniox-stt-rt-v5-unknown4-known4]",
+        "tests.test_td_asr_events::test_unknown_identity_cannot_be_erased_by_unrelated_valid_source_or_reconnect[assemblyai-universal-3-5-pro-unknown5-known5]",
+        "tests.test_td_asr_events::test_flux_real_overlapping_word_times_keep_the_proven_source_range",
+        "tests.test_td_asr_events::test_flux_real_decimal_roundoff_does_not_reject_a_contained_word[4.5600000000000005-True]",
+        "tests.test_td_asr_events::test_flux_real_decimal_roundoff_does_not_reject_a_contained_word[4.560001-False]",
+        "tests.test_td_asr_events::test_soniox_full_snapshot_replaces_removed_partial_tokens_without_erasing_final_prefix",
+        "tests.test_td_asr_events::test_flux_update_and_final_share_range[flux-general-en]",
+        "tests.test_td_asr_events::test_flux_update_and_final_share_range[flux-general-multi]",
+        "tests.test_td_asr_events::test_speechmatics_metadata_and_fragments",
+        "tests.test_td_asr_events::test_nova_final_chunk_does_not_finalize_new_tail",
+        "tests.test_td_asr_events::test_soniox_stability_control_tokens_and_missing_time",
+        "tests.test_td_asr_events::test_assembly_formatting_and_connection_epochs",
+        "tests.test_td_asr_events::test_soniox_stable_prefix_allows_new_partial_tail",
+        "tests.test_td_asr_events::test_registered_flux_update_reaches_pipeline_with_raw_timing",
+        "tests.test_td_asr_events::test_registered_speechmatics_preserves_segment_metadata",
+        "tests.test_td_asr_events::test_speechmatics_null_fragments_preserve_segment_text_and_range",
+        "tests.test_td_asr_events::test_speechmatics_complete_fragments_supply_actual_missing_segment_range",
+        "tests.test_td_asr_events::test_speechmatics_incomplete_fragments_do_not_invent_missing_range",
+        "tests.test_td_asr_events::test_same_numeric_start_uses_one_source_despite_json_number_format[0-0.0-speechmatics-enhanced]",
+        "tests.test_td_asr_events::test_same_numeric_start_uses_one_source_despite_json_number_format[0-0.0-deepgram-nova-3]",
+        "tests.test_td_asr_events::test_same_numeric_start_uses_one_source_despite_json_number_format[0.0--0.0-speechmatics-enhanced]",
+        "tests.test_td_asr_events::test_same_numeric_start_uses_one_source_despite_json_number_format[0.0--0.0-deepgram-nova-3]",
+        "tests.test_td_asr_events::test_same_numeric_start_uses_one_source_despite_json_number_format[2-2.0-speechmatics-enhanced]",
+        "tests.test_td_asr_events::test_same_numeric_start_uses_one_source_despite_json_number_format[2-2.0-deepgram-nova-3]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-None-speechmatics-enhanced-valid0-invalid0]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-None-soniox-stt-rt-v5-valid1-invalid1]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-1-speechmatics-enhanced-valid0-invalid0]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-1-soniox-stt-rt-v5-valid1-invalid1]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-None-speechmatics-enhanced-valid0-invalid0]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-None-soniox-stt-rt-v5-valid1-invalid1]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-1-speechmatics-enhanced-valid0-invalid0]",
+        "tests.test_td_asr_events::test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-1-soniox-stt-rt-v5-valid1-invalid1]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-flux-general-en]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-flux-general-multi]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-deepgram-nova-3]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-speechmatics-enhanced]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-soniox-stt-rt-v5]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[missing-assemblyai-universal-3-5-pro]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-flux-general-en]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-flux-general-multi]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-deepgram-nova-3]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-speechmatics-enhanced]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-soniox-stt-rt-v5]",
+        "tests.test_td_asr_events::test_final_source_cannot_reopen_a_gap_from_late_partial[invalid-assemblyai-universal-3-5-pro]",
+        "tests.test_td_asr_events::test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent",
+        "tests.test_td_source_frames::test_old_receiver_keeps_original_epoch_after_new_connection",
+        "tests.test_td_source_frames::test_native_mode_keeps_original_sdk_frames_and_connection_flow",
+        "tests.test_td_source_frames::test_socket_retry_without_connect_advances_epoch_and_fences_old_task",
+        "tests.test_td_source_frames::test_lazy_sdk_context_retries_bind_each_actual_entry",
+        "tests.test_td_source_frames::test_unbound_callback_never_borrows_the_current_connection_epoch",
+        "tests.test_td_source_frames::test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline",
+        "tests.test_td_transcript::test_partial_replaces_and_late_final_preserves_tail",
+        "tests.test_td_transcript::test_duplicate_out_of_order_and_reconnect",
+        "tests.test_td_transcript::test_provider_turn_crosses_td_commit_without_repeating_prefix",
+        "tests.test_td_transcript::test_unknown_cross_commit_range_is_explicitly_unavailable",
+        "tests.test_td_transcript::test_real_repetition_and_formatting_revision",
+        "tests.test_td_transcript::test_invalid_audio_range_is_rejected",
+        "tests.test_td_transcript::test_final_for_second_commit_never_restores_first_commit_prefix",
+        "tests.test_td_transcript::test_resolved_final_preserves_submitted_extent_as_well_as_text",
+        "tests.test_td_transcript::test_final_word_crossing_owned_boundary_does_not_silently_shorten_input",
+        "tests.test_td_transcript::test_cross_commit_partial_word_coverage_cannot_silently_erase_a_word",
+        "tests.test_td_transcript::test_sample_equivalent_consumed_edge_keeps_final_prefix_and_new_tail_separate"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    },
+    {
+      "task": "M3-1",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[123-123]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[one two-12]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[\\u4e00\\u4e8c\\u4e09-123]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[1-1]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[12-12]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[1\\uff0c2-3-123]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[one moment]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[\\u6211\\u7684\\u53f7\\u7801\\u662f123]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[\\u4e0d\\u662f123\\uff0c\\u662f124]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[123\\uff0c\\u55ef\\uff0c12]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[123\\uff0c\\u63a5\\u4e0b\\u6765\\u8fd8\\u8981\\u51e0\\u4f4d]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[\\u628a\\u7b2c4\\u4f4d\\u6539\\u62103]",
+        "tests.test_td_identifier::test_repetition_revision_and_local_tool_dedup_share_state",
+        "tests.test_td_identifier::test_tool_rejects_hallucinated_or_cross_generation_content",
+        "tests.test_td_identifier::test_unfinished_reminder_preserves_and_success_new_start_clears",
+        "tests.test_td_identifier::test_duplicate_aliases_are_rejected",
+        "tests.test_td_identifier::test_audio_units_preserve_vocabulary_boundaries_and_repeated_values",
+        "tests.test_td_identifier_inputs::test_adjacent_commits_from_one_provider_source_both_contribute",
+        "tests.test_td_identifier_inputs::test_multi_source_mixed_input_tool_uses_exact_group_and_local_path_deduplicates",
+        "tests.test_td_identifier_inputs::test_overlapping_source_groups_replace_but_adjacent_repeat_is_preserved",
+        "tests.test_td_identifier_inputs::test_tools_bind_the_coordinator_snapshot_for_multi_source_request",
+        "tests.test_td_identifier_rules::test_keyword_gate_and_full_input_format_are_required_before_collection",
+        "tests.test_td_identifier_rules::test_business_units_ignore_asr_token_count_and_window_trailing_silence",
+        "tests.test_td_identifier_rules::test_slow_single_unit_and_unknown_timing_still_collect_without_fake_wpm",
+        "tests.test_td_identifier_rules::test_partial_mixed_revision_withdraws_local_value_without_extracting_digits",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[hello-1]",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[\\u4f60\\u597d-2]",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[1234-4]",
+        "tests.test_td_identifier_rules::test_retained_revision_cannot_consume_new_collection_permission"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    },
+    {
+      "task": "M3-2",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_td_identifier_pipeline::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect[mixed]",
+        "tests.test_td_identifier_pipeline::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect[pure]",
+        "tests.test_td_identifier_pipeline::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect[retained_mixed]",
+        "tests.test_td_identifier_tools::test_submit_schema_handler_mutates_only_proven_source_and_returns_actual_state",
+        "tests.test_td_identifier_tools::test_hallucinated_number_and_unbound_source_never_change_collection",
+        "tests.test_td_identifier_tools::test_clear_reanswer_does_not_clear_a_new_collection_generation",
+        "tests.test_td_identifier_tools::test_clear_then_submit_from_the_old_generation_is_rejected",
+        "tests.test_td_identifier_tools::test_context_contains_verified_state_without_mutating_conversation_history",
+        "tests.test_td_identifier_tools::test_same_mixed_final_keeps_applied_value_and_reanswer_does_not_replay",
+        "tests.test_td_identifier_tools::test_reanswer_cannot_reuse_success_for_number_absent_from_revised_input",
+        "tests.test_td_identifier_tools::test_already_collected_pure_input_has_no_extra_identifier_tools_in_inference",
+        "tests.test_td_identifier_tools::test_invalid_tool_arguments_do_not_change_collection_success_proof",
+        "tests.test_td_identifier_tools::test_parallel_submit_clear_delivers_actual_state_not_a_stale_success_snapshot",
+        "tests.test_td_identifier_tools::test_parallel_replacements_report_current_value_at_each_delivery",
+        "tests.test_td_identifier_tools::test_new_mixed_input_after_success_resets_only_when_valid_submit_runs[True]",
+        "tests.test_td_identifier_tools::test_new_mixed_input_after_success_resets_only_when_valid_submit_runs[False]",
+        "tests.test_td_tool_scope::test_successful_effect_is_not_replayed_after_final",
+        "tests.test_td_tool_scope::test_old_context_cannot_act_on_new_user_turn",
+        "tests.test_td_tool_scope::test_final_arriving_during_effect_does_not_cancel_or_duplicate_it",
+        "tests.test_td_tool_scope::test_failure_result_is_not_automatically_retried_by_reanswer",
+        "tests.test_td_tool_scope::test_locked_sdk_background_tool_runner_preserves_source_identity",
+        "tests.test_td_tool_scope::test_final_before_scheduled_effect_allows_current_response_to_execute",
+        "tests.test_td_tool_scope::test_llm_tokens_after_final_are_rejected_at_sdk_producer"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    },
+    {
+      "task": "M3-3",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_td_identifier_inputs::test_adjacent_commits_from_one_provider_source_both_contribute",
+        "tests.test_td_identifier_inputs::test_multi_source_mixed_input_tool_uses_exact_group_and_local_path_deduplicates",
+        "tests.test_td_identifier_inputs::test_overlapping_source_groups_replace_but_adjacent_repeat_is_preserved",
+        "tests.test_td_identifier_inputs::test_tools_bind_the_coordinator_snapshot_for_multi_source_request",
+        "tests.test_td_identifier_rules::test_keyword_gate_and_full_input_format_are_required_before_collection",
+        "tests.test_td_identifier_rules::test_business_units_ignore_asr_token_count_and_window_trailing_silence",
+        "tests.test_td_identifier_rules::test_slow_single_unit_and_unknown_timing_still_collect_without_fake_wpm",
+        "tests.test_td_identifier_rules::test_partial_mixed_revision_withdraws_local_value_without_extracting_digits",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[hello-1]",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[\\u4f60\\u597d-2]",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[1234-4]",
+        "tests.test_td_identifier_rules::test_retained_revision_cannot_consume_new_collection_permission"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    },
+    {
+      "task": "M3-4",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[123-123]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[one two-12]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[\\u4e00\\u4e8c\\u4e09-123]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[1-1]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[12-12]",
+        "tests.test_td_identifier::test_strict_local_accepts_whole_identifier_without_minimum[1\\uff0c2-3-123]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[one moment]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[\\u6211\\u7684\\u53f7\\u7801\\u662f123]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[\\u4e0d\\u662f123\\uff0c\\u662f124]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[123\\uff0c\\u55ef\\uff0c12]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[123\\uff0c\\u63a5\\u4e0b\\u6765\\u8fd8\\u8981\\u51e0\\u4f4d]",
+        "tests.test_td_identifier::test_mixed_input_is_not_locally_extracted[\\u628a\\u7b2c4\\u4f4d\\u6539\\u62103]",
+        "tests.test_td_identifier::test_repetition_revision_and_local_tool_dedup_share_state",
+        "tests.test_td_identifier::test_tool_rejects_hallucinated_or_cross_generation_content",
+        "tests.test_td_identifier::test_unfinished_reminder_preserves_and_success_new_start_clears",
+        "tests.test_td_identifier::test_duplicate_aliases_are_rejected",
+        "tests.test_td_identifier::test_audio_units_preserve_vocabulary_boundaries_and_repeated_values",
+        "tests.test_td_identifier_rules::test_keyword_gate_and_full_input_format_are_required_before_collection",
+        "tests.test_td_identifier_rules::test_business_units_ignore_asr_token_count_and_window_trailing_silence",
+        "tests.test_td_identifier_rules::test_slow_single_unit_and_unknown_timing_still_collect_without_fake_wpm",
+        "tests.test_td_identifier_rules::test_partial_mixed_revision_withdraws_local_value_without_extracting_digits",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[hello-1]",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[\\u4f60\\u597d-2]",
+        "tests.test_td_identifier_rules::test_business_unit_definition_is_independent_of_provider_tokens[1234-4]",
+        "tests.test_td_identifier_rules::test_retained_revision_cannot_consume_new_collection_permission"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    },
+    {
+      "task": "M3-6",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_echo_runtime::test_runtime_cached_repeated_units_stream_pcm_without_synthesis",
+        "tests.test_echo_runtime::test_clear_during_missing_asset_repair_never_reinserts_audio",
+        "tests.test_td_identifier_inputs::test_adjacent_commits_from_one_provider_source_both_contribute",
+        "tests.test_td_identifier_inputs::test_multi_source_mixed_input_tool_uses_exact_group_and_local_path_deduplicates",
+        "tests.test_td_identifier_inputs::test_overlapping_source_groups_replace_but_adjacent_repeat_is_preserved",
+        "tests.test_td_identifier_inputs::test_tools_bind_the_coordinator_snapshot_for_multi_source_request",
+        "tests.test_td_identifier_tools::test_submit_schema_handler_mutates_only_proven_source_and_returns_actual_state",
+        "tests.test_td_identifier_tools::test_hallucinated_number_and_unbound_source_never_change_collection",
+        "tests.test_td_identifier_tools::test_clear_reanswer_does_not_clear_a_new_collection_generation",
+        "tests.test_td_identifier_tools::test_clear_then_submit_from_the_old_generation_is_rejected",
+        "tests.test_td_identifier_tools::test_context_contains_verified_state_without_mutating_conversation_history",
+        "tests.test_td_identifier_tools::test_same_mixed_final_keeps_applied_value_and_reanswer_does_not_replay",
+        "tests.test_td_identifier_tools::test_reanswer_cannot_reuse_success_for_number_absent_from_revised_input",
+        "tests.test_td_identifier_tools::test_already_collected_pure_input_has_no_extra_identifier_tools_in_inference",
+        "tests.test_td_identifier_tools::test_invalid_tool_arguments_do_not_change_collection_success_proof",
+        "tests.test_td_identifier_tools::test_parallel_submit_clear_delivers_actual_state_not_a_stale_success_snapshot",
+        "tests.test_td_identifier_tools::test_parallel_replacements_report_current_value_at_each_delivery",
+        "tests.test_td_identifier_tools::test_new_mixed_input_after_success_resets_only_when_valid_submit_runs[True]",
+        "tests.test_td_identifier_tools::test_new_mixed_input_after_success_resets_only_when_valid_submit_runs[False]"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    },
+    {
+      "task": "M4-1",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_echo_api::test_cache_generate_preview_restart_and_publish_only_check",
+        "tests.test_echo_api::test_publish_refuses_configuration_changed_during_audio_validation",
+        "tests.test_echo_cache::test_durable_units_deduplicate_generation_but_not_playback",
+        "tests.test_echo_cache::test_config_fingerprint_and_published_manifest_never_borrow_new_voice",
+        "tests.test_echo_cache::test_failed_unit_retry_does_not_regenerate_successes_and_corruption_blocks_publish",
+        "tests.test_echo_cache::test_runtime_repair_is_bounded_deduplicated_and_uses_frozen_settings",
+        "tests.test_echo_cache::test_async_preparation_captures_settings_before_first_io",
+        "tests.test_echo_cache::test_cancelled_waiter_does_not_repeat_an_already_sent_synthesis",
+        "tests.test_echo_cache::test_asset_write_failure_is_a_failed_unit_not_a_fake_ready_row",
+        "tests.test_echo_runtime::test_runtime_cached_repeated_units_stream_pcm_without_synthesis",
+        "tests.test_echo_runtime::test_clear_during_missing_asset_repair_never_reinserts_audio",
+        "tests.test_echo_synthesis::test_unit_renderer_reports_upstream_provider_error_without_waiting_for_timeout",
+        "tests.test_echo_synthesis::test_unit_renderer_bounds_sdk_setup_and_releases_partial_resources",
+        "tests.test_echo_synthesis::test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm[24000-False]",
+        "tests.test_echo_synthesis::test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm[16000-True]"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    },
+    {
+      "task": "M4-2",
+      "status": "implemented_with_developer_evidence",
+      "backend_cases": [
+        "tests.test_echo_api::test_cache_generate_preview_restart_and_publish_only_check",
+        "tests.test_echo_api::test_publish_refuses_configuration_changed_during_audio_validation",
+        "tests.test_echo_cache::test_durable_units_deduplicate_generation_but_not_playback",
+        "tests.test_echo_cache::test_config_fingerprint_and_published_manifest_never_borrow_new_voice",
+        "tests.test_echo_cache::test_failed_unit_retry_does_not_regenerate_successes_and_corruption_blocks_publish",
+        "tests.test_echo_cache::test_runtime_repair_is_bounded_deduplicated_and_uses_frozen_settings",
+        "tests.test_echo_cache::test_async_preparation_captures_settings_before_first_io",
+        "tests.test_echo_cache::test_cancelled_waiter_does_not_repeat_an_already_sent_synthesis",
+        "tests.test_echo_cache::test_asset_write_failure_is_a_failed_unit_not_a_fake_ready_row",
+        "tests.test_echo_runtime::test_runtime_cached_repeated_units_stream_pcm_without_synthesis",
+        "tests.test_echo_runtime::test_clear_during_missing_asset_repair_never_reinserts_audio",
+        "tests.test_td_identifier_output::test_revised_preparing_echo_discards_old_result_and_metadata_only_final_reuses_latest",
+        "tests.test_td_identifier_output::test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued",
+        "tests.test_td_identifier_output::test_late_final_echo_cannot_pass_an_already_ready_ordinary_response",
+        "tests.test_td_identifier_output::test_sent_revision_is_corrected_before_ordinary_without_erasing_original_facts",
+        "tests.test_td_identifier_output::test_metadata_final_does_not_retry_a_failed_queued_echo"
+      ],
+      "supporting_local_real": "r83 published cache success/failure and r84 Checkpoint B matrix; r68/69 controlled RTC; see scoped reports",
+      "exclusions": "external semantic/tool effectiveness, actual reconnect/cross-connection clocks, device behavior, default RTC adoption remain separate; not whole milestone acceptance"
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "connection": "connected",
+  "ice": "connected",
+  "decodedFrames": 12,
+  "decodedTiming": [
+    {
+      "timestamp": 5228700,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5230.800000190735
+    },
+    {
+      "timestamp": 5234300,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5234.400000095367
+    },
+    {
+      "timestamp": 5245100,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5245.200000047684
+    },
+    {
+      "timestamp": 5255600,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5255.700000047684
+    },
+    {
+      "timestamp": 5261300,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5261.300000190735
+    },
+    {
+      "timestamp": 5271600,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5271.600000143051
+    },
+    {
+      "timestamp": 5282400,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5282.400000095367
+    },
+    {
+      "timestamp": 5293100,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5293.200000047684
+    },
+    {
+      "timestamp": 5303800,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5303.900000095367
+    },
+    {
+      "timestamp": 5314500,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5314.5
+    },
+    {
+      "timestamp": 5325000,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5325.100000143051
+    },
+    {
+      "timestamp": 5335800,
+      "frames": 480,
+      "sampleRate": 48000,
+      "observedAt": 5335.800000190735
+    }
+  ],
+  "browserTimeOrigin": 1792682740370.7,
+  "beforePlayback": {
+    "decodedFrames": 0,
+    "synchronizationObservations": 0,
+    "inbound": [
+      {
+        "packetsReceived": 250,
+        "jitterBufferEmittedCount": 0
+      }
+    ]
+  },
+  "player": {
+    "paused": false,
+    "muted": true
+  },
+  "mdnsCandidates": false,
+  "candidateCounts": {
+    "sender": 14,
+    "receiver": 7
+  },
+  "receiverIce": "connected",
+  "dtls": "connected",
+  "observations": [
+    {
+      "timestamp": 1792682745599,
+      "rtpTimestamp": 3458793376
+    },
+    {
+      "timestamp": 1792682745615,
+      "rtpTimestamp": 3458794336
+    },
+    {
+      "timestamp": 1792682745642,
+      "rtpTimestamp": 3458797216
+    },
+    {
+      "timestamp": 1792682745663,
+      "rtpTimestamp": 3458798176
+    },
+    {
+      "timestamp": 1792682745674,
+      "rtpTimestamp": 3458799136
+    }
+  ],
+  "remoteSinkCreated": true,
+  "htmlAudioElements": 1,
+  "remoteTrackState": "live"
+}

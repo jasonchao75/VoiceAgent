@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:19655) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (880ms)
+  ✓  2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (517ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 1440px (695ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 390px (564ms)
+
+  4 passed (3.2s)

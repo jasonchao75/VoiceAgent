@@ -1,0 +1,72 @@
+{
+  "containers": [
+    {
+      "name": "/voiceagent-td-r93-strict-resource",
+      "image": "sha256:92223298f87b16a086451fd91f1fafed1472a8b3495abdc8268d46b36fd727b1",
+      "status": "exited",
+      "running": false,
+      "exit_code": 0,
+      "oom_killed": false,
+      "nano_cpus": 1000000000,
+      "memory": 1073741824,
+      "memory_swap": 1073741824,
+      "cpuset": "0",
+      "network": "bridge",
+      "port_bindings": {
+        "8000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "18993"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "Destination": "/app/td-resource-server.py",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/tmp/voiceagent-r93-resource-server.py",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/app/td_local_app.py",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/tmp/voiceagent-r93-local-app.py",
+          "Type": "bind"
+        }
+      ]
+    },
+    {
+      "name": "/voiceagent-td-r93-strict-silero",
+      "image": "sha256:92223298f87b16a086451fd91f1fafed1472a8b3495abdc8268d46b36fd727b1",
+      "status": "exited",
+      "running": false,
+      "exit_code": 0,
+      "oom_killed": false,
+      "nano_cpus": 1000000000,
+      "memory": 1073741824,
+      "memory_swap": 1073741824,
+      "cpuset": "0",
+      "network": "none",
+      "port_bindings": {},
+      "mounts": [
+        {
+          "Destination": "/app/td-resource-silero.py",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/tmp/voiceagent-r93-silero.py",
+          "Type": "bind"
+        }
+      ]
+    }
+  ],
+  "image": {
+    "id": "sha256:92223298f87b16a086451fd91f1fafed1472a8b3495abdc8268d46b36fd727b1",
+    "os": "linux",
+    "architecture": "arm64"
+  }
+}

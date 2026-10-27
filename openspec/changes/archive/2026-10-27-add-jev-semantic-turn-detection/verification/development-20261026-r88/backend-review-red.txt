@@ -1,0 +1,90 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+______ test_distinct_english_segments_preserve_identifier_word_boundaries ______
+
+    def test_distinct_english_segments_preserve_identifier_word_boundaries():
+        """Two provider segments must not turn two valid words into one unknown word."""
+        normalizer = SourceNormalizer("deepgram", "nova-3", sample_rate=16000)
+        ledger = TranscriptLedger()
+        for index, text in enumerate(("one", "two")):
+            payload = {
+                "start": index,
+                "duration": 1,
+                "is_final": True,
+                "channel": {"alternatives": [{
+                    "transcript": text,
+                    "words": [{"word": text, "start": index, "end": index + 1}],
+                }]},
+            }
+            for segment in normalizer.normalize(payload):
+                ledger.apply(segment)
+        vocabulary = IdentifierVocabulary({"1": ["one"], "2": ["two"]})
+>       assert vocabulary.normalize(ledger.view().text) == "12", ledger.view().text
+E       AssertionError: onetwo
+E       assert None == '12'
+E        +  where None = normalize('onetwo')
+E        +    where normalize = <src.pipeline.identifier.IdentifierVocabulary object at 0x11309cec0>.normalize
+E        +    and   'onetwo' = TranscriptView(text='onetwo', final=True, segments=(SourceSegment(epoch=0, source_id='0.0', revision=1, start_ms=0.0, ...imedWord(text='two', start_ms=1000.0, end_ms=2000.0),), timing_reliable=True, sample_rate=16000)), missing_reason=None).text
+E        +      where TranscriptView(text='onetwo', final=True, segments=(SourceSegment(epoch=0, source_id='0.0', revision=1, start_ms=0.0, ...imedWord(text='two', start_ms=1000.0, end_ms=2000.0),), timing_reliable=True, sample_rate=16000)), missing_reason=None) = view()
+E        +        where view = <src.asr.transcript.TranscriptLedger object at 0x11309cd70>.view
+
+openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/backend_repros_20261026.py:26: AssertionError
+___________ test_partial_word_coverage_cannot_resolve_a_final_extent ___________
+
+    def test_partial_word_coverage_cannot_resolve_a_final_extent():
+        """Missing timed words must not silently remove a negation from a Final."""
+        ledger = TranscriptLedger()
+        normalizer = SourceNormalizer("deepgram", "nova-3", sample_rate=16000)
+        for segment in normalizer.normalize({
+            "start": 0, "duration": 1, "is_final": False,
+            "channel": {"alternatives": [{"transcript": "I agree"}]},
+        }):
+            ledger.apply(segment)
+        original = ledger.consume()
+        for segment in normalizer.normalize({
+            "start": 0, "duration": 2, "is_final": True,
+            "channel": {"alternatives": [{
+                "transcript": "I do not agree now",
+                "words": [
+                    {"word": "I", "start": 0, "end": .1},
+                    {"word": "do"}, {"word": "not"},
+                    {"word": "agree", "start": .4, "end": .9},
+                    {"word": "now", "start": 1.1, "end": 1.5},
+                ],
+            }]},
+        }):
+            ledger.apply(segment)
+        assert normalizer.missing_reason is None
+>       assert ledger.resolve_snapshot(original) is None
+E       AssertionError: assert TranscriptView(text='Iagree', final=True, segments=(SourceSegment(epoch=0, source_id='0.0', revision=2, start_ms=0.0, ...imedWord(text='agree', start_ms=400.0, end_ms=900.0)), timing_reliable=True, sample_rate=16000),), missing_reason=None) is None
+E        +  where TranscriptView(text='Iagree', final=True, segments=(SourceSegment(epoch=0, source_id='0.0', revision=2, start_ms=0.0, ...imedWord(text='agree', start_ms=400.0, end_ms=900.0)), timing_reliable=True, sample_rate=16000),), missing_reason=None) = resolve_snapshot(TranscriptView(text='I agree', final=False, segments=(SourceSegment(epoch=0, source_id='0.0', revision=1, start_ms=0.0, end_ms=1000.0, text='I agree', final=False, words=(), timing_reliable=True, sample_rate=16000),), missing_reason=None))
+E        +    where resolve_snapshot = <src.asr.transcript.TranscriptLedger object at 0x1130665d0>.resolve_snapshot
+
+openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/backend_repros_20261026.py:53: AssertionError
+_______ test_revised_semantic_target_is_not_bypassed_by_old_final_window _______
+
+    def test_revised_semantic_target_is_not_bypassed_by_old_final_window():
+        """An active old Final window cannot authorize an earlier revised-text commit."""
+        clock = TurnClock(WaitPolicy(600, 2500, 200, .5, .8))
+        token = clock.pause(0)
+        clock.transcript(token, "done", final=False)
+        clock.semantic(token, 600, text_revision=clock.text_revision)
+        assert clock.poll(600) is None
+        clock.transcript(token, "actually I also want", final=False)
+        clock.semantic(token, 2000, text_revision=clock.text_revision)
+>       assert clock.poll(800) is None
+E       AssertionError: assert TurnCommit(candidate=CandidateToken(generation=1), text='actually I also want', final=False, reason='final_wait_expired', committed_at_ms=800) is None
+E        +  where TurnCommit(candidate=CandidateToken(generation=1), text='actually I also want', final=False, reason='final_wait_expired', committed_at_ms=800) = poll(800)
+E        +    where poll = <src.pipeline.turn_detection.TurnClock object at 0x11309d010>.poll
+
+openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/backend_repros_20261026.py:65: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/backend_repros_20261026.py::test_distinct_english_segments_preserve_identifier_word_boundaries
+FAILED openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/backend_repros_20261026.py::test_partial_word_coverage_cannot_resolve_a_final_extent
+FAILED openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/backend_repros_20261026.py::test_revised_semantic_target_is_not_bypassed_by_old_final_window
+3 failed, 1 warning in 1.39s

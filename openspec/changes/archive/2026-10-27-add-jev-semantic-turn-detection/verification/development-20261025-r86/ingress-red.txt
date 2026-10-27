@@ -1,0 +1,51 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_locked_reader_pcm_is_identical_and_processed_pts_keep_previous_packet_tail _
+
+    @pytest.mark.asyncio
+    async def test_locked_reader_pcm_is_identical_and_processed_pts_keep_previous_packet_tail():
+        """The second 16k chunk starts in packet zero, despite raw.pts naming packet one."""
+>       from src.pipeline.rtp_input import RTPInputLedger, observe_native_reader
+E       ModuleNotFoundError: No module named 'src.pipeline.rtp_input'
+
+tests/test_td_rtp_input.py:47: ModuleNotFoundError
+_____ test_missing_packet_evidence_does_not_guess_an_origin_or_change_pcm ______
+
+    @pytest.mark.asyncio
+    async def test_missing_packet_evidence_does_not_guess_an_origin_or_change_pcm():
+        """Decoder/resampler positions alone cannot prove an RTP payload's source."""
+>       from src.pipeline.rtp_input import RTPInputLedger, observe_native_reader
+E       ModuleNotFoundError: No module named 'src.pipeline.rtp_input'
+
+tests/test_td_rtp_input.py:74: ModuleNotFoundError
+____________ test_decoded_gaps_remain_gaps_and_records_are_bounded _____________
+
+    def test_decoded_gaps_remain_gaps_and_records_are_bounded():
+        """A missing packet must not be filled by interpolating neighbouring media clocks."""
+>       from src.pipeline.rtp_input import RTPInputLedger
+E       ModuleNotFoundError: No module named 'src.pipeline.rtp_input'
+
+tests/test_td_rtp_input.py:86: ModuleNotFoundError
+_ test_native_timestamp_mapper_wrap_is_bound_to_exact_codec_payload_before_dequeue _
+
+    @pytest.mark.asyncio
+    async def test_native_timestamp_mapper_wrap_is_bound_to_exact_codec_payload_before_dequeue():
+        """Use the actual aiortc mapper and queue boundary without touching payloads."""
+        import queue
+        from aiortc.rtcrtpreceiver import TimestampMapper
+        from aiortc.rtp import RtpPacket
+>       from src.pipeline.rtp_input import RTPInputLedger, bind_receiver_coordinates
+E       ModuleNotFoundError: No module named 'src.pipeline.rtp_input'
+
+tests/test_td_rtp_input.py:105: ModuleNotFoundError
+=============================== warnings summary ===============================
+tests/test_td_rtp_input.py::test_locked_reader_pcm_is_identical_and_processed_pts_keep_previous_packet_tail
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_rtp_input.py::test_locked_reader_pcm_is_identical_and_processed_pts_keep_previous_packet_tail
+FAILED tests/test_td_rtp_input.py::test_missing_packet_evidence_does_not_guess_an_origin_or_change_pcm
+FAILED tests/test_td_rtp_input.py::test_decoded_gaps_remain_gaps_and_records_are_bounded
+FAILED tests/test_td_rtp_input.py::test_native_timestamp_mapper_wrap_is_bound_to_exact_codec_payload_before_dequeue
+4 failed, 1 warning in 1.19s

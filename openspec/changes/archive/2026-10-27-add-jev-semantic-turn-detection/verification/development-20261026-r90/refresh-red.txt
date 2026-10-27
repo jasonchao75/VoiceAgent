@@ -1,0 +1,88 @@
+
+Running 2 tests using 1 worker
+
+(node:68545) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 1440px (5.8s)
+(node:68551) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 390px (5.5s)
+
+
+  1) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 1440px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: locator('.history-row').filter({ hasText: 'call-ui-fixture-001\nCustomer appointment assistant\nSep 8, 12:30 PM\ncompleted\nWeb call\nASR + LLM + TTS\n01:05\n2 turns\nView' })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" locator('.history-row').filter({ hasText: 'call-ui-fixture-001\nCustomer appointment assistant\nSep 8, 12:30 PM\ncompleted\nWeb call\nASR + LLM + TTS\n01:05\n2 turns\nView' }) with timeout 5000ms
+      - waiting for locator('.history-row').filter({ hasText: 'call-ui-fixture-001\nCustomer appointment assistant\nSep 8, 12:30 PM\ncompleted\nWeb call\nASR + LLM + TTS\n01:05\n2 turns\nView' })
+
+
+      79 |   await expect.poll(()=>old.evaluate(node=>node.isConnected)).toBe(false);
+      80 |   await page.keyboard.press('Escape');await expect(page.locator('#history-dialog')).toBeHidden();
+    > 81 |   await expect(page.locator('.history-row').filter({hasText:name})).toBeFocused();
+         |                                                                     ^
+      82 |  });
+      83 |  test(`keyboard ASR component drawer focus and source selection at ${width}px`,async({page,context})=>{
+      84 |   await openTDSettings(page,context,{width,baseline:false});
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:81:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--f194d-shed-row-identity-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--f194d-shed-row-identity-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--f194d-shed-row-identity-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--f194d-shed-row-identity-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: locator('.history-row').filter({ hasText: 'call-ui-fixture-001\nCustomer appointment assistant\nSep 8, 12:30 PM\ncompleted\nView' })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" locator('.history-row').filter({ hasText: 'call-ui-fixture-001\nCustomer appointment assistant\nSep 8, 12:30 PM\ncompleted\nView' }) with timeout 5000ms
+      - waiting for locator('.history-row').filter({ hasText: 'call-ui-fixture-001\nCustomer appointment assistant\nSep 8, 12:30 PM\ncompleted\nView' })
+
+
+      79 |   await expect.poll(()=>old.evaluate(node=>node.isConnected)).toBe(false);
+      80 |   await page.keyboard.press('Escape');await expect(page.locator('#history-dialog')).toBeHidden();
+    > 81 |   await expect(page.locator('.history-row').filter({hasText:name})).toBeFocused();
+         |                                                                     ^
+      82 |  });
+      83 |  test(`keyboard ASR component drawer focus and source selection at ${width}px`,async({page,context})=>{
+      84 |   await openTDSettings(page,context,{width,baseline:false});
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:81:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--424e4-eshed-row-identity-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--424e4-eshed-row-identity-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--424e4-eshed-row-identity-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--424e4-eshed-row-identity-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 1440px 
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 390px 

@@ -1,0 +1,45 @@
+
+Running 1 test using 1 worker
+
+(node:32349) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtc-identifier-entry.spec.js:15:1 › formal mobile RTC identifier arbitration uses actual renderer receipts (28.3s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [desktop-chromium] › tests/ui/td-rtc-identifier-entry.spec.js:15:1 › formal mobile RTC identifier arbitration uses actual renderer receipts 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+    Call Log:
+    - Timeout 25000ms exceeded while waiting on the predicate
+
+      82 |   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);
+      83 |   await expect(page.locator('[data-screen="live"]')).toBeVisible({timeout:20000});
+    > 84 |   await expect.poll(()=>receipts.filter(item=>item.status===204 && item.receipt.event==='task_stopped' && item.receipt.rendered_samples>0).length,{timeout:25000}).toBeGreaterThan(0);
+         |                                                                                                                                                                    ^
+      85 |   await expect.poll(()=>receipts.filter(item=>item.status===204 && item.receipt.event==='task_finished').length,{timeout:10000}).toBeGreaterThanOrEqual(2);
+      86 |   await expect(page.locator('[data-screen="error"]')).toHaveAttribute("aria-hidden","true");
+      87 |   await expect(page.locator('[data-screen="live"]')).toHaveClass(/active/);
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtc-identifier-entry.spec.js:84:164
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-identifier-entry-fo-e270e-es-actual-renderer-receipts-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtc-identifier-entry-fo-e270e-es-actual-renderer-receipts-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-identifier-entry-fo-e270e-es-actual-renderer-receipts-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtc-identifier-entry-fo-e270e-es-actual-renderer-receipts-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtc-identifier-entry.spec.js:15:1 › formal mobile RTC identifier arbitration uses actual renderer receipts 
+  1 error was not a part of any test, see above for details

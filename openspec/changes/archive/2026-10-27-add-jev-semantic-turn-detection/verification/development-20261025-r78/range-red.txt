@@ -1,0 +1,36 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_correlated_render_range_stays_on_original_response_without_inventing_e2e _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10dbcc640>
+
+    def test_correlated_render_range_stays_on_original_response_without_inventing_e2e(monkeypatch):
+        """Late anchors can complete playback evidence without manufacturing a speech-end clock."""
+        from pipecat.frames.frames import TTSAudioRawFrame, TTSStartedFrame, UserStartedSpeakingFrame
+    
+        now = [0.0]
+        monkeypatch.setattr(CallCapture, 'elapsed_ms', lambda self: now[0])
+        capture = CallCapture(provider='openai', model='fixture')
+        commit = TranscriptionFrame('hello', '', '')
+        commit.metadata.update(td_commit=True, td_source_final=False, td_turn_id=7)
+        capture.observe(commit)
+        capture.observe(LLMContextFrame(LLMContext()))
+        text = LLMTextFrame('answer')
+        text.metadata.update(td_turn_id=7, td_response_id='7:1')
+        capture.observe(text)
+        capture.observe(TTSStartedFrame())
+        capture.observe(TTSAudioRawFrame(bytes(256), 24000, 1))
+        now[0] = 90
+        before = capture.render_clock.issue('a' * 32, 48000)
+        now[0] = 100
+        capture.record_td_event({'event': 'playback_task_prepared', 'playback_id': 'p',
+                                 'turn_id': 7, 'response_id': '7:1', 'kind': 'normal'})
+        now[0] = 110
+>       assert capture.ack_render_clock(before, 'a' * 32, 48000, 1000)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CallCapture' object has no attribute 'ack_render_clock'. Did you mean: 'render_clock'?
+
+tests/test_td_history.py:281: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_correlated_render_range_stays_on_original_response_without_inventing_e2e
+1 failed in 0.66s

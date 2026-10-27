@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:9973) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:174:1 › failed TD save retains draft and retries against the actual API (5.9s)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:174:1 › failed TD save retains draft and retries against the actual API 
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('#jev-error')
+    Expected: true
+    Received: false
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('#jev-error') with timeout 5000ms
+      - waiting for locator('#jev-error')
+        14 × locator resolved to <p role="alert" id="jev-error" class="jev-errors">Temporary local test failure</p>
+           - unexpected value "false"
+
+
+      188 |   await expect(page.locator("#save-state")).toHaveText("Saved");
+      189 |   await expect(page.locator("#form-error")).toBeHidden();
+    > 190 |   await expect(page.locator("#jev-error")).toHaveJSProperty("hidden",true);
+          |                                            ^
+      191 |   await page.reload();await openRules(page,bot);
+      192 |   await expect(page.locator("#echo-gap")).toHaveValue("70");
+      193 | });
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:190:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-failed-TD-save--bd083-ries-against-the-actual-API-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-failed-TD-save--bd083-ries-against-the-actual-API-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-failed-TD-save--bd083-ries-against-the-actual-API-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-failed-TD-save--bd083-ries-against-the-actual-API-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:174:1 › failed TD save retains draft and retries against the actual API 

@@ -1,0 +1,35 @@
+........F                                                                [100%]
+=================================== FAILURES ===================================
+_____ test_final_reanswer_keeps_original_input_keyword_gate_and_generation _____
+
+    def test_final_reanswer_keeps_original_input_keyword_gate_and_generation():
+        """The answer to a Partial is not a new collection prompt authorizing that same input."""
+        from src.asr.transcript import SourceSegment, TranscriptView
+        from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+        from src.pipeline.identifier_tools import IdentifierTools
+        from src.pipeline.response_revision import ResponseRevisions
+        from src.pipeline.response_scope import ResponseScope
+    
+        owner = ResponseRevisions()
+        collection = IdentifierCollection(IdentifierVocabulary({'1': ['1']}), target_length=1)
+        tools = IdentifierTools(ResponseScope(owner), collection, keywords=('编号',))
+        original = owner.submit(turn_id='1', source_ids=((0, 'a'),), text='号码1', final=False)
+        snapshot = TranscriptView('号码1', False, (SourceSegment(0, 'a', 1, 0, 1000, '号码1', False),))
+        tools.bind_snapshot(original, snapshot, '普通开场，没有采集要求')
+        final = owner.finalize(turn_id='1', source_ids=((0, 'a'),), revision=2, text='号码1')
+        tools.bind_snapshot(final.new_response, snapshot, '请提供编号')
+>       assert final.new_response.response_id not in tools._sources
+E       AssertionError: assert '1:2' not in {'1:2': IdentifierSource(epoch=0, source_id='range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc', revision=1, generation=0, text='号码1', evidence_ids=((0, 'a'),))}
+E        +  where '1:2' = ResponseVersion(turn_id='1', response_id='1:2', source_ids=((0, 'a'),), text='号码1', final=True, speech_generation=0, response_revision=2).response_id
+E        +    where ResponseVersion(turn_id='1', response_id='1:2', source_ids=((0, 'a'),), text='号码1', final=True, speech_generation=0, response_revision=2) = ResponseRestart(cancel_response_id='1:1', new_response=ResponseVersion(turn_id='1', response_id='1:2', source_ids=((0,...', final=True, speech_generation=0, response_revision=2), source_revision=2, reason='final_replaces_submitted_partial').new_response
+E        +  and   {'1:2': IdentifierSource(epoch=0, source_id='range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc', revision=1, generation=0, text='号码1', evidence_ids=((0, 'a'),))} = <src.pipeline.identifier_tools.IdentifierTools object at 0x1159a5e50>._sources
+
+tests/test_td_runtime.py:358: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_runtime_does_not_forward_provider_endpoint_or_partial
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_final_reanswer_keeps_original_input_keyword_gate_and_generation
+1 failed, 8 passed, 1 warning in 1.40s

@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:38736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 390px (5.7s)
+
+
+  1) [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 390px 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#history-dialog').locator('.history-metric')
+    Expected substring: "server audio task ready → client render"
+    Received string:    "Turn 7: ASR final not available (event not observed) · LLM splicing not available (speech-end clock unavailable) · LLM TTFT not available (speech-end clock unavailable) · TTS initial not available (speech-end clock unavailable) · TTS TTFT not available (speech-end clock unavailable) · playback 5–25.1 ms (response 7:1) · e2e latency not available (speech-end clock unavailable) · reasoning undefined/not reported"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('#history-dialog').locator('.history-metric') with timeout 5000ms
+      - waiting for locator('#history-dialog').locator('.history-metric')
+        14 × locator resolved to <p class="history-metric">Turn 7: ASR final not available (event not observ…</p>
+           - unexpected value "Turn 7: ASR final not available (event not observed) · LLM splicing not available (speech-end clock unavailable) · LLM TTFT not available (speech-end clock unavailable) · TTS initial not available (speech-end clock unavailable) · TTS TTFT not available (speech-end clock unavailable) · playback 5–25.1 ms (response 7:1) · e2e latency not available (speech-end clock unavailable) · reasoning undefined/not reported"
+
+
+      33 |  await expect(range.getByText('Measured playback range',{exact:true})).toBeVisible();
+      34 |  await expect(dialog.locator('.history-metric')).toContainText('playback 5–25.1 ms');
+    > 35 |  await expect(dialog.locator('.history-metric')).toContainText('server audio task ready → client render');
+         |                                                  ^
+      36 |  await expect(dialog.locator('.history-metric')).toContainText('speech-end clock unavailable');
+      37 |  await dialog.locator('#td-history-language').selectOption('zh');
+      38 |  await expect(range.getByText('已测播放延迟范围',{exact:true})).toBeVisible();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-timing-history.spec.js:35:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-timing-history-history--941de--original-response-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-timing-history.spec.js:7:32 › history keeps measured ranges on their original response at 390px 

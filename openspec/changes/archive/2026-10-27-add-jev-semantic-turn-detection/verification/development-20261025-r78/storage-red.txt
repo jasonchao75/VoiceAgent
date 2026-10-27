@@ -1,0 +1,36 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_measured_ranges_survive_storage_restart_without_backfilling_legacy_rows _
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-35/test_measured_ranges_survive_s0')
+
+    async def test_measured_ranges_survive_storage_restart_without_backfilling_legacy_rows(tmp_path):
+        """D-073 preserves interval evidence independently of nullable legacy scalar metrics."""
+        from src.history.models import LatencyInterval
+    
+        store = HistoryStore(tmp_path)
+        await store.initialize()
+        await store.start_call(call_id='range', bot_id=None, bot_name=None,
+                               llm_provider='openai', llm_model='fixture',
+                               asr_provider='deepgram', asr_model='flux-general-en',
+                               language='en', sample_rate=16000, channels=1)
+        interval = LatencyInterval(lower_ms=5, upper_ms=25, playback_id='a' * 32,
+                                   response_id='7:1', anchor_ids=('b' * 32, 'c' * 32),
+                                   source='authenticated_worklet_causal_bracket',
+                                   origin='server_audio_task_prepared')
+        await store.finish_call(call_id='range', status='completed', duration_ms=1000,
+                                turns=[], metrics=[TurnMetric(turn_index=0,
+                                                              timing_ranges={'playback': interval}),
+                                                    TurnMetric(turn_index=1)],
+                                recording_path=None, recording_status='not_applicable')
+        restarted = HistoryStore(tmp_path)
+        await restarted.initialize()
+        detail = await restarted.get_call('range')
+>       assert detail.metrics[0].timing_ranges['playback'] == interval
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'playback'
+
+tests/test_td_history.py:330: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_measured_ranges_survive_storage_restart_without_backfilling_legacy_rows
+1 failed in 0.45s

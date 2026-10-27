@@ -1,0 +1,4 @@
+src/asr/turn_events.py:105: error: Incompatible types in assignment (expression has type "Any | None", variable has type "str")  [assignment]
+src/asr/turn_events.py:114: error: Incompatible types in assignment (expression has type "str | None", variable has type "str")  [assignment]
+src/asr/turn_events.py:122: error: Incompatible types in assignment (expression has type "Any | None", variable has type "str")  [assignment]
+Found 3 errors in 1 file (checked 2 source files)

@@ -1,0 +1,627 @@
+{
+  "purpose": "complete scenario inventory, not complete coverage or PASS",
+  "scenario_count": 62,
+  "rows": [
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Self-developed TD source for every catalog ASR model",
+      "scenario": "Select self-developed for any supported ASR",
+      "representative_test": "tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；六模型配置可选，不等于真实兼容"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Conditional custom TD configuration",
+      "scenario": "Switch source away and back",
+      "representative_test": "tests/test_td_config.py::test_td_draft_persists_when_source_hidden_and_restart",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；本地保存/恢复，完整UI仍未签A/B"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Existing Sessions and Share visual structure",
+      "scenario": "Inspect sample TD record",
+      "representative_test": "frontend/tests/ui/td-history-evidence.spec.js::formal per-turn history preserves candidates and response versions at 1440px",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E5；正式Sessions列表/抽屉截图，Share缺完整定向视觉矩阵",
+      "reference_resolution": "Source defines template literal ${width}px with loop [1440,390]; 1440px is a generated test title, not literal source text. r71 history execution log provides runtime evidence."
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Per-turn TD history evidence",
+      "scenario": "Resumed speech creates multiple attempts in one turn",
+      "representative_test": "tests/test_td_history.py::test_final_replacement_retains_each_generated_response_with_original_turn_identity",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E5/E6；跨时钟数值未闭环"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Per-turn TD history evidence",
+      "scenario": "Preview normal and legacy conversations",
+      "representative_test": "tests/test_td_history.py::test_final_replacement_retains_each_generated_response_with_original_turn_identity",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E5/E6；跨时钟数值未闭环"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Pre-generated echo audio and publish validation",
+      "scenario": "Change playback gap",
+      "representative_test": "tests/test_echo_api.py::test_cache_generate_preview_restart_and_publish_only_check",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E6；真实TTS失败，试听为本地合成"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Pre-generated echo audio and publish validation",
+      "scenario": "Publish with missing audio",
+      "representative_test": "tests/test_echo_api.py::test_cache_generate_preview_restart_and_publish_only_check",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E6；真实TTS失败，试听为本地合成"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Pre-generated echo audio and publish validation",
+      "scenario": "Prototype without real audio",
+      "representative_test": "tests/test_echo_api.py::test_cache_generate_preview_restart_and_publish_only_check",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E6；真实TTS失败，试听为本地合成"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Compact vocabulary audio controls",
+      "scenario": "Multiple aliases share audio",
+      "representative_test": "tests/test_echo_cache.py::test_durable_units_deduplicate_generation_but_not_playback",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4/E6；正式控件已接，真实音质未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Configurable overlength reminder",
+      "scenario": "Configure distinct reminders",
+      "representative_test": "tests/test_td_rule_settings.py::test_explicit_priority_settings_are_frozen_and_serializable",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；运行场景另见identifier_rules/runtime，不以配置测试证明播放"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Runtime echo cache recovery and fixed echo speed",
+      "scenario": "Cache unavailable after publication",
+      "representative_test": "tests/test_echo_runtime.py::test_clear_during_missing_asset_repair_never_reinserts_audio",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；草稿WS恢复已验，公开发布RTC未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "requirement": "Jev budget requires no product control",
+      "scenario": "Create configuration without a hidden budget",
+      "representative_test": "tests/test_td_config.py::test_jev_budget_is_uniform_without_hidden_ui_field",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；无新控件"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Jev semantic turn mode",
+      "scenario": "Candidate pause",
+      "representative_test": "tests/test_td_runtime.py::test_runtime_unexpected_jev_error_is_safe_and_falls_back",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E3；真实Jev仅2文本基本兼容，语言效果/整链未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Bounded silence and cancellation",
+      "scenario": "Valid result arrives",
+      "representative_test": "tests/test_td_timing.py::test_revision_invalidates_semantic_result_but_not_hard_deadline",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；相关整个timing模块含续说/单提交/最终等待，非真实厂商时延"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Bounded silence and cancellation",
+      "scenario": "Speech resumes",
+      "representative_test": "tests/test_td_timing.py::test_revision_invalidates_semantic_result_but_not_hard_deadline",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；相关整个timing模块含续说/单提交/最终等待，非真实厂商时延"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Bounded silence and cancellation",
+      "scenario": "Transcript revision",
+      "representative_test": "tests/test_td_timing.py::test_revision_invalidates_semantic_result_but_not_hard_deadline",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；相关整个timing模块含续说/单提交/最终等待，非真实厂商时延"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Bounded silence and cancellation",
+      "scenario": "Deadline without semantic result",
+      "representative_test": "tests/test_td_timing.py::test_revision_invalidates_semantic_result_but_not_hard_deadline",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；相关整个timing模块含续说/单提交/最终等待，非真实厂商时延"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Single turn authority",
+      "scenario": "Partial at commit",
+      "representative_test": "tests/test_td_runtime.py::test_real_pipecat_aggregator_releases_exactly_one_context_after_owned_commit",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；SDK本地单一提交"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Configurable final transcript wait",
+      "scenario": "Final arrives within configured wait",
+      "representative_test": "tests/test_td_timing.py::test_final_wait_begins_after_semantic_target_and_is_bounded",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；模块另含最大截止与latest Partial不重启窗口"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Configurable final transcript wait",
+      "scenario": "Final wait expires first",
+      "representative_test": "tests/test_td_timing.py::test_final_wait_begins_after_semantic_target_and_is_bounded",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；模块另含最大截止与latest Partial不重启窗口"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Configurable final transcript wait",
+      "scenario": "Maximum silence expires first",
+      "representative_test": "tests/test_td_timing.py::test_final_wait_begins_after_semantic_target_and_is_bounded",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；模块另含最大截止与latest Partial不重启窗口"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Optional priority echo rules",
+      "scenario": "Slow variable-length sequence pauses",
+      "representative_test": "tests/test_td_identifier_output.py::test_sent_revision_is_corrected_before_ordinary_without_erasing_original_facts",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；WS本地，RTC仲裁未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Optional priority echo rules",
+      "scenario": "User continues during echo playback",
+      "representative_test": "tests/test_td_identifier_output.py::test_sent_revision_is_corrected_before_ordinary_without_erasing_original_facts",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；WS本地，RTC仲裁未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Optional priority echo rules",
+      "scenario": "Repeated partial update",
+      "representative_test": "tests/test_td_identifier_output.py::test_sent_revision_is_corrected_before_ordinary_without_erasing_original_facts",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；WS本地，RTC仲裁未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Advanced rule configuration and diagnostics",
+      "scenario": "Explain speed evaluation",
+      "representative_test": "tests/test_td_identifier_rules.py::test_business_units_ignore_asr_token_count_and_window_trailing_silence",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；实际厂商WPM时间覆盖未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Advanced rule configuration and diagnostics",
+      "scenario": "Account for pause elapsed",
+      "representative_test": "tests/test_td_identifier_rules.py::test_business_units_ignore_asr_token_count_and_window_trailing_silence",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；实际厂商WPM时间覆盖未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Assistant keyword rule condition",
+      "scenario": "Explain assistant keyword match",
+      "representative_test": "tests/test_td_identifier_rules.py::test_keyword_gate_and_full_input_format_are_required_before_collection",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；严格门槛离线"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Stable assistant keyword context",
+      "scenario": "User input is split after one assistant prompt",
+      "representative_test": "tests/test_td_runtime.py::test_final_reanswer_keeps_original_input_keyword_gate_and_generation",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；SDK＋编号模块，不证明真实LLM工具遵循率"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Stable assistant keyword context",
+      "scenario": "Echo does not replace collection prompt",
+      "representative_test": "tests/test_td_runtime.py::test_final_reanswer_keeps_original_input_keyword_gate_and_generation",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；SDK＋编号模块，不证明真实LLM工具遵循率"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Jev configuration prototype",
+      "scenario": "Preview request without secret",
+      "representative_test": "frontend/tests/ui/td-settings.spec.js::formal Advanced edits and saves explicit TD settings",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E4；预览/编辑/请求无Key；安全凭证另见test_td_credentials.py"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Draft semantic waiting fusion preview",
+      "scenario": "Weighted waiting example",
+      "representative_test": "tests/test_td_timing.py::test_distribution_fusion_subtracts_elapsed_once",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；825/375例为确定性演示非模型效果"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "TD prototype language switching",
+      "scenario": "Switch language without changing request",
+      "representative_test": "frontend/tests/ui/td-runtime.spec.js::formal language switch changes labels without changing TD request or user values",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E4/E5/E7；正式语言/请求及原值保持，非完整全状态A/B"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Number collection completeness configuration",
+      "scenario": "Target length differs from echo segment size",
+      "representative_test": "tests/test_td_identifier.py::test_unfinished_reminder_preserves_and_success_new_start_clears",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E4；配置＋本地状态，RTC播放未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Self-developed source is sole final turn authority",
+      "scenario": "Provider boundary while self-developed selected",
+      "representative_test": "tests/test_td_authority.py::test_no_sdk_timer_or_smart_turn_in_custom_aggregator",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；运行时另见stop_strategy测试"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Transcript stability is separate from turn ownership",
+      "scenario": "Final prefix followed by partial tail",
+      "representative_test": "tests/test_td_transcript.py::test_provider_turn_crosses_td_commit_without_repeating_prefix",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E2；真实digits仍失败；流式Update桥见test_td_asr_events"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Transcript stability is separate from turn ownership",
+      "scenario": "Flux interim update must reach TD",
+      "representative_test": "tests/test_td_transcript.py::test_provider_turn_crosses_td_commit_without_repeating_prefix",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E2；真实digits仍失败；流式Update桥见test_td_asr_events"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Transcript stability is separate from turn ownership",
+      "scenario": "Late final cannot finish newer speech",
+      "representative_test": "tests/test_td_transcript.py::test_provider_turn_crosses_td_commit_without_repeating_prefix",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E2；真实digits仍失败；流式Update桥见test_td_asr_events"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Confirmed collection revision and clear behavior",
+      "scenario": "ASR corrects played content",
+      "representative_test": "tests/test_td_identifier_output.py::test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；补读、提醒和工具分别见identifier/runtime模块，RTC未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Confirmed collection revision and clear behavior",
+      "scenario": "User requests positional correction",
+      "representative_test": "tests/test_td_identifier_output.py::test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；补读、提醒和工具分别见identifier/runtime模块，RTC未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Confirmed collection revision and clear behavior",
+      "scenario": "Reminder preserves collection",
+      "representative_test": "tests/test_td_identifier_output.py::test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；补读、提醒和工具分别见identifier/runtime模块，RTC未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Strict local identifier routing",
+      "scenario": "Pure identifier stays local",
+      "representative_test": "tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；同模块覆盖独立/两位/混合，真实模型范围仍未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Strict local identifier routing",
+      "scenario": "Prefixed identifier uses conversation path",
+      "representative_test": "tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；同模块覆盖独立/两位/混合，真实模型范围仍未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Strict local identifier routing",
+      "scenario": "Mixed control request",
+      "representative_test": "tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；同模块覆盖独立/两位/混合，真实模型范围仍未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Strict local identifier routing",
+      "scenario": "Two adjacent identifier units",
+      "representative_test": "tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；同模块覆盖独立/两位/混合，真实模型范围仍未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Strict local identifier routing",
+      "scenario": "Filler inside input",
+      "representative_test": "tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；同模块覆盖独立/两位/混合，真实模型范围仍未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Controlled identifier tools for mixed input",
+      "scenario": "LLM submits normal prefixed identifier",
+      "representative_test": "tests/test_td_identifier_pipeline.py::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；工具schema/handler/幂等见identifier_tools，真实LLM语义质量未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Controlled identifier tools for mixed input",
+      "scenario": "Clear on contrastive correction",
+      "representative_test": "tests/test_td_identifier_pipeline.py::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；工具schema/handler/幂等见identifier_tools，真实LLM语义质量未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Controlled identifier tools for mixed input",
+      "scenario": "Stale or failed tool call",
+      "representative_test": "tests/test_td_identifier_pipeline.py::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；工具schema/handler/幂等见identifier_tools，真实LLM语义质量未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Controlled identifier tools for mixed input",
+      "scenario": "Partial routing changes",
+      "representative_test": "tests/test_td_identifier_pipeline.py::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；工具schema/handler/幂等见identifier_tools，真实LLM语义质量未验证"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "New collection after success",
+      "scenario": "Start another collection after success",
+      "representative_test": "tests/test_td_runtime.py::test_new_pure_input_resets_only_after_committed_final_success",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；受控混合新输入另见test_td_identifier_tools"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "New collection after success",
+      "scenario": "Continue an unfinished collection",
+      "representative_test": "tests/test_td_runtime.py::test_new_pure_input_resets_only_after_committed_final_success",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；受控混合新输入另见test_td_identifier_tools"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Identifier followed by a question",
+      "scenario": "Question after separately handled identifier",
+      "representative_test": "tests/test_td_runtime.py::test_question_after_processed_pure_input_reuses_state_without_resubmitting_digits",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；正式WS清空组合，RTC未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Identifier followed by a question",
+      "scenario": "Identifier and question in one candidate",
+      "representative_test": "tests/test_td_runtime.py::test_question_after_processed_pure_input_reuses_state_without_resubmitting_digits",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；正式WS清空组合，RTC未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Identifier followed by a question",
+      "scenario": "Ordinary phrase containing a number word",
+      "representative_test": "tests/test_td_runtime.py::test_question_after_processed_pure_input_reuses_state_without_resubmitting_digits",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；正式WS清空组合，RTC未接"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Confirmed playback arbitration",
+      "scenario": "Client-confirmed echo start",
+      "representative_test": "tests/test_td_playback.py::test_continuation_preserves_active_echo_but_clear_requires_stop_ack_before_next",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；WS任务渲染通过；RTC为未实现，不是仅未测试"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Confirmed playback arbitration",
+      "scenario": "Clear overrides ordinary echo continuation",
+      "representative_test": "tests/test_td_playback.py::test_continuation_preserves_active_echo_but_clear_requires_stop_ack_before_next",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E7；WS任务渲染通过；RTC为未实现，不是仅未测试"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Controlled response restart on final after partial submission",
+      "scenario": "Valid final after submitted partial",
+      "representative_test": "tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E6；D-049首有效Final不判断含义；真实厂商取消残留/完整RTC仍缺"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Controlled response restart on final after partial submission",
+      "scenario": "Final before submission",
+      "representative_test": "tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E6；D-049首有效Final不判断含义；真实厂商取消残留/完整RTC仍缺"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Controlled response restart on final after partial submission",
+      "scenario": "Duplicate or stale final revision",
+      "representative_test": "tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E6；D-049首有效Final不判断含义；真实厂商取消残留/完整RTC仍缺"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Uniform Jev session request budget",
+      "scenario": "Session exhausts the fixed budget",
+      "representative_test": "tests/test_td_jev.py::test_uniform_100_attempt_budget_includes_failures_and_keeps_watchdog",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1；100次含失败，费用授权独立"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Bounded failure for unavailable ASR source evidence",
+      "scenario": "Missing source evidence reaches maximum silence",
+      "representative_test": "tests/test_td_source_frames.py::test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E8；r43正式WS错误/历史闭环，真实厂商恢复仍缺"
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "requirement": "Bounded failure for unavailable ASR source evidence",
+      "scenario": "Proven recovery before the maximum",
+      "representative_test": "tests/test_td_source_frames.py::test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline",
+      "test_exists": true,
+      "coverage": "representative only; full scenario proof remains unaudited",
+      "latest_evidence": "r73/backend-final.txt for backend execution; r71 UI logs for their named scope; r68/r69 for controlled RTC combinations",
+      "boundary": "E1/E8；r43正式WS错误/历史闭环，真实厂商恢复仍缺"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+......F                                                                  [100%]
+=================================== FAILURES ===================================
+_______ test_final_for_second_commit_never_restores_first_commit_prefix ________
+
+    def test_final_for_second_commit_never_restores_first_commit_prefix():
+        """One provider source may span two TD submissions; Final resolves each exact extent."""
+        from src.asr.transcript import SourceSegment, TimedWord, TranscriptLedger
+        ledger = TranscriptLedger()
+        ledger.apply(SourceSegment(0, 'a', 1, 0, 1000, '12', False))
+        first = ledger.consume()
+        words = (TimedWord('1', 0, 500), TimedWord('2', 500, 1000),
+                 TimedWord('3', 1000, 1500), TimedWord('4', 1500, 2000))
+        ledger.apply(SourceSegment(0, 'a', 2, 0, 2000, '1234', False, words))
+        second = ledger.consume()
+        assert second.text == '34'
+        ledger.apply(SourceSegment(0, 'a', 3, 0, 2000, '1234', True, words))
+        assert ledger.resolve_snapshot(first).text == '12'
+>       assert ledger.resolve_snapshot(second).text == '34'
+E       AssertionError: assert '1234' == '34'
+E         
+E         - 34
+E         + 1234
+
+tests/test_td_transcript.py:101: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_transcript.py::test_final_for_second_commit_never_restores_first_commit_prefix
+1 failed, 6 passed in 0.04s

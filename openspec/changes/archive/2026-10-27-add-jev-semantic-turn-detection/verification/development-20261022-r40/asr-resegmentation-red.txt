@@ -1,0 +1,30 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_soniox_full_snapshot_replaces_removed_partial_tokens_without_erasing_final_prefix _
+
+    def test_soniox_full_snapshot_replaces_removed_partial_tokens_without_erasing_final_prefix():
+        """ASR-01: retokenizing a mutable tail cannot append the retired tail a second time."""
+        from src.asr.transcript import TranscriptLedger
+    
+        parser = normalizer('soniox', 'stt-rt-v5')
+        ledger = TranscriptLedger()
+        prefix = {'text': 'one ', 'is_final': True, 'start_ms': 0, 'end_ms': 100}
+        left = {'text': 'two ', 'is_final': False, 'start_ms': 100, 'end_ms': 200}
+        right = {'text': 'three', 'is_final': False, 'start_ms': 200, 'end_ms': 300}
+        for segment in parser.normalize({'tokens': [prefix, left, right]}):
+            ledger.apply(segment)
+        assert ledger.view().text == 'one two three'
+        merged = {**left, 'text': 'two three', 'end_ms': 300}
+        for segment in parser.normalize({'tokens': [prefix, merged]}):
+            ledger.apply(segment)
+>       assert ledger.view().text == 'one two three'
+E       AssertionError: assert 'one two threethree' == 'one two three'
+E         
+E         - one two three
+E         + one two threethree
+E         ?              +++++
+
+tests/test_td_asr_events.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_soniox_full_snapshot_replaces_removed_partial_tokens_without_erasing_final_prefix
+1 failed, 38 deselected in 0.04s

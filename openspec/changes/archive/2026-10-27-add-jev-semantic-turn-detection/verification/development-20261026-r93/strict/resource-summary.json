@@ -1,0 +1,29 @@
+{
+  "artifact": "voiceagent-td-resource-r93:strict",
+  "image": "sha256:92223298f87b16a086451fd91f1fafed1472a8b3495abdc8268d46b36fd727b1",
+  "scope": "local-real Linux arm64 Python3.11.17, fixture inference WS and separate real Silero silence job",
+  "cpu_quota": "100000 100000",
+  "cpuset": "0",
+  "memory_max_bytes": 1073741824,
+  "memory_peak_bytes": 187940864,
+  "memory_peak_mib": 179.234375,
+  "oom_kill": 0,
+  "sample_count": 1134,
+  "server_rss_max_mib": 208.37109375,
+  "sampled_loop_delay_max_ms": 11.281791999999763,
+  "sampled_pending_max": 0,
+  "sampled_processing_max": 0,
+  "sample_period_ms": 100,
+  "cold": "1 passed6.5s",
+  "warm": "1 passed6.4s",
+  "not_proven": [
+    "transient queue peak",
+    "capacity distributions/concurrency",
+    "real vendor load",
+    "real speech/noise Silero and full pipeline same run",
+    "RTC resource profile",
+    "phones/Safari/weak network/AEC",
+    "new chain paired latency",
+    "x86_64 architecture"
+  ]
+}

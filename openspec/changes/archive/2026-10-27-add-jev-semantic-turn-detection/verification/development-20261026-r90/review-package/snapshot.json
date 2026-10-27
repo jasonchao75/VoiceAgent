@@ -1,0 +1,386 @@
+{
+  "kind": "r90 overlay on frozen r89 package",
+  "base_archive_sha256": "b15cf0ac6b6bd7a5faca0e575447b8d9a88615a5577c2d282375e4e854f33e8a",
+  "files": [
+    {
+      "path": "frontend/src/main.js",
+      "sha256": "0d68df353a820809f57da4a1c4c0dbb486a43f92dff2c3c1a4d8c9432ef2eecf"
+    },
+    {
+      "path": "frontend/src/td-settings.css",
+      "sha256": "b26701031b11b4b9ebfe826f85da2bce60e1d60a950add7fedacea1acd46bdbd"
+    },
+    {
+      "path": "frontend/src/td-settings.js",
+      "sha256": "d6240816aa7873ba45be0148280f9fc51828354e095dc055506b3f7961c0d44c"
+    },
+    {
+      "path": "frontend/tests/ui/td-keyboard-accessibility.spec.js",
+      "sha256": "9154049c768ff47581c42e0649d3a59d5831a5f98bfac71182afa58c7f22d328"
+    },
+    {
+      "path": "frontend/tests/ui/td-settings-fixture.js",
+      "sha256": "a6064b1a1617138e6498e8b50016c6f666c0639282cc6d2d43d87a92e5df2ba2"
+    },
+    {
+      "path": "frontend/tests/ui/td-vocab-header.spec.js",
+      "sha256": "5f297b60b9c6697a62b3a373ec1287851405280549888df35d63156bb112a4f2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/README.md",
+      "sha256": "de28db95d92c76cfa485614f0cdbef443fcafa32201ad032e70527b8fc29fe95"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/assumptions.md",
+      "sha256": "7e5645c5cd71a1bd5d0a6057fd11969109cf48fdf43a9d18c8b6902cd340c332"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/tasks.md",
+      "sha256": "cc70b464c14e83b4134bc5c708fcf1096338dc39886f1ed847358978ec50d5eb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/delivery-status.json",
+      "sha256": "6c7b82ccc49b00dc483af46e3de71ceb4663e097e77520b8b7f4ba0159f72825"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/README.md",
+      "sha256": "7852b04b654a61eb18505544f8ef30bceb251a0cb3565dbbac96292687669a77"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/formal-vocabulary-1440-en.png",
+      "sha256": "7a91cb3a31f693f6b6a03e3ee3fa45c12cf7c6fa8b2fecbda4fdd6edb4737fbe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/formal-vocabulary-1440-zh.png",
+      "sha256": "add6748bf47c595cf1bfb72fe8f319b21bf252d00e1ea1372cf2dac0159292ba"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/formal-vocabulary-390-en.png",
+      "sha256": "f884a6765b4be4ef7a3bc3ec48d4e9bbbc5a6f87bd04fa682a5abddd0291dea0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/formal-vocabulary-390-zh.png",
+      "sha256": "76cff2bd92e46a40e337965af4b2fbc914968b609f06d875d549ad424998fc64"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/formal-vocabulary-650-en.png",
+      "sha256": "2f0df13fe0bca28316cce9637341446c02545e0c36c7ffd8ef3cbae5fafd545c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/formal-vocabulary-701-en.png",
+      "sha256": "7d4f98a3815c5609b7edf682d9c95087fc5384cea130edeb04d85f0a43e2fb89"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/frozen-vocabulary-1440-en.png",
+      "sha256": "505d778f4711fe194f04cfe1120c218798abba240d8a74b26d13d6b40e151e8e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/frozen-vocabulary-1440-zh.png",
+      "sha256": "616a98d96a4c66f9ad386c09faf0de6f2dd73b0f9f4dd1eb39f59e7eaadc9124"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/frozen-vocabulary-390-en.png",
+      "sha256": "3555b856ca909ade1b09f8d79e32126f212fc287002213a0ec22f55da2915739"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/frozen-vocabulary-390-zh.png",
+      "sha256": "c5f0c823cbb8800ae15a2c4edd3dcd228eb7bc5c612fd100cba51a8abb927e59"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/frozen-vocabulary-650-en.png",
+      "sha256": "8cdd4ee1cad3fffe0047a232dd3bdf1dc037bfb773f129bb5a5bf63565d28487"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/frozen-vocabulary-701-en.png",
+      "sha256": "654c0f6c306c8bd2b55769f6af35feed6b3fb4f9f81fc87567ffb7d35a0ae48e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/header-1440-en.json",
+      "sha256": "eb05fe496a948d0ebf966c0b069816bd2778488f1a7c3d45dcf3f2229e87f258"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/header-1440-zh.json",
+      "sha256": "16f8b15640824f6ff4ac9ce4c0848f26600267d7315bdd7f16e49744c196b452"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/header-390-en.json",
+      "sha256": "36b5c9890da09cbc0a7b838eedf19c764561d81de4e6707ca88f6cf12ea70b94"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/header-390-zh.json",
+      "sha256": "3af6760f85f24bc4df1a5aa14f309b05c704aa5c813ccff9fd81316f410dd2fa"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/header-650-en.json",
+      "sha256": "f2094922bccfe751b9f4c53631ca3e335ccdce92d1329502d3465bb3b8922e8f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/header-701-en.json",
+      "sha256": "d008f901e8a48c90a9dec2fd993804cfe848ce4344fc3c05fac079965977bf50"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard-rules-1440.png",
+      "sha256": "5565085d80d61c82d16ffca456f639cce85154fa9f3ec0965aae466008bf32ed"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard-rules-390.png",
+      "sha256": "bb92e7eb3979bd987508238931ed380d2f14fd5d772af77f3a0b8bccab7a8515"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_ASR_component_drawer_focus_and_source_selection_at_1440px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_ASR_component_drawer_focus_and_source_selection_at_390px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_Sessions_drawer_opens_and_Escape_restores_its_trigger_at_1440px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_Sessions_drawer_opens_and_Escape_restores_its_trigger_at_390px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_section_navigation_and_named_controls_at_1440px.json",
+      "sha256": "5ee0e1f5b6d518c9d3a7bf5b01a7725da9505bcb3c55c9fef26149cf55778c16"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_section_navigation_and_named_controls_at_390px.json",
+      "sha256": "32dfaa50473496afdc26c5571688045cdef5ea17738b2a1633609e5775c2cded"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_vocabulary_and_Jev_row_creation_and_removal_preserve_focus_at_1440px.json",
+      "sha256": "4fefb11549957c87b68df63aae07527a15c180f85e43e7ea6e4fe6f6e36b34bf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/chrome/keyboard_vocabulary_and_Jev_row_creation_and_removal_preserve_focus_at_390px.json",
+      "sha256": "bfa641b66f6b82dae72e9f9f94ca5aa293443cef76b14805275d45a33e0349b6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/component-red.txt",
+      "sha256": "fd4dc1c9f4650bb36662795e85ef7d24c13d3dd94605670e694b209504563368"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/gate.txt",
+      "sha256": "17c5bf1cbd004f68a4358b69c44f297e6109a9b3afe0e981da589cb9589044ec"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/formal-vocabulary-1440-en.png",
+      "sha256": "f15ef92f1d0cc7a6ee747cd62061b2647312dd68c23c5b2c503aa9ddf8cdd17e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/formal-vocabulary-1440-zh.png",
+      "sha256": "6ed864eb7d773bae76b37b129792d130e0799744ce88ae1ecd602f3338fdf688"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/formal-vocabulary-390-en.png",
+      "sha256": "67c5e542452774420eb837efb35b98ddf58965498d0688a3a4e0d2724b53e507"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/formal-vocabulary-390-zh.png",
+      "sha256": "7f4213e75ec62731c584bc744375d26893b48033abe27fa9b155b5d24a3bba89"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/formal-vocabulary-650-en.png",
+      "sha256": "5e3c542e1878cb595e003f61bc6751bfa5aaf3721c74fe08d3bdc8a3a8470026"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/formal-vocabulary-701-en.png",
+      "sha256": "33de682e798813321aa6dbde68ee32e0ae524f6f1633a7627067003d7b3ac962"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/frozen-vocabulary-1440-en.png",
+      "sha256": "e967a4bb5aa3528e6f8426d4010194d83fc9c4364dfa75ce206fb8f814a4a8df"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/frozen-vocabulary-1440-zh.png",
+      "sha256": "a11e433fd95b27730799b2842d0940278bf3e4d1fec3fa087a488ca18b18e2bd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/frozen-vocabulary-390-en.png",
+      "sha256": "d027d1fdd07bfb2d5ab590247a7de18219f88b8fd42e9c0cd00c916260801cb3"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/frozen-vocabulary-390-zh.png",
+      "sha256": "a22a825603689430c8730e4727ea53c4b9497e5d371c5203a5a4b61886c9cbf3"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/frozen-vocabulary-650-en.png",
+      "sha256": "ae1580626be5f94d6d1de91c1369782bd76bf6eff30c4c626f9172dd8fedcb5d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/frozen-vocabulary-701-en.png",
+      "sha256": "d3350187d891ad851de7728e71a2821bba288d1fdcfcbee8929eb449ef3793ee"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/header-1440-en.json",
+      "sha256": "eb05fe496a948d0ebf966c0b069816bd2778488f1a7c3d45dcf3f2229e87f258"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/header-1440-zh.json",
+      "sha256": "16f8b15640824f6ff4ac9ce4c0848f26600267d7315bdd7f16e49744c196b452"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/header-390-en.json",
+      "sha256": "36b5c9890da09cbc0a7b838eedf19c764561d81de4e6707ca88f6cf12ea70b94"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/header-390-zh.json",
+      "sha256": "3af6760f85f24bc4df1a5aa14f309b05c704aa5c813ccff9fd81316f410dd2fa"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/header-650-en.json",
+      "sha256": "f2094922bccfe751b9f4c53631ca3e335ccdce92d1329502d3465bb3b8922e8f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header/header-701-en.json",
+      "sha256": "d008f901e8a48c90a9dec2fd993804cfe848ce4344fc3c05fac079965977bf50"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header-first-oracle-failure.txt",
+      "sha256": "5f619c0aa0dc0a7530fbd64d9320c01a3f8af62857b787c7a4bd805b11603973"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header-green.txt",
+      "sha256": "12798204d522f6ffc17da52b0721fd7803a6d76a8230dc18f9a77d64a4e9ba9c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/header-red.txt",
+      "sha256": "03b73953eaa4ce7e2eb7d39a309e230140fb191dbc8f1668d27ada67f6fc4d0f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/independent-refresh-red.json",
+      "sha256": "23b032a5204f5c80d04a3e12ff72144615a584f515e50a6b9d3a5b7069762de5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard-rules-1440.png",
+      "sha256": "8eeb55634bc9873d955ff77a43110f20aa7932653290f3ebe8c7afcfdeb59253"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard-rules-390.png",
+      "sha256": "41fd4226e8dddb006995f3eda00ad44c78ac9272f1f468c88c1bf39f16596a15"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_ASR_component_drawer_focus_and_source_selection_at_1440px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_ASR_component_drawer_focus_and_source_selection_at_390px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_Sessions_drawer_opens_and_Escape_restores_its_trigger_at_1440px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_Sessions_drawer_opens_and_Escape_restores_its_trigger_at_390px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_Sessions_returns_to_refreshed_row_identity_at_1440px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_Sessions_returns_to_refreshed_row_identity_at_390px.json",
+      "sha256": "c4c7b8ca992ecd890df00e8c60cce95e1b0aa0ee8ef304928b2e972f07e1f543"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_section_navigation_and_named_controls_at_1440px.json",
+      "sha256": "5ee0e1f5b6d518c9d3a7bf5b01a7725da9505bcb3c55c9fef26149cf55778c16"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_section_navigation_and_named_controls_at_390px.json",
+      "sha256": "32dfaa50473496afdc26c5571688045cdef5ea17738b2a1633609e5775c2cded"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_vocabulary_and_Jev_row_creation_and_removal_preserve_focus_at_1440px.json",
+      "sha256": "4fefb11549957c87b68df63aae07527a15c180f85e43e7ea6e4fe6f6e36b34bf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard/keyboard_vocabulary_and_Jev_row_creation_and_removal_preserve_focus_at_390px.json",
+      "sha256": "bfa641b66f6b82dae72e9f9f94ca5aa293443cef76b14805275d45a33e0349b6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard-first-selector-failure.txt",
+      "sha256": "74f4fd16e3927665db2a78713b7cec416940405af14679e6215bf03cef9498f0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/keyboard-red.txt",
+      "sha256": "ac04a34940f6d2d32e0ed3c39be1de9b371e5209c8479cdcd3b9fde5c347bda4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/refresh-red.txt",
+      "sha256": "70f9051bb29b6f3503927bf6d2a7109749bbb13e261e93c6f3a72f1f9ecc1b54"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/review-package/README.md",
+      "sha256": "a58e5d5f3031591c40567291baba23b6a379205bd889d8f219492ae64e7c0448"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/source-delta.json",
+      "sha256": "88636e90429b87e6586804455699e92d2ee281dcba2ff24745e4c154cc97a4f7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/voiceagent-r90-build.txt",
+      "sha256": "a7c6da70098a7fd29637ad1b72fb02f283b6b98fde2ac0a4b3e361476c66e8ea"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/voiceagent-r90-chrome-refresh.txt",
+      "sha256": "9cfe1f86d46d92945af68f7e32fb3476c5fd47434c5c90f04d20cd1b3221cef4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/voiceagent-r90-chrome.txt",
+      "sha256": "7534255192756816c02b2780ebe85e93c0093f802014151d188f0a1c7dc62337"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/voiceagent-r90-keyboard-final.txt",
+      "sha256": "afb2a520149c7bfd399dba84e67dc180fbb722551e1e2733455f0f8807f3fb9c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r90/voiceagent-r90-keyboard-green.txt",
+      "sha256": "01fdb22be454d47ed9d8f606c45d76d502bfa3bbccabebe86cb2a1988e0363d1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/device-performance-test-plan.md",
+      "sha256": "f21e544f8b1f4cf3d938a6b28aea4107bd4e229f23497619df6fb451394fd8a4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/independent-review.md",
+      "sha256": "428803b10b31c4f4c6eacae69a3a687d7c6eb8a40684be164503f5ebe8fe0b1e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.md",
+      "sha256": "0b1b239a077690dfc8a87b09d001f2ff38bf95662b36b7d1ca8fdbba23d73566"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/r90-independent/change-gate.txt",
+      "sha256": "5416b04f6c72674d06a5a6a0f39343e9435f12a86ad61725a7d0db3c8f58f140"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/r90-independent/refresh-after.txt",
+      "sha256": "4facd43996ffa1545ec8845d39e749e20170ba74984e6685456d7528500193f0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/r90-independent/refresh-before.txt",
+      "sha256": "23b032a5204f5c80d04a3e12ff72144615a584f515e50a6b9d3a5b7069762de5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/r90-independent/sessions-refresh-focus.mjs",
+      "sha256": "ae112497d9e4901cb8521feab353264bf6fb69499eb7c05595bda43fef2807c1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/repair-review-r90.md",
+      "sha256": "c715db3d3dc3be9ce2e9c15d6d707ff38b8e1aad2cafcc078e6b2cd4818355ca"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/ui-checklist.md",
+      "sha256": "f21306afc02838777a9697afc7b2869349335ab28491524b63b6b1590111a047"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/vendor-specialist-test-plan.md",
+      "sha256": "53d492661415472818fde352b008dacdad19d61d1c92c3d196afcad5f4ca567a"
+    }
+  ]
+}

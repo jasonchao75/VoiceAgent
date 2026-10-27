@@ -1,0 +1,76 @@
+.FF                                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_actual_sdk_cancel_cycle_is_bounded_without_real_connection ________
+
+    async def test_actual_sdk_cancel_cycle_is_bounded_without_real_connection():
+        socket = Socket()
+    
+        async def connect(*args, **kwargs):
+            return socket
+    
+        result = await probe().run_case('inert-fixture-key', connector=connect)
+>       assert result['status'] == 'ok'
+E       AssertionError: assert 'timeout' == 'ok'
+E         
+E         - ok
+E         + timeout
+
+tests/test_td_tts_cancel_probe.py:75: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-26 05:25:00.159 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+2026-10-26 05:25:00.826 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> ScopedDeepgramFluxTTSService#0
+2026-10-26 05:25:00.826 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking ScopedDeepgramFluxTTSService#0 -> Sink#0
+2026-10-26 05:25:00.827 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-26 05:25:00.827 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-26 05:25:00.827 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-10-26 05:25:00.828 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-352a077a': started running
+2026-10-26 05:25:05.829 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-26 05:25:07.833 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-352a077a': finished running
+_________ test_completed_turn_is_untriggered_without_second_paid_text __________
+
+    async def test_completed_turn_is_untriggered_without_second_paid_text():
+        socket = Socket(completed=True)
+    
+        async def connect(*args, **kwargs):
+            return socket
+    
+        result = await probe().run_case('inert-fixture-key', connector=connect)
+>       assert result['status'].startswith('not_triggered:')
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x101c15af0>('not_triggered:')
+E        +    where <built-in method startswith of str object at 0x101c15af0> = 'timeout'.startswith
+
+tests/test_td_tts_cancel_probe.py:90: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-26 05:25:07.934 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2::Source -> ScopedDeepgramFluxTTSService#1
+2026-10-26 05:25:07.934 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking ScopedDeepgramFluxTTSService#1 -> Sink#1
+2026-10-26 05:25:07.934 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#1 -> Pipeline#2::Sink
+2026-10-26 05:25:07.935 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#1::Source -> Pipeline#2
+2026-10-26 05:25:07.935 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2 -> PipelineWorker#1::Sink
+2026-10-26 05:25:07.935 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-242d24d8': started running
+2026-10-26 05:25:12.937 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#1
+2026-10-26 05:25:14.939 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-242d24d8': finished running
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+tests/test_td_tts_cancel_probe.py::test_actual_sdk_cancel_cycle_is_bounded_without_real_connection
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+tests/test_td_tts_cancel_probe.py::test_actual_sdk_cancel_cycle_is_bounded_without_real_connection
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+tests/test_td_tts_cancel_probe.py::test_actual_sdk_cancel_cycle_is_bounded_without_real_connection
+tests/test_td_tts_cancel_probe.py::test_completed_turn_is_untriggered_without_second_paid_text
+  /Volumes/work/OpenCode/VoiceAgent/scripts/evaluation/probe_td_tts_cancel.py:231: RuntimeWarning: coroutine 'WorkerRunner.add_workers' was never awaited
+    runner.add_workers([worker])
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_cancel_probe.py::test_actual_sdk_cancel_cycle_is_bounded_without_real_connection
+FAILED tests/test_td_tts_cancel_probe.py::test_completed_turn_is_untriggered_without_second_paid_text
+2 failed, 1 passed, 5 warnings in 15.15s

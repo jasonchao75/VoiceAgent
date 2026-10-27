@@ -1,0 +1,9 @@
+# WebRTC任务身份与实际渲染缺口（静态证据）
+
+当前已有公开移动页使用 SmallWebRTCTransport，音频从连续远端MediaStream播放；SDK发言事件不提供本Change所需的每段PCM任务身份及AudioWorklet实际停止/渲染样本。后端voice_agent.py目前仅在playback_protocol=websocket安装SerialAudioOutput与缓存跟读输出。因此现有WebRTC入口不能宣称满足编号跟读/唯一播放仲裁/Final定向取消。
+
+工程取舍会改变媒体传送方式与延迟特征，需要用户确认架构影响：
+- A：自建TD会话的下行音频经同一WebRTC连接的可靠数据通道传带任务身份的PCM，沿用现有AudioWorklet任务播放器；上行麦克风/ICE/信令保留。优点是可复用已验证的任务与回执契约；风险是可靠传输队头阻塞、PCM带宽和移动兼容，需要单独性能验证、队列界限与断线处理。原生TD仍用原RTP通路。不增加页面或服务端AEC。
+- B：继续RTP下行，新增RTP任务时间戳映射与可观测的浏览器渲染桥。优点是保留实时媒体拥塞路径；风险是浏览器兼容和实际渲染边界无法仅凭datachannel标记或SDK发言事件保证，工程及验证成本更高。
+
+两者均未实现/未实测；不以服务端发完、datachannel送达、SDK bot-start代替真实播放，不猜测两种通道间的时间对应。建议A，但不未经确认改变媒体架构。

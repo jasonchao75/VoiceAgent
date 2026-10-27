@@ -1,0 +1,19 @@
+WARNING: Open known_issues[1]: 普通TD、唯一提交、Jev异常及Partial指标已接后台并有离线证据；未知范围/重连、完整编号工具/播放/缓存及真实客户端取消仍未闭环。D-049取代实质改义门槛。
+WARNING: Open known_issues[12]: Flux原始Update桥接、Speechmatics metadata/fragments（含null详情）及自建端点隔离已实现并通过fixture；真实六模型回包、时间覆盖与重连兼容仍未验证，不以来源选项可见宣称兼容。
+WARNING: Open known_issues[15]: 已补Speechmatics时间字段和Flux Update保留、SDK连接代次frame及fixture归一化；未知音频范围的可靠切分、跨连接本地时钟对齐与实际时间覆盖尚未闭环。
+WARNING: Open known_issues[17]: 正式自建TD已接可选显式优先规则：严格本地收集、业务WPM、未满独立保护/一次提醒、后续提问、当前候选修订回流；编号工具与同一状态/音频范围组连接真实SDK。实际跟读、旧轮修订、成功换代及完整UI仍未完成。
+WARNING: Open known_issues[20]: 速度/编号工具已接不可变输入、幂等结果共享及当前输入校验；真实SDK验证混合句工具回填/续生成及Final重答只执行一次。清空与实际播放停止/旧缓存失效的完整联动仍未接通，因此整体保持Open。
+WARNING: Open known_issues[25]: 普通自建TD、Jev凭证、编号收集/受控工具/保护/成功换代及历史事件已接正式后台；未知范围/真实重连、跨轮旧修订、实际跟读/播放/缓存及完整UI A/B仍未完成，不提交独立审核。
+WARNING: Open known_issues[33]: 已披露并停止服务端消息伪报播放/停止；旧历史保留数值并标记unverified_client_report，新记录无证据明确缺失，缺回执原因改为client_playback_unconfirmed。来源标记SQLite重启、旧NULL字段兼容及1440/390px正式页面通过。实际客户端渲染/停止与任务ID回执尚未接通，继续Open。
+WARNING: Open known_issues[37]: 纯编号已开始接正式TD：本地收集、独立等待和固定提醒，但跟读音频缓存/播放适配器及客户端回执未接通，仅记录echo_not_dispatched；提醒尚未纳入完整播放仲裁/历史逐轮展示，已消费范围的后续ASR修订回写仍需补齐。不得宣称优先规则端到端可用。
+WARNING: Open known_issues[38]: 纯编号/混合工具已接最终证明后的成功标志和新采集换代；Partial达标/未TD提交不清空，混合输入校验成功前不动旧值，重复/Final不再次换代。跨新轮次/提醒的旧片段自动修订/补读、清空实际停播仍未闭环。
+WARNING: Open unverified_items[1]: 已实现Jev后端安全客户端、显式问题/融合、MockTransport错误测试及普通TD编排；没有真实调用，语言效果、实际P95延迟、费用和厂商兼容仍未实测。
+WARNING: Open unverified_items[2]: 未验证 ASR 单元时间戳、Partial 修订去重、双向同时说话时的回声及跟读队列行为。
+WARNING: Open unverified_items[3]: v0.10 为fixture原型。新增逐轮展示、普通回复/指标、多候选、旧会话缺失数据；已验证数量关联、筛选、跳转、中英切换与390px抽屉无横向溢出。未连接真实历史API或持久化；ASR集成、编号边界和效果仍未实现/验证。
+WARNING: Open unverified_items[4]: ASR事件映射基于官方文档、当前注册和锁定依赖静态审阅；未验证真实回包顺序、迟到Final/重连及时间戳覆盖，不证明自建TD已实现。
+WARNING: Open unverified_items[5]: v0.12 采用逗号别名、行内音频状态/试听、标题一键合成和下方独立间隔；校验与窄屏已检查。未调用TTS或生成真实音频，持久存储、音质、发布后缓存故障及动态语速仍未实现/验证。
+WARNING: Open unverified_items[6]: 本轮证实官方/SDK字段存在及Speechmatics静态适配不匹配，未执行真实厂商回包测试；各Partial覆盖、重连、修订与队列仍需工程fixture/授权联调。
+WARNING: Open unverified_items[8]: D-049替代实质改义门槛。真实Pipecat已验证同轮Partial→Final上下文替换和只计1个用户提交；真实LLM/TTS取消残留、工具副作用及客户端缓冲尚未完整验证。
+WARNING: Open unverified_items[9]: AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。
+WARNING: 29 tasks remain unchecked
+PASS: 0 errors, 18 warning(s)

@@ -1,0 +1,12 @@
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (1.728125ms)
+✔ closing during a delayed probe never writes to a replaced renderer (0.43825ms)
+✔ native metadata waits for server epoch and uses a separate authenticated capture sampler (1.759ms)
+✔ closing aborts metadata work without retrying a batch or touching native audio (0.492ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 33.68875

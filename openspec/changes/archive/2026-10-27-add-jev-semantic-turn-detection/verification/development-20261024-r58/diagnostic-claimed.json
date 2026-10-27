@@ -1,0 +1,6 @@
+{
+  "decision": "D-066",
+  "max_connections": 1,
+  "scope_sha256": "e7516ccc7f42db9829ef3a34ea33a6717bd45a45408d342d3961914a27616600",
+  "status": "claimed_no_replay"
+}

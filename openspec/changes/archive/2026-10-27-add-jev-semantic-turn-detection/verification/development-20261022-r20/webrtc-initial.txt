@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:13030) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-webrtc-runtime.spec.js:6:1 › formal mobile route establishes the existing WebRTC audio track with local TD (17.5s)
+
+
+  1) [desktop-chromium] › tests/ui/td-webrtc-runtime.spec.js:6:1 › formal mobile route establishes the existing WebRTC audio track with local TD 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      37 |     const history=await (await request.get(`/api/history/${session.session_id}`)).json();
+      38 |     return history.td_events?.filter(event=>event.event==="response_restart").length;
+    > 39 |   },{timeout:15000}).toBe(1);
+         |                      ^
+      40 |   await page.locator("#end").click();
+      41 | });
+      42 |
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-webrtc-runtime.spec.js:39:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-webrtc-runtime-formal-m-3df62-C-audio-track-with-local-TD-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-webrtc-runtime-formal-m-3df62-C-audio-track-with-local-TD-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-webrtc-runtime-formal-m-3df62-C-audio-track-with-local-TD-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-webrtc-runtime-formal-m-3df62-C-audio-track-with-local-TD-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-webrtc-runtime.spec.js:6:1 › formal mobile route establishes the existing WebRTC audio track with local TD 

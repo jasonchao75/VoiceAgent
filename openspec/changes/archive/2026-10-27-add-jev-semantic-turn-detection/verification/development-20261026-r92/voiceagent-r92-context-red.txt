@@ -1,0 +1,122 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+________ test_declared_image_input_is_not_excluded[frontend/demo.html] _________
+
+required = 'frontend/demo.html'
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-132/test_declared_image_input_is_n0')
+
+    @pytest.mark.parametrize('required', [
+        'frontend/demo.html', 'frontend/evaluation.html', 'frontend/login.html',
+        'scripts/deploy/verify_webrtc_production.py',
+    ])
+    def test_declared_image_input_is_not_excluded(required, tmp_path):
+        """Use wildmatch on these explicit rules; Docker build remains separate evidence."""
+        assert (ROOT / required).is_file()
+        subprocess.run(['git', 'init', '--quiet', str(tmp_path)], check=True)
+        (tmp_path / '.gitignore').write_text((ROOT / '.dockerignore').read_text())
+        path = tmp_path / required
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+        result = subprocess.run(
+            ['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', required],
+            cwd=tmp_path, capture_output=True, text=True, check=False,
+        )
+>       assert result.returncode == 1, f'Declared build input excluded: {required}'
+E       AssertionError: Declared build input excluded: frontend/demo.html
+E       assert 0 == 1
+E        +  where 0 = CompletedProcess(args=['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', 'frontend/demo.html'], returncode=0, stdout='frontend/demo.html\n', stderr='').returncode
+
+tests/test_docker_context.py:26: AssertionError
+_____ test_declared_image_input_is_not_excluded[frontend/evaluation.html] ______
+
+required = 'frontend/evaluation.html'
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-132/test_declared_image_input_is_n1')
+
+    @pytest.mark.parametrize('required', [
+        'frontend/demo.html', 'frontend/evaluation.html', 'frontend/login.html',
+        'scripts/deploy/verify_webrtc_production.py',
+    ])
+    def test_declared_image_input_is_not_excluded(required, tmp_path):
+        """Use wildmatch on these explicit rules; Docker build remains separate evidence."""
+        assert (ROOT / required).is_file()
+        subprocess.run(['git', 'init', '--quiet', str(tmp_path)], check=True)
+        (tmp_path / '.gitignore').write_text((ROOT / '.dockerignore').read_text())
+        path = tmp_path / required
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+        result = subprocess.run(
+            ['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', required],
+            cwd=tmp_path, capture_output=True, text=True, check=False,
+        )
+>       assert result.returncode == 1, f'Declared build input excluded: {required}'
+E       AssertionError: Declared build input excluded: frontend/evaluation.html
+E       assert 0 == 1
+E        +  where 0 = CompletedProcess(args=['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', 'frontend/evaluation.html'], returncode=0, stdout='frontend/evaluation.html\n', stderr='').returncode
+
+tests/test_docker_context.py:26: AssertionError
+________ test_declared_image_input_is_not_excluded[frontend/login.html] ________
+
+required = 'frontend/login.html'
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-132/test_declared_image_input_is_n2')
+
+    @pytest.mark.parametrize('required', [
+        'frontend/demo.html', 'frontend/evaluation.html', 'frontend/login.html',
+        'scripts/deploy/verify_webrtc_production.py',
+    ])
+    def test_declared_image_input_is_not_excluded(required, tmp_path):
+        """Use wildmatch on these explicit rules; Docker build remains separate evidence."""
+        assert (ROOT / required).is_file()
+        subprocess.run(['git', 'init', '--quiet', str(tmp_path)], check=True)
+        (tmp_path / '.gitignore').write_text((ROOT / '.dockerignore').read_text())
+        path = tmp_path / required
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+        result = subprocess.run(
+            ['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', required],
+            cwd=tmp_path, capture_output=True, text=True, check=False,
+        )
+>       assert result.returncode == 1, f'Declared build input excluded: {required}'
+E       AssertionError: Declared build input excluded: frontend/login.html
+E       assert 0 == 1
+E        +  where 0 = CompletedProcess(args=['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', 'frontend/login.html'], returncode=0, stdout='frontend/login.html\n', stderr='').returncode
+
+tests/test_docker_context.py:26: AssertionError
+_ test_declared_image_input_is_not_excluded[scripts/deploy/verify_webrtc_production.py] _
+
+required = 'scripts/deploy/verify_webrtc_production.py'
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-132/test_declared_image_input_is_n3')
+
+    @pytest.mark.parametrize('required', [
+        'frontend/demo.html', 'frontend/evaluation.html', 'frontend/login.html',
+        'scripts/deploy/verify_webrtc_production.py',
+    ])
+    def test_declared_image_input_is_not_excluded(required, tmp_path):
+        """Use wildmatch on these explicit rules; Docker build remains separate evidence."""
+        assert (ROOT / required).is_file()
+        subprocess.run(['git', 'init', '--quiet', str(tmp_path)], check=True)
+        (tmp_path / '.gitignore').write_text((ROOT / '.dockerignore').read_text())
+        path = tmp_path / required
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+        result = subprocess.run(
+            ['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', required],
+            cwd=tmp_path, capture_output=True, text=True, check=False,
+        )
+>       assert result.returncode == 1, f'Declared build input excluded: {required}'
+E       AssertionError: Declared build input excluded: scripts/deploy/verify_webrtc_production.py
+E       assert 0 == 1
+E        +  where 0 = CompletedProcess(args=['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '--no-index', 'scripts/deploy/verify_webrtc_production.py'], returncode=0, stdout='scripts/deploy/verify_webrtc_production.py\n', stderr='').returncode
+
+tests/test_docker_context.py:26: AssertionError
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_docker_context.py::test_declared_image_input_is_not_excluded[frontend/demo.html]
+FAILED tests/test_docker_context.py::test_declared_image_input_is_not_excluded[frontend/evaluation.html]
+FAILED tests/test_docker_context.py::test_declared_image_input_is_not_excluded[frontend/login.html]
+FAILED tests/test_docker_context.py::test_declared_image_input_is_not_excluded[scripts/deploy/verify_webrtc_production.py]
+4 failed, 1 warning in 0.13s

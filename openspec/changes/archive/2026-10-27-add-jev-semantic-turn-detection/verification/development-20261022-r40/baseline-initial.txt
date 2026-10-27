@@ -1,0 +1,167 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 [desktop-chromium] › tests/ui/td-baseline.spec.js:44:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px (30.2s)
+  ✘  2 [desktop-chromium] › tests/ui/td-baseline.spec.js:44:3 › Checkpoint A compares production settings to frozen v0.14 at 390px (750ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-baseline.spec.js:44:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.evaluate: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('#td-jev')
+
+
+      22 | async function signature(page, name) {
+      23 |   const selector = name.startsWith('jev-') ? '#td-jev' : '#td';
+    > 24 |   return page.locator(selector).evaluate(root => {
+         |                                 ^
+      25 |     const visible = node => node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden';
+      26 |     const controls = [...root.querySelectorAll('input,select,textarea')].filter(visible);
+      27 |     return {
+        at signature (/Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-baseline.spec.js:24:33)
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-baseline.spec.js:90:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-fde24-s-to-frozen-v0-14-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-fde24-s-to-frozen-v0-14-at-1440px-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-baseline-Checkpoint-A-c-fde24-s-to-frozen-v0-14-at-1440px-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-fde24-s-to-frozen-v0-14-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-baseline-Checkpoint-A-c-fde24-s-to-frozen-v0-14-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-baseline.spec.js:44:3 › Checkpoint A compares production settings to frozen v0.14 at 390px 
+
+    Error: rules
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 8
+    + Received  + 8
+
+    @@ -13,38 +13,38 @@
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "keywords",
+          "radius": "9px",
+          "type": "textarea",
+    -     "width": 284,
+    +     "width": 220,
+        },
+        Object {
+          "background": "rgb(12, 16, 15)",
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "echo-gap",
+          "radius": "9px",
+          "type": "number",
+    -     "width": 90,
+    +     "width": 110,
+        },
+        Object {
+          "background": "rgb(12, 16, 15)",
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "wpm",
+          "radius": "9px",
+          "type": "number",
+    -     "width": 284,
+    +     "width": 220,
+        },
+        Object {
+          "background": "rgb(12, 16, 15)",
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "echo-pause",
+          "radius": "9px",
+          "type": "number",
+    -     "width": 284,
+    +     "width": 220,
+        },
+        Object {
+          "background": "rgb(35, 117, 80)",
+          "color": "rgb(158, 170, 164)",
+          "fontSize": "16px",
+    @@ -58,35 +58,35 @@
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "number-length",
+          "radius": "9px",
+          "type": "number",
+    -     "width": 284,
+    +     "width": 220,
+        },
+        Object {
+          "background": "rgb(12, 16, 15)",
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "collection-timeout",
+          "radius": "9px",
+          "type": "number",
+    -     "width": 284,
+    +     "width": 220,
+        },
+        Object {
+          "background": "rgb(12, 16, 15)",
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "collection-message",
+          "radius": "9px",
+          "type": "textarea",
+    -     "width": 284,
+    +     "width": 220,
+        },
+        Object {
+          "background": "rgb(12, 16, 15)",
+          "color": "rgb(243, 246, 244)",
+          "fontSize": "16px",
+          "id": "overflow-message",
+          "radius": "9px",
+          "type": "textarea",
+    -     "width": 284,
+    +     "width": 220,
+        },
+      ]
+
+       96 |       expect(after.overflow, name).toEqual([]);
+       97 |       expect(after.unnamed, name).toEqual([]);
+    >  98 |       expect(after.controls, name).toEqual(before.controls);
+          |                                    ^
+       99 |     }
+      100 |     await baseline.close();
+      101 |   });
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-baseline.spec.js:98:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-72264-gs-to-frozen-v0-14-at-390px-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-72264-gs-to-frozen-v0-14-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-baseline-Checkpoint-A-c-72264-gs-to-frozen-v0-14-at-390px-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-72264-gs-to-frozen-v0-14-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-baseline-Checkpoint-A-c-72264-gs-to-frozen-v0-14-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop-chromium] › tests/ui/td-baseline.spec.js:44:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px 
+    [desktop-chromium] › tests/ui/td-baseline.spec.js:44:3 › Checkpoint A compares production settings to frozen v0.14 at 390px 

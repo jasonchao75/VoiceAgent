@@ -1,0 +1,9 @@
+{
+  "evidenceLevel": "local-real",
+  "actualHttp503": 1,
+  "retry": true,
+  "dateFilterEmpty": true,
+  "metricsExact": true,
+  "eventsExact": true,
+  "boundary": "single bounded HTTP middleware fault in loopback fixture; successful API and SQLite unmodified"
+}

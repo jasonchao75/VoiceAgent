@@ -1,0 +1,25 @@
+{
+  "path": "/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-asr-recovery-qbe9148m/digits-ready.wav",
+  "sha256": "a93499196b16dd1e9307ba97bedd24d246dedf995755e05bc9f20e382139966e",
+  "expected_sha256": "f43daeb5ba88c445000499c4c7fed38e1ab73dc60aac834e9f7a13cfd99af2a0",
+  "frames": 82680,
+  "rate": 16000,
+  "channels": 1,
+  "width": 2,
+  "seconds": 5.1675,
+  "matches_frozen_bytes": false,
+  "canonical_wave": {
+    "path": "/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-asr-recovery-qbe9148m/digits-canonical.wav",
+    "sha256": "bb6545a602ad460452fbd1ed68f0f23398e6cd937213bc9f3216f32ed2517c1e",
+    "matches_frozen_bytes": false,
+    "pcm_sha256": "08ebeeab237a5c5ef1a988a50bccda21ca63e80c057a5c7aec9fc0814627a2b2",
+    "reason": "Standard PCM RIFF header without FFmpeg metadata, preserving all decoded PCM bytes"
+  },
+  "unapproved_new_fixture": {
+    "path": "/Volumes/work/OpenCode/VoiceAgent/test-results/td-vendor-inputs/20261024/digits-ready.wav",
+    "sha256": "a93499196b16dd1e9307ba97bedd24d246dedf995755e05bc9f20e382139966e",
+    "status": "not_authorized_for_transmission",
+    "not_original_frozen_fixture": true,
+    "git_ignored": true
+  }
+}

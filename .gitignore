@@ -48,3 +48,11 @@ demos/
 
 # OpenCode internal
 .opencode/.gitignore
+
+# Local duplicate review bundles; text evidence and selected screenshots remain versioned.
+openspec/changes/archive/2026-10-27-add-jev-semantic-turn-detection/**/review-inputs.tar.gz
+
+# Historical generated runner copies kept locally; reports remain versioned.
+openspec/changes/archive/2026-10-27-add-jev-semantic-turn-detection/verification/development-20261026-r93/voiceagent-r93-silero.py
+openspec/changes/archive/2026-10-27-add-jev-semantic-turn-detection/verification/development-20261026-r93/local-app-fixture.py
+openspec/changes/archive/2026-10-27-add-jev-semantic-turn-detection/**/*.tar.gz

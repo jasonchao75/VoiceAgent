@@ -1,0 +1,17 @@
+
+Running 8 tests using 1 worker
+
+(node:18776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (646ms)
+  ✓  2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (415ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 1440px (703ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 390px (546ms)
+(node:18801) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (445ms)
+  ✓  6 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (393ms)
+  ✓  7 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 1440px (619ms)
+  ✓  8 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:44:3 › formal per-turn history preserves candidates and response versions at 390px (530ms)
+
+  8 passed (5.1s)

@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:21714) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/gate2-number-playback.spec.js:35:2 › Gate2 browser complete actual playback and dedup (16.1s)
+  ✓  2 [desktop-chromium] › tests/ui/gate2-number-playback.spec.js:35:2 › Gate2 browser overflow actual playback and dedup (13.7s)
+
+  2 passed (30.4s)

@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from importlib.resources import files
 from typing import Any, Protocol, cast
 
+from pipecat.frames.frames import TranscriptionFrame
 from pipecat.services.stt_service import STTService
 from pipecat.transcriptions.language import Language
 
@@ -23,6 +24,9 @@ from src.asr.config import (
     normalize_provider,
     validate_asr_options,
 )
+from src.asr.source_frames import SourceOwnedASRMixin
+from src.asr.transcript import SourceSegment
+from src.asr.turn_events import SourceNormalizer
 from src.config import AudioConfig
 
 ASRBuilder = Callable[[str, str, str, StrictASRModel, AudioConfig, str], STTService]
@@ -65,6 +69,45 @@ class ASRService:
     processor: STTService
     context_updates_enabled: bool = False
     _context_updater: AgentContextUpdater | None = None
+    source_normalizer: SourceNormalizer | None = None
+    _soniox_snapshot_scope: int = 0
+    _soniox_snapshot_epoch: int = -1
+
+    def normalize_source_frame(self, frame: Any) -> tuple[SourceSegment, ...]:
+        """Normalize preserved provider data at the public ASR boundary."""
+        if self.source_normalizer is None:
+            return ()
+        metadata = getattr(frame, "metadata", {})
+        if "asr_stream_epoch" in metadata and (
+            type(metadata["asr_stream_epoch"]) is not int or metadata["asr_stream_epoch"] < 0
+        ):
+            self.source_normalizer.missing_reason = "source_connection_unavailable"
+            if getattr(frame, "text", ""):
+                self.source_normalizer.retain_unknown_source()
+            return ()
+        payload = getattr(frame, "result", None)
+        if payload is not None and hasattr(payload, "model_dump"):
+            payload = payload.model_dump()
+        if isinstance(payload, list) and self.source_normalizer.provider == "soniox":
+            if self._soniox_snapshot_epoch != self.source_normalizer.epoch:
+                self._soniox_snapshot_scope = 0
+                self._soniox_snapshot_epoch = self.source_normalizer.epoch
+            payload = {
+                "tokens": payload,
+                "td_full_snapshot": True,
+                "td_snapshot_scope": self._soniox_snapshot_scope,
+            }
+            # The SDK clears its stable-prefix buffer after this endpoint frame.
+            if isinstance(frame, TranscriptionFrame) and frame.finalized:
+                self._soniox_snapshot_scope += 1
+        if not isinstance(payload, dict):
+            self.source_normalizer.missing_reason = (
+                "source_payload_unavailable" if getattr(frame, "text", "") else None
+            )
+            if getattr(frame, "text", ""):
+                self.source_normalizer.retain_unknown_source()
+            return ()
+        return self.source_normalizer.normalize(payload)
 
     async def update_agent_context(self, text: str) -> None:
         """Send one bounded context update through the selected adapter."""
@@ -123,9 +166,16 @@ class ASRProviderRegistry:
             option_type = AssemblyAIOptions
         parsed = option_type.model_validate(normalized)
         processor = builder(api_key, model, turn_detection_source, parsed, audio, opening_script)
+        if isinstance(processor, SourceOwnedASRMixin):
+            processor._td_source_mode = turn_detection_source == "self_developed"
         context_enabled = isinstance(parsed, AssemblyAIOptions) and parsed.agent_context_enabled
         return ASRService(
             processor=processor,
+            source_normalizer=SourceNormalizer(
+                canonical_provider,
+                model,
+                sample_rate=audio.input_sample_rate,
+            ),
             context_updates_enabled=context_enabled,
             _context_updater=(cast(AgentContextUpdater, processor) if context_enabled else None),
         )
@@ -145,14 +195,32 @@ def _build_deepgram_flux(
     _opening_script: str,
 ) -> STTService:
     """Map validated Flux options onto the V2 streaming service."""
+    from pipecat.frames.frames import InterimTranscriptionFrame
     from pipecat.services.deepgram.flux.stt import DeepgramFluxSTTService
+    from pipecat.utils.time import time_now_iso8601
+
+    class _SourceAwareFluxSTTService(SourceOwnedASRMixin, DeepgramFluxSTTService):
+        """Preserve raw Update snapshots before the provider decides EndOfTurn."""
+
+        async def _handle_turn_info(self, data: dict[str, Any]) -> None:
+            """Bridge interim text and original word timing through the public frame path."""
+            if data.get("event") == "Update" and data.get("transcript"):
+                await self.push_frame(
+                    InterimTranscriptionFrame(
+                        text=data["transcript"],
+                        user_id=self._user_id,
+                        timestamp=time_now_iso8601(),
+                        result=copy.deepcopy(data),
+                    )
+                )
+            await super()._handle_turn_info(data)
 
     assert isinstance(options, DeepgramFluxOptions)
-    return DeepgramFluxSTTService(
+    return _SourceAwareFluxSTTService(
         api_key=api_key,
         sample_rate=audio.input_sample_rate,
         flux_encoding=audio.encoding,
-        should_interrupt=True,
+        should_interrupt=_turn_source != "self_developed",
         settings=DeepgramFluxSTTService.Settings(
             model=model,
             eager_eot_threshold=None,
@@ -184,13 +252,16 @@ def _build_deepgram_nova3(
 
     assert isinstance(options, DeepgramNova3Options)
 
-    class _Nova3STTService(DeepgramSTTService):
+    class _Nova3STTService(SourceOwnedASRMixin, DeepgramSTTService):
         """End a Turn only on Deepgram's silence-confirmed speech_final event."""
 
         def __init__(self, **kwargs: Any) -> None:
             """Initialize Nova-3 and remember the last closed provider Turn."""
             super().__init__(**kwargs)
             self._last_speech_final_key: tuple[float, float] | None = None
+            # Nova retries within one SDK task, outside _connect/_websocket_connect.
+            connector = self._client.listen.v1
+            connector.connect = self._source_context_connector(connector.connect)
 
         async def _on_message(self, message):  # type: ignore[no-untyped-def]
             await super()._on_message(message)
@@ -234,21 +305,33 @@ def _build_soniox(
     _opening_script: str,
 ) -> STTService:
     """Use Soniox semantic endpointing as the session's single Turn authority."""
-    from pipecat.services.soniox.stt import SonioxContextObject, SonioxSTTService
+    from pipecat.services.soniox.stt import (
+        SonioxContextGeneralItem,
+        SonioxContextObject,
+        SonioxSTTService,
+    )
 
     assert isinstance(options, SonioxOptions)
     context = SonioxContextObject(
-        general=[item.model_dump() for item in options.context_general] or None,
+        general=[
+            SonioxContextGeneralItem(key=item.key, value=item.value)
+            for item in options.context_general
+        ]
+        or None,
         text=options.context_text or None,
         terms=options.context_terms or None,
     )
-    return SonioxSTTService(
+
+    class _SourceAwareSonioxSTTService(SourceOwnedASRMixin, SonioxSTTService):
+        """Keep SDK token transport while custom TD owns session turn boundaries."""
+
+    return _SourceAwareSonioxSTTService(
         api_key=api_key,
         sample_rate=audio.input_sample_rate,
         audio_format="pcm_s16le",
         num_channels=audio.channels,
         vad_force_turn_endpoint=False,
-        should_interrupt=True,
+        should_interrupt=_turn_source != "self_developed",
         settings=SonioxSTTService.Settings(
             model="stt-rt-v5",
             language_hints=[Language(code) for code in options.language_hints] or None,
@@ -273,12 +356,12 @@ def _build_assemblyai(
     """Use U3.5 Pro native Turn Detection and initialize conversation context."""
     import json
 
-    from pipecat.services.assemblyai.stt import AssemblyAISTTService
+    from pipecat.services.assemblyai.stt import AssemblyAISTTService, AssemblyAISTTSettings
     from websockets.protocol import State
 
     assert isinstance(options, AssemblyAIOptions)
 
-    class _ObservableAssemblyAISTTService(AssemblyAISTTService):
+    class _ObservableAssemblyAISTTService(SourceOwnedASRMixin, AssemblyAISTTService):
         """Expose whether a live agent-context update actually reached the socket."""
 
         async def update_agent_context(self, text: str) -> None:
@@ -286,7 +369,7 @@ def _build_assemblyai(
             if not text:
                 return
             bounded = self._clip_agent_context(text)
-            self._settings.agent_context = bounded
+            cast(AssemblyAISTTSettings, self._settings).agent_context = bounded
             websocket = self._websocket
             if websocket is None or websocket.state is not State.OPEN:
                 raise ConnectionError("AssemblyAI context socket is not open")
@@ -302,7 +385,7 @@ def _build_assemblyai(
         sample_rate=audio.input_sample_rate,
         encoding="pcm_s16le",
         vad_force_turn_endpoint=False,
-        should_interrupt=True,
+        should_interrupt=_turn_source != "self_developed",
         settings=AssemblyAISTTService.Settings(
             model="universal-3-5-pro",
             language_codes=[Language(code) for code in options.language_codes] or None,
@@ -345,8 +428,24 @@ def _build_speechmatics(
         # "all" is a product sentinel; Speechmatics means all marks by omission.
         punctuation_overrides.pop("permitted_marks")
 
-    class _SafeSpeechmaticsSTTService(SpeechmaticsSTTService):
+    class _SafeSpeechmaticsSTTService(SourceOwnedASRMixin, SpeechmaticsSTTService):
         """Avoid assigning split_sentences to VoiceAgentConfig in Pipecat 1.8.1."""
+
+        async def _send_frames(
+            self,
+            segments: list[dict[str, Any]],
+            finalized: bool = False,
+        ) -> None:
+            """Retain Voice SDK metadata/fragments without changing frame text or Final state."""
+            enriched = []
+            for segment in segments:
+                row = copy.deepcopy(segment)
+                row["results"] = {
+                    "message": "AddSegment" if finalized else "AddPartialSegment",
+                    "segments": [copy.deepcopy(segment)],
+                }
+                enriched.append(row)
+            await super()._send_frames(enriched, finalized=finalized)
 
         def _build_config(self, settings):  # type: ignore[no-untyped-def]
             emit_sentences = settings.split_sentences
@@ -354,6 +453,7 @@ def _build_speechmatics(
             safe_settings.split_sentences = None
             config = super()._build_config(safe_settings)
             config.speech_segment_config = SpeechSegmentConfig(emit_sentences=bool(emit_sentences))
+            config.include_results = True
             return config
 
     additional_vocab = [
@@ -367,12 +467,12 @@ def _build_speechmatics(
         api_key=api_key,
         sample_rate=audio.input_sample_rate,
         encoding=_SafeSpeechmaticsSTTService.AudioEncoding.PCM_S16LE,
-        should_interrupt=True,
+        should_interrupt=_turn_source != "self_developed",
         settings=_SafeSpeechmaticsSTTService.Settings(
             language=options.language,
             domain=options.domain,
             turn_detection_mode=_SafeSpeechmaticsSTTService.TurnDetectionMode(
-                options.turn_detection_mode
+                "fixed" if _turn_source == "self_developed" else options.turn_detection_mode
             ),
             operating_point=_SafeSpeechmaticsSTTService.OperatingPoint.ENHANCED,
             max_delay=options.max_delay,

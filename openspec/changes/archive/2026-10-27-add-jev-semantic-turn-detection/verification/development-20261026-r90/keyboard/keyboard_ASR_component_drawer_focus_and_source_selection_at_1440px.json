@@ -1,0 +1,12 @@
+{
+  "evidenceLevel": "fixture",
+  "browser": "desktop-chromium",
+  "status": "passed",
+  "focus": {
+    "tag": "BUTTON",
+    "id": "",
+    "visible": true
+  },
+  "ariaSnapshot": "",
+  "boundary": "browser keyboard/DOM accessibility only; not VoiceOver or physical device proof"
+}

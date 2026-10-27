@@ -1,0 +1,44 @@
+............F                                                            [100%]
+=================================== FAILURES ===================================
+_ test_partial_that_becomes_mixed_after_local_processing_retracts_unsubmitted_value _
+
+    async def test_partial_that_becomes_mixed_after_local_processing_retracts_unsubmitted_value():
+        """A consumed local range can be revised, but must not be counted as another user turn."""
+        from pipecat.frames.frames import TranscriptionFrame
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_rule_settings import priority_settings
+    
+        settings = IdentifierRuleSettings.model_validate(priority_settings())
+        state = IdentifierCollection(IdentifierVocabulary({'1': ['1'], '2': ['2'], '3': ['3']}),
+                                     target_length=3)
+        td = coordinator(identifier_rules=IdentifierRules(settings, state))
+        frames = []
+    
+        async def push(frame, *args, **kwargs):
+            frames.append(frame)
+    
+        td.push_frame = push
+        td.assistant_context('请提供编号')
+        await td.speech_started()
+        await td.receive_transcript(interim('12'))
+        await td.speech_stopped(1000)
+        await td.advance(1350)
+        assert state.value == '12'
+        await td.receive_transcript(interim('12，嗯，还要几位'))
+        await td.advance(3500)
+        commits = [frame for frame in frames if isinstance(frame, TranscriptionFrame)]
+>       assert len(commits) == 1 and commits[0].text == '12，嗯，还要几位'
+E       assert (0 == 1)
+E        +  where 0 = len([])
+
+tests/test_td_runtime.py:498: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_runtime_does_not_forward_provider_endpoint_or_partial
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_partial_that_becomes_mixed_after_local_processing_retracts_unsubmitted_value
+1 failed, 12 passed, 1 warning in 1.20s

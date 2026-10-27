@@ -1,0 +1,38 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_metadata_final_does_not_retry_a_failed_queued_echo ____________
+
+    async def test_metadata_final_does_not_retry_a_failed_queued_echo():
+        """D-074 skips a failed source; a metadata-only Final is not a new user request."""
+        rules = policy()
+        output = SerialAudioOutput(responses=ResponseRevisions())
+        calls = []
+    
+        class Audio:
+            async def chunks(self, text, *, generation, trace=None):
+                calls.append(text)
+                yield b'\x01\x00' * 240
+                raise ValueError('inert source failure after buffered audio')
+    
+        echo = controller(rules, Audio(), output)
+        first = view('12')
+        echo.consider(first, rules.evaluate(first, '编号'))
+        await echo.wait_pending()
+        final = view('12', 2, True)
+        echo.consider(final, rules.evaluate(final, '编号'))
+        await echo.wait_pending()
+>       assert calls == ['12']
+E       AssertionError: assert ['12', '12'] == ['12']
+E         
+E         Left contains one more item: '12'
+E         Use -v to get more diff
+
+tests/test_td_identifier_output.py:165: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_output.py::test_metadata_final_does_not_retry_a_failed_queued_echo
+1 failed, 4 deselected, 1 warning in 0.99s

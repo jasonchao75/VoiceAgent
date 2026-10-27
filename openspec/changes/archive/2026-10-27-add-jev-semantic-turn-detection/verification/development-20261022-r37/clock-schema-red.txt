@@ -1,0 +1,40 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_receipt_schema_preserves_complete_bounded_render_clock __________
+
+    def test_receipt_schema_preserves_complete_bounded_render_clock():
+        """Sample coordinates are optional for old clients but cannot be partially specified."""
+        import pytest
+        from pydantic import ValidationError
+    
+        from src.api import PlaybackReceipt
+    
+        data = {'playback_id': 'a' * 32, 'event': 'task_started', 'rendered_samples': 128,
+                'elapsed_ms': 20, 'evidence_source': 'audio_worklet_render',
+                'render_frame': 1024, 'render_sample_rate': 24000, 'render_clock_id': 'b' * 32}
+>       assert PlaybackReceipt.model_validate(data).render_frame == 1024
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 3 validation errors for PlaybackReceipt
+E       render_frame
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=1024, input_type=int]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+E       render_sample_rate
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=24000, input_type=int]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+E       render_clock_id
+E         Extra inputs are not permitted [type=extra_forbidden, input_value='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+
+tests/test_playback_receipts_api.py:242: ValidationError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_playback_receipts_api.py::test_receipt_schema_preserves_complete_bounded_render_clock
+1 failed, 2 deselected, 2 warnings in 1.11s

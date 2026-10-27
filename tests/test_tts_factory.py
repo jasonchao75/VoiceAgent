@@ -118,3 +118,23 @@ def test_registry_rejects_unimplemented_provider() -> None:
     registry = TTSProviderRegistry()
     with pytest.raises(ValueError, match="Unsupported TTS provider"):
         registry.create(provider="elevenlabs", api_key="x", config=None, audio=None)  # type: ignore[arg-type]
+
+
+def test_custom_td_binds_both_formal_tts_providers(runtime_config):
+    """Only official scoped constructors receive the session response authority."""
+    from src.pipeline.response_revision import ResponseRevisions
+    from src.tts.response_scope import ResponseScopedTTSMixin
+
+    owner = ResponseRevisions()
+    registry = create_default_tts_registry()
+    for provider in ("deepgram_flux", "elevenlabs"):
+        config = runtime_config.tts.model_copy(update={"provider": provider})
+        service = registry.create(
+            provider=provider,
+            api_key="test-fixture-no-network",
+            config=config,
+            audio=runtime_config.audio,
+            response_owner=owner,
+        )
+        assert isinstance(service, ResponseScopedTTSMixin)
+        assert service.response_owner is owner

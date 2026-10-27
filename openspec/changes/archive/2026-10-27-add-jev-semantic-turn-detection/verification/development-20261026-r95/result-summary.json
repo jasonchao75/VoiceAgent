@@ -1,0 +1,45 @@
+{
+  "status": "ok",
+  "speak_attempts": 2,
+  "acknowledged_cancel": true,
+  "old_output_after_cancel_samples": 0,
+  "new_output_samples": 49920,
+  "received_audio_bytes": 122592,
+  "inflight_audio_bytes": 19200,
+  "outgoing": [
+    "Speak",
+    "Flush",
+    "Interrupt",
+    "Speak",
+    "Flush"
+  ],
+  "incoming": [
+    "Connected",
+    "SpeechStarted",
+    "Flushed",
+    "SpeechInterrupted",
+    "SpeechStarted",
+    "Flushed",
+    "SpeechMetadata"
+  ],
+  "billable_character_counts": [
+    31
+  ],
+  "connections": 1,
+  "speech_id_hashes": [
+    "dea34f69b5b8cb0f460f4279b8cd33c0bb6e7a17f4b66cac1c0505f69383c693",
+    "4d63983f91cfb07625c2824637a24f375d8b256134e8f6217684bdf3b0a549b0"
+  ],
+  "scope": "actual TTS SDK/control/PCM provenance only; no browser or physical playback",
+  "actual_billed_cost_usd": null,
+  "evidence_level": "external-real Flux TTS control and SDK PCM/provenance; not browser or physical playback",
+  "inflight_pcm_duration_ms": 400.0,
+  "new_output_duration_ms": 2080.0,
+  "maximum_text_price_usd": "0.00882",
+  "not_proven": [
+    "browser/physical playback stop",
+    "RTC or full ASR/Jev/LLM chain",
+    "cancellation latency distribution",
+    "other voices/providers/languages"
+  ]
+}

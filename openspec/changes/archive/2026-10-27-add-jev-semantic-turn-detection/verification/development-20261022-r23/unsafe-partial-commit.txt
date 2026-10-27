@@ -1,0 +1,7 @@
+.                                                                        [100%]
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_incomplete_word_coverage_blocks_commit_even_with_a_newer_valid_tail
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 passed, 28 deselected, 1 warning in 0.99s

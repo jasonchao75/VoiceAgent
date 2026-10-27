@@ -126,3 +126,29 @@ def test_unknown_flux_voice_is_rejected(
             voice_catalog=voice_catalog,
             llm_catalog=llm_catalog,
         )
+
+
+async def test_server_bound_bot_identity_survives_session_claim(
+    session_request,
+    runtime_config,
+    voice_catalog,
+    llm_catalog,
+):
+    """Runtime cache scope comes from resolved server Bot provenance, not inline fields."""
+    store = SessionStore(token_ttl_seconds=120, max_sessions=3)
+    lease = await store.create(
+        request=session_request,
+        runtime=runtime_config,
+        voice_catalog=voice_catalog,
+        llm_catalog=llm_catalog,
+        bot_id="saved-bot",
+    )
+    assert (await store.claim(lease.token)).bot_id == "saved-bot"
+    inline = await store.create(
+        request=session_request,
+        runtime=runtime_config,
+        voice_catalog=voice_catalog,
+        llm_catalog=llm_catalog,
+    )
+    assert inline.bot_id is None
+    assert "bot_id" not in type(session_request).model_fields

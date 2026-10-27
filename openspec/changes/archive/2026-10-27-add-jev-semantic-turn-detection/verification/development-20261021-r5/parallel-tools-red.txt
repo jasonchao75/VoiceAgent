@@ -1,0 +1,32 @@
+.........F                                                               [100%]
+=================================== FAILURES ===================================
+_ test_parallel_submit_clear_delivers_actual_state_not_a_stale_success_snapshot _
+
+    async def test_parallel_submit_clear_delivers_actual_state_not_a_stale_success_snapshot():
+        """SDK parallel tools must not claim a cleared value is still the current collection."""
+        import asyncio
+        handlers, boundary, owner, state = tools()
+        observed = []
+    
+        async def result(value):
+            observed.append((value['value'], state.value, value['status']))
+    
+        submit = params(boundary, 'submit_identifier', {'identifier': '123'}, [])
+        clear = params(boundary, 'clear_identifier', {}, [])
+        submit.result_callback = result
+        clear.result_callback = result
+        await asyncio.gather(handlers.submit(submit), handlers.clear(clear))
+        assert state.value == ''
+>       assert all(reported == actual for reported, actual, status in observed)
+E       assert False
+E        +  where False = all(<generator object test_parallel_submit_clear_delivers_actual_state_not_a_stale_success_snapshot.<locals>.<genexpr> at 0x113426420>)
+
+tests/test_td_identifier_tools.py:186: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_parallel_submit_clear_delivers_actual_state_not_a_stale_success_snapshot
+1 failed, 9 passed, 1 warning in 1.16s

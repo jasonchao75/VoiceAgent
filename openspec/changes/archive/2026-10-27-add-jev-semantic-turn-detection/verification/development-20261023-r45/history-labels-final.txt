@@ -1,0 +1,16 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#history-dialog').locator('.td-record:has(> h4:text-is("编号工具结果"))').locator('h4')[22m
+
+    at /Volumes/work/OpenCode/VoiceAgent/frontend/[eval1]:3:1106 {
+  log: [
+    `  - waiting for locator('#history-dialog').locator('.td-record:has(> h4:text-is("编号工具结果"))').locator('h4')`
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v25.9.0

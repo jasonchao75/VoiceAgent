@@ -1,0 +1,15 @@
+2026-10-25 22:53:49.045 | INFO     | pipecat:<module>:54 - ᓚᘏᗢ Pipecat 1.8.1 (Python 3.13.2 (v3.13.2:4f8bb3947cf, Feb  4 2025, 11:51:10) [Clang 15.0.0 (clang-1500.3.9.4)]) ᓚᘏᗢ
+2026-10-25 22:53:49.182 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "<stdin>", line 7, in check
+AssertionError: Actual SDK lacks processed/RTP source proof: raw pts=960, chunk samples=320, prior samples=304

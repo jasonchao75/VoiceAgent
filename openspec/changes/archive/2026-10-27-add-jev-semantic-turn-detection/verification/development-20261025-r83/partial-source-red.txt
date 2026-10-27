@@ -1,0 +1,77 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_source_failure_after_pcm_requests_actual_stop_instead_of_success_end ___
+
+    async def test_source_failure_after_pcm_requests_actual_stop_instead_of_success_end():
+        """D-074 skips the remaining failed echo but preserves unknown render facts."""
+        from src.pipeline.serial_output import SerialAudioOutput
+    
+        output = SerialAudioOutput(responses=ResponseRevisions())
+        ready, first, terminal, second = (asyncio.Event() for _ in range(4))
+        controls = []
+    
+        class Sink(FrameProcessor):
+            async def process_frame(self, frame, direction):
+                await super().process_frame(frame, direction)
+                if isinstance(frame, StartFrame):
+                    ready.set()
+                if isinstance(frame, TaskAudioFrame):
+                    (first if frame.task_identity['playback_id'] == 'failed' else second).set()
+                message = getattr(frame, 'message', {})
+                if message.get('playback_id') == 'failed':
+                    controls.append(message)
+                    terminal.set()
+                await self.push_frame(frame, direction)
+    
+        async def source():
+            yield b'\x01\x00' * 240
+            await first.wait()
+            raise ValueError('inert source unavailable')
+    
+        worker = PipelineWorker(Pipeline([output, Sink()]))
+        runner = WorkerRunner(handle_sigint=False)
+        await runner.add_workers(worker)
+        running = asyncio.create_task(runner.run())
+        try:
+            await asyncio.wait_for(ready.wait(), 2)
+            await output.stream_audio(playback_id='failed', kind='echo', generation=0,
+                                      source_id='range', revision=1, source_order=1,
+                                      samples=source(), valid=lambda: True)
+            await asyncio.wait_for(terminal.wait(), 2)
+>           assert controls[0]['event'] == 'stop_task'
+E           AssertionError: assert 'task_end' == 'stop_task'
+E             
+E             - stop_task
+E             + task_end
+
+tests/test_td_serial_output.py:211: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-25 21:35:54.290 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> SerialAudioOutput#0
+2026-10-25 21:35:54.290 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking SerialAudioOutput#0 -> Sink#0
+2026-10-25 21:35:54.290 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-25 21:35:54.291 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> RTVIProcessor#0
+2026-10-25 21:35:54.291 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking RTVIProcessor#0 -> Pipeline#0
+2026-10-25 21:35:54.291 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-10-25 21:35:54.292 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-a082e090': added worker 'PipelineWorker#0'
+2026-10-25 21:35:54.292 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-a082e090': started running
+2026-10-25 21:35:54.292 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-a082e090': starting worker 'PipelineWorker#0'
+2026-10-25 21:35:54.380 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-10-25 21:35:54.381 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#0' ready (local)
+2026-10-25 21:35:54.381 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-a082e090': broadcasting registry: ['PipelineWorker#0']
+2026-10-25 21:35:54.382 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'PipelineWorker#0': activated
+2026-10-25 21:35:54.382 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-10-25 21:35:54.383 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-25 21:35:54.383 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#0: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-25 21:35:54.384 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - PipelineWorker#0: CancelFrame#0(reason: None) reached the end of the pipeline.
+2026-10-25 21:35:54.384 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#0: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-25 21:35:54.385 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#0 is finishing...
+2026-10-25 21:35:54.385 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#0 has finished
+2026-10-25 21:35:54.386 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-a082e090': finished running
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_serial_output.py::test_source_failure_after_pcm_requests_actual_stop_instead_of_success_end
+1 failed, 2 deselected, 1 warning in 1.02s

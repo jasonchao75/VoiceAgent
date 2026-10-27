@@ -1,0 +1,116 @@
+{
+  "baseline": {
+    "style": {
+      "display": "grid",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "Recognized variants",
+      "Echo value",
+      "Audio / listen",
+      ""
+    ],
+    "header": [
+      {
+        "left": 0,
+        "right": 31,
+        "top": 95,
+        "width": 31
+      },
+      {
+        "left": 53,
+        "right": 103,
+        "top": 95,
+        "width": 50
+      },
+      {
+        "left": 125,
+        "right": 217,
+        "top": 95,
+        "width": 92
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 51,
+        "top": 127,
+        "width": 51
+      },
+      {
+        "left": 81,
+        "right": 131,
+        "top": 127,
+        "width": 50
+      },
+      {
+        "left": 139,
+        "right": 231,
+        "top": 129.5,
+        "width": 92
+      }
+    ],
+    "audioGridRow": "auto",
+    "overflow": false
+  },
+  "production": {
+    "style": {
+      "display": "grid",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "Recognized variants",
+      "Echo value",
+      "Audio / listen",
+      ""
+    ],
+    "header": [
+      {
+        "left": 0,
+        "right": 31,
+        "top": 103,
+        "width": 31
+      },
+      {
+        "left": 53,
+        "right": 103,
+        "top": 103,
+        "width": 50
+      },
+      {
+        "left": 125,
+        "right": 217,
+        "top": 103,
+        "width": 92
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 51,
+        "top": 135,
+        "width": 51
+      },
+      {
+        "left": 81,
+        "right": 131,
+        "top": 135,
+        "width": 50
+      },
+      {
+        "left": 139,
+        "right": 231,
+        "top": 137.5,
+        "width": 92
+      }
+    ],
+    "audioGridRow": "auto",
+    "overflow": false
+  }
+}

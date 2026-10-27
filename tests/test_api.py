@@ -2,8 +2,65 @@
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 from src.api import _azure_deployment_from_url, create_app
+
+
+def test_asr_failure_after_transport_close_keeps_failed_history_without_double_close(
+    monkeypatch,
+    session_request,
+):
+    """D-061: worker teardown may close the socket before the API records failure."""
+    from src.asr.transcript import ASRSourceEvidenceError
+
+    async def pipeline(**kwargs):
+        capture = kwargs["call_capture"]
+        capture.record_td_event(
+            {"event": "unranged_transcript", "turn_id": None, "text": "unowned fixture input"}
+        )
+        capture.record_td_event(
+            {
+                "event": "asr_source_evidence_failed",
+                "turn_id": None,
+                "reason": "unresolved_source_audio_range",
+            }
+        )
+        await kwargs["websocket"].close(code=1011, reason=ASRSourceEvidenceError.code)
+        raise ASRSourceEvidenceError()
+
+    monkeypatch.setattr("src.api.run_voice_agent_session", pipeline)
+    payload = session_request.model_dump(mode="json")
+    payload.update(
+        session_type="chat_test",
+        deepgram_api_key="test-test-fixture-no-network-123",
+        llm_api_key="test-test-fixture-no-network-456",
+    )
+    with TestClient(create_app()) as client:
+        created = client.post(
+            "/api/sessions", json=payload, headers={"Origin": "http://localhost:8000"}
+        )
+        assert created.status_code == 201, created.text
+        session = created.json()
+        with client.websocket_connect(
+            session["websocket_path"], headers={"Origin": "http://localhost:8000"}
+        ) as socket:
+            with pytest.raises(WebSocketDisconnect):
+                socket.receive_text()
+            import time
+
+            deadline = time.monotonic() + 2
+            response = client.get(f"/api/history/{session['session_id']}")
+            while response.json()["ended_at"] is None and time.monotonic() < deadline:
+                time.sleep(0.01)
+                response = client.get(f"/api/history/{session['session_id']}")
+            assert response.status_code == 200
+            history = response.json()
+            assert history["status"] == "failed"
+            assert history["error_category"] == ASRSourceEvidenceError.code
+            assert history["diagnostic_id"]
+            assert len(history["td_events"]) == 2
+            assert "test-fixture-no-network" not in response.text
 
 
 def test_health_and_catalogs_do_not_call_providers() -> None:

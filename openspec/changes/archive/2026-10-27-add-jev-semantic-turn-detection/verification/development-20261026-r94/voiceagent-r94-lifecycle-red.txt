@@ -1,0 +1,77 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_cleanup_joins_previous_sender_even_if_ack_arrives_before_drain ______
+
+    async def test_cleanup_joins_previous_sender_even_if_ack_arrives_before_drain():
+        service, _, old, _ = setup_service()
+        started = asyncio.Event()
+        blocked = asyncio.Event()
+    
+        async def send(message):
+            started.set()
+            await blocked.wait()
+    
+        service._transport_send_json = send
+        await service.on_audio_context_interrupted(old)
+        first = service._interrupt_sender
+        try:
+            await asyncio.wait_for(started.wait(), 1)
+            await service._handle_message({'type': 'SpeechInterrupted'})
+            await service.on_audio_context_interrupted('next-context')
+            second = service._interrupt_sender
+            assert first is not second
+            await service._cancel_interrupt_sender()
+>           assert first.done() and second.done()
+E           AssertionError: assert (False)
+E            +  where False = <built-in method done of _asyncio.Task object at 0x113d24ac0>()
+E            +    where <built-in method done of _asyncio.Task object at 0x113d24ac0> = <Task pending name='Task-2' coro=<ConfirmedDeepgramFluxTTSService._send_interrupt() running at /Volumes/work/OpenCode/VoiceAgent/src/tts/confirmed_flux.py:48> wait_for=<Future pending cb=[Task.task_wakeup()]>>.done
+
+tests/test_flux_interrupt_boundary.py:244: AssertionError
+_________ test_old_send_failure_cannot_poison_new_interrupt_generation _________
+
+    async def test_old_send_failure_cannot_poison_new_interrupt_generation():
+        service, _, old, _ = setup_service()
+        started, release, second_sent = (asyncio.Event() for _ in range(3))
+        count = 0
+    
+        async def send(message):
+            nonlocal count
+            count += 1
+            if count == 1:
+                started.set()
+                await release.wait()
+                raise OSError('inert old send failure')
+            second_sent.set()
+    
+        service._transport_send_json = send
+        await service.on_audio_context_interrupted(old)
+        first = service._interrupt_sender
+        try:
+            await asyncio.wait_for(started.wait(), 1)
+            await service._handle_message({'type': 'SpeechInterrupted'})
+            await service.on_audio_context_interrupted('next-context')
+            await asyncio.wait_for(second_sent.wait(), 1)
+            release.set()
+            await asyncio.wait_for(first, 1)
+>           assert service._interrupt_error is None
+E           AssertionError: assert 'send_failed' is None
+E            +  where 'send_failed' = <src.tts.scoped.ScopedDeepgramFluxTTSService object at 0x113e7f590>._interrupt_error
+
+tests/test_flux_interrupt_boundary.py:275: AssertionError
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_flux_interrupt_boundary.py::test_cleanup_joins_previous_sender_even_if_ack_arrives_before_drain
+FAILED tests/test_flux_interrupt_boundary.py::test_old_send_failure_cannot_poison_new_interrupt_generation
+2 failed, 8 deselected, 3 warnings in 1.09s

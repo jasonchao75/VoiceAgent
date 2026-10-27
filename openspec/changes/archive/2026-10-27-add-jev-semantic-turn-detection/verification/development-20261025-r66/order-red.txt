@@ -1,0 +1,19 @@
+✔ renderer-only state does not escape strict API receipt schema (0.515084ms)
+✖ receiver transform is installed with initial transceivers before SDP or track consumers (0.14675ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 39.137667
+
+✖ failing tests:
+
+test at frontend/tests/unit/td-rtc-entry.test.js:11:1
+✖ receiver transform is installed with initial transceivers before SDP or track consumers (0.14675ms)
+  TypeError: bindRTCTransform is not a function
+      at TestContext.<anonymous> (file:///Volumes/work/OpenCode/VoiceAgent/frontend/tests/unit/td-rtc-entry.test.js:18:2)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)

@@ -1,0 +1,19 @@
+{
+  "scope": "actual stopped/restarted local application, same disposable SQLite, real HTTP API; no call/vendor request",
+  "checks": [
+    {
+      "protocol": "rtc",
+      "status": 200,
+      "metrics_equal": true,
+      "range_events_equal": true,
+      "range_event_count": 2
+    },
+    {
+      "protocol": "ws",
+      "status": 200,
+      "metrics_equal": true,
+      "range_events_equal": true,
+      "range_event_count": 2
+    }
+  ]
+}

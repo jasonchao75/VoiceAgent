@@ -1,0 +1,46 @@
+
+Running 8 tests using 1 worker
+
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:102:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.4s)
+  ✓  2 [desktop-chromium] › tests/ui/td-runtime.spec.js:148:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (607ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-runtime.spec.js:178:1 › failed TD save retains draft and retries against the actual API (744ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-runtime.spec.js:230:1 › late save failure stays with its original Bot after selection changes (654ms)
+  ✘  5 [desktop-chromium] › tests/ui/td-runtime.spec.js:251:1 › formal TD settings remain operable at 390px with actual saved configuration (363ms)
+  ✓  6 [desktop-chromium] › tests/ui/td-runtime.spec.js:272:1 › audio generation failure permits an explicit retry without publishing or losing settings (563ms)
+  ✓  7 [desktop-chromium] › tests/ui/td-runtime.spec.js:291:1 › formal language switch changes labels without changing TD request or user values (619ms)
+  ✓  8 [desktop-chromium] › tests/ui/td-runtime.spec.js:313:1 › formal TD language defaults to Chinese without replacing user prompts (459ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:251:1 › formal TD settings remain operable at 390px with actual saved configuration 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 45.625
+    Received:    44
+
+      263 |     return {available:input.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),required:context.measureText("999").width+16};
+      264 |   });
+    > 265 |   expect(numberWidth.available).toBeGreaterThanOrEqual(numberWidth.required);
+          |                                 ^
+      266 |   await page.locator("#echo-gap").fill("90");
+      267 |   await page.getByRole("button",{name:"Save TD settings",exact:true}).click();
+      268 |   await expect(page.locator("#save-state")).toHaveText("Saved");
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:265:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:251:1 › formal TD settings remain operable at 390px with actual saved configuration 
+  7 passed (5.9s)

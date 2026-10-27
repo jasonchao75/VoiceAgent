@@ -1,0 +1,11 @@
+{
+  "evidence_level": "local-real",
+  "actual_api_process_restart": true,
+  "metrics_exact": true,
+  "events_exact": true,
+  "published_revision": 1,
+  "draft_speed": 1.2,
+  "unpublished_draft_retained": true,
+  "public_demo_available": true,
+  "no_plaintext_inert_credentials": true
+}

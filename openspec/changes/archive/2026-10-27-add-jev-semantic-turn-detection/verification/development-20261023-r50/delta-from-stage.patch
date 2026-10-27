@@ -1,0 +1,295 @@
+--- a/scripts/evaluation/probe_td_compatibility.py
++++ b/scripts/evaluation/probe_td_compatibility.py
+@@ -24,8 +24,12 @@
+ LOGGER = logging.getLogger(__name__)
+ 
+ 
+-def build_plan(*, diagnostic: bool = False) -> dict[str, Any]:
++def build_plan(
++    *, diagnostic: bool = False, repair_confirmation: bool = False,
++) -> dict[str, Any]:
+     """Freeze nine model/file pairs and conservative public-price connection bounds."""
++    if diagnostic and repair_confirmation:
++        raise ValueError('Choose one exact batch scope')
+     data = json.loads((CHANGE / 'verification/vendor-synthetic-data.json').read_text())['data']
+     cases = []
+     for model in ('flux-general-en', 'flux-general-multi', 'nova-3'):
+@@ -44,6 +48,12 @@
+         plan.update(batch_id='deepgram-td-asr-range-diagnostic-v1', cases=cases[:1],
+                     max_calls=1, cost_ceiling_usd='0.02', maximum_public_price_usd='0.00325',
+                     source_evidence='whitelisted provider timestamps and words; stop first gap')
++    if repair_confirmation:
++        digits = next(row for row in cases
++                      if row['model'] == 'flux-general-en' and row['id'] == 'digits')
++        plan.update(batch_id='deepgram-td-asr-digits-confirmation-v1', cases=[digits],
++                    max_calls=1, cost_ceiling_usd='0.02', maximum_public_price_usd='0.00325',
++                    source_evidence='known PCM rate, raw times, normalized ranges; stop first gap')
+     plan['request_sha256'] = hashlib.sha256(json.dumps(
+         plan, sort_keys=True, separators=(',', ':'),
+     ).encode()).hexdigest()
+@@ -126,6 +136,8 @@
+         for field in ('request_sha256', 'max_calls', 'cost_ceiling_usd')
+     ):
+         raise ValueError('Matching authorization absent')
++    if grant.get('execution_status') != 'authorized_not_started':
++        raise ValueError('Grant is already started or consumed')
+     source = (CHANGE / 'decisions/decision-log.md').read_text()
+     block = re.search(rf'(?ms)^### {re.escape(decision)}\b[^\n]*\n(.*?)(?=^### |\Z)', source)
+     if not block or '- Status: Confirmed' not in block[1] or not all(
+@@ -227,6 +239,7 @@
+                                'segments': [{'epoch': s.epoch, 'id': s.source_id,
+                                              'revision': s.revision, 'start_ms': s.start_ms,
+                                              'end_ms': s.end_ms, 'final': s.final,
++                                             'sample_rate': s.sample_rate,
+                                              'text': s.text} for s in segments]})
+                 if normalizer.missing_reason:
+                     range_failed.set()
+@@ -297,10 +310,14 @@
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--execute', action='store_true')
+     parser.add_argument('--authorization-decision', default='')
+-    parser.add_argument('--diagnostic', action='store_true')
++    scope = parser.add_mutually_exclusive_group()
++    scope.add_argument('--diagnostic', action='store_true')
++    scope.add_argument('--repair-confirmation', action='store_true')
+     args = parser.parse_args(argv)
+     try:
+-        plan = build_plan(diagnostic=args.diagnostic)
++        plan = build_plan(
++            diagnostic=args.diagnostic, repair_confirmation=args.repair_confirmation,
++        )
+         verify_files(plan)
+         if not args.execute:
+             LOGGER.info('Dry plan: %s calls=%s ceiling=USD%s sha256=%s', plan['batch_id'],
+--- a/scripts/evaluation/probe_td_tts.py
++++ b/scripts/evaluation/probe_td_tts.py
+@@ -13,7 +13,7 @@
+ import wave
+ from decimal import Decimal
+ from pathlib import Path
+-from typing import Any
++from typing import Any, Literal
+ 
+ ROOT = Path(__file__).resolve().parents[2]
+ if str(ROOT) not in sys.path:
+@@ -28,9 +28,11 @@
+ LOGGER = logging.getLogger(__name__)
+ 
+ 
+-def build_plan() -> dict[str, Any]:
++def build_plan(*, single_unit: bool = False) -> dict[str, Any]:
+     """Return the complete fixed text/voice/character-price scope without any credential."""
+     texts = ['one', 'two', 'Your number has been cleared.']
++    if single_unit:
++        texts = texts[:1]
+     characters = sum(map(len, texts))
+     plan = {'batch_id': 'deepgram-td-tts-synthetic-v1', 'max_calls': 3,
+             'recipient': 'api.deepgram.com', 'endpoint': 'wss://api.deepgram.com/v2/speak',
+@@ -42,11 +44,25 @@
+             'estimated_cost_usd': str(Decimal(characters) * Decimal('0.045') / 1000),
+             'timeout_seconds': 15, 'retries': 0, 'asr_jev_llm_calls': 0,
+             'pricing_source': 'https://deepgram.com/pricing', 'price_verified': '2026-10-22'}
++    if single_unit:
++        plan.update(batch_id='deepgram-td-tts-one-confirmation-v1', max_calls=1,
++                    cost_ceiling_usd='0.02')
+     plan['request_sha256'] = hashlib.sha256(json.dumps(
+         plan, sort_keys=True, separators=(',', ':'),
+     ).encode()).hexdigest()
+     return plan
+ 
++
++
++class SpeakScopeViolation(RuntimeError):
++    """Keep a fixed rejection reason without disclosing changed text or provider details."""
++
++    def __init__(self, reason: Literal[
++        'text_scope_mismatch', 'speak_budget_exhausted', 'protocol_scope_mismatch',
++    ]) -> None:
++        """Expose only an enumerated guard stage, never the attempted text."""
++        super().__init__(reason)
++        self.reason = reason
+ 
+ def speak_guard(original: Any, text: str) -> Any:
+     """Allow one exact Speak before transport invocation; never refund a failed attempt."""
+@@ -57,12 +73,12 @@
+         nonlocal claimed
+         if message.get('type') == 'Speak':
+             if message.get('text') != text:
+-                raise RuntimeError('Text scope mismatch')
++                raise SpeakScopeViolation('text_scope_mismatch')
+             if claimed:
+-                raise RuntimeError('Speak budget exhausted')
++                raise SpeakScopeViolation('speak_budget_exhausted')
+             claimed = True
+         elif message.get('type') not in {'Configure', 'Flush', 'Interrupt'}:
+-            raise RuntimeError('Protocol scope mismatch')
++            raise SpeakScopeViolation('protocol_scope_mismatch')
+         return await original(message)
+ 
+     return send
+@@ -114,12 +130,25 @@
+                 status = getattr(getattr(exc, 'response', None), 'status_code', None)
+                 if type(status) is int and 100 <= status <= 599:
+                     safe['http_status'] = status
+-                protocol['connection_failure'] = safe
++                protocol.setdefault('connection_failure', safe)
++                protocol.setdefault('failure_stage', 'connection')
+                 raise
+ 
+         async def observed_send(message: dict[str, Any]) -> Any:
+             """Enforce exact Speak scope before recording a bounded protocol kind."""
+-            result = await send(message)
++            if message.get('type') == 'Speak':
++                protocol['speak_attempts'] = protocol.get('speak_attempts', 0) + 1
++            try:
++                result = await send(message)
++            except SpeakScopeViolation as exc:
++                protocol['scope_rejection'] = exc.reason
++                protocol.setdefault('failure_stage', 'request_guard')
++                raise
++            except Exception:
++                protocol.setdefault('failure_stage', 'transport_send')
++                raise
++            if message.get('type') == 'Speak':
++                protocol['completed_speak_sends'] = protocol.get('completed_speak_sends', 0) + 1
+             if len(protocol['outgoing']) < 32:
+                 protocol['outgoing'].append(message['type'])
+             return result
+@@ -136,6 +165,8 @@
+                     value = message.get('billable_character_count')
+                     if type(value) is int and 0 <= value <= 10000:
+                         protocol['billable_characters'] = value
++            if kind in {'Error', 'ConfigureFailure'}:
++                protocol.setdefault('failure_stage', 'provider_control_error')
+             await receive(message)
+ 
+         async def observed_audio(audio: bytes) -> None:
+@@ -168,8 +199,10 @@
+                       audio_path=str(path.relative_to(ROOT)))
+     except TimeoutError:
+         result['status'] = 'timeout'
++        protocol.setdefault('failure_stage', 'deadline')
+     except Exception:
+         result['status'] = 'synthesis_or_format_error'
++        protocol.setdefault('failure_stage', 'unit_pipeline_or_artifact')
+     result.update(connections=budget.attempts, elapsed_ms=(time.monotonic() - started) * 1000,
+                   protocol=protocol)
+     return result
+@@ -179,12 +212,14 @@
+     """Never load a credential or synthesize without this batch's exact human grant."""
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--execute', action='store_true')
++    parser.add_argument('--single-unit-confirmation', action='store_true')
+     parser.add_argument('--authorization-decision', default='')
+     args = parser.parse_args(argv)
+-    plan = build_plan()
++    plan = build_plan(single_unit=args.single_unit_confirmation)
+     if not args.execute:
+-        LOGGER.info('Dry TTS plan: calls=3 characters=%s ceiling=USD0.10 sha256=%s',
+-                    plan['characters'], plan['request_sha256'])
++        LOGGER.info('Dry TTS plan: calls=%s characters=%s ceiling=USD%s sha256=%s',
++                    plan['max_calls'], plan['characters'], plan['cost_ceiling_usd'],
++                    plan['request_sha256'])
+         return 0
+     try:
+         verify_authorization(plan, args.authorization_decision)
+--- a/tests/test_td_vendor_probe.py
++++ b/tests/test_td_vendor_probe.py
+@@ -184,3 +184,47 @@
+         assert callable(service.processor._client.listen.v1.connect)
+     else:
+         assert callable(service.processor._websocket_connect)
++
++
++def test_consumed_grant_is_rejected_without_relying_on_a_local_log(monkeypatch, tmp_path):
++    """A copied workspace without claim logs still cannot replay a completed grant."""
++    import json
++
++    module = probe()
++    plan = module.build_plan()
++    (tmp_path / 'verification').mkdir()
++    (tmp_path / 'decisions').mkdir()
++    grant = {key: plan[key] for key in
++             ('batch_id', 'request_sha256', 'max_calls', 'cost_ceiling_usd')}
++    grant.update(authorization_decision_id='D-777', authorization_status='confirmed')
++    (tmp_path / 'decisions/decision-log.md').write_text(
++        '### D-777: Offline fixture\n- Status: Confirmed\n'
++        '- Confirmation quote: fixture scope accepted\n- Source thread/message: fixture only\n'
++    )
++    monkeypatch.setattr(module, 'CHANGE', tmp_path)
++    for consumed in ['completed', 'stopped_on_first_failure', 'running_exclusive_claim']:
++        grant['execution_status'] = consumed
++        (tmp_path / 'verification/delivery-status.json').write_text(
++            json.dumps({'external_calls': [grant]})
++        )
++        with pytest.raises(ValueError, match='consumed|started'):
++            module.verify_authorization(plan, 'D-777')
++    grant['execution_status'] = 'authorized_not_started'
++    (tmp_path / 'verification/delivery-status.json').write_text(
++        json.dumps({'external_calls': [grant]})
++    )
++    module.verify_authorization(plan, 'D-777')
++
++
++def test_digits_confirmation_plan_cannot_expand_to_a_passed_case_or_other_model():
++    original = probe().build_plan()
++    minimal = probe().build_plan(repair_confirmation=True)
++    assert minimal['max_calls'] == len(minimal['cases']) == 1
++    assert minimal['cases'][0]['id'] == 'digits'
++    assert minimal['cases'][0]['model'] == 'flux-general-en'
++    assert minimal['cases'][0]['sha256'] == original['cases'][1]['sha256']
++    assert minimal['batch_id'] != original['batch_id']
++    assert minimal['request_sha256'] != original['request_sha256']
++    assert minimal['cost_ceiling_usd'] == '0.02'
++    with pytest.raises(ValueError, match='one exact'):
++        probe().build_plan(diagnostic=True, repair_confirmation=True)
+--- a/tests/test_td_tts_vendor_probe.py
++++ b/tests/test_td_tts_vendor_probe.py
+@@ -112,7 +112,10 @@
+     assert 'fixture-private-key' not in __import__('json').dumps(result)
+ 
+ 
+-async def test_actual_sdk_single_unit_preserves_exact_authorized_text(monkeypatch, tmp_path):
++@pytest.mark.parametrize('changed', [False, True])
++async def test_actual_sdk_single_unit_preserves_exact_authorized_text(
++    monkeypatch, tmp_path, changed,
++):
+     """A unit does not need the continuous-sentence separator inserted by Flux SDK."""
+     import asyncio
+     import json
+@@ -160,6 +163,8 @@
+ 
+     def offline_create(**kwargs):
+         processor = create(**kwargs)
++        if changed:
++            processor._prepare_text_for_tts = lambda text: text + 'private-fixture-tail'
+ 
+         async def connect(*args, **kwargs):
+             return Socket()
+@@ -171,7 +176,26 @@
+     monkeypatch.setattr(factory, 'create_default_tts_registry', lambda: registry)
+     monkeypatch.setattr(probe(), 'ROOT', tmp_path)
+     result = await probe().run_case({'id': '1', 'text': 'one'}, 'inert-key', tmp_path, timeout=2)
++    if changed:
++        assert result['status'] == 'synthesis_or_format_error'
++        assert result['protocol']['failure_stage'] == 'request_guard'
++        assert result['protocol']['scope_rejection'] == 'text_scope_mismatch'
++        assert result['protocol']['speak_attempts'] == 1
++        assert not [message for message in sent if message['type'] == 'Speak']
++        assert 'private-fixture-tail' not in json.dumps(result)
++        return
+     assert result['status'] == 'ok'
+     assert [message['text'] for message in sent if message['type'] == 'Speak'] == ['one']
+     assert result['protocol']['billable_characters'] == 3
+     assert result['samples'] == 480
++
++
++def test_one_unit_confirmation_plan_is_new_scope_not_the_old_three_text_grant():
++    original = probe().build_plan()
++    single = probe().build_plan(single_unit=True)
++    assert single['cases'] == [{'id': '1', 'text': 'one'}]
++    assert single['max_calls'] == 1 and single['characters'] == 3
++    assert single['voice'] == original['voice'] == 'flux-alexis-en'
++    assert single['cost_ceiling_usd'] == '0.02'
++    assert single['batch_id'] != original['batch_id']
++    assert single['request_sha256'] != original['request_sha256']

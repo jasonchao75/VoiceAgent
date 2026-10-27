@@ -1,0 +1,64 @@
+.....FF.F                                                                [100%]
+=================================== FAILURES ===================================
+___________ test_private_or_generated_input_stays_out[frontend/.env] ___________
+
+exported_context = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-134/docker-context0/output/context')
+excluded = 'frontend/.env'
+
+    @pytest.mark.parametrize('excluded', [
+        'frontend/.env', 'frontend/node_modules/inert.txt', '.env',
+        'openspec/changes/current/private-evidence.txt',
+    ])
+    def test_private_or_generated_input_stays_out(exported_context, excluded):
+        """Do not copy secrets, dependencies or unrelated review evidence into build context."""
+>       assert not (exported_context / excluded).exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = (PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-134/docker-context0/output/context') / 'frontend/.env').exists
+
+tests/test_docker_context.py:54: AssertionError
+__ test_private_or_generated_input_stays_out[frontend/node_modules/inert.txt] __
+
+exported_context = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-134/docker-context0/output/context')
+excluded = 'frontend/node_modules/inert.txt'
+
+    @pytest.mark.parametrize('excluded', [
+        'frontend/.env', 'frontend/node_modules/inert.txt', '.env',
+        'openspec/changes/current/private-evidence.txt',
+    ])
+    def test_private_or_generated_input_stays_out(exported_context, excluded):
+        """Do not copy secrets, dependencies or unrelated review evidence into build context."""
+>       assert not (exported_context / excluded).exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = (PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-134/docker-context0/output/context') / 'frontend/node_modules/inert.txt').exists
+
+tests/test_docker_context.py:54: AssertionError
+_ test_private_or_generated_input_stays_out[openspec/changes/current/private-evidence.txt] _
+
+exported_context = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-134/docker-context0/output/context')
+excluded = 'openspec/changes/current/private-evidence.txt'
+
+    @pytest.mark.parametrize('excluded', [
+        'frontend/.env', 'frontend/node_modules/inert.txt', '.env',
+        'openspec/changes/current/private-evidence.txt',
+    ])
+    def test_private_or_generated_input_stays_out(exported_context, excluded):
+        """Do not copy secrets, dependencies or unrelated review evidence into build context."""
+>       assert not (exported_context / excluded).exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = (PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-134/docker-context0/output/context') / 'openspec/changes/current/private-evidence.txt').exists
+
+tests/test_docker_context.py:54: AssertionError
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_docker_context.py::test_private_or_generated_input_stays_out[frontend/.env]
+FAILED tests/test_docker_context.py::test_private_or_generated_input_stays_out[frontend/node_modules/inert.txt]
+FAILED tests/test_docker_context.py::test_private_or_generated_input_stays_out[openspec/changes/current/private-evidence.txt]
+3 failed, 6 passed, 1 warning in 0.44s

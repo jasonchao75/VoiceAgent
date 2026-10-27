@@ -1,0 +1,36 @@
+{
+  "batch_id": "deepgram-td-tts-synthetic-v1",
+  "max_calls": 3,
+  "recipient": "api.deepgram.com",
+  "endpoint": "wss://api.deepgram.com/v2/speak",
+  "voice": "flux-alexis-en",
+  "speed": 1.0,
+  "expressivity": 0,
+  "sample_rate": 24000,
+  "channels": 1,
+  "format": "PCM16",
+  "cases": [
+    {
+      "id": "1",
+      "text": "one"
+    },
+    {
+      "id": "2",
+      "text": "two"
+    },
+    {
+      "id": "3",
+      "text": "Your number has been cleared."
+    }
+  ],
+  "characters": 35,
+  "cost_ceiling_usd": "0.10",
+  "usd_per_1000_characters": "0.045",
+  "estimated_cost_usd": "0.001575",
+  "timeout_seconds": 15,
+  "retries": 0,
+  "asr_jev_llm_calls": 0,
+  "pricing_source": "https://deepgram.com/pricing",
+  "price_verified": "2026-10-22",
+  "request_sha256": "f3be9f7f46eb51762b88569e4f50d92a304e208c51a083d94700cdc87efa6761"
+}

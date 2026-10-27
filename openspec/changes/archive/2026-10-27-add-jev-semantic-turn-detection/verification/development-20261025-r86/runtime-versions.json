@@ -1,0 +1,11 @@
+{
+  "git_head": "2aff076d07599c5352b390edf83106d49e7bb2cb",
+  "worktree": "shared dirty checkout; source manifest is authoritative",
+  "python": "3.13.2",
+  "distributions": {
+    "pipecat-ai": "1.8.1",
+    "aiortc": "1.15.0",
+    "av": "17.1.0",
+    "numpy": "2.5.2"
+  }
+}

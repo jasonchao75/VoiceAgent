@@ -1,0 +1,2396 @@
+{
+  "events": [
+    {
+      "side": "decode",
+      "event": "decoder_configured"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640173902,
+        "ssrc": 633504522,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": -312,
+        "samples": 960,
+        "priming_samples": 312,
+        "spans": [
+          {
+            "start": 0,
+            "end": 480,
+            "task": null
+          },
+          {
+            "start": 480,
+            "end": 648,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640173902,
+      "ssrc": 633504522,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": -312,
+      "spans": [
+        {
+          "start": 0,
+          "end": 480,
+          "task": null
+        },
+        {
+          "start": 480,
+          "end": 648,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 1.0999999940395355,
+      "decode_job_ms": 0.30000000447034836,
+      "input_timestamp": 993500,
+      "output_timestamp": 993500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": -312,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 993500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640174862,
+        "ssrc": 633504522,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 648,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 648,
+            "end": 960,
+            "task": null
+          },
+          {
+            "start": 960,
+            "end": 1440,
+            "task": null
+          },
+          {
+            "start": 1440,
+            "end": 1608,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640174862,
+      "ssrc": 633504522,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 648,
+      "spans": [
+        {
+          "start": 648,
+          "end": 960,
+          "task": null
+        },
+        {
+          "start": 960,
+          "end": 1440,
+          "task": null
+        },
+        {
+          "start": 1440,
+          "end": 1608,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1013500,
+      "output_timestamp": 1013500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 648,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1013500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "task_end",
+      "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "expected_samples": 32160
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640175822,
+        "ssrc": 633504522,
+        "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+        "source_start": 1608,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 1608,
+            "end": 1920,
+            "task": null
+          },
+          {
+            "start": 1920,
+            "end": 2400,
+            "task": null
+          },
+          {
+            "start": 2400,
+            "end": 2568,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640175822,
+      "ssrc": 633504522,
+      "payload_sha256": "0b6d18223c34da1d7be76eb55fc5c5fea9059b7d7ffa7cd98a76b2a49eb888d8",
+      "source_start": 1608,
+      "spans": [
+        {
+          "start": 1608,
+          "end": 1920,
+          "task": null
+        },
+        {
+          "start": 1920,
+          "end": 2400,
+          "task": null
+        },
+        {
+          "start": 2400,
+          "end": 2568,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.19999999552965164,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1033500,
+      "output_timestamp": 1033500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 1608,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1033500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640176782,
+        "ssrc": 633504522,
+        "payload_sha256": "343f4e2bd539d5d0dc827c38bac0ecf46e5901798d24946c0fad3650aba31b60",
+        "source_start": 2568,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 2568,
+            "end": 2880,
+            "task": null
+          },
+          {
+            "start": 2880,
+            "end": 3360,
+            "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+          },
+          {
+            "start": 3360,
+            "end": 3528,
+            "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640176782,
+      "ssrc": 633504522,
+      "payload_sha256": "343f4e2bd539d5d0dc827c38bac0ecf46e5901798d24946c0fad3650aba31b60",
+      "source_start": 2568,
+      "spans": [
+        {
+          "start": 2568,
+          "end": 2880,
+          "task": null
+        },
+        {
+          "start": 2880,
+          "end": 3360,
+          "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+        },
+        {
+          "start": 3360,
+          "end": 3528,
+          "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1053500,
+      "output_timestamp": 1053500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "start": 2880,
+      "end": 3360,
+      "decode_timestamp": 1053500,
+      "rtp_timestamp": 1640176782,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "start": 3360,
+      "end": 3528,
+      "decode_timestamp": 1053500,
+      "rtp_timestamp": 1640176782,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 2568,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1053500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "render",
+      "event": "task_started",
+      "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "rendered_samples": 128,
+      "render_frame": 8704,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "stop_task",
+      "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "request_id": "56f2a9741cf44656a2c0cbffce504c4c"
+    },
+    {
+      "side": "render",
+      "event": "task_stopped",
+      "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "request_id": "56f2a9741cf44656a2c0cbffce504c4c",
+      "rendered_samples": 256,
+      "started": true,
+      "render_frame": 8960,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "label": "voice-agent-playback",
+      "event": "task_end",
+      "playback_id": "question-Q",
+      "expected_samples": 14880
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640177742,
+        "ssrc": 633504522,
+        "payload_sha256": "1e37f19ef5ad098e74606158477d5eb04d33dc390b40e6a14a8c5ffa5ac550ac",
+        "source_start": 3528,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 3528,
+            "end": 3840,
+            "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+          },
+          {
+            "start": 3840,
+            "end": 4320,
+            "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+          },
+          {
+            "start": 4320,
+            "end": 4488,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640177742,
+      "ssrc": 633504522,
+      "payload_sha256": "1e37f19ef5ad098e74606158477d5eb04d33dc390b40e6a14a8c5ffa5ac550ac",
+      "source_start": 3528,
+      "spans": [
+        {
+          "start": 3528,
+          "end": 3840,
+          "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+        },
+        {
+          "start": 3840,
+          "end": 4320,
+          "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+        },
+        {
+          "start": 4320,
+          "end": 4488,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.19999999552965164,
+      "input_timestamp": 1073500,
+      "output_timestamp": 1073500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "start": 3528,
+      "end": 3840,
+      "decode_timestamp": 1073500,
+      "rtp_timestamp": 1640177742,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "a02edea2159e4b7b9cd7cf729f802c6a",
+      "start": 3840,
+      "end": 4320,
+      "decode_timestamp": 1073500,
+      "rtp_timestamp": 1640177742,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 3528,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1073500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640178702,
+        "ssrc": 633504522,
+        "payload_sha256": "258e6d748a6e77af636f90a09c193c119ca9f8654bf4c0aa5123f8e82732bbcf",
+        "source_start": 4488,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 4488,
+            "end": 4800,
+            "task": null
+          },
+          {
+            "start": 4800,
+            "end": 5280,
+            "task": "question-Q"
+          },
+          {
+            "start": 5280,
+            "end": 5448,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640178702,
+      "ssrc": 633504522,
+      "payload_sha256": "258e6d748a6e77af636f90a09c193c119ca9f8654bf4c0aa5123f8e82732bbcf",
+      "source_start": 4488,
+      "spans": [
+        {
+          "start": 4488,
+          "end": 4800,
+          "task": null
+        },
+        {
+          "start": 4800,
+          "end": 5280,
+          "task": "question-Q"
+        },
+        {
+          "start": 5280,
+          "end": 5448,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1093500,
+      "output_timestamp": 1093500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 4800,
+      "end": 5280,
+      "decode_timestamp": 1093500,
+      "rtp_timestamp": 1640178702,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 5280,
+      "end": 5448,
+      "decode_timestamp": 1093500,
+      "rtp_timestamp": 1640178702,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 4488,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1093500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "render",
+      "event": "task_started",
+      "playback_id": "question-Q",
+      "rendered_samples": 128,
+      "render_frame": 10752,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640179662,
+        "ssrc": 633504522,
+        "payload_sha256": "d931043ff36445bdd741256f5bbaf5af3b772f7c8d53e85f6ea5901b0271cbfa",
+        "source_start": 5448,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 5448,
+            "end": 5760,
+            "task": "question-Q"
+          },
+          {
+            "start": 5760,
+            "end": 6240,
+            "task": "question-Q"
+          },
+          {
+            "start": 6240,
+            "end": 6408,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640179662,
+      "ssrc": 633504522,
+      "payload_sha256": "d931043ff36445bdd741256f5bbaf5af3b772f7c8d53e85f6ea5901b0271cbfa",
+      "source_start": 5448,
+      "spans": [
+        {
+          "start": 5448,
+          "end": 5760,
+          "task": "question-Q"
+        },
+        {
+          "start": 5760,
+          "end": 6240,
+          "task": "question-Q"
+        },
+        {
+          "start": 6240,
+          "end": 6408,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1113500,
+      "output_timestamp": 1113500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 5448,
+      "end": 5760,
+      "decode_timestamp": 1113500,
+      "rtp_timestamp": 1640179662,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 5760,
+      "end": 6240,
+      "decode_timestamp": 1113500,
+      "rtp_timestamp": 1640179662,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 6240,
+      "end": 6408,
+      "decode_timestamp": 1113500,
+      "rtp_timestamp": 1640179662,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 5448,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1113500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640180622,
+        "ssrc": 633504522,
+        "payload_sha256": "784269d0dcb6852a11ac6dd1ce45b834387171fb4b028e75e95125a427dae741",
+        "source_start": 6408,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 6408,
+            "end": 6720,
+            "task": "question-Q"
+          },
+          {
+            "start": 6720,
+            "end": 7200,
+            "task": "question-Q"
+          },
+          {
+            "start": 7200,
+            "end": 7368,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640180622,
+      "ssrc": 633504522,
+      "payload_sha256": "784269d0dcb6852a11ac6dd1ce45b834387171fb4b028e75e95125a427dae741",
+      "source_start": 6408,
+      "spans": [
+        {
+          "start": 6408,
+          "end": 6720,
+          "task": "question-Q"
+        },
+        {
+          "start": 6720,
+          "end": 7200,
+          "task": "question-Q"
+        },
+        {
+          "start": 7200,
+          "end": 7368,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.09999999403953552,
+      "decode_job_ms": 0.10000000149011612,
+      "input_timestamp": 1133500,
+      "output_timestamp": 1133500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 6408,
+      "end": 6720,
+      "decode_timestamp": 1133500,
+      "rtp_timestamp": 1640180622,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 6720,
+      "end": 7200,
+      "decode_timestamp": 1133500,
+      "rtp_timestamp": 1640180622,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 7200,
+      "end": 7368,
+      "decode_timestamp": 1133500,
+      "rtp_timestamp": 1640180622,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 6408,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1133500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640181582,
+        "ssrc": 633504522,
+        "payload_sha256": "a9f7ab52b85986dbb751ebc05ec7416ec7f178616449d324d4bb809dbedcd543",
+        "source_start": 7368,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 7368,
+            "end": 7680,
+            "task": "question-Q"
+          },
+          {
+            "start": 7680,
+            "end": 8160,
+            "task": "question-Q"
+          },
+          {
+            "start": 8160,
+            "end": 8328,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640181582,
+      "ssrc": 633504522,
+      "payload_sha256": "a9f7ab52b85986dbb751ebc05ec7416ec7f178616449d324d4bb809dbedcd543",
+      "source_start": 7368,
+      "spans": [
+        {
+          "start": 7368,
+          "end": 7680,
+          "task": "question-Q"
+        },
+        {
+          "start": 7680,
+          "end": 8160,
+          "task": "question-Q"
+        },
+        {
+          "start": 8160,
+          "end": 8328,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0,
+      "decode_job_ms": 0.29999999701976776,
+      "input_timestamp": 1153500,
+      "output_timestamp": 1153500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 7368,
+      "end": 7680,
+      "decode_timestamp": 1153500,
+      "rtp_timestamp": 1640181582,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 7680,
+      "end": 8160,
+      "decode_timestamp": 1153500,
+      "rtp_timestamp": 1640181582,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 8160,
+      "end": 8328,
+      "decode_timestamp": 1153500,
+      "rtp_timestamp": 1640181582,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 7368,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1153500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640182542,
+        "ssrc": 633504522,
+        "payload_sha256": "716ee9230c0ad7b303e5988d10425f299cac95e388017f2d580289d409ffc7b5",
+        "source_start": 8328,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 8328,
+            "end": 8640,
+            "task": "question-Q"
+          },
+          {
+            "start": 8640,
+            "end": 9120,
+            "task": "question-Q"
+          },
+          {
+            "start": 9120,
+            "end": 9288,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640182542,
+      "ssrc": 633504522,
+      "payload_sha256": "716ee9230c0ad7b303e5988d10425f299cac95e388017f2d580289d409ffc7b5",
+      "source_start": 8328,
+      "spans": [
+        {
+          "start": 8328,
+          "end": 8640,
+          "task": "question-Q"
+        },
+        {
+          "start": 8640,
+          "end": 9120,
+          "task": "question-Q"
+        },
+        {
+          "start": 9120,
+          "end": 9288,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1173500,
+      "output_timestamp": 1173500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 8328,
+      "end": 8640,
+      "decode_timestamp": 1173500,
+      "rtp_timestamp": 1640182542,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 8640,
+      "end": 9120,
+      "decode_timestamp": 1173500,
+      "rtp_timestamp": 1640182542,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 9120,
+      "end": 9288,
+      "decode_timestamp": 1173500,
+      "rtp_timestamp": 1640182542,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 8328,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1173500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640183502,
+        "ssrc": 633504522,
+        "payload_sha256": "3378bcc12544f76f18f3ac4a11a6b3efc4bb6323b956cdbc12554da76a7ff8bc",
+        "source_start": 9288,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 9288,
+            "end": 9600,
+            "task": "question-Q"
+          },
+          {
+            "start": 9600,
+            "end": 10080,
+            "task": "question-Q"
+          },
+          {
+            "start": 10080,
+            "end": 10248,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640183502,
+      "ssrc": 633504522,
+      "payload_sha256": "3378bcc12544f76f18f3ac4a11a6b3efc4bb6323b956cdbc12554da76a7ff8bc",
+      "source_start": 9288,
+      "spans": [
+        {
+          "start": 9288,
+          "end": 9600,
+          "task": "question-Q"
+        },
+        {
+          "start": 9600,
+          "end": 10080,
+          "task": "question-Q"
+        },
+        {
+          "start": 10080,
+          "end": 10248,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1193500,
+      "output_timestamp": 1193500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 9288,
+      "end": 9600,
+      "decode_timestamp": 1193500,
+      "rtp_timestamp": 1640183502,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 9600,
+      "end": 10080,
+      "decode_timestamp": 1193500,
+      "rtp_timestamp": 1640183502,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 10080,
+      "end": 10248,
+      "decode_timestamp": 1193500,
+      "rtp_timestamp": 1640183502,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 9288,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1193500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640184462,
+        "ssrc": 633504522,
+        "payload_sha256": "8dccda036c4c1d8ec75f72f18e45dfc85fc6204efe220379a757ffffe69cac2a",
+        "source_start": 10248,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 10248,
+            "end": 10560,
+            "task": "question-Q"
+          },
+          {
+            "start": 10560,
+            "end": 11040,
+            "task": "question-Q"
+          },
+          {
+            "start": 11040,
+            "end": 11208,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640184462,
+      "ssrc": 633504522,
+      "payload_sha256": "8dccda036c4c1d8ec75f72f18e45dfc85fc6204efe220379a757ffffe69cac2a",
+      "source_start": 10248,
+      "spans": [
+        {
+          "start": 10248,
+          "end": 10560,
+          "task": "question-Q"
+        },
+        {
+          "start": 10560,
+          "end": 11040,
+          "task": "question-Q"
+        },
+        {
+          "start": 11040,
+          "end": 11208,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.19999999552965164,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1213500,
+      "output_timestamp": 1213500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 10248,
+      "end": 10560,
+      "decode_timestamp": 1213500,
+      "rtp_timestamp": 1640184462,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 10560,
+      "end": 11040,
+      "decode_timestamp": 1213500,
+      "rtp_timestamp": 1640184462,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 11040,
+      "end": 11208,
+      "decode_timestamp": 1213500,
+      "rtp_timestamp": 1640184462,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 10248,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1213500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640185422,
+        "ssrc": 633504522,
+        "payload_sha256": "ce3610d10b076ec19970224cc75667e1f049f6f080d90c4b35b0c0af8ad65c14",
+        "source_start": 11208,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 11208,
+            "end": 11520,
+            "task": "question-Q"
+          },
+          {
+            "start": 11520,
+            "end": 12000,
+            "task": "question-Q"
+          },
+          {
+            "start": 12000,
+            "end": 12168,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640185422,
+      "ssrc": 633504522,
+      "payload_sha256": "ce3610d10b076ec19970224cc75667e1f049f6f080d90c4b35b0c0af8ad65c14",
+      "source_start": 11208,
+      "spans": [
+        {
+          "start": 11208,
+          "end": 11520,
+          "task": "question-Q"
+        },
+        {
+          "start": 11520,
+          "end": 12000,
+          "task": "question-Q"
+        },
+        {
+          "start": 12000,
+          "end": 12168,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.3999999985098839,
+      "input_timestamp": 1233500,
+      "output_timestamp": 1233500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 11208,
+      "end": 11520,
+      "decode_timestamp": 1233500,
+      "rtp_timestamp": 1640185422,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 11520,
+      "end": 12000,
+      "decode_timestamp": 1233500,
+      "rtp_timestamp": 1640185422,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 12000,
+      "end": 12168,
+      "decode_timestamp": 1233500,
+      "rtp_timestamp": 1640185422,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 11208,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1233500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640186382,
+        "ssrc": 633504522,
+        "payload_sha256": "edf2183407165e40443a21dcf0e5fff76b042f03e852d9b9ba24eebd0afa4475",
+        "source_start": 12168,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 12168,
+            "end": 12480,
+            "task": "question-Q"
+          },
+          {
+            "start": 12480,
+            "end": 12960,
+            "task": "question-Q"
+          },
+          {
+            "start": 12960,
+            "end": 13128,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640186382,
+      "ssrc": 633504522,
+      "payload_sha256": "edf2183407165e40443a21dcf0e5fff76b042f03e852d9b9ba24eebd0afa4475",
+      "source_start": 12168,
+      "spans": [
+        {
+          "start": 12168,
+          "end": 12480,
+          "task": "question-Q"
+        },
+        {
+          "start": 12480,
+          "end": 12960,
+          "task": "question-Q"
+        },
+        {
+          "start": 12960,
+          "end": 13128,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.6000000014901161,
+      "decode_job_ms": 0.3999999985098839,
+      "input_timestamp": 1253500,
+      "output_timestamp": 1253500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 12168,
+      "end": 12480,
+      "decode_timestamp": 1253500,
+      "rtp_timestamp": 1640186382,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 12480,
+      "end": 12960,
+      "decode_timestamp": 1253500,
+      "rtp_timestamp": 1640186382,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 12960,
+      "end": 13128,
+      "decode_timestamp": 1253500,
+      "rtp_timestamp": 1640186382,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 12168,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1253500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640187342,
+        "ssrc": 633504522,
+        "payload_sha256": "e7855a28843bcb7dd44a18e14e1525d3d0b400806f3ac9114cbb1ae903feae45",
+        "source_start": 13128,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 13128,
+            "end": 13440,
+            "task": "question-Q"
+          },
+          {
+            "start": 13440,
+            "end": 13920,
+            "task": "question-Q"
+          },
+          {
+            "start": 13920,
+            "end": 14088,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640187342,
+      "ssrc": 633504522,
+      "payload_sha256": "e7855a28843bcb7dd44a18e14e1525d3d0b400806f3ac9114cbb1ae903feae45",
+      "source_start": 13128,
+      "spans": [
+        {
+          "start": 13128,
+          "end": 13440,
+          "task": "question-Q"
+        },
+        {
+          "start": 13440,
+          "end": 13920,
+          "task": "question-Q"
+        },
+        {
+          "start": 13920,
+          "end": 14088,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1273500,
+      "output_timestamp": 1273500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 13128,
+      "end": 13440,
+      "decode_timestamp": 1273500,
+      "rtp_timestamp": 1640187342,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 13440,
+      "end": 13920,
+      "decode_timestamp": 1273500,
+      "rtp_timestamp": 1640187342,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 13920,
+      "end": 14088,
+      "decode_timestamp": 1273500,
+      "rtp_timestamp": 1640187342,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 13128,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1273500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640188302,
+        "ssrc": 633504522,
+        "payload_sha256": "addc5e31a200273180e81d5c1fe720a8d5577dd605adcb996eb2d866bcde1da8",
+        "source_start": 14088,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 14088,
+            "end": 14400,
+            "task": "question-Q"
+          },
+          {
+            "start": 14400,
+            "end": 14880,
+            "task": "question-Q"
+          },
+          {
+            "start": 14880,
+            "end": 15048,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640188302,
+      "ssrc": 633504522,
+      "payload_sha256": "addc5e31a200273180e81d5c1fe720a8d5577dd605adcb996eb2d866bcde1da8",
+      "source_start": 14088,
+      "spans": [
+        {
+          "start": 14088,
+          "end": 14400,
+          "task": "question-Q"
+        },
+        {
+          "start": 14400,
+          "end": 14880,
+          "task": "question-Q"
+        },
+        {
+          "start": 14880,
+          "end": 15048,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.3999999985098839,
+      "decode_job_ms": 0.20000000298023224,
+      "input_timestamp": 1293500,
+      "output_timestamp": 1293500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 14088,
+      "end": 14400,
+      "decode_timestamp": 1293500,
+      "rtp_timestamp": 1640188302,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 14400,
+      "end": 14880,
+      "decode_timestamp": 1293500,
+      "rtp_timestamp": 1640188302,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 14880,
+      "end": 15048,
+      "decode_timestamp": 1293500,
+      "rtp_timestamp": 1640188302,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 14088,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1293500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640189262,
+        "ssrc": 633504522,
+        "payload_sha256": "49b3746876559b22dfa350e0554b0cff93d940852c80405396739bfb25af5b61",
+        "source_start": 15048,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 15048,
+            "end": 15360,
+            "task": "question-Q"
+          },
+          {
+            "start": 15360,
+            "end": 15840,
+            "task": "question-Q"
+          },
+          {
+            "start": 15840,
+            "end": 16008,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640189262,
+      "ssrc": 633504522,
+      "payload_sha256": "49b3746876559b22dfa350e0554b0cff93d940852c80405396739bfb25af5b61",
+      "source_start": 15048,
+      "spans": [
+        {
+          "start": 15048,
+          "end": 15360,
+          "task": "question-Q"
+        },
+        {
+          "start": 15360,
+          "end": 15840,
+          "task": "question-Q"
+        },
+        {
+          "start": 15840,
+          "end": 16008,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.19999999552965164,
+      "decode_job_ms": 0.3999999985098839,
+      "input_timestamp": 1313500,
+      "output_timestamp": 1313500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 15048,
+      "end": 15360,
+      "decode_timestamp": 1313500,
+      "rtp_timestamp": 1640189262,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 15360,
+      "end": 15840,
+      "decode_timestamp": 1313500,
+      "rtp_timestamp": 1640189262,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 15840,
+      "end": 16008,
+      "decode_timestamp": 1313500,
+      "rtp_timestamp": 1640189262,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 15048,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1313500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640190222,
+        "ssrc": 633504522,
+        "payload_sha256": "cb9c7efd87c92349f4aff2f1a3849ebdf1a1fc16dd49cf5b1fb44a2bfe63dff1",
+        "source_start": 16008,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 16008,
+            "end": 16320,
+            "task": "question-Q"
+          },
+          {
+            "start": 16320,
+            "end": 16800,
+            "task": "question-Q"
+          },
+          {
+            "start": 16800,
+            "end": 16968,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640190222,
+      "ssrc": 633504522,
+      "payload_sha256": "cb9c7efd87c92349f4aff2f1a3849ebdf1a1fc16dd49cf5b1fb44a2bfe63dff1",
+      "source_start": 16008,
+      "spans": [
+        {
+          "start": 16008,
+          "end": 16320,
+          "task": "question-Q"
+        },
+        {
+          "start": 16320,
+          "end": 16800,
+          "task": "question-Q"
+        },
+        {
+          "start": 16800,
+          "end": 16968,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.4000000059604645,
+      "decode_job_ms": 0.3999999985098839,
+      "input_timestamp": 1333500,
+      "output_timestamp": 1333500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 16008,
+      "end": 16320,
+      "decode_timestamp": 1333500,
+      "rtp_timestamp": 1640190222,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 16320,
+      "end": 16800,
+      "decode_timestamp": 1333500,
+      "rtp_timestamp": 1640190222,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 16800,
+      "end": 16968,
+      "decode_timestamp": 1333500,
+      "rtp_timestamp": 1640190222,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 16008,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1333500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640191182,
+        "ssrc": 633504522,
+        "payload_sha256": "d0e2211ae3aecfdfce0ab4a5d7d98f3cdfb410bc4b4a3bed87bd9b3ebe0ee0d4",
+        "source_start": 16968,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 16968,
+            "end": 17280,
+            "task": "question-Q"
+          },
+          {
+            "start": 17280,
+            "end": 17760,
+            "task": "question-Q"
+          },
+          {
+            "start": 17760,
+            "end": 17928,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640191182,
+      "ssrc": 633504522,
+      "payload_sha256": "d0e2211ae3aecfdfce0ab4a5d7d98f3cdfb410bc4b4a3bed87bd9b3ebe0ee0d4",
+      "source_start": 16968,
+      "spans": [
+        {
+          "start": 16968,
+          "end": 17280,
+          "task": "question-Q"
+        },
+        {
+          "start": 17280,
+          "end": 17760,
+          "task": "question-Q"
+        },
+        {
+          "start": 17760,
+          "end": 17928,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 1,
+      "decode_job_ms": 0.5,
+      "input_timestamp": 1353500,
+      "output_timestamp": 1353500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 16968,
+      "end": 17280,
+      "decode_timestamp": 1353500,
+      "rtp_timestamp": 1640191182,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 17280,
+      "end": 17760,
+      "decode_timestamp": 1353500,
+      "rtp_timestamp": 1640191182,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 17760,
+      "end": 17928,
+      "decode_timestamp": 1353500,
+      "rtp_timestamp": 1640191182,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 16968,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1353500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640192142,
+        "ssrc": 633504522,
+        "payload_sha256": "b29291f10d79471ddf9f0d68e6938c980be97fb72a069bb79bb3af1122b95b9b",
+        "source_start": 17928,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 17928,
+            "end": 18240,
+            "task": "question-Q"
+          },
+          {
+            "start": 18240,
+            "end": 18720,
+            "task": "question-Q"
+          },
+          {
+            "start": 18720,
+            "end": 18888,
+            "task": "question-Q"
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640192142,
+      "ssrc": 633504522,
+      "payload_sha256": "b29291f10d79471ddf9f0d68e6938c980be97fb72a069bb79bb3af1122b95b9b",
+      "source_start": 17928,
+      "spans": [
+        {
+          "start": 17928,
+          "end": 18240,
+          "task": "question-Q"
+        },
+        {
+          "start": 18240,
+          "end": 18720,
+          "task": "question-Q"
+        },
+        {
+          "start": 18720,
+          "end": 18888,
+          "task": "question-Q"
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.3999999985098839,
+      "input_timestamp": 1373500,
+      "output_timestamp": 1373500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 17928,
+      "end": 18240,
+      "decode_timestamp": 1373500,
+      "rtp_timestamp": 1640192142,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 18240,
+      "end": 18720,
+      "decode_timestamp": 1373500,
+      "rtp_timestamp": 1640192142,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 18720,
+      "end": 18888,
+      "decode_timestamp": 1373500,
+      "rtp_timestamp": 1640192142,
+      "samples": 168
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 17928,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1373500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640193102,
+        "ssrc": 633504522,
+        "payload_sha256": "1b2cd4ec5750a725a76406580443f407974bbd6029178276a7401e90b7367495",
+        "source_start": 18888,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 18888,
+            "end": 19200,
+            "task": "question-Q"
+          },
+          {
+            "start": 19200,
+            "end": 19680,
+            "task": "question-Q"
+          },
+          {
+            "start": 19680,
+            "end": 19848,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640193102,
+      "ssrc": 633504522,
+      "payload_sha256": "1b2cd4ec5750a725a76406580443f407974bbd6029178276a7401e90b7367495",
+      "source_start": 18888,
+      "spans": [
+        {
+          "start": 18888,
+          "end": 19200,
+          "task": "question-Q"
+        },
+        {
+          "start": 19200,
+          "end": 19680,
+          "task": "question-Q"
+        },
+        {
+          "start": 19680,
+          "end": 19848,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.10000000149011612,
+      "decode_job_ms": 0.29999999701976776,
+      "input_timestamp": 1393500,
+      "output_timestamp": 1393500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 18888,
+      "end": 19200,
+      "decode_timestamp": 1393500,
+      "rtp_timestamp": 1640193102,
+      "samples": 312
+    },
+    {
+      "side": "decode",
+      "event": "task_pcm",
+      "task": "question-Q",
+      "start": 19200,
+      "end": 19680,
+      "decode_timestamp": 1393500,
+      "rtp_timestamp": 1640193102,
+      "samples": 480
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 18888,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1393500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "render",
+      "event": "task_finished",
+      "playback_id": "question-Q",
+      "rendered_samples": 14880,
+      "started": true,
+      "render_frame": 26072,
+      "render_sample_rate": 48000
+    },
+    {
+      "side": "control",
+      "event": "mapping",
+      "mapping": {
+        "version": 1,
+        "rtp_timestamp": 1640194062,
+        "ssrc": 633504522,
+        "payload_sha256": "bd54cf2fd3db8c06b9c20560a4bf8296df3f4eb00bb5dfe2be5f4b00a17496a4",
+        "source_start": 19848,
+        "samples": 960,
+        "priming_samples": 0,
+        "spans": [
+          {
+            "start": 19848,
+            "end": 20160,
+            "task": null
+          },
+          {
+            "start": 20160,
+            "end": 20640,
+            "task": null
+          },
+          {
+            "start": 20640,
+            "end": 20808,
+            "task": null
+          }
+        ]
+      }
+    },
+    {
+      "side": "decode",
+      "event": "packet_bound",
+      "rtp_timestamp": 1640194062,
+      "ssrc": 633504522,
+      "payload_sha256": "bd54cf2fd3db8c06b9c20560a4bf8296df3f4eb00bb5dfe2be5f4b00a17496a4",
+      "source_start": 19848,
+      "spans": [
+        {
+          "start": 19848,
+          "end": 20160,
+          "task": null
+        },
+        {
+          "start": 20160,
+          "end": 20640,
+          "task": null
+        },
+        {
+          "start": 20640,
+          "end": 20808,
+          "task": null
+        }
+      ],
+      "mapping_wait_ms": 0.20000000298023224,
+      "decode_job_ms": 0.3999999985098839,
+      "input_timestamp": 1413500,
+      "output_timestamp": 1413500,
+      "binding": "single_packet_flush"
+    },
+    {
+      "side": "decode",
+      "event": "decoded",
+      "source_start": 19848,
+      "samples": 960,
+      "sample_rate": 48000,
+      "decode_timestamp": 1413500,
+      "binding": "single_packet_flush"
+    }
+  ],
+  "errors": [],
+  "server": {
+    "scenario": "identifier",
+    "actions": [
+      {
+        "event": "scenario_started",
+        "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+      },
+      {
+        "event": "continuation_and_question",
+        "active_kind": "echo",
+        "active_status": "playing",
+        "question_status": "queued",
+        "stop_requests": []
+      },
+      {
+        "event": "clear_result",
+        "result": {
+          "status": "cleared",
+          "value": "",
+          "count": 0,
+          "generation": 1
+        },
+        "generation": 1
+      }
+    ],
+    "receipts": [
+      {
+        "event": "task_started",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "rendered_samples": 128,
+        "render_frame": 8704,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 354,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "accepted": true
+      },
+      {
+        "event": "task_stopped",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "request_id": "56f2a9741cf44656a2c0cbffce504c4c",
+        "rendered_samples": 256,
+        "started": true,
+        "render_frame": 8960,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 359.3999999985099,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "accepted": true
+      },
+      {
+        "event": "task_started",
+        "playback_id": "question-Q",
+        "rendered_samples": 128,
+        "render_frame": 10752,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 396.69999999552965,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "accepted": true
+      },
+      {
+        "event": "task_finished",
+        "playback_id": "question-Q",
+        "rendered_samples": 14880,
+        "started": true,
+        "render_frame": 26072,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 711.6999999955297,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "accepted": true
+      }
+    ],
+    "td_events": [
+      {
+        "event": "identifier_echo_scheduled",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "collection_generation": 0,
+        "text": "12",
+        "kind": "echo",
+        "prior_output_sent": false,
+        "turn_id": 1,
+        "created_ms": 49.67200000101002
+      },
+      {
+        "event": "identifier_echo_resource_ready",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "turn_id": 1,
+        "collection_generation": 0,
+        "unit": "1",
+        "fingerprint": "2bfa88db11e80d53d4a741d1b294af209855da9195211401278f369c6c1b487f",
+        "resource_version": null,
+        "recovery_path": false,
+        "elapsed_ms": 0.4122500031371601,
+        "created_ms": 50.15875000390224
+      },
+      {
+        "event": "playback_queued",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "queued",
+        "client_start_confirmed": false,
+        "output_kind": "echo",
+        "created_ms": 50.192417002108414
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "kind": "echo",
+        "response_id": null,
+        "turn_id": 1,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "collection_generation": 0,
+        "created_ms": 50.19933300354751
+      },
+      {
+        "event": "playback_dispatched",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "sent_unknown",
+        "client_start_confirmed": false,
+        "output_kind": "echo",
+        "created_ms": 50.34804200113285
+      },
+      {
+        "event": "identifier_echo_resource_ready",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "turn_id": 1,
+        "collection_generation": 0,
+        "unit": "2",
+        "fingerprint": "2bfa88db11e80d53d4a741d1b294af209855da9195211401278f369c6c1b487f",
+        "resource_version": null,
+        "recovery_path": false,
+        "elapsed_ms": 1.0430829934193753,
+        "created_ms": 51.32870800298406
+      },
+      {
+        "event": "playback_client_started",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "playing",
+        "client_start_confirmed": true,
+        "output_kind": "echo",
+        "created_ms": 84.30424999824027
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "response_id": null,
+        "turn_id": 1,
+        "output_kind": "echo",
+        "renderer_event": "task_started",
+        "rendered_samples": 128,
+        "client_elapsed_ms": 354,
+        "request_id": null,
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 8704,
+        "render_sample_rate": 48000,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "created_ms": 84.31025000027148
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "question-Q",
+        "kind": "normal",
+        "turn_id": 1,
+        "response_id": null,
+        "created_ms": 84.77341700199759
+      },
+      {
+        "event": "playback_queued",
+        "playback_id": "question-Q",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "queued",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 86.51841700338991
+      },
+      {
+        "event": "playback_task_prepared",
+        "playback_id": "question-Q",
+        "kind": "normal",
+        "response_id": null,
+        "turn_id": 1,
+        "source_id": "reply",
+        "source_revision": 1,
+        "collection_generation": 0,
+        "created_ms": 86.52504200290423
+      },
+      {
+        "event": "playback_stop_requested",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "stop_requested",
+        "client_start_confirmed": true,
+        "output_kind": "echo",
+        "created_ms": 86.56191699992632
+      },
+      {
+        "event": "playback_client_stopped",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "collection_generation": 0,
+        "source_id": "range:34e8237f093c74098bfe3e646a45d570382cba4526bc42c25e2066e870f7e8cc",
+        "source_revision": 1,
+        "status": "stopped",
+        "client_start_confirmed": true,
+        "output_kind": "echo",
+        "created_ms": 89.5094580046134
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "a02edea2159e4b7b9cd7cf729f802c6a",
+        "response_id": null,
+        "turn_id": 1,
+        "output_kind": "echo",
+        "renderer_event": "task_stopped",
+        "rendered_samples": 256,
+        "client_elapsed_ms": 359.3999999985099,
+        "request_id": "56f2a9741cf44656a2c0cbffce504c4c",
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 8960,
+        "render_sample_rate": 48000,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "created_ms": 89.51437500218162
+      },
+      {
+        "event": "playback_dispatched",
+        "playback_id": "question-Q",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "sent_unknown",
+        "client_start_confirmed": false,
+        "output_kind": "normal",
+        "created_ms": 89.65983300004154
+      },
+      {
+        "event": "playback_client_started",
+        "playback_id": "question-Q",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "playing",
+        "client_start_confirmed": true,
+        "output_kind": "normal",
+        "created_ms": 127.10137500107521
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "question-Q",
+        "response_id": null,
+        "turn_id": 1,
+        "output_kind": "normal",
+        "renderer_event": "task_started",
+        "rendered_samples": 128,
+        "client_elapsed_ms": 396.69999999552965,
+        "request_id": null,
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 10752,
+        "render_sample_rate": 48000,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "created_ms": 127.1077499986859
+      },
+      {
+        "event": "playback_client_finished",
+        "playback_id": "question-Q",
+        "collection_generation": 0,
+        "source_id": "reply",
+        "source_revision": 1,
+        "status": "finished",
+        "client_start_confirmed": true,
+        "output_kind": "normal",
+        "created_ms": 442.62808300118195
+      },
+      {
+        "event": "playback_renderer_receipt",
+        "playback_id": "question-Q",
+        "response_id": null,
+        "turn_id": 1,
+        "output_kind": "normal",
+        "renderer_event": "task_finished",
+        "rendered_samples": 14880,
+        "client_elapsed_ms": 711.6999999955297,
+        "request_id": null,
+        "evidence_source": "audio_worklet_render",
+        "failure_reason": null,
+        "render_frame": 26072,
+        "render_sample_rate": 48000,
+        "render_clock_id": "5f18de4eb92c42c8806bca1870868d9d",
+        "created_ms": 442.6502080023056
+      }
+    ],
+    "user_submissions": 0,
+    "tasks": {
+      "a02edea2159e4b7b9cd7cf729f802c6a": {
+        "status": "stopped",
+        "kind": "echo"
+      },
+      "question-Q": {
+        "status": "finished",
+        "kind": "normal"
+      }
+    },
+    "job_errors": []
+  },
+  "connection": "connected"
+}

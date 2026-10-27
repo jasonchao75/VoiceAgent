@@ -1,0 +1,2 @@
+src/asr/transcript.py:335: error: Incompatible types in assignment (expression has type "str | None", variable has type "str")  [assignment]
+Found 1 error in 1 file (checked 79 source files)

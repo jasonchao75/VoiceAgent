@@ -7,7 +7,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 ASRProvider = Literal["deepgram", "speechmatics", "soniox", "assemblyai"]
-TurnDetectionSource = Literal["provider_native", "off"]
+TurnDetectionSource = Literal["provider_native", "off", "self_developed"]
 
 FLUX_LANGUAGE_HINTS = ("en", "es", "fr", "de", "hi", "ru", "pt", "ja", "it", "nl")
 NOVA3_LANGUAGES = (
@@ -580,22 +580,30 @@ ASROptions = (
 )
 
 _MODEL_CONTRACTS: dict[tuple[str, str], tuple[type[StrictASRModel], tuple[str, ...], str]] = {
-    ("deepgram", "flux-general-en"): (DeepgramFluxOptions, ("provider_native",), "provider_native"),
+    ("deepgram", "flux-general-en"): (
+        DeepgramFluxOptions,
+        ("provider_native", "self_developed"),
+        "provider_native",
+    ),
     ("deepgram", "flux-general-multi"): (
         DeepgramFluxOptions,
-        ("provider_native",),
+        ("provider_native", "self_developed"),
         "provider_native",
     ),
-    ("deepgram", "nova-3"): (DeepgramNova3Options, ("off",), "off"),
+    ("deepgram", "nova-3"): (DeepgramNova3Options, ("off", "self_developed"), "off"),
     ("speechmatics", "enhanced"): (
         SpeechmaticsOptions,
-        ("provider_native", "off"),
+        ("provider_native", "off", "self_developed"),
         "provider_native",
     ),
-    ("soniox", "stt-rt-v5"): (SonioxOptions, ("provider_native",), "provider_native"),
+    ("soniox", "stt-rt-v5"): (
+        SonioxOptions,
+        ("provider_native", "self_developed"),
+        "provider_native",
+    ),
     ("assemblyai", "universal-3-5-pro"): (
         AssemblyAIOptions,
-        ("provider_native",),
+        ("provider_native", "self_developed"),
         "provider_native",
     ),
 }
@@ -1032,7 +1040,7 @@ def asr_provider_catalog() -> dict[str, Any]:
                             "id": "flux-general-en",
                             "name": "Flux ASR · English",
                             "language_control": {"kind": "fixed", "values": ["en"]},
-                            "turn_sources": ["provider_native"],
+                            "turn_sources": ["provider_native", "self_developed"],
                             "default_turn_source": "provider_native",
                         },
                     ),
@@ -1046,7 +1054,7 @@ def asr_provider_catalog() -> dict[str, Any]:
                                 "kind": "hints",
                                 "values": list(FLUX_LANGUAGE_HINTS),
                             },
-                            "turn_sources": ["provider_native"],
+                            "turn_sources": ["provider_native", "self_developed"],
                             "default_turn_source": "provider_native",
                         },
                     ),
@@ -1060,7 +1068,7 @@ def asr_provider_catalog() -> dict[str, Any]:
                                 "kind": "single",
                                 "values": list(NOVA3_LANGUAGES),
                             },
-                            "turn_sources": ["off"],
+                            "turn_sources": ["off", "self_developed"],
                             "default_turn_source": "off",
                         },
                     ),
@@ -1090,7 +1098,7 @@ def asr_provider_catalog() -> dict[str, Any]:
                                 language: list(marks)
                                 for language, marks in SPEECHMATICS_PUNCTUATION_MARKS.items()
                             },
-                            "turn_sources": ["provider_native", "off"],
+                            "turn_sources": ["provider_native", "off", "self_developed"],
                             "default_turn_source": "provider_native",
                         },
                     )
@@ -1114,7 +1122,7 @@ def asr_provider_catalog() -> dict[str, Any]:
                                 },
                                 "source": "bundled GET /v1/models snapshot",
                             },
-                            "turn_sources": ["provider_native"],
+                            "turn_sources": ["provider_native", "self_developed"],
                             "default_turn_source": "provider_native",
                         },
                     )
@@ -1139,7 +1147,7 @@ def asr_provider_catalog() -> dict[str, Any]:
                                 },
                                 "max_selected": 10,
                             },
-                            "turn_sources": ["provider_native"],
+                            "turn_sources": ["provider_native", "self_developed"],
                             "default_turn_source": "provider_native",
                         },
                     )

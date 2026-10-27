@@ -1,0 +1,13 @@
+Locked SDK PCM parity, initial silence trim, contiguous merge and missing provenance passed
+Locked serializer accepts annotated protobuf; decoded PCM unchanged
+✔ frontend/tests/unit/td-input-source.test.js (61.353042ms)
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (1.670375ms)
+✔ closing during a delayed probe never writes to a replaced renderer (0.357125ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.362417

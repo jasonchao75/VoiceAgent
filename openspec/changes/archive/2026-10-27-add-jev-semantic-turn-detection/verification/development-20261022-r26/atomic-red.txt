@@ -1,0 +1,68 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_rejected_snapshot_does_not_consume_valid_sibling_revision[speechmatics-enhanced-valid0-invalid0] _
+
+provider = 'speechmatics', model = 'enhanced'
+valid = {'metadata': {'end_time': 0.2, 'start_time': 0}, 'speaker_id': 'a', 'text': '12'}
+invalid = {'metadata': {'end_time': 0.3, 'start_time': 0.4}, 'speaker_id': 'a', 'text': '34'}
+
+    @pytest.mark.parametrize('provider,model,valid,invalid', [
+        ('speechmatics', 'enhanced',
+         {'speaker_id': 'a', 'text': '12',
+          'metadata': {'start_time': 0, 'end_time': .2}},
+         {'speaker_id': 'a', 'text': '34',
+          'metadata': {'start_time': .4, 'end_time': .3}}),
+        ('soniox', 'stt-rt-v4',
+         {'text': '12', 'start_ms': 0, 'end_ms': 200, 'is_final': False},
+         {'text': '34', 'start_ms': 400, 'end_ms': 300, 'is_final': False}),
+    ])
+    def test_rejected_snapshot_does_not_consume_valid_sibling_revision(
+        provider, model, valid, invalid,
+    ):
+        """A later malformed row cannot poison deduplication of an undelivered sibling."""
+        parser = normalizer(provider, model)
+        field = 'segments' if provider == 'speechmatics' else 'tokens'
+        payload = {'message': 'AddPartialSegment', field: [valid, invalid]}
+        assert parser.normalize(payload) == ()
+        assert parser.missing_reason == 'invalid_source_audio_evidence'
+        recovered = parser.normalize({**payload, field: [valid]})
+>       assert len(recovered) == 1
+E       assert 0 == 1
+E        +  where 0 = len(())
+
+tests/test_td_asr_events.py:281: AssertionError
+_ test_rejected_snapshot_does_not_consume_valid_sibling_revision[soniox-stt-rt-v4-valid1-invalid1] _
+
+provider = 'soniox', model = 'stt-rt-v4'
+valid = {'end_ms': 200, 'is_final': False, 'start_ms': 0, 'text': '12'}
+invalid = {'end_ms': 300, 'is_final': False, 'start_ms': 400, 'text': '34'}
+
+    @pytest.mark.parametrize('provider,model,valid,invalid', [
+        ('speechmatics', 'enhanced',
+         {'speaker_id': 'a', 'text': '12',
+          'metadata': {'start_time': 0, 'end_time': .2}},
+         {'speaker_id': 'a', 'text': '34',
+          'metadata': {'start_time': .4, 'end_time': .3}}),
+        ('soniox', 'stt-rt-v4',
+         {'text': '12', 'start_ms': 0, 'end_ms': 200, 'is_final': False},
+         {'text': '34', 'start_ms': 400, 'end_ms': 300, 'is_final': False}),
+    ])
+    def test_rejected_snapshot_does_not_consume_valid_sibling_revision(
+        provider, model, valid, invalid,
+    ):
+        """A later malformed row cannot poison deduplication of an undelivered sibling."""
+        parser = normalizer(provider, model)
+        field = 'segments' if provider == 'speechmatics' else 'tokens'
+        payload = {'message': 'AddPartialSegment', field: [valid, invalid]}
+        assert parser.normalize(payload) == ()
+        assert parser.missing_reason == 'invalid_source_audio_evidence'
+        recovered = parser.normalize({**payload, field: [valid]})
+>       assert len(recovered) == 1
+E       assert 0 == 1
+E        +  where 0 = len(())
+
+tests/test_td_asr_events.py:281: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_rejected_snapshot_does_not_consume_valid_sibling_revision[speechmatics-enhanced-valid0-invalid0]
+FAILED tests/test_td_asr_events.py::test_rejected_snapshot_does_not_consume_valid_sibling_revision[soniox-stt-rt-v4-valid1-invalid1]
+2 failed, 18 deselected in 0.05s

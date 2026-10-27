@@ -1,0 +1,61 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_unsubmitted_old_local_range_revised_to_mixed_returns_to_current_td_once _
+
+    async def test_unsubmitted_old_local_range_revised_to_mixed_returns_to_current_td_once():
+        from pipecat.frames.frames import TranscriptionFrame
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_identifier import collection
+        from tests.test_td_rule_settings import priority_settings
+    
+        rules = IdentifierRules(
+            IdentifierRuleSettings.model_validate(priority_settings()), collection()
+        )
+        td = coordinator(identifier_rules=rules)
+        td.assistant_context("编号")
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        td.push_frame = push
+        first = interim("1")
+        first.result.update(audio_window_end=2, words=[{"word": "1", "start": 0, "end": 2}])
+        await td.speech_started()
+        await td.receive_transcript(first)
+        await td.speech_stopped(2000)
+        await td.advance(2350)
+        assert rules.collection.value == "1" and td.responses.user_submission_count == 0
+        await td.speech_started()
+        revised = interim("我的1")
+        revised.result.update(
+            event="EndOfTurn", audio_window_end=2, words=[{"word": "我的1", "start": 0, "end": 2}]
+        )
+        await td.receive_transcript(revised)
+        following = interim("2")
+        following.result.update(
+            turn_index=1,
+            audio_window_start=2,
+            audio_window_end=4,
+            words=[{"word": "2", "start": 2, "end": 4}],
+        )
+        await td.receive_transcript(following)
+        await td.speech_stopped(4000)
+        await td.advance(6500)
+        committed = [f for f in out if isinstance(f, TranscriptionFrame)]
+>       assert len(committed) == 1 and committed[0].text == "我的12"
+E       assert (0 == 1)
+E        +  where 0 = len([])
+
+tests/test_td_runtime.py:830: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-22 00:24:31.757 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_unsubmitted_old_local_range_revised_to_mixed_returns_to_current_td_once
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_unsubmitted_old_local_range_revised_to_mixed_returns_to_current_td_once
+1 failed, 23 deselected, 1 warning in 1.02s

@@ -1,0 +1,116 @@
+{
+  "baseline": {
+    "style": {
+      "display": "none",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "Recognized variants",
+      "Echo value",
+      "Audio / listen",
+      ""
+    ],
+    "header": [
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1107.96875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1107.96875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1107.96875,
+        "width": 0
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 173,
+        "top": 76,
+        "width": 173
+      },
+      {
+        "left": 195,
+        "right": 257,
+        "top": 76,
+        "width": 62
+      },
+      {
+        "left": 0,
+        "right": 257,
+        "top": 116,
+        "width": 257
+      }
+    ],
+    "audioGridRow": "2",
+    "overflow": false
+  },
+  "production": {
+    "style": {
+      "display": "none",
+      "fontSize": "10px",
+      "color": "rgb(143, 154, 149)",
+      "marginTop": "14px",
+      "columnGap": "22px"
+    },
+    "labels": [
+      "Recognized variants",
+      "Echo value",
+      "Audio / listen",
+      ""
+    ],
+    "header": [
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1091.1875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1091.1875,
+        "width": 0
+      },
+      {
+        "left": -77,
+        "right": -77,
+        "top": -1091.1875,
+        "width": 0
+      }
+    ],
+    "cells": [
+      {
+        "left": 0,
+        "right": 173,
+        "top": 84,
+        "width": 173
+      },
+      {
+        "left": 195,
+        "right": 257,
+        "top": 84,
+        "width": 62
+      },
+      {
+        "left": 0,
+        "right": 257,
+        "top": 124,
+        "width": 257
+      }
+    ],
+    "audioGridRow": "2",
+    "overflow": false
+  }
+}

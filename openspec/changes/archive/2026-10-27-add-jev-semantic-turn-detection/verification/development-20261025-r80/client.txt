@@ -1,0 +1,11 @@
+Locked SDK PCM parity, initial silence trim, contiguous merge and missing provenance passed
+Locked serializer accepts annotated protobuf; decoded PCM unchanged
+✔ frontend/tests/unit/td-input-source.test.js (61.086542ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.081417

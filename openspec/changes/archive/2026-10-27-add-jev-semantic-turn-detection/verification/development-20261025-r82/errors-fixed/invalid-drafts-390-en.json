@@ -1,0 +1,30 @@
+{
+  "evidenceLevel": "fixture",
+  "states": [
+    {
+      "name": "empty-keyword",
+      "error": "Enter at least one keyword and vocabulary mapping.",
+      "draft": "",
+      "writes": 0
+    },
+    {
+      "name": "duplicate-alias",
+      "error": "Recognized variants must be unique.",
+      "draft": "one, ONE",
+      "writes": 0
+    },
+    {
+      "name": "inverted-wait",
+      "error": "Maximum silence must be at least minimum silence.",
+      "draft": "3000",
+      "writes": 0
+    },
+    {
+      "name": "empty-option",
+      "error": "Complete each Jev output option.",
+      "draft": "",
+      "writes": 0
+    }
+  ],
+  "validSave": true
+}

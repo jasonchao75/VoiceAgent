@@ -1,0 +1,67 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_actual_flux_drops_old_wire_audio_until_interrupt_ack ___________
+
+    async def test_actual_flux_drops_old_wire_audio_until_interrupt_ack():
+>       service, owner, old, sent = setup_service()
+                                    ^^^^^^^^^^^^^^^
+
+tests/test_flux_interrupt_boundary.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def setup_service():
+        """Use the actual scoped Flux SDK service, replacing only its wire sender."""
+        owner = ResponseRevisions()
+        old = owner.submit(turn_id='t', source_ids=((0, 's'),), text='old', final=False)
+        service = create_default_tts_registry().create(
+>           provider='deepgram_flux', api_key='inert-no-socket', config=TTSConfig(),
+                                                                        ^^^^^^^^^^^
+            audio=AudioConfig(output_sample_rate=24000), response_owner=owner,
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for TTSConfig
+E       voice
+E         Field required [type=missing, input_value={}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/missing
+
+tests/test_flux_interrupt_boundary.py:14: ValidationError
+________ test_actual_flux_does_not_send_new_speak_before_interrupt_ack _________
+
+    async def test_actual_flux_does_not_send_new_speak_before_interrupt_ack():
+>       service, owner, old, sent = setup_service()
+                                    ^^^^^^^^^^^^^^^
+
+tests/test_flux_interrupt_boundary.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def setup_service():
+        """Use the actual scoped Flux SDK service, replacing only its wire sender."""
+        owner = ResponseRevisions()
+        old = owner.submit(turn_id='t', source_ids=((0, 's'),), text='old', final=False)
+        service = create_default_tts_registry().create(
+>           provider='deepgram_flux', api_key='inert-no-socket', config=TTSConfig(),
+                                                                        ^^^^^^^^^^^
+            audio=AudioConfig(output_sample_rate=24000), response_owner=owner,
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for TTSConfig
+E       voice
+E         Field required [type=missing, input_value={}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/missing
+
+tests/test_flux_interrupt_boundary.py:14: ValidationError
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_flux_interrupt_boundary.py::test_actual_flux_drops_old_wire_audio_until_interrupt_ack
+FAILED tests/test_flux_interrupt_boundary.py::test_actual_flux_does_not_send_new_speak_before_interrupt_ack
+2 failed, 3 warnings in 1.16s

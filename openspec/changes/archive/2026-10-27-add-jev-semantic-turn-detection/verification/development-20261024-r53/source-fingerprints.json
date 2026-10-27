@@ -1,0 +1,7 @@
+{
+  "src/pipeline/rtp_mapping.py": "f9aac9bece172982bd5ea05f66f3d14ffbcb4daa753cf34e7075cacde0858930",
+  "frontend/src/td-rtp-candidate-worker.js": "c5db874c4f970b7d6ddfa964c8676f5f5510166a7e6c407eba2e146103b5922d",
+  "tests/test_td_rtp_mapping.py": "cfdd7657895d9f6c9cfb49883da9d208665b72642c76579e98efea012f829a4d",
+  "tests/ui/td_rtp_candidate_app.py": "99c613e94f2ed5251fe7c5a676d8eb64b64b98b16e8a477bea679ffefd0e5029",
+  "frontend/tests/ui/td-rtp-candidate.spec.js": "2dfb35a00344a92edae7c253bb5a17eaa4831f328fb4982b9ec90731b1e22c61"
+}

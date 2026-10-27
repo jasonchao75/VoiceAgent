@@ -1,0 +1,19 @@
+
+Running 10 tests using 1 worker
+
+(node:24171) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (1.1s)
+  ✓   2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (571ms)
+  ✓   3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 1440px (878ms)
+  ✓   4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 390px (784ms)
+  ✓   5 [desktop-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (532ms)
+(node:24226) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   6 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (563ms)
+  ✓   7 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 390px (493ms)
+  ✓   8 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 1440px (644ms)
+  ✓   9 [narrow-chromium] › tests/ui/td-history-evidence.spec.js:54:3 › formal per-turn history preserves candidates and response versions at 390px (544ms)
+  ✓  10 [narrow-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (441ms)
+
+  10 passed (7.6s)

@@ -1,0 +1,16 @@
+{
+  "actual": {
+    "display": "block",
+    "fontSize": "16px",
+    "color": "rgb(237, 242, 239)",
+    "marginTop": "0px",
+    "columns": "minmax(0px, 1.8fr) minmax(50px, 0.7fr) minmax(92px, 1fr) 22px"
+  },
+  "frozen": {
+    "display": "grid",
+    "fontSize": "10px",
+    "color": "rgb(143, 154, 149)",
+    "marginTop": "14px",
+    "columns": "286.969px 111.594px 159.438px 22px"
+  }
+}

@@ -1,0 +1,14 @@
+npm warn deprecated x-law@0.3.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/private/tmp/voiceagent-r89-review-extracted/frontend/node_modules/@sentry-internal/browser-utils/build/types-ts3.8/metrics/web-vitals/lib'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/private/tmp/voiceagent-r89-review-extracted/frontend/node_modules/@sentry-internal/browser-utils/build/types'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/private/tmp/voiceagent-r89-review-extracted/frontend/node_modules/@sentry-internal/browser-utils/build'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/private/tmp/voiceagent-r89-review-extracted/frontend/node_modules/@sentry-internal/browser-utils/build'
+npm error code EEXIST
+npm error syscall mkdir
+npm error path /Users/zhaozichen/.npm/_cacache/content-v2/sha512/d2/37
+npm error errno -13
+npm error EACCES: permission denied, mkdir '/Users/zhaozichen/.npm/_cacache/content-v2/sha512/d2/37'
+npm error File exists: /Users/zhaozichen/.npm/_cacache/content-v2/sha512/d2/37
+npm error Remove the existing file and try again, or run npm
+npm error with --force to overwrite files recklessly.
+npm error A complete log of this run can be found in: /Users/zhaozichen/.npm/_logs/2026-10-26T09_12_58_497Z-debug-0.log

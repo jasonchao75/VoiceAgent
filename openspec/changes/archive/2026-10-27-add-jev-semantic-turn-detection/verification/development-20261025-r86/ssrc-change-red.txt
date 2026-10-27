@@ -1,0 +1,21 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_ssrc_change_rejects_the_entire_ambiguous_jitter_origin_without_changing_audio _
+
+    def test_ssrc_change_rejects_the_entire_ambiguous_jitter_origin_without_changing_audio():
+        """The packet that releases jitter output is not necessarily its original SSRC."""
+        from src.pipeline.rtp_input import RTPInputLedger
+        ledger = RTPInputLedger()
+>       ledger.observe_ssrc(7)
+        ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'RTPInputLedger' object has no attribute 'observe_ssrc'
+
+tests/test_td_rtp_input.py:222: AttributeError
+=============================== warnings summary ===============================
+tests/test_td_rtp_input.py::test_ssrc_change_rejects_the_entire_ambiguous_jitter_origin_without_changing_audio
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_rtp_input.py::test_ssrc_change_rejects_the_entire_ambiguous_jitter_origin_without_changing_audio
+1 failed, 7 deselected, 1 warning in 0.98s

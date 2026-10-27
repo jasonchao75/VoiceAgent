@@ -1,0 +1,51 @@
+..F                                                                      [100%]
+=================================== FAILURES ===================================
+_ test_legacy_playback_numbers_are_explicitly_unverified_not_client_render_evidence _
+
+    def test_legacy_playback_numbers_are_explicitly_unverified_not_client_render_evidence():
+        """A stored numeric value alone does not prove the provenance of browser playback."""
+        from src.history.models import TurnMetric
+        legacy = TurnMetric(turn_index=0, playback_ms=20, turn_to_playback_ms=500)
+>       assert legacy.playback_evidence == 'unverified_client_report'
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_history.py:70: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TurnMetric(turn_index=0, asr_final_latency_ms=None, llm_request_splicing_ms=None, llm_first_token_ms=None, tts_initial..._tokens=None, reasoning_status='unverified', reasoning_control=None, context_applied=None, context_failure_reason=None)
+item = 'playback_evidence'
+
+    def __getattr__(self, item: str) -> Any:
+        private_attributes = object.__getattribute__(self, '__private_attributes__')
+        if item in private_attributes:
+            attribute = private_attributes[item]
+            if hasattr(attribute, '__get__'):
+                return attribute.__get__(self, type(self))  # type: ignore
+    
+            try:
+                # Note: self.__pydantic_private__ cannot be None if self.__private_attributes__ has items
+                return self.__pydantic_private__[item]  # type: ignore
+            except KeyError as exc:
+                raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}') from exc
+        else:
+            # `__pydantic_extra__` can fail to be set if the model is not yet fully initialized.
+            # See `BaseModel.__repr_args__` for more details
+            try:
+                pydantic_extra = object.__getattribute__(self, '__pydantic_extra__')
+            except AttributeError:
+                pydantic_extra = None
+    
+            if pydantic_extra and item in pydantic_extra:
+                return pydantic_extra[item]
+            else:
+                if hasattr(self.__class__, item):
+                    return super().__getattribute__(item)  # Raises AttributeError if appropriate
+                else:
+                    # this is the current error
+>                   raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+E                   AttributeError: 'TurnMetric' object has no attribute 'playback_evidence'
+
+.venv/lib/python3.13/site-packages/pydantic/main.py:1042: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_legacy_playback_numbers_are_explicitly_unverified_not_client_render_evidence
+1 failed, 2 passed in 0.73s

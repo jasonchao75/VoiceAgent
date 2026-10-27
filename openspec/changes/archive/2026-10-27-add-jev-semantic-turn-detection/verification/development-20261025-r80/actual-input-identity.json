@@ -1,0 +1,84 @@
+{
+  "evidence_level": "local-real",
+  "audio_packets": [
+    {
+      "offset": 0,
+      "count": 4096,
+      "spans": [
+        [
+          128,
+          4096
+        ]
+      ],
+      "clock_id": "bbb3aa8c20b54b62803632890c8d602a"
+    },
+    {
+      "offset": 4096,
+      "count": 4096,
+      "spans": [
+        [
+          4224,
+          4096
+        ]
+      ],
+      "clock_id": "bbb3aa8c20b54b62803632890c8d602a"
+    },
+    {
+      "offset": 8192,
+      "count": 4096,
+      "spans": [
+        [
+          8320,
+          4096
+        ]
+      ],
+      "clock_id": "bbb3aa8c20b54b62803632890c8d602a"
+    },
+    {
+      "offset": 12288,
+      "count": 4096,
+      "spans": [
+        [
+          12416,
+          4096
+        ]
+      ],
+      "clock_id": "bbb3aa8c20b54b62803632890c8d602a"
+    },
+    {
+      "offset": 16384,
+      "count": 4096,
+      "spans": [
+        [
+          16512,
+          4096
+        ]
+      ],
+      "clock_id": "bbb3aa8c20b54b62803632890c8d602a"
+    },
+    {
+      "offset": 20480,
+      "count": 4096,
+      "spans": [
+        [
+          20608,
+          4096
+        ]
+      ],
+      "clock_id": "bbb3aa8c20b54b62803632890c8d602a"
+    },
+    {
+      "offset": 24576,
+      "count": 4096,
+      "spans": [
+        [
+          24704,
+          4096
+        ]
+      ],
+      "clock_id": "bbb3aa8c20b54b62803632890c8d602a"
+    }
+  ],
+  "total_samples": 28672,
+  "scope": "first bounded browser-sent packets; no source clock interval yet"
+}

@@ -1,0 +1,408 @@
+....................F.F.F.F............................................. [ 75%]
+...........F.....F......                                                 [100%]
+=================================== FAILURES ===================================
+_ test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-None-soniox-stt-rt-v5-valid1-invalid1] _
+
+provider = 'soniox', model = 'stt-rt-v5'
+valid = {'end_ms': 200, 'is_final': False, 'start_ms': 0, 'text': '12'}
+invalid = {'end_ms': 300, 'is_final': False, 'start_ms': 400, 'text': '34'}
+previous_text = None, pending_gap = False
+
+    @pytest.mark.parametrize('provider,model,valid,invalid', [
+        ('speechmatics', 'enhanced',
+         {'speaker_id': 'a', 'text': '12',
+          'metadata': {'start_time': 0, 'end_time': .2}},
+         {'speaker_id': 'a', 'text': '34',
+          'metadata': {'start_time': .4, 'end_time': .3}}),
+        ('soniox', 'stt-rt-v5',
+         {'text': '12', 'start_ms': 0, 'end_ms': 200, 'is_final': False},
+         {'text': '34', 'start_ms': 400, 'end_ms': 300, 'is_final': False}),
+    ])
+    @pytest.mark.parametrize('previous_text', [None, '1'])
+    @pytest.mark.parametrize('pending_gap', [False, True])
+    def test_rejected_snapshot_does_not_consume_valid_sibling_revision(
+        provider, model, valid, invalid, previous_text, pending_gap,
+    ):
+        """A later malformed row cannot poison deduplication of an undelivered sibling."""
+        parser = normalizer(provider, model)
+        field = 'segments' if provider == 'speechmatics' else 'tokens'
+        payload = {'message': 'AddPartialSegment', field: [valid, invalid]}
+        if previous_text is not None:
+            accepted = parser.normalize({**payload, field: [{**valid, 'text': previous_text}]})
+            assert accepted[0].revision == 1
+        if pending_gap:
+            incomplete = {**valid}
+            if provider == 'speechmatics':
+                incomplete['metadata'] = {'start_time': 0}
+            else:
+                incomplete.pop('end_ms')
+            assert parser.normalize({**payload, field: [incomplete]}) == ()
+            assert parser.unresolved_sources
+        assert parser.normalize(payload) == ()
+        assert parser.missing_reason == 'invalid_source_audio_evidence'
+        if pending_gap:
+            assert parser.unresolved_sources
+        recovered = parser.normalize({**payload, field: [valid]})
+        assert len(recovered) == 1
+        assert recovered[0].text == '12'
+        assert recovered[0].revision == (1 if previous_text is None else 2)
+        # The failed sibling still owns a gap; recovery of another row cannot clear it.
+        assert parser.unresolved_sources
+        fixed_sibling = {**invalid}
+        if provider == 'speechmatics':
+            fixed_sibling['metadata'] = {'start_time': .4, 'end_time': .5}
+        else:
+            fixed_sibling['end_ms'] = 500
+        assert parser.normalize({**payload, field: [fixed_sibling]})[0].text == '34'
+        assert not parser.unresolved_sources
+>       assert parser.normalize({**payload, field: [valid]}) == ()
+E       AssertionError: assert (SourceSegmen...eliable=True)) == ()
+E         
+E         Left contains 2 more items, first extra item: SourceSegment(epoch=0, source_id='0.0', revision=3, start_ms=0.0, end_ms=200.0, text='12', final=False, words=(TimedWord(text='12', start_ms=0.0, end_ms=200.0),), timing_reliable=True)
+E         Use -v to get more diff
+
+tests/test_td_asr_events.py:331: AssertionError
+_ test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-1-soniox-stt-rt-v5-valid1-invalid1] _
+
+provider = 'soniox', model = 'stt-rt-v5'
+valid = {'end_ms': 200, 'is_final': False, 'start_ms': 0, 'text': '12'}
+invalid = {'end_ms': 300, 'is_final': False, 'start_ms': 400, 'text': '34'}
+previous_text = '1', pending_gap = False
+
+    @pytest.mark.parametrize('provider,model,valid,invalid', [
+        ('speechmatics', 'enhanced',
+         {'speaker_id': 'a', 'text': '12',
+          'metadata': {'start_time': 0, 'end_time': .2}},
+         {'speaker_id': 'a', 'text': '34',
+          'metadata': {'start_time': .4, 'end_time': .3}}),
+        ('soniox', 'stt-rt-v5',
+         {'text': '12', 'start_ms': 0, 'end_ms': 200, 'is_final': False},
+         {'text': '34', 'start_ms': 400, 'end_ms': 300, 'is_final': False}),
+    ])
+    @pytest.mark.parametrize('previous_text', [None, '1'])
+    @pytest.mark.parametrize('pending_gap', [False, True])
+    def test_rejected_snapshot_does_not_consume_valid_sibling_revision(
+        provider, model, valid, invalid, previous_text, pending_gap,
+    ):
+        """A later malformed row cannot poison deduplication of an undelivered sibling."""
+        parser = normalizer(provider, model)
+        field = 'segments' if provider == 'speechmatics' else 'tokens'
+        payload = {'message': 'AddPartialSegment', field: [valid, invalid]}
+        if previous_text is not None:
+            accepted = parser.normalize({**payload, field: [{**valid, 'text': previous_text}]})
+            assert accepted[0].revision == 1
+        if pending_gap:
+            incomplete = {**valid}
+            if provider == 'speechmatics':
+                incomplete['metadata'] = {'start_time': 0}
+            else:
+                incomplete.pop('end_ms')
+            assert parser.normalize({**payload, field: [incomplete]}) == ()
+            assert parser.unresolved_sources
+        assert parser.normalize(payload) == ()
+        assert parser.missing_reason == 'invalid_source_audio_evidence'
+        if pending_gap:
+            assert parser.unresolved_sources
+        recovered = parser.normalize({**payload, field: [valid]})
+        assert len(recovered) == 1
+        assert recovered[0].text == '12'
+        assert recovered[0].revision == (1 if previous_text is None else 2)
+        # The failed sibling still owns a gap; recovery of another row cannot clear it.
+        assert parser.unresolved_sources
+        fixed_sibling = {**invalid}
+        if provider == 'speechmatics':
+            fixed_sibling['metadata'] = {'start_time': .4, 'end_time': .5}
+        else:
+            fixed_sibling['end_ms'] = 500
+        assert parser.normalize({**payload, field: [fixed_sibling]})[0].text == '34'
+        assert not parser.unresolved_sources
+>       assert parser.normalize({**payload, field: [valid]}) == ()
+E       AssertionError: assert (SourceSegmen...eliable=True)) == ()
+E         
+E         Left contains 2 more items, first extra item: SourceSegment(epoch=0, source_id='0.0', revision=4, start_ms=0.0, end_ms=200.0, text='12', final=False, words=(TimedWord(text='12', start_ms=0.0, end_ms=200.0),), timing_reliable=True)
+E         Use -v to get more diff
+
+tests/test_td_asr_events.py:331: AssertionError
+_ test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-None-soniox-stt-rt-v5-valid1-invalid1] _
+
+provider = 'soniox', model = 'stt-rt-v5'
+valid = {'end_ms': 200, 'is_final': False, 'start_ms': 0, 'text': '12'}
+invalid = {'end_ms': 300, 'is_final': False, 'start_ms': 400, 'text': '34'}
+previous_text = None, pending_gap = True
+
+    @pytest.mark.parametrize('provider,model,valid,invalid', [
+        ('speechmatics', 'enhanced',
+         {'speaker_id': 'a', 'text': '12',
+          'metadata': {'start_time': 0, 'end_time': .2}},
+         {'speaker_id': 'a', 'text': '34',
+          'metadata': {'start_time': .4, 'end_time': .3}}),
+        ('soniox', 'stt-rt-v5',
+         {'text': '12', 'start_ms': 0, 'end_ms': 200, 'is_final': False},
+         {'text': '34', 'start_ms': 400, 'end_ms': 300, 'is_final': False}),
+    ])
+    @pytest.mark.parametrize('previous_text', [None, '1'])
+    @pytest.mark.parametrize('pending_gap', [False, True])
+    def test_rejected_snapshot_does_not_consume_valid_sibling_revision(
+        provider, model, valid, invalid, previous_text, pending_gap,
+    ):
+        """A later malformed row cannot poison deduplication of an undelivered sibling."""
+        parser = normalizer(provider, model)
+        field = 'segments' if provider == 'speechmatics' else 'tokens'
+        payload = {'message': 'AddPartialSegment', field: [valid, invalid]}
+        if previous_text is not None:
+            accepted = parser.normalize({**payload, field: [{**valid, 'text': previous_text}]})
+            assert accepted[0].revision == 1
+        if pending_gap:
+            incomplete = {**valid}
+            if provider == 'speechmatics':
+                incomplete['metadata'] = {'start_time': 0}
+            else:
+                incomplete.pop('end_ms')
+            assert parser.normalize({**payload, field: [incomplete]}) == ()
+            assert parser.unresolved_sources
+        assert parser.normalize(payload) == ()
+        assert parser.missing_reason == 'invalid_source_audio_evidence'
+        if pending_gap:
+            assert parser.unresolved_sources
+        recovered = parser.normalize({**payload, field: [valid]})
+        assert len(recovered) == 1
+        assert recovered[0].text == '12'
+        assert recovered[0].revision == (1 if previous_text is None else 2)
+        # The failed sibling still owns a gap; recovery of another row cannot clear it.
+        assert parser.unresolved_sources
+        fixed_sibling = {**invalid}
+        if provider == 'speechmatics':
+            fixed_sibling['metadata'] = {'start_time': .4, 'end_time': .5}
+        else:
+            fixed_sibling['end_ms'] = 500
+        assert parser.normalize({**payload, field: [fixed_sibling]})[0].text == '34'
+        assert not parser.unresolved_sources
+>       assert parser.normalize({**payload, field: [valid]}) == ()
+E       AssertionError: assert (SourceSegmen...eliable=True)) == ()
+E         
+E         Left contains 2 more items, first extra item: SourceSegment(epoch=0, source_id='0.0', revision=3, start_ms=0.0, end_ms=200.0, text='12', final=False, words=(TimedWord(text='12', start_ms=0.0, end_ms=200.0),), timing_reliable=True)
+E         Use -v to get more diff
+
+tests/test_td_asr_events.py:331: AssertionError
+_ test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-1-soniox-stt-rt-v5-valid1-invalid1] _
+
+provider = 'soniox', model = 'stt-rt-v5'
+valid = {'end_ms': 200, 'is_final': False, 'start_ms': 0, 'text': '12'}
+invalid = {'end_ms': 300, 'is_final': False, 'start_ms': 400, 'text': '34'}
+previous_text = '1', pending_gap = True
+
+    @pytest.mark.parametrize('provider,model,valid,invalid', [
+        ('speechmatics', 'enhanced',
+         {'speaker_id': 'a', 'text': '12',
+          'metadata': {'start_time': 0, 'end_time': .2}},
+         {'speaker_id': 'a', 'text': '34',
+          'metadata': {'start_time': .4, 'end_time': .3}}),
+        ('soniox', 'stt-rt-v5',
+         {'text': '12', 'start_ms': 0, 'end_ms': 200, 'is_final': False},
+         {'text': '34', 'start_ms': 400, 'end_ms': 300, 'is_final': False}),
+    ])
+    @pytest.mark.parametrize('previous_text', [None, '1'])
+    @pytest.mark.parametrize('pending_gap', [False, True])
+    def test_rejected_snapshot_does_not_consume_valid_sibling_revision(
+        provider, model, valid, invalid, previous_text, pending_gap,
+    ):
+        """A later malformed row cannot poison deduplication of an undelivered sibling."""
+        parser = normalizer(provider, model)
+        field = 'segments' if provider == 'speechmatics' else 'tokens'
+        payload = {'message': 'AddPartialSegment', field: [valid, invalid]}
+        if previous_text is not None:
+            accepted = parser.normalize({**payload, field: [{**valid, 'text': previous_text}]})
+            assert accepted[0].revision == 1
+        if pending_gap:
+            incomplete = {**valid}
+            if provider == 'speechmatics':
+                incomplete['metadata'] = {'start_time': 0}
+            else:
+                incomplete.pop('end_ms')
+            assert parser.normalize({**payload, field: [incomplete]}) == ()
+            assert parser.unresolved_sources
+        assert parser.normalize(payload) == ()
+        assert parser.missing_reason == 'invalid_source_audio_evidence'
+        if pending_gap:
+            assert parser.unresolved_sources
+        recovered = parser.normalize({**payload, field: [valid]})
+        assert len(recovered) == 1
+        assert recovered[0].text == '12'
+        assert recovered[0].revision == (1 if previous_text is None else 2)
+        # The failed sibling still owns a gap; recovery of another row cannot clear it.
+        assert parser.unresolved_sources
+        fixed_sibling = {**invalid}
+        if provider == 'speechmatics':
+            fixed_sibling['metadata'] = {'start_time': .4, 'end_time': .5}
+        else:
+            fixed_sibling['end_ms'] = 500
+        assert parser.normalize({**payload, field: [fixed_sibling]})[0].text == '34'
+        assert not parser.unresolved_sources
+>       assert parser.normalize({**payload, field: [valid]}) == ()
+E       AssertionError: assert (SourceSegmen...eliable=True)) == ()
+E         
+E         Left contains 2 more items, first extra item: SourceSegment(epoch=0, source_id='0.0', revision=4, start_ms=0.0, end_ms=200.0, text='12', final=False, words=(TimedWord(text='12', start_ms=0.0, end_ms=200.0),), timing_reliable=True)
+E         Use -v to get more diff
+
+tests/test_td_asr_events.py:331: AssertionError
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-soniox-stt-rt-v5] _
+
+provider = 'soniox', model = 'stt-rt-v5', range_kind = 'missing'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('assemblyai', 'universal-3-5-pro'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v5'),
+    ])
+    @pytest.mark.parametrize("range_kind", ["missing", "invalid"])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model, range_kind,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        from src.asr.config import validate_asr_options
+    
+        validate_asr_options(
+            provider=provider, model=model, turn_detection_source="self_developed", options={},
+        )
+        td = coordinator()
+        td.asr.source_normalizer = SourceNormalizer(provider, model)
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        def frame(source, text, start=None, end=None):
+            if provider == 'deepgram' and model.startswith('flux-'):
+                payload = {'event': 'Update', 'turn_index': source, 'transcript': text}
+                if start is not None:
+                    payload.update(audio_window_start=start, audio_window_end=end)
+            elif provider == 'deepgram':
+                payload = {'start': source * .2,
+                           'channel': {'alternatives': [{'transcript': text}]}}
+                if start is not None:
+                    payload['duration'] = end - start
+            elif provider == 'speechmatics':
+                metadata = {'start_time': source * .2}
+                if end is not None:
+                    metadata['end_time'] = end
+                payload = {'message': 'AddPartialSegment', 'segments': [
+                    {'speaker_id': 'a', 'text': text, 'metadata': metadata},
+                ]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': source * 200}
+                if end is not None:
+                    token['end_ms'] = end * 1000
+                payload = {'tokens': [token]}
+            else:
+                payload = {'turn_order': source, 'transcript': text}
+                if start is not None:
+                    payload['words'] = [{'text': text, 'start': start * 1000, 'end': end * 1000}]
+            return InterimTranscriptionFrame(text, '', '', result=payload)
+    
+        td.push_frame = push
+        first = frame(0, '12') if range_kind == 'missing' else frame(0, '12', 0, -.1)
+        await td.receive_transcript(first)
+        await td.receive_transcript(frame(1, '34', .2, .4))
+        await td.speech_stopped(1000)
+        await td.advance(9999)
+        assert not any(isinstance(item, TranscriptionFrame) for item in out)
+        await td.receive_transcript(frame(0, '12', 0, .2))
+        await td.advance(10000)
+        committed = [item for item in out if isinstance(item, TranscriptionFrame)]
+>       assert len(committed) == 1 and committed[0].text == '1234'
+E       AssertionError: assert (1 == 1 and '12' == '1234'
+E        +  where 1 = len([TDSubmissionFrame(id=261, name='TDSubmissionFrame#21', pts=None, broadcast_sibling_id=None, metadata={'td_commit': Tr...2026-10-23T01:51:53.268+00:00', language=None, result=None, finalized=False, authority=<object object at 0x115c51090>)])
+E         
+E         - 1234
+E         + 12)
+
+tests/test_td_runtime.py:976: AssertionError
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[invalid-soniox-stt-rt-v5] _
+
+provider = 'soniox', model = 'stt-rt-v5', range_kind = 'invalid'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('assemblyai', 'universal-3-5-pro'),
+        ('speechmatics', 'enhanced'), ('soniox', 'stt-rt-v5'),
+    ])
+    @pytest.mark.parametrize("range_kind", ["missing", "invalid"])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model, range_kind,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        from src.asr.config import validate_asr_options
+    
+        validate_asr_options(
+            provider=provider, model=model, turn_detection_source="self_developed", options={},
+        )
+        td = coordinator()
+        td.asr.source_normalizer = SourceNormalizer(provider, model)
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        def frame(source, text, start=None, end=None):
+            if provider == 'deepgram' and model.startswith('flux-'):
+                payload = {'event': 'Update', 'turn_index': source, 'transcript': text}
+                if start is not None:
+                    payload.update(audio_window_start=start, audio_window_end=end)
+            elif provider == 'deepgram':
+                payload = {'start': source * .2,
+                           'channel': {'alternatives': [{'transcript': text}]}}
+                if start is not None:
+                    payload['duration'] = end - start
+            elif provider == 'speechmatics':
+                metadata = {'start_time': source * .2}
+                if end is not None:
+                    metadata['end_time'] = end
+                payload = {'message': 'AddPartialSegment', 'segments': [
+                    {'speaker_id': 'a', 'text': text, 'metadata': metadata},
+                ]}
+            elif provider == 'soniox':
+                token = {'text': text, 'start_ms': source * 200}
+                if end is not None:
+                    token['end_ms'] = end * 1000
+                payload = {'tokens': [token]}
+            else:
+                payload = {'turn_order': source, 'transcript': text}
+                if start is not None:
+                    payload['words'] = [{'text': text, 'start': start * 1000, 'end': end * 1000}]
+            return InterimTranscriptionFrame(text, '', '', result=payload)
+    
+        td.push_frame = push
+        first = frame(0, '12') if range_kind == 'missing' else frame(0, '12', 0, -.1)
+        await td.receive_transcript(first)
+        await td.receive_transcript(frame(1, '34', .2, .4))
+        await td.speech_stopped(1000)
+        await td.advance(9999)
+        assert not any(isinstance(item, TranscriptionFrame) for item in out)
+        await td.receive_transcript(frame(0, '12', 0, .2))
+        await td.advance(10000)
+        committed = [item for item in out if isinstance(item, TranscriptionFrame)]
+>       assert len(committed) == 1 and committed[0].text == '1234'
+E       AssertionError: assert (1 == 1 and '12' == '1234'
+E        +  where 1 = len([TDSubmissionFrame(id=297, name='TDSubmissionFrame#27', pts=None, broadcast_sibling_id=None, metadata={'td_commit': Tr...2026-10-23T01:51:53.280+00:00', language=None, result=None, finalized=False, authority=<object object at 0x115c524a0>)])
+E         
+E         - 1234
+E         + 12)
+
+tests/test_td_runtime.py:976: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_runtime_does_not_forward_provider_endpoint_or_partial
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-None-soniox-stt-rt-v5-valid1-invalid1]
+FAILED tests/test_td_asr_events.py::test_rejected_snapshot_does_not_consume_valid_sibling_revision[False-1-soniox-stt-rt-v5-valid1-invalid1]
+FAILED tests/test_td_asr_events.py::test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-None-soniox-stt-rt-v5-valid1-invalid1]
+FAILED tests/test_td_asr_events.py::test_rejected_snapshot_does_not_consume_valid_sibling_revision[True-1-soniox-stt-rt-v5-valid1-invalid1]
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[missing-soniox-stt-rt-v5]
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[invalid-soniox-stt-rt-v5]
+6 failed, 90 passed, 1 warning in 2.24s

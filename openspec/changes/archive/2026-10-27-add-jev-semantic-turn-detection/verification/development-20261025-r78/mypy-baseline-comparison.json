@@ -1,0 +1,12 @@
+{
+  "comparison": "same installed environment, Python3.13; filenames+messages, ignoring shifted lines",
+  "current_only": [
+    [
+      "src/pipeline/rtp_mapping.py",
+      "Cannot determine type of \"first_packet_pts\"  [has-type]"
+    ]
+  ],
+  "current_distinct": 1,
+  "head_distinct": 36,
+  "full_check_passed": false
+}

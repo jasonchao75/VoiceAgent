@@ -12,6 +12,8 @@ from typing import Literal
 import aiosqlite
 
 from src.bots.models import BotConfigFields, BotRecord
+from src.bots.storage import BotStore
+from src.tts.echo_cache import EchoAudioCache, tts_for_bot, units_for_values
 
 Component = Literal["asr", "tts", "llm"]
 
@@ -25,6 +27,15 @@ def _config_json(record: BotRecord) -> str:
         {field: getattr(record, field) for field in BotConfigFields.model_fields}
     )
     return json.dumps(config.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+
+
+def _comparable_config(payload: str) -> dict:
+    """Ignore server-derived asset bindings when comparing editable draft settings."""
+    value = BotConfigFields.model_validate_json(payload).model_dump(mode="json")
+    rule = (value.get("td_config") or {}).get("priority_rule")
+    if rule:
+        rule["assets"] = []
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,18 +73,27 @@ class PublishedDemo:
     encrypted_asr_key: str | None
     encrypted_tts_key: str | None
     encrypted_llm_key: str | None
+    encrypted_jev_key: str | None = None
+    jev_key_endpoint: str | None = None
 
     @property
     def available(self) -> bool:
         """Return whether all credentials referenced by the snapshot exist."""
-        return all((self.encrypted_asr_key, self.encrypted_tts_key, self.encrypted_llm_key))
+        if not all((self.encrypted_asr_key, self.encrypted_tts_key, self.encrypted_llm_key)):
+            return False
+        config = json.loads(self.config_json)
+        if config.get("turn_detection_source") == "self_developed":
+            endpoint = (config.get("td_config") or {}).get("jev", {}).get("endpoint")
+            return bool(self.encrypted_jev_key and endpoint == self.jev_key_endpoint)
+        return True
 
 
 class DemoPublicationStore:
     """SQLite boundary for immutable publications and stable public links."""
 
-    def __init__(self, db_path: Path) -> None:
+    def __init__(self, db_path: Path, echo_cache: EchoAudioCache | None = None) -> None:
         self._db_path = db_path
+        self.echo_cache = echo_cache or EchoAudioCache(db_path.parent / "echo-audio")
 
     async def initialize(self) -> None:
         """Create publication tables and migrate current Bot credentials."""
@@ -187,8 +207,9 @@ class DemoPublicationStore:
                                (c.component='asr' AND c.provider=p.asr_provider) OR
                                (c.component='tts' AND c.provider=p.tts_provider) OR
                                (c.component='llm' AND c.provider=p.llm_provider)
-                           )) AS credential_count
+                           )) AS credential_count, b.encrypted_jev_key, b.jev_key_endpoint
                    FROM demo_links l
+                   JOIN bots b ON b.id=l.bot_id
                    JOIN bot_publications p
                      ON p.bot_id=l.bot_id AND p.revision=l.current_revision
                    WHERE l.bot_id=?""",
@@ -218,18 +239,50 @@ class DemoPublicationStore:
             title=str(row[3]),
             description=str(row[4]),
             published=True,
-            available=int(row[7]) == 3,
+            available=(
+                int(row[7]) == 3
+                and (
+                    json.loads(row[5]).get("turn_detection_source") != "self_developed"
+                    or bool(
+                        row[8]
+                        and row[9]
+                        == (json.loads(row[5]).get("td_config") or {})
+                        .get("jev", {})
+                        .get("endpoint")
+                    )
+                )
+            ),
             published_at=str(row[6]),
-            unpublished_changes=str(row[5]) != _config_json(record),
+            unpublished_changes=(
+                _comparable_config(str(row[5])) != _comparable_config(_config_json(record))
+            ),
         )
 
     async def publish(self, record: BotRecord, *, title: str, description: str) -> ShareState:
         """Atomically validate credentials, append a snapshot, and move the link."""
+        if record.turn_detection_source == "self_developed" and not record.has_jev_key:
+            raise ValueError("Save a Jev key matching the selected endpoint before publishing")
         config_json = _config_json(record)
+        rule = record.td_config.priority_rule if record.td_config else None
+        if record.turn_detection_source == "self_developed" and rule and rule.enabled:
+            units = units_for_values(row.value for row in rule.vocabulary)
+            manifest = await self.echo_cache.manifest(record.id, units, tts_for_bot(record), 24000)
+            config = json.loads(config_json)
+            config["td_config"]["priority_rule"]["assets"] = [
+                {"unit": unit, "version": version} for unit, version in manifest.items()
+            ]
+            config_json = json.dumps(config, sort_keys=True, separators=(",", ":"))
         now = _utcnow()
         async with aiosqlite.connect(self._db_path) as db:
             await db.execute("PRAGMA foreign_keys = ON")
             await db.execute("BEGIN IMMEDIATE")
+            current = await BotStore(self._db_path).get(record.id)
+            if current is None or _config_json(current) != _config_json(record):
+                await db.rollback()
+                raise ValueError("Bot configuration changed; reload and publish again")
+            if current.turn_detection_source == "self_developed" and not current.has_jev_key:
+                await db.rollback()
+                raise ValueError("Save a Jev key matching the selected endpoint before publishing")
             providers = {
                 "asr": record.asr_provider,
                 "tts": record.tts_provider,
@@ -306,7 +359,8 @@ class DemoPublicationStore:
                 """SELECT l.bot_id, b.name, l.public_id, p.public_title,
                           p.public_description, l.active, p.revision, p.config_json,
                           p.asr_provider, p.tts_provider, p.llm_provider,
-                          ca.encrypted_key, ct.encrypted_key, cl.encrypted_key
+                          ca.encrypted_key, ct.encrypted_key, cl.encrypted_key,
+                          b.encrypted_jev_key, b.jev_key_endpoint
                    FROM demo_links l
                    JOIN bots b ON b.id=l.bot_id
                    JOIN bot_publications p

@@ -1,0 +1,204 @@
+FFFFFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+____________ test_jev_sends_state_and_questions_without_local_waits ____________
+
+    async def test_jev_sends_state_and_questions_without_local_waits():
+        """The backend owns credentials; local wait mappings never enter provider questions."""
+>       jev = api()
+              ^^^^^
+
+tests/test_td_jev.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 00:32:02.920 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+_______________ test_http_failures_are_safe_without_retries[401] _______________
+
+status = 401
+
+    @pytest.mark.parametrize('status', [401, 402, 429, 500])
+    async def test_http_failures_are_safe_without_retries(status):
+        """Failures never become valid probabilities or leak response bodies."""
+>       jev = api()
+              ^^^^^
+
+tests/test_td_jev.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+_______________ test_http_failures_are_safe_without_retries[402] _______________
+
+status = 402
+
+    @pytest.mark.parametrize('status', [401, 402, 429, 500])
+    async def test_http_failures_are_safe_without_retries(status):
+        """Failures never become valid probabilities or leak response bodies."""
+>       jev = api()
+              ^^^^^
+
+tests/test_td_jev.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+_______________ test_http_failures_are_safe_without_retries[429] _______________
+
+status = 429
+
+    @pytest.mark.parametrize('status', [401, 402, 429, 500])
+    async def test_http_failures_are_safe_without_retries(status):
+        """Failures never become valid probabilities or leak response bodies."""
+>       jev = api()
+              ^^^^^
+
+tests/test_td_jev.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+_______________ test_http_failures_are_safe_without_retries[500] _______________
+
+status = 500
+
+    @pytest.mark.parametrize('status', [401, 402, 429, 500])
+    async def test_http_failures_are_safe_without_retries(status):
+        """Failures never become valid probabilities or leak response bodies."""
+>       jev = api()
+              ^^^^^
+
+tests/test_td_jev.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+__________ test_malformed_answer_does_not_fabricate_probability[bad0] __________
+
+bad = {}
+
+    @pytest.mark.parametrize('bad', [
+        {}, {'answers': {'yield': {'type': 'noul', 'noul': .8}}},
+        {'answers': {'yield': {'type': 'noul', 'noul': float('inf')}}},
+    ])
+    def test_malformed_answer_does_not_fabricate_probability(bad):
+        """Missing answers and non-finite values are invalid evidence."""
+        with pytest.raises(ValueError):
+>           api().parse_answer(bad, noul_id='yield', choice_id='state', option_ids={'complete', 'incomplete'})
+            ^^^^^
+
+tests/test_td_jev.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+__________ test_malformed_answer_does_not_fabricate_probability[bad1] __________
+
+bad = {'answers': {'yield': {'noul': 0.8, 'type': 'noul'}}}
+
+    @pytest.mark.parametrize('bad', [
+        {}, {'answers': {'yield': {'type': 'noul', 'noul': .8}}},
+        {'answers': {'yield': {'type': 'noul', 'noul': float('inf')}}},
+    ])
+    def test_malformed_answer_does_not_fabricate_probability(bad):
+        """Missing answers and non-finite values are invalid evidence."""
+        with pytest.raises(ValueError):
+>           api().parse_answer(bad, noul_id='yield', choice_id='state', option_ids={'complete', 'incomplete'})
+            ^^^^^
+
+tests/test_td_jev.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+__________ test_malformed_answer_does_not_fabricate_probability[bad2] __________
+
+bad = {'answers': {'yield': {'noul': inf, 'type': 'noul'}}}
+
+    @pytest.mark.parametrize('bad', [
+        {}, {'answers': {'yield': {'type': 'noul', 'noul': .8}}},
+        {'answers': {'yield': {'type': 'noul', 'noul': float('inf')}}},
+    ])
+    def test_malformed_answer_does_not_fabricate_probability(bad):
+        """Missing answers and non-finite values are invalid evidence."""
+        with pytest.raises(ValueError):
+>           api().parse_answer(bad, noul_id='yield', choice_id='state', option_ids={'complete', 'incomplete'})
+            ^^^^^
+
+tests/test_td_jev.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+        """Load the production Jev client after checking the integration exists."""
+>       assert util.find_spec('src.pipeline.jev') is not None, 'Jev client absent'
+E       AssertionError: Jev client absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1050a68e0>('src.pipeline.jev')
+E        +    where <function find_spec at 0x1050a68e0> = util.find_spec
+
+tests/test_td_jev.py:11: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_jev.py::test_jev_sends_state_and_questions_without_local_waits
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_jev.py::test_jev_sends_state_and_questions_without_local_waits
+FAILED tests/test_td_jev.py::test_http_failures_are_safe_without_retries[401]
+FAILED tests/test_td_jev.py::test_http_failures_are_safe_without_retries[402]
+FAILED tests/test_td_jev.py::test_http_failures_are_safe_without_retries[429]
+FAILED tests/test_td_jev.py::test_http_failures_are_safe_without_retries[500]
+FAILED tests/test_td_jev.py::test_malformed_answer_does_not_fabricate_probability[bad0]
+FAILED tests/test_td_jev.py::test_malformed_answer_does_not_fabricate_probability[bad1]
+FAILED tests/test_td_jev.py::test_malformed_answer_does_not_fabricate_probability[bad2]
+8 failed, 1 warning in 1.14s

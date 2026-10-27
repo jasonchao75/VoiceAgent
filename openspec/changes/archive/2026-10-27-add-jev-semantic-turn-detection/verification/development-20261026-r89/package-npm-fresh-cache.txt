@@ -1,0 +1,8 @@
+npm warn deprecated x-law@0.3.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+added 57 packages in 4s
+npm notice
+npm notice New minor version of npm available! 11.12.1 -> 11.21.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.21.1
+npm notice To update run: npm install -g npm@11.21.1
+npm notice

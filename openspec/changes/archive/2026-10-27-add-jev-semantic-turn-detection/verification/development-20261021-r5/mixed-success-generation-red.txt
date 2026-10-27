@@ -1,0 +1,39 @@
+...........F                                                             [100%]
+=================================== FAILURES ===================================
+____ test_new_mixed_input_after_success_resets_only_when_valid_submit_runs _____
+
+    async def test_new_mixed_input_after_success_resets_only_when_valid_submit_runs():
+        """Questions/invalid parameters preserve the old number; accepted new provision starts fresh."""
+        from src.asr.transcript import SourceSegment, TranscriptView
+        handlers, boundary, owner, state = tools()
+        first = owner.finalize(turn_id='1', source_ids=((0, 'a'),), revision=2, text='号码123')
+        snapshot = TranscriptView('号码123', True,
+                                  (SourceSegment(0, 'a', 2, 0, 1000, '号码123', True),))
+        handlers.bind_snapshot(first.new_response, snapshot, '编号')
+        output = []
+        await handlers.submit(params(boundary, 'submit_identifier', {'identifier': '123'}, output))
+        assert state.successful
+        owner.begin_speech()
+        version = owner.submit(turn_id='2', source_ids=((0, 'b'),), text='新的号码321', final=True)
+        next_input = TranscriptView('新的号码321', True,
+                                    (SourceSegment(0, 'b', 1, 1000, 2000, '新的号码321', True),))
+        handlers.bind_snapshot(version, next_input, '请提供下一个编号')
+        assert state.value == '123' and state.generation == 0
+        await handlers.submit(params(boundary, 'submit_identifier', {'identifier': '111'}, output))
+        assert output[-1]['status'] == 'invalid' and state.value == '123'
+        await handlers.submit(params(boundary, 'submit_identifier', {'identifier': '321'}, output))
+>       assert state.value == '321' and state.generation == 1
+E       AssertionError: assert ('123321' == '321'
+E         
+E         - 321
+E         + 123321)
+
+tests/test_td_identifier_tools.py:233: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_new_mixed_input_after_success_resets_only_when_valid_submit_runs
+1 failed, 11 passed, 1 warning in 1.05s

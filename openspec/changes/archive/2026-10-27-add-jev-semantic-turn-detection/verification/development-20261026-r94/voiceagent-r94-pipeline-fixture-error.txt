@@ -1,0 +1,220 @@
+......F...                                                               [100%]
+=================================== FAILURES ===================================
+_________ test_locked_sdk_pipeline_replacement_waits_for_wire_boundary _________
+
+fut = <Task cancelled name='Task-62' coro=<Event.wait() done, defined at /Users/zhaozichen/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+loop = <_UnixSelectorEventLoop running=False closed=False debug=False>
+cancelling = False, race_handler = None
+
+    async def _cancel_and_wait2(fut, loop, cancelling, race_handler):
+        """
+        The builtin implementation of _cancel_and_wait is made in a way to ensure cancellation of it will always be
+        possible, at the cost of ensuring that the wrapped future shall terminate inside it.
+    
+        The documentation says that
+            - "If a timeout occurs, it cancels the task and raises asyncio.TimeoutError."
+            - "The function will wait until the future is actually cancelled"
+        , but their combination will result in undocumented behaviour:
+            If a timeout occurs and the inner future is cancelled, then cancelling the waiter will instantly cancel
+            it and the inner future may still be running, which does not fulfill the second promise.
+    
+        This implementation will prioritize cancellation or the result of the inner future dynamically as it makes sense.
+        """
+        if not cancelling:
+            # We need to detect explicit cancellations so the good-case value returning will not be used.
+            waiter = loop.create_future()
+            cb = partial(_release_waiter, waiter)
+            fut.add_done_callback(cb)
+            fut.cancel()
+            try:
+                await waiter
+            except CancelledError:
+                cancelling = True  # explicitly cancelling the inner from now on
+            finally:
+                fut.remove_done_callback(cb)
+        else:
+            fut.cancel()
+        # At this point there's no benefit of wrapping the future with a waiter since we're cancelling it?
+        try:
+>           fut_result = await fut
+                         ^^^^^^^^^
+
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/wait_for2/impl.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asyncio.locks.Event object at 0x114e44c10 [unset]>
+
+    async def wait(self):
+        """Block until the internal flag is true.
+    
+        If the internal flag is true on entry, return True
+        immediately.  Otherwise, block until another coroutine calls
+        set() to set the flag to true, then return True.
+        """
+        if self._value:
+            return True
+    
+        fut = self._get_loop().create_future()
+        self._waiters.append(fut)
+        try:
+>           await fut
+E           asyncio.exceptions.CancelledError
+
+/Users/zhaozichen/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/locks.py:213: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+    async def test_locked_sdk_pipeline_replacement_waits_for_wire_boundary():
+        """Exercise SDK interruption/aggregation queues, replacing only network transport."""
+        from pipecat.frames.frames import (
+            InterruptionFrame,
+            LLMFullResponseEndFrame,
+            LLMFullResponseStartFrame,
+            LLMTextFrame,
+            StartFrame,
+            TTSAudioRawFrame,
+        )
+        from pipecat.pipeline.pipeline import Pipeline
+        from pipecat.pipeline.worker import PipelineWorker
+        from pipecat.processors.frame_processor import FrameProcessor
+        from pipecat.workers.runner import WorkerRunner
+    
+        service, owner, _, sent = setup_service()
+        old = owner.current
+        ready, first_speak, interrupted, second_speak, fresh_audio = (
+            asyncio.Event() for _ in range(5)
+        )
+        received = []
+    
+        async def connect():
+            pass
+    
+        async def send(message):
+            sent.append(message)
+            if message['type'] == 'Interrupt':
+                interrupted.set()
+            elif message['type'] == 'Speak':
+                (first_speak if 'old' in message['text'] else second_speak).set()
+    
+        service._connect = connect
+        service._disconnect = connect
+        service._transport_send_json = send
+    
+        class Sink(FrameProcessor):
+            async def process_frame(self, frame, direction):
+                await super().process_frame(frame, direction)
+                if isinstance(frame, StartFrame):
+                    ready.set()
+                if isinstance(frame, TTSAudioRawFrame):
+                    received.append(frame)
+                    if frame.audio == b'\x02\x00' * 240:
+                        fresh_audio.set()
+    
+        worker = PipelineWorker(Pipeline([service, Sink()]), enable_rtvi=False)
+        running = asyncio.create_task(WorkerRunner(handle_sigint=False).run(worker))
+    
+        async def enqueue(version, text):
+            frames = [LLMFullResponseStartFrame(), LLMTextFrame(text), LLMFullResponseEndFrame()]
+            for frame in frames:
+                frame.metadata['td_response_id'] = version.response_id
+            await worker.queue_frames(frames)
+    
+        try:
+            await asyncio.wait_for(ready.wait(), 2)
+            await enqueue(old, 'old.')
+>           await asyncio.wait_for(first_speak.wait(), 2)
+
+tests/test_flux_interrupt_boundary.py:173: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/wait_for2/impl.py:172: in wait_for
+    return await _cancel_and_wait2(fut, loop, False, race_handler)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fut = <Task cancelled name='Task-62' coro=<Event.wait() done, defined at /Users/zhaozichen/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+loop = <_UnixSelectorEventLoop running=False closed=False debug=False>
+cancelling = False, race_handler = None
+
+    async def _cancel_and_wait2(fut, loop, cancelling, race_handler):
+        """
+        The builtin implementation of _cancel_and_wait is made in a way to ensure cancellation of it will always be
+        possible, at the cost of ensuring that the wrapped future shall terminate inside it.
+    
+        The documentation says that
+            - "If a timeout occurs, it cancels the task and raises asyncio.TimeoutError."
+            - "The function will wait until the future is actually cancelled"
+        , but their combination will result in undocumented behaviour:
+            If a timeout occurs and the inner future is cancelled, then cancelling the waiter will instantly cancel
+            it and the inner future may still be running, which does not fulfill the second promise.
+    
+        This implementation will prioritize cancellation or the result of the inner future dynamically as it makes sense.
+        """
+        if not cancelling:
+            # We need to detect explicit cancellations so the good-case value returning will not be used.
+            waiter = loop.create_future()
+            cb = partial(_release_waiter, waiter)
+            fut.add_done_callback(cb)
+            fut.cancel()
+            try:
+                await waiter
+            except CancelledError:
+                cancelling = True  # explicitly cancelling the inner from now on
+            finally:
+                fut.remove_done_callback(cb)
+        else:
+            fut.cancel()
+        # At this point there's no benefit of wrapping the future with a waiter since we're cancelling it?
+        try:
+            fut_result = await fut
+            if not cancelling:
+                return fut_result
+        except CancelledError as exc:
+            if cancelling:
+                raise exc
+>           raise TimeoutError() from exc
+E           TimeoutError
+
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/wait_for2/impl.py:67: TimeoutError
+----------------------------- Captured stderr call -----------------------------
+2026-10-26 05:12:33.114 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> ScopedDeepgramFluxTTSService#6
+2026-10-26 05:12:33.114 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking ScopedDeepgramFluxTTSService#6 -> Sink#0
+2026-10-26 05:12:33.115 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-26 05:12:33.115 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-26 05:12:33.115 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-10-26 05:12:33.116 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-b5e52d14': started running
+2026-10-26 05:12:33.116 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-b5e52d14': added worker 'PipelineWorker#0'
+2026-10-26 05:12:33.116 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-b5e52d14': starting worker 'PipelineWorker#0'
+[nltk_data] Error loading punkt_tab: <urlopen error pathsec.urlopen:
+[nltk_data]     no validated address for host
+[nltk_data]     'raw.githubusercontent.com'; refusing to connect by
+[nltk_data]     unvalidated hostname>
+2026-10-26 05:12:33.207 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-10-26 05:12:35.209 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-26 05:12:35.210 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-10-26 05:12:35.212 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#0: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-26 05:12:37.211 | DEBUG    | pipecat.pipeline.worker:_handle_worker_cancel:1347 - Worker 'PipelineWorker#0': received cancel
+2026-10-26 05:12:55.214 | WARNING  | pipecat.pipeline.worker:wait_for_cancel:1212 - PipelineWorker#0: timeout waiting for CancelFrame#0(reason: None) to reach the end of the pipeline (being blocked somewhere?).
+2026-10-26 05:12:55.216 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#0: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-26 05:12:55.219 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#0 is finishing...
+2026-10-26 05:12:55.220 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#0 has finished
+2026-10-26 05:12:55.221 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-b5e52d14': finished running
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+tests/test_flux_interrupt_boundary.py::test_locked_sdk_pipeline_replacement_waits_for_wire_boundary
+  /Users/zhaozichen/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py:84: DeprecationWarning: Passing a worker to WorkerRunner.run() is deprecated; register it with WorkerRunner.add_workers() before calling run() instead.
+    self._context.run(self._callback, *self._args)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_flux_interrupt_boundary.py::test_locked_sdk_pipeline_replacement_waits_for_wire_boundary
+1 failed, 9 passed, 4 warnings in 23.29s

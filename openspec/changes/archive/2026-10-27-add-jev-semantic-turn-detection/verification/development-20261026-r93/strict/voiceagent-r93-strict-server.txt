@@ -1,0 +1,157 @@
+2026-10-26 11:25:38.064 | INFO     | pipecat:<module>:54 - ᓚᘏᗢ Pipecat 1.8.1 (Python 3.11.17 (main, Oct 21 2026, 01:13:51) [GCC 14.2.0]) ᓚᘏᗢ
+/usr/local/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.17) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+  warnings.warn(message, FutureWarning)
+2026-10-26 11:25:38.778 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+{"outbound_guard": "non-loopback rejected before connect"}
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     172.17.0.1:60772 - "WebSocket /api/ws/FfQ0FzCGJJ0JJUU0BAXg8pZvp3uT9k2De1nqrdXr3d0" [accepted]
+INFO:     connection open
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> FastAPIWebsocketInputTransport#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking FastAPIWebsocketInputTransport#0 -> CustomTDAudioInput#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDAudioInput#0 -> LocalASR#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LocalASR#0 -> CustomTDCoordinator#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDCoordinator#0 -> TDUserAggregator#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking TDUserAggregator#0 -> LocalLLM#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LocalLLM#0 -> AssistantContextBridge#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking AssistantContextBridge#0 -> LocalSynth#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LocalSynth#0 -> AudioTaskTagger#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking AudioTaskTagger#0 -> SerialAudioOutput#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking SerialAudioOutput#0 -> FastAPIWebsocketOutputTransport#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking FastAPIWebsocketOutputTransport#0 -> LLMAssistantAggregator#0
+2026-10-26 11:26:26.036 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LLMAssistantAggregator#0 -> Pipeline#0::Sink
+2026-10-26 11:26:26.037 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f::Source -> RTVIProcessor#0
+2026-10-26 11:26:26.037 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking RTVIProcessor#0 -> Pipeline#0
+2026-10-26 11:26:26.037 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f::Sink
+2026-10-26 11:26:26.037 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-9fbcde54': added worker 'voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f'
+2026-10-26 11:26:26.037 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-9fbcde54': started running
+2026-10-26 11:26:26.038 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-9fbcde54': starting worker 'voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f'
+2026-10-26 11:26:26.197 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+INFO:src.pipeline.voice_agent:session_connected session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f
+2026-10-26 11:26:26.198 | DEBUG    | pipecat.serializers.protobuf:deserialize:149 - ProtobufFrameSerializer: Transport message InputTransportMessageFrame#0(message: {'label': 'rtvi-ai', 'type': 'client-ready', 'data': {'version': '2.1.0', 'about': {'library': '@pipecat-ai/client-js', 'library_version': '1.13.0', 'platform_details': {'browser': 'Chrome', 'browser_version': '153.0.8010.12', 'platform_type': 'desktop', 'engine': 'Blink'}, 'platform': 'Windows', 'platform_version': 'NT 10.0'}}, 'id': '0312818a'})
+2026-10-26 11:26:26.198 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:_handle_client_ready:386 - Received client-ready: version 2.1.0
+2026-10-26 11:26:26.198 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:_handle_client_ready:423 - Client Details: library='@pipecat-ai/client-js' library_version='1.13.0' platform='Windows' platform_version='NT 10.0' platform_details={'browser': 'Chrome', 'browser_version': '153.0.8010.12', 'platform_type': 'desktop', 'engine': 'Blink'}
+2026-10-26 11:26:26.198 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:set_client_ready:130 - RTVIProcessor#0: client is ready
+2026-10-26 11:26:26.199 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f' ready (local)
+2026-10-26 11:26:26.199 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-9fbcde54': broadcasting registry: ['voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f']
+2026-10-26 11:26:26.199 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f': activated
+2026-10-26 11:26:26.200 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-10-26 11:26:26.201 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - LocalSynth#0: Generating TTS [Local fixture opening.]
+2026-10-26 11:26:26.201 | DEBUG    | pipecat.services.tts_service:append_to_audio_context:1533 - LocalSynth#0 recreating audio context 96f39339-ac51-43c6-97e3-12116100dd7b
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=tts_first_audio elapsed_ms=165.3
+2026-10-26 11:26:26.203 | DEBUG    | pipecat.transports.base_output:_bot_started_speaking:706 - Bot started speaking
+2026-10-26 11:26:26.204 | DEBUG    | pipecat.services.tts_service:push_frame:935 - LocalSynth#0 cleaning up TTS context 96f39339-ac51-43c6-97e3-12116100dd7b
+2026-10-26 11:26:26.285 | DEBUG    | pipecat.transports.base_output:_handle_frame:824 - Bot stopped speaking based on TTSStoppedFrame
+2026-10-26 11:26:26.285 | DEBUG    | pipecat.transports.base_output:_bot_stopped_speaking:758 - Bot stopped speaking
+2026-10-26 11:26:27.518 | DEBUG    | pipecat.turns.user_start.external_user_turn_start_strategy:process_frame:71 - ExternalUserTurnStartStrategy#0: resolving a proposed user turn start
+2026-10-26 11:26:27.518 | DEBUG    | pipecat.processors.aggregators.llm_response_universal:_on_user_turn_started:1281 - TDUserAggregator#0: User started speaking (strategy: ExternalUserTurnStartStrategy#0)
+2026-10-26 11:26:27.519 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:1019 - TDUserAggregator#0: broadcasting interruption
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=user_turn_start elapsed_ms=1482.5
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=user_turn_start elapsed_ms=1482.6
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=interruption elapsed_ms=1482.7
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=td_commit elapsed_ms=3268.5
+2026-10-26 11:26:29.305 | DEBUG    | pipecat.processors.aggregators.llm_response_universal:_on_user_turn_inference_triggered:1313 - TDUserAggregator#0: User turn inference triggered (strategy: TDStopStrategy#0)
+2026-10-26 11:26:29.305 | DEBUG    | pipecat.processors.aggregators.llm_response_universal:_on_user_turn_stopped:1338 - TDUserAggregator#0: User stopped speaking (strategy: TDStopStrategy#0)
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=user_turn_end elapsed_ms=3269.2
+2026-10-26 11:26:29.306 | DEBUG    | pipecat.services.llm_service:_compose_system_instruction:636 - LocalLLM#0: System instruction composed: None
+2026-10-26 11:26:29.306 | DEBUG    | pipecat.processors.metrics.frame_processor_metrics:stop_processing_metrics:308 - LocalLLM#0 processing time: 0.000s
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=llm_first_token elapsed_ms=3294.8
+2026-10-26 11:26:29.335 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - LocalSynth#0: Generating TTS [Response to local partial.]
+2026-10-26 11:26:29.336 | DEBUG    | pipecat.services.tts_service:append_to_audio_context:1533 - LocalSynth#0 recreating audio context 82bffd91-3510-4cbc-98f7-491d236114c4
+INFO:src.observability:session_event session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f event=tts_first_audio elapsed_ms=3329.6
+2026-10-26 11:26:29.377 | DEBUG    | pipecat.transports.base_output:_bot_started_speaking:706 - Bot started speaking
+2026-10-26 11:26:29.405 | DEBUG    | pipecat.services.tts_service:push_frame:935 - LocalSynth#0 cleaning up TTS context 82bffd91-3510-4cbc-98f7-491d236114c4
+2026-10-26 11:26:29.816 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:1019 - CustomTDCoordinator#0: broadcasting interruption
+2026-10-26 11:26:29.819 | DEBUG    | pipecat.services.llm_service:_compose_system_instruction:636 - LocalLLM#0: System instruction composed: None
+2026-10-26 11:26:29.820 | DEBUG    | pipecat.processors.metrics.frame_processor_metrics:stop_processing_metrics:308 - LocalLLM#0 processing time: 0.000s
+2026-10-26 11:26:29.823 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - LocalSynth#0: Generating TTS [Response to local final.]
+2026-10-26 11:26:29.824 | DEBUG    | pipecat.services.tts_service:append_to_audio_context:1533 - LocalSynth#0 recreating audio context 347adc74-9eea-44ca-b64f-429e3b2fba42
+2026-10-26 11:26:29.833 | DEBUG    | pipecat.transports.base_output:_bot_stopped_speaking:758 - Bot stopped speaking
+2026-10-26 11:26:29.839 | DEBUG    | pipecat.transports.base_output:_bot_started_speaking:706 - Bot started speaking
+2026-10-26 11:26:29.847 | DEBUG    | pipecat.services.tts_service:push_frame:935 - LocalSynth#0 cleaning up TTS context 347adc74-9eea-44ca-b64f-429e3b2fba42
+2026-10-26 11:26:30.322 | DEBUG    | pipecat.transports.base_output:_handle_frame:824 - Bot stopped speaking based on TTSStoppedFrame
+2026-10-26 11:26:30.322 | DEBUG    | pipecat.transports.base_output:_bot_stopped_speaking:758 - Bot stopped speaking
+INFO:src.pipeline.voice_agent:session_disconnected session_id=4a142aa6-9855-439c-ab4f-41e18d8fe33f
+2026-10-26 11:26:30.866 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f
+2026-10-26 11:26:30.866 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-26 11:26:30.870 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f: CancelFrame#0(reason: None) reached the end of the pipeline.
+2026-10-26 11:26:30.870 | DEBUG    | pipecat.utils.base_object:cleanup:176 - voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-26 11:26:30.872 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f is finishing...
+2026-10-26 11:26:30.872 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker voice-session-4a142aa6-9855-439c-ab4f-41e18d8fe33f has finished
+2026-10-26 11:26:30.873 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-9fbcde54': finished running
+INFO:     172.17.0.1:62882 - "WebSocket /api/ws/YxxEnpdVssxIi_nYa8AtppTI8w161ZXgFx_MQ07tLQA" [accepted]
+INFO:     connection open
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2::Source -> FastAPIWebsocketInputTransport#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking FastAPIWebsocketInputTransport#1 -> CustomTDAudioInput#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDAudioInput#1 -> LocalASR#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LocalASR#1 -> CustomTDCoordinator#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDCoordinator#1 -> TDUserAggregator#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking TDUserAggregator#1 -> LocalLLM#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LocalLLM#1 -> AssistantContextBridge#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking AssistantContextBridge#1 -> LocalSynth#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LocalSynth#1 -> AudioTaskTagger#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking AudioTaskTagger#1 -> SerialAudioOutput#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking SerialAudioOutput#1 -> FastAPIWebsocketOutputTransport#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking FastAPIWebsocketOutputTransport#1 -> LLMAssistantAggregator#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LLMAssistantAggregator#1 -> Pipeline#2::Sink
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking voice-session-0e30f02b-3380-4e52-939d-168539532a88::Source -> RTVIProcessor#1
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking RTVIProcessor#1 -> Pipeline#2
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2 -> voice-session-0e30f02b-3380-4e52-939d-168539532a88::Sink
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-f5de0e36': added worker 'voice-session-0e30f02b-3380-4e52-939d-168539532a88'
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-f5de0e36': started running
+2026-10-26 11:27:16.862 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-f5de0e36': starting worker 'voice-session-0e30f02b-3380-4e52-939d-168539532a88'
+2026-10-26 11:27:16.863 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - voice-session-0e30f02b-3380-4e52-939d-168539532a88: Starting. Waiting for StartFrame#1 to reach the end of the pipeline...
+INFO:src.pipeline.voice_agent:session_connected session_id=0e30f02b-3380-4e52-939d-168539532a88
+2026-10-26 11:27:16.865 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'voice-session-0e30f02b-3380-4e52-939d-168539532a88' ready (local)
+2026-10-26 11:27:16.865 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-f5de0e36': broadcasting registry: ['voice-session-0e30f02b-3380-4e52-939d-168539532a88']
+2026-10-26 11:27:16.865 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'voice-session-0e30f02b-3380-4e52-939d-168539532a88': activated
+2026-10-26 11:27:16.865 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - voice-session-0e30f02b-3380-4e52-939d-168539532a88: StartFrame#1 reached the end of the pipeline, pipeline is now ready.
+2026-10-26 11:27:16.870 | DEBUG    | pipecat.serializers.protobuf:deserialize:149 - ProtobufFrameSerializer: Transport message InputTransportMessageFrame#3(message: {'label': 'rtvi-ai', 'type': 'client-ready', 'data': {'version': '2.1.0', 'about': {'library': '@pipecat-ai/client-js', 'library_version': '1.13.0', 'platform_details': {'browser': 'Chrome', 'browser_version': '153.0.8010.12', 'platform_type': 'desktop', 'engine': 'Blink'}, 'platform': 'Windows', 'platform_version': 'NT 10.0'}}, 'id': 'a3a90925'})
+2026-10-26 11:27:16.870 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:_handle_client_ready:386 - Received client-ready: version 2.1.0
+2026-10-26 11:27:16.870 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:_handle_client_ready:423 - Client Details: library='@pipecat-ai/client-js' library_version='1.13.0' platform='Windows' platform_version='NT 10.0' platform_details={'browser': 'Chrome', 'browser_version': '153.0.8010.12', 'platform_type': 'desktop', 'engine': 'Blink'}
+2026-10-26 11:27:16.870 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:set_client_ready:130 - RTVIProcessor#1: client is ready
+2026-10-26 11:27:16.872 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - LocalSynth#1: Generating TTS [Local fixture opening.]
+2026-10-26 11:27:16.872 | DEBUG    | pipecat.services.tts_service:append_to_audio_context:1533 - LocalSynth#1 recreating audio context 16a6ba5a-1573-4317-b367-60ccf91a0aba
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=tts_first_audio elapsed_ms=10.7
+2026-10-26 11:27:16.874 | DEBUG    | pipecat.transports.base_output:_bot_started_speaking:706 - Bot started speaking
+2026-10-26 11:27:16.874 | DEBUG    | pipecat.services.tts_service:push_frame:935 - LocalSynth#1 cleaning up TTS context 16a6ba5a-1573-4317-b367-60ccf91a0aba
+2026-10-26 11:27:16.956 | DEBUG    | pipecat.transports.base_output:_handle_frame:824 - Bot stopped speaking based on TTSStoppedFrame
+2026-10-26 11:27:16.956 | DEBUG    | pipecat.transports.base_output:_bot_stopped_speaking:758 - Bot stopped speaking
+2026-10-26 11:27:18.369 | DEBUG    | pipecat.turns.user_start.external_user_turn_start_strategy:process_frame:71 - ExternalUserTurnStartStrategy#1: resolving a proposed user turn start
+2026-10-26 11:27:18.370 | DEBUG    | pipecat.processors.aggregators.llm_response_universal:_on_user_turn_started:1281 - TDUserAggregator#1: User started speaking (strategy: ExternalUserTurnStartStrategy#1)
+2026-10-26 11:27:18.370 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:1019 - TDUserAggregator#1: broadcasting interruption
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=user_turn_start elapsed_ms=1508.7
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=user_turn_start elapsed_ms=1508.8
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=interruption elapsed_ms=1508.8
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=td_commit elapsed_ms=3296.5
+2026-10-26 11:27:20.160 | DEBUG    | pipecat.processors.aggregators.llm_response_universal:_on_user_turn_inference_triggered:1313 - TDUserAggregator#1: User turn inference triggered (strategy: TDStopStrategy#1)
+2026-10-26 11:27:20.160 | DEBUG    | pipecat.processors.aggregators.llm_response_universal:_on_user_turn_stopped:1338 - TDUserAggregator#1: User stopped speaking (strategy: TDStopStrategy#1)
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=user_turn_end elapsed_ms=3299.1
+2026-10-26 11:27:20.162 | DEBUG    | pipecat.services.llm_service:_compose_system_instruction:636 - LocalLLM#1: System instruction composed: None
+2026-10-26 11:27:20.162 | DEBUG    | pipecat.processors.metrics.frame_processor_metrics:stop_processing_metrics:308 - LocalLLM#1 processing time: 0.000s
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=llm_first_token elapsed_ms=3301.7
+2026-10-26 11:27:20.165 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - LocalSynth#1: Generating TTS [Response to local partial.]
+2026-10-26 11:27:20.166 | DEBUG    | pipecat.services.tts_service:append_to_audio_context:1533 - LocalSynth#1 recreating audio context 75e83eeb-168b-4975-91e0-84ff0ab2b0b9
+INFO:src.observability:session_event session_id=0e30f02b-3380-4e52-939d-168539532a88 event=tts_first_audio elapsed_ms=3333.4
+2026-10-26 11:27:20.199 | DEBUG    | pipecat.transports.base_output:_bot_started_speaking:706 - Bot started speaking
+2026-10-26 11:27:20.232 | DEBUG    | pipecat.services.tts_service:push_frame:935 - LocalSynth#1 cleaning up TTS context 75e83eeb-168b-4975-91e0-84ff0ab2b0b9
+2026-10-26 11:27:20.668 | DEBUG    | pipecat.processors.frame_processor:broadcast_interruption:1019 - CustomTDCoordinator#1: broadcasting interruption
+2026-10-26 11:27:20.670 | DEBUG    | pipecat.services.llm_service:_compose_system_instruction:636 - LocalLLM#1: System instruction composed: None
+2026-10-26 11:27:20.670 | DEBUG    | pipecat.processors.metrics.frame_processor_metrics:stop_processing_metrics:308 - LocalLLM#1 processing time: 0.000s
+2026-10-26 11:27:20.674 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - LocalSynth#1: Generating TTS [Response to local final.]
+2026-10-26 11:27:20.675 | DEBUG    | pipecat.services.tts_service:append_to_audio_context:1533 - LocalSynth#1 recreating audio context 964a9dcc-8154-407c-8ce3-39db17462dc8
+2026-10-26 11:27:20.687 | DEBUG    | pipecat.transports.base_output:_bot_stopped_speaking:758 - Bot stopped speaking
+2026-10-26 11:27:20.694 | DEBUG    | pipecat.transports.base_output:_bot_started_speaking:706 - Bot started speaking
+2026-10-26 11:27:20.709 | DEBUG    | pipecat.services.tts_service:push_frame:935 - LocalSynth#1 cleaning up TTS context 964a9dcc-8154-407c-8ce3-39db17462dc8
+2026-10-26 11:27:21.179 | DEBUG    | pipecat.transports.base_output:_handle_frame:824 - Bot stopped speaking based on TTSStoppedFrame
+2026-10-26 11:27:21.180 | DEBUG    | pipecat.transports.base_output:_bot_stopped_speaking:758 - Bot stopped speaking
+INFO:src.pipeline.voice_agent:session_disconnected session_id=0e30f02b-3380-4e52-939d-168539532a88
+2026-10-26 11:27:21.727 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker voice-session-0e30f02b-3380-4e52-939d-168539532a88
+2026-10-26 11:27:21.727 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - voice-session-0e30f02b-3380-4e52-939d-168539532a88: Closing. Waiting for CancelFrame#1(reason: None) to reach the end of the pipeline...
+2026-10-26 11:27:21.729 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - voice-session-0e30f02b-3380-4e52-939d-168539532a88: CancelFrame#1(reason: None) reached the end of the pipeline.
+2026-10-26 11:27:21.729 | DEBUG    | pipecat.utils.base_object:cleanup:176 - voice-session-0e30f02b-3380-4e52-939d-168539532a88: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-26 11:27:21.731 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker voice-session-0e30f02b-3380-4e52-939d-168539532a88 is finishing...
+2026-10-26 11:27:21.732 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker voice-session-0e30f02b-3380-4e52-939d-168539532a88 has finished
+2026-10-26 11:27:21.732 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-f5de0e36': finished running

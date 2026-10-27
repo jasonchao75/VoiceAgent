@@ -1,0 +1,62 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_ test_single_vendor_plan_pins_independent_receiver_and_budget[assemblyai-universal-3-5-pro-streaming.assemblyai.com-0.00375] _
+
+provider = 'assemblyai', model = 'universal-3-5-pro'
+host = 'streaming.assemblyai.com', upper = '0.00375'
+
+    @pytest.mark.parametrize('provider,model,host,upper', [
+        ('assemblyai', 'universal-3-5-pro', 'streaming.assemblyai.com', '0.00375'),
+        ('speechmatics', 'enhanced', 'eu2.rt.speechmatics.com', '0.00667'),
+    ])
+    def test_single_vendor_plan_pins_independent_receiver_and_budget(provider, model, host, upper):
+        """A Deepgram grant cannot authorize a new provider, even with identical audio."""
+        module = probe()
+>       plan = module.build_plan(single_vendor=provider)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_plan() got an unexpected keyword argument 'single_vendor'
+
+tests/test_td_vendor_probe.py:295: TypeError
+_ test_single_vendor_plan_pins_independent_receiver_and_budget[speechmatics-enhanced-eu2.rt.speechmatics.com-0.00667] _
+
+provider = 'speechmatics', model = 'enhanced', host = 'eu2.rt.speechmatics.com'
+upper = '0.00667'
+
+    @pytest.mark.parametrize('provider,model,host,upper', [
+        ('assemblyai', 'universal-3-5-pro', 'streaming.assemblyai.com', '0.00375'),
+        ('speechmatics', 'enhanced', 'eu2.rt.speechmatics.com', '0.00667'),
+    ])
+    def test_single_vendor_plan_pins_independent_receiver_and_budget(provider, model, host, upper):
+        """A Deepgram grant cannot authorize a new provider, even with identical audio."""
+        module = probe()
+>       plan = module.build_plan(single_vendor=provider)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_plan() got an unexpected keyword argument 'single_vendor'
+
+tests/test_td_vendor_probe.py:295: TypeError
+____ test_speechmatics_guard_limits_the_low_level_transport_and_restores_it ____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10addb0b0>
+
+    async def test_speechmatics_guard_limits_the_low_level_transport_and_restores_it(monkeypatch):
+        """Guard the actual handshake path, rather than just the outer Voice client."""
+        from speechmatics.rt import _transport
+        calls = []
+    
+        async def inert_connect(instance, *args, **kwargs):
+            calls.append(instance)
+            return 'offline'
+    
+        monkeypatch.setattr(_transport.Transport, 'connect', inert_connect)
+        module = probe()
+        budget = module.ConnectionBudget()
+>       restore = module.guard_connection(object(), 'speechmatics', 'enhanced', budget)
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'scripts.evaluation.probe_td_compatibility' has no attribute 'guard_connection'
+
+tests/test_td_vendor_probe.py:321: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_single_vendor_plan_pins_independent_receiver_and_budget[assemblyai-universal-3-5-pro-streaming.assemblyai.com-0.00375]
+FAILED tests/test_td_vendor_probe.py::test_single_vendor_plan_pins_independent_receiver_and_budget[speechmatics-enhanced-eu2.rt.speechmatics.com-0.00667]
+FAILED tests/test_td_vendor_probe.py::test_speechmatics_guard_limits_the_low_level_transport_and_restores_it
+3 failed, 15 deselected in 0.06s

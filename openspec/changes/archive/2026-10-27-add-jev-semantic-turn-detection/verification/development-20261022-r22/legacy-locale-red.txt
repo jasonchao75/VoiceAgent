@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:18984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px (5.7s)
+
+
+  1) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#history-dialog').locator('#td-history-language')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#history-dialog').locator('#td-history-language') with timeout 5000ms
+      - waiting for locator('#history-dialog').locator('#td-history-language')
+
+
+      38 |     expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.client);
+      39 |     const originalText=await dialog.locator(".message p").allTextContents();
+    > 40 |     await expect(dialog.locator("#td-history-language")).toBeVisible();
+         |                                                          ^
+      41 |     await dialog.locator("#td-history-language").selectOption("zh");
+      42 |     await expect(dialog.locator(".turn-td>summary").first()).toContainText("TD 判断记录");
+      43 |     expect(await dialog.locator(".message p").allTextContents()).toEqual(originalText);
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:40:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:11:3 › history keeps legacy playback unverified at 1440px 

@@ -1,0 +1,1 @@
+INFO:__main__:Dry plan: deepgram-td-asr-synthetic-v1 calls=9 ceiling=USD0.10 sha256=9cdcc4452e8437028f98abccd35814f25885af33dfa53a95759de19c8e93a74b

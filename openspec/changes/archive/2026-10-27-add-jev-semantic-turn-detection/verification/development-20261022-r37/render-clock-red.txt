@@ -1,0 +1,36 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (2.383ms)
+✔ targeted clear removes future samples without claiming they rendered (0.445375ms)
+✖ render coordinates identify first sample and preserve the last sample across late end markers (1.204333ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 48.213875
+
+✖ failing tests:
+
+test at frontend/tests/unit/td-audio-worklet.test.js:51:1
+✖ render coordinates identify first sample and preserve the last sample across late end markers (1.204333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 1024
+  
+      at TestContext.<anonymous> (file:///Volumes/work/OpenCode/VoiceAgent/frontend/tests/unit/td-audio-worklet.test.js:55:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 1024,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

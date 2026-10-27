@@ -1,0 +1,58 @@
+2026-10-24 18:50:45.950 | INFO     | pipecat:<module>:54 - ᓚᘏᗢ Pipecat 1.8.1 (Python 3.13.2 (v3.13.2:4f8bb3947cf, Feb  4 2025, 11:51:10) [Clang 15.0.0 (clang-1500.3.9.4)]) ᓚᘏᗢ
+2026-10-24 18:50:46.800 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+INFO:     Started server process [89533]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8791 (Press CTRL+C to quit)
+INFO:     127.0.0.1:61557 - "POST /offer?candidate_diagnostic=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61557 - "POST /close HTTP/1.1" 200 OK
+2026-10-24 18:51:19.017 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> SerialAudioOutput#0
+2026-10-24 18:51:19.017 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking SerialAudioOutput#0 -> Sink#0
+2026-10-24 18:51:19.017 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-24 18:51:19.017 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-24 18:51:19.017 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+INFO:     127.0.0.1:61586 - "POST /serial-offer/final HTTP/1.1" 200 OK
+2026-10-24 18:51:19.048 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-0ca451c0': added worker 'PipelineWorker#0'
+2026-10-24 18:51:19.048 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-0ca451c0': started running
+2026-10-24 18:51:19.048 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-0ca451c0': starting worker 'PipelineWorker#0'
+2026-10-24 18:51:19.164 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-10-24 18:51:19.167 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#0' ready (local)
+2026-10-24 18:51:19.167 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-0ca451c0': broadcasting registry: ['PipelineWorker#0']
+2026-10-24 18:51:19.167 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'PipelineWorker#0': activated
+2026-10-24 18:51:19.167 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+INFO:     127.0.0.1:61586 - "POST /serial-result HTTP/1.1" 200 OK
+2026-10-24 18:51:19.575 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-24 18:51:19.575 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#0: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-24 18:51:19.576 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - PipelineWorker#0: CancelFrame#0(reason: None) reached the end of the pipeline.
+2026-10-24 18:51:19.576 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#0: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-24 18:51:19.576 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#0 is finishing...
+2026-10-24 18:51:19.577 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#0 has finished
+2026-10-24 18:51:19.577 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-0ca451c0': finished running
+INFO:     127.0.0.1:61586 - "POST /close HTTP/1.1" 200 OK
+2026-10-24 18:51:19.973 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2::Source -> SerialAudioOutput#1
+2026-10-24 18:51:19.973 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking SerialAudioOutput#1 -> Sink#1
+2026-10-24 18:51:19.973 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#1 -> Pipeline#2::Sink
+2026-10-24 18:51:19.973 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#1::Source -> Pipeline#2
+2026-10-24 18:51:19.973 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2 -> PipelineWorker#1::Sink
+INFO:     127.0.0.1:61596 - "POST /serial-offer/identifier HTTP/1.1" 200 OK
+2026-10-24 18:51:20.006 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-4ef6b831': added worker 'PipelineWorker#1'
+2026-10-24 18:51:20.006 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-4ef6b831': started running
+2026-10-24 18:51:20.006 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-4ef6b831': starting worker 'PipelineWorker#1'
+2026-10-24 18:51:20.006 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#1: Starting. Waiting for StartFrame#1 to reach the end of the pipeline...
+2026-10-24 18:51:20.009 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#1' ready (local)
+2026-10-24 18:51:20.009 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-4ef6b831': broadcasting registry: ['PipelineWorker#1']
+2026-10-24 18:51:20.009 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'PipelineWorker#1': activated
+2026-10-24 18:51:20.009 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#1: StartFrame#1 reached the end of the pipeline, pipeline is now ready.
+INFO:     127.0.0.1:61596 - "POST /serial-result HTTP/1.1" 200 OK
+2026-10-24 18:51:20.436 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#1
+2026-10-24 18:51:20.436 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#1: Closing. Waiting for CancelFrame#1(reason: None) to reach the end of the pipeline...
+2026-10-24 18:51:20.437 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - PipelineWorker#1: CancelFrame#1(reason: None) reached the end of the pipeline.
+2026-10-24 18:51:20.437 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#1: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-24 18:51:20.438 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#1 is finishing...
+2026-10-24 18:51:20.438 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#1 has finished
+2026-10-24 18:51:20.439 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-4ef6b831': finished running
+INFO:     127.0.0.1:61596 - "POST /close HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [89533]

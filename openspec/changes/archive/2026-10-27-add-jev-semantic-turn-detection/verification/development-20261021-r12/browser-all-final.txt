@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:7107) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 1440px (706ms)
+  ✓  2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 390px (380ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 1440px (463ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 390px (425ms)
+  ✓  5 [desktop-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (532ms)
+  ✓  6 [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings (1.1s)
+
+  6 passed (4.1s)

@@ -1,0 +1,20 @@
+{
+  "checks": [
+    {
+      "call_id": "229e84a0-9af1-43a3-a155-2c6778454f9b",
+      "exact_http_history_after_process_restart": true,
+      "response_ids": [
+        "1:1",
+        "1:2"
+      ]
+    },
+    {
+      "call_id": "7fcf4340-689c-46e6-9212-40892d9b18d3",
+      "exact_http_history_after_process_restart": true,
+      "response_ids": [
+        "1:1",
+        "1:2"
+      ]
+    }
+  ]
+}

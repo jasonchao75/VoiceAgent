@@ -1,0 +1,35 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (1.636958ms)
+✔ targeted clear removes future samples without claiming they rendered (0.837292ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (0.461083ms)
+✖ clock challenge is observed in an actual later quantum without changing audio (2.745042ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 39.838667
+
+✖ failing tests:
+
+test at frontend/tests/unit/td-audio-worklet.test.js:69:1
+✖ clock challenge is observed in an actual later quantum without changing audio (2.745042ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(anchor)
+  
+      at TestContext.<anonymous> (file:///Volumes/work/OpenCode/VoiceAgent/frontend/tests/unit/td-audio-worklet.test.js:76:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

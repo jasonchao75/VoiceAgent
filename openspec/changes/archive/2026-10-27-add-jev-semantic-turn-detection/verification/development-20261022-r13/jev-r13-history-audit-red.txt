@@ -1,0 +1,148 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_jev_history_keeps_sent_snapshot_duration_and_wait_decomposition _____
+
+    async def test_jev_history_keeps_sent_snapshot_duration_and_wait_decomposition():
+        import asyncio
+        from src.pipeline.jev import JevResult
+    
+        events = []
+    
+        async def decide(**kwargs):
+            return JevResult("ok", noul=0.9, probabilities={"complete": 0.8, "incomplete": 0.2})
+    
+        td = coordinator(decide=decide, evidence_sink=events.append)
+    
+        async def push(*args, **kwargs):
+            pass
+    
+        td.push_frame = push
+        td.assistant_context("original assistant")
+        await td.speech_started()
+        await td.receive_transcript(interim())
+        await td.speech_stopped(1000)
+        await asyncio.wait_for(td._decision, 1)
+>       request = next(e for e in events if e["event"] == "jev_request")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+tests/test_td_runtime.py:738: StopIteration
+
+The above exception was the direct cause of the following exception:
+
+self = <Coroutine test_jev_history_keeps_sent_snapshot_duration_and_wait_decomposition>
+
+    def runtest(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        runner = self._request.getfixturevalue(runner_fixture_id)
+        context = contextvars.copy_context()
+        synchronized_obj = _synchronize_coroutine(
+            getattr(*self._synchronization_target_attr), runner, context
+        )
+        with MonkeyPatch.context() as c:
+            c.setattr(*self._synchronization_target_attr, synchronized_obj)
+>           super().runtest()
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:569: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:905: in inner
+    runner.run(coro, context=context)
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_UnixSelectorEventLoop running=False closed=False debug=False>
+future = <Task finished name='Task-1' coro=<test_jev_history_keeps_sent_snapshot_duration_and_wait_decomposition() done, define...olumes/work/OpenCode/VoiceAgent/tests/test_td_runtime.py:718> exception=RuntimeError('coroutine raised StopIteration')>
+
+    def run_until_complete(self, future):
+        """Run until the Future is done.
+    
+        If the argument is a coroutine, it is wrapped in a Task.
+    
+        WARNING: It would be disastrous to call run_until_complete()
+        with the same coroutine twice -- it would wrap it in two
+        different Tasks and that can't be good.
+    
+        Return the Future's result, or raise its exception.
+        """
+        self._check_closed()
+        self._check_running()
+    
+        new_task = not futures.isfuture(future)
+        future = tasks.ensure_future(future, loop=self)
+        if new_task:
+            # An exception is raised if the future didn't complete, so there
+            # is no need to log the "destroy pending task" message
+            future._log_destroy_pending = False
+    
+        future.add_done_callback(_run_until_complete_cb)
+        try:
+            self.run_forever()
+        except:
+            if new_task and future.done() and not future.cancelled():
+                # The coroutine raised a BaseException. Consume the exception
+                # to not log a warning, the caller doesn't have access to the
+                # local task.
+                future.exception()
+            raise
+        finally:
+            future.remove_done_callback(_run_until_complete_cb)
+        if not future.done():
+            raise RuntimeError('Event loop stopped before Future completed.')
+    
+>       return future.result()
+               ^^^^^^^^^^^^^^^
+E       RuntimeError: coroutine raised StopIteration
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py:725: RuntimeError
+----------------------------- Captured stderr call -----------------------------
+2026-10-22 00:21:26.144 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+_ test_late_cancel_ignoring_jev_result_keeps_original_turn_in_discard_history __
+
+    async def test_late_cancel_ignoring_jev_result_keeps_original_turn_in_discard_history():
+        import asyncio
+        from src.pipeline.jev import JevResult
+    
+        started, cancelled, release = asyncio.Event(), asyncio.Event(), asyncio.Event()
+        events = []
+    
+        async def decide(**kwargs):
+            started.set()
+            try:
+                await release.wait()
+            except asyncio.CancelledError:
+                cancelled.set()
+                await release.wait()
+            return JevResult("timeout")
+    
+        td = coordinator(decide=decide, evidence_sink=events.append)
+    
+        async def push(*args, **kwargs):
+            pass
+    
+        td.push_frame = push
+        await td.speech_started()
+        await td.receive_transcript(interim())
+        await td.speech_stopped(1000)
+        await started.wait()
+        pending = td._decision
+        await td.advance(3500)
+        await td.speech_started()
+        await cancelled.wait()
+        release.set()
+        await asyncio.wait_for(pending, 1)
+        discard = next(e for e in events if e["event"] == "jev_discarded")
+>       assert discard["turn_id"] == 1 and td._active_turn_id == 2
+E       assert (2 == 1)
+
+tests/test_td_runtime.py:784: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_jev_history_keeps_sent_snapshot_duration_and_wait_decomposition
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_jev_history_keeps_sent_snapshot_duration_and_wait_decomposition
+FAILED tests/test_td_runtime.py::test_late_cancel_ignoring_jev_result_keeps_original_turn_in_discard_history
+2 failed, 21 deselected, 1 warning in 1.33s

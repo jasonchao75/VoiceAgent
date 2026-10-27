@@ -1,0 +1,6 @@
+{
+  "decision": "D-067",
+  "connections_max": 3,
+  "first_gate_only_until_passed": true,
+  "no_replay": true
+}

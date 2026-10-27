@@ -1,0 +1,541 @@
+{
+  "purpose": "stage review mapping, not final requirement PASS",
+  "requirements": [
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 3,
+      "requirement": "Self-developed TD source for every catalog ASR model",
+      "representative_test": "tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off",
+      "coverage_boundary": "E1/E4；六模型配置可选，不等于真实兼容",
+      "scenarios": [
+        {
+          "name": "Select self-developed for any supported ASR",
+          "line": 6
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 10,
+      "requirement": "Conditional custom TD configuration",
+      "representative_test": "tests/test_td_config.py::test_td_draft_persists_when_source_hidden_and_restart",
+      "coverage_boundary": "E1/E4；本地保存/恢复，完整UI仍未签A/B",
+      "scenarios": [
+        {
+          "name": "Switch source away and back",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 18,
+      "requirement": "Existing Sessions and Share visual structure",
+      "representative_test": "frontend/tests/ui/td-history-evidence.spec.js::formal per-turn history preserves candidates and response versions at 1440px",
+      "coverage_boundary": "E5；正式Sessions列表/抽屉截图，Share缺完整定向视觉矩阵",
+      "scenarios": [
+        {
+          "name": "Inspect sample TD record",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 25,
+      "requirement": "Per-turn TD history evidence",
+      "representative_test": "tests/test_td_history.py::test_final_replacement_retains_each_generated_response_with_original_turn_identity",
+      "coverage_boundary": "E1/E5/E6；跨时钟数值未闭环",
+      "scenarios": [
+        {
+          "name": "Resumed speech creates multiple attempts in one turn",
+          "line": 28
+        },
+        {
+          "name": "Preview normal and legacy conversations",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 36,
+      "requirement": "Pre-generated echo audio and publish validation",
+      "representative_test": "tests/test_echo_api.py::test_cache_generate_preview_restart_and_publish_only_check",
+      "coverage_boundary": "E1/E6；真实TTS失败，试听为本地合成",
+      "scenarios": [
+        {
+          "name": "Change playback gap",
+          "line": 39
+        },
+        {
+          "name": "Publish with missing audio",
+          "line": 43
+        },
+        {
+          "name": "Prototype without real audio",
+          "line": 47
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 51,
+      "requirement": "Compact vocabulary audio controls",
+      "representative_test": "tests/test_echo_cache.py::test_durable_units_deduplicate_generation_but_not_playback",
+      "coverage_boundary": "E1/E4/E6；正式控件已接，真实音质未验证",
+      "scenarios": [
+        {
+          "name": "Multiple aliases share audio",
+          "line": 54
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 58,
+      "requirement": "Configurable overlength reminder",
+      "representative_test": "tests/test_td_rule_settings.py::test_explicit_priority_settings_are_frozen_and_serializable",
+      "coverage_boundary": "E1/E4；运行场景另见identifier_rules/runtime，不以配置测试证明播放",
+      "scenarios": [
+        {
+          "name": "Configure distinct reminders",
+          "line": 61
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 65,
+      "requirement": "Runtime echo cache recovery and fixed echo speed",
+      "representative_test": "tests/test_echo_runtime.py::test_clear_during_missing_asset_repair_never_reinserts_audio",
+      "coverage_boundary": "E1/E7；草稿WS恢复已验，公开发布RTC未接",
+      "scenarios": [
+        {
+          "name": "Cache unavailable after publication",
+          "line": 68
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "line": 72,
+      "requirement": "Jev budget requires no product control",
+      "representative_test": "tests/test_td_config.py::test_jev_budget_is_uniform_without_hidden_ui_field",
+      "coverage_boundary": "E1/E4；无新控件",
+      "scenarios": [
+        {
+          "name": "Create configuration without a hidden budget",
+          "line": 75
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 5,
+      "requirement": "Jev semantic turn mode",
+      "representative_test": "tests/test_td_runtime.py::test_runtime_unexpected_jev_error_is_safe_and_falls_back",
+      "coverage_boundary": "E1/E3；真实Jev仅2文本基本兼容，语言效果/整链未验证",
+      "scenarios": [
+        {
+          "name": "Candidate pause",
+          "line": 8
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 12,
+      "requirement": "Bounded silence and cancellation",
+      "representative_test": "tests/test_td_timing.py::test_revision_invalidates_semantic_result_but_not_hard_deadline",
+      "coverage_boundary": "E1；相关整个timing模块含续说/单提交/最终等待，非真实厂商时延",
+      "scenarios": [
+        {
+          "name": "Valid result arrives",
+          "line": 15
+        },
+        {
+          "name": "Speech resumes",
+          "line": 19
+        },
+        {
+          "name": "Transcript revision",
+          "line": 23
+        },
+        {
+          "name": "Deadline without semantic result",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 31,
+      "requirement": "Single turn authority",
+      "representative_test": "tests/test_td_runtime.py::test_real_pipecat_aggregator_releases_exactly_one_context_after_owned_commit",
+      "coverage_boundary": "E1；SDK本地单一提交",
+      "scenarios": [
+        {
+          "name": "Partial at commit",
+          "line": 34
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 38,
+      "requirement": "Configurable final transcript wait",
+      "representative_test": "tests/test_td_timing.py::test_final_wait_begins_after_semantic_target_and_is_bounded",
+      "coverage_boundary": "E1；模块另含最大截止与latest Partial不重启窗口",
+      "scenarios": [
+        {
+          "name": "Final arrives within configured wait",
+          "line": 41
+        },
+        {
+          "name": "Final wait expires first",
+          "line": 45
+        },
+        {
+          "name": "Maximum silence expires first",
+          "line": 49
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 53,
+      "requirement": "Optional priority echo rules",
+      "representative_test": "tests/test_td_identifier_output.py::test_sent_revision_is_corrected_before_ordinary_without_erasing_original_facts",
+      "coverage_boundary": "E1/E7；WS本地，RTC仲裁未接",
+      "scenarios": [
+        {
+          "name": "Slow variable-length sequence pauses",
+          "line": 56
+        },
+        {
+          "name": "User continues during echo playback",
+          "line": 60
+        },
+        {
+          "name": "Repeated partial update",
+          "line": 64
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 68,
+      "requirement": "Advanced rule configuration and diagnostics",
+      "representative_test": "tests/test_td_identifier_rules.py::test_business_units_ignore_asr_token_count_and_window_trailing_silence",
+      "coverage_boundary": "E1/E4；实际厂商WPM时间覆盖未验证",
+      "scenarios": [
+        {
+          "name": "Explain speed evaluation",
+          "line": 71
+        },
+        {
+          "name": "Account for pause elapsed",
+          "line": 75
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 79,
+      "requirement": "Assistant keyword rule condition",
+      "representative_test": "tests/test_td_identifier_rules.py::test_keyword_gate_and_full_input_format_are_required_before_collection",
+      "coverage_boundary": "E1；严格门槛离线",
+      "scenarios": [
+        {
+          "name": "Explain assistant keyword match",
+          "line": 82
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 86,
+      "requirement": "Stable assistant keyword context",
+      "representative_test": "tests/test_td_runtime.py::test_final_reanswer_keeps_original_input_keyword_gate_and_generation",
+      "coverage_boundary": "E1；SDK＋编号模块，不证明真实LLM工具遵循率",
+      "scenarios": [
+        {
+          "name": "User input is split after one assistant prompt",
+          "line": 89
+        },
+        {
+          "name": "Echo does not replace collection prompt",
+          "line": 93
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 97,
+      "requirement": "Jev configuration prototype",
+      "representative_test": "frontend/tests/ui/td-settings.spec.js::formal Advanced edits and saves explicit TD settings",
+      "coverage_boundary": "E4；预览/编辑/请求无Key；安全凭证另见test_td_credentials.py",
+      "scenarios": [
+        {
+          "name": "Preview request without secret",
+          "line": 100
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 105,
+      "requirement": "Draft semantic waiting fusion preview",
+      "representative_test": "tests/test_td_timing.py::test_distribution_fusion_subtracts_elapsed_once",
+      "coverage_boundary": "E1/E4；825/375例为确定性演示非模型效果",
+      "scenarios": [
+        {
+          "name": "Weighted waiting example",
+          "line": 108
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 112,
+      "requirement": "TD prototype language switching",
+      "representative_test": "frontend/tests/ui/td-runtime.spec.js::formal language switch changes labels without changing TD request or user values",
+      "coverage_boundary": "E4/E5/E7；正式语言/请求及原值保持，非完整全状态A/B",
+      "scenarios": [
+        {
+          "name": "Switch language without changing request",
+          "line": 115
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 120,
+      "requirement": "Number collection completeness configuration",
+      "representative_test": "tests/test_td_identifier.py::test_unfinished_reminder_preserves_and_success_new_start_clears",
+      "coverage_boundary": "E1/E4；配置＋本地状态，RTC播放未接",
+      "scenarios": [
+        {
+          "name": "Target length differs from echo segment size",
+          "line": 123
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 128,
+      "requirement": "Self-developed source is sole final turn authority",
+      "representative_test": "tests/test_td_authority.py::test_no_sdk_timer_or_smart_turn_in_custom_aggregator",
+      "coverage_boundary": "E1；运行时另见stop_strategy测试",
+      "scenarios": [
+        {
+          "name": "Provider boundary while self-developed selected",
+          "line": 131
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 135,
+      "requirement": "Transcript stability is separate from turn ownership",
+      "representative_test": "tests/test_td_transcript.py::test_provider_turn_crosses_td_commit_without_repeating_prefix",
+      "coverage_boundary": "E1/E2；真实digits仍失败；流式Update桥见test_td_asr_events",
+      "scenarios": [
+        {
+          "name": "Final prefix followed by partial tail",
+          "line": 138
+        },
+        {
+          "name": "Flux interim update must reach TD",
+          "line": 143
+        },
+        {
+          "name": "Late final cannot finish newer speech",
+          "line": 147
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 151,
+      "requirement": "Confirmed collection revision and clear behavior",
+      "representative_test": "tests/test_td_identifier_output.py::test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued",
+      "coverage_boundary": "E1/E7；补读、提醒和工具分别见identifier/runtime模块，RTC未接",
+      "scenarios": [
+        {
+          "name": "ASR corrects played content",
+          "line": 154
+        },
+        {
+          "name": "User requests positional correction",
+          "line": 158
+        },
+        {
+          "name": "Reminder preserves collection",
+          "line": 162
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 166,
+      "requirement": "Strict local identifier routing",
+      "representative_test": "tests/test_td_identifier.py::test_mixed_input_is_not_locally_extracted",
+      "coverage_boundary": "E1/E7；同模块覆盖独立/两位/混合，真实模型范围仍未验证",
+      "scenarios": [
+        {
+          "name": "Pure identifier stays local",
+          "line": 171
+        },
+        {
+          "name": "Prefixed identifier uses conversation path",
+          "line": 176
+        },
+        {
+          "name": "Mixed control request",
+          "line": 180
+        },
+        {
+          "name": "Two adjacent identifier units",
+          "line": 184
+        },
+        {
+          "name": "Filler inside input",
+          "line": 188
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 192,
+      "requirement": "Controlled identifier tools for mixed input",
+      "representative_test": "tests/test_td_identifier_pipeline.py::test_real_sdk_identifier_tool_continuation_and_final_share_one_effect",
+      "coverage_boundary": "E1/E7；工具schema/handler/幂等见identifier_tools，真实LLM语义质量未验证",
+      "scenarios": [
+        {
+          "name": "LLM submits normal prefixed identifier",
+          "line": 195
+        },
+        {
+          "name": "Clear on contrastive correction",
+          "line": 199
+        },
+        {
+          "name": "Stale or failed tool call",
+          "line": 203
+        },
+        {
+          "name": "Partial routing changes",
+          "line": 207
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 211,
+      "requirement": "New collection after success",
+      "representative_test": "tests/test_td_runtime.py::test_new_pure_input_resets_only_after_committed_final_success",
+      "coverage_boundary": "E1；受控混合新输入另见test_td_identifier_tools",
+      "scenarios": [
+        {
+          "name": "Start another collection after success",
+          "line": 214
+        },
+        {
+          "name": "Continue an unfinished collection",
+          "line": 219
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 223,
+      "requirement": "Identifier followed by a question",
+      "representative_test": "tests/test_td_runtime.py::test_question_after_processed_pure_input_reuses_state_without_resubmitting_digits",
+      "coverage_boundary": "E1/E7；正式WS清空组合，RTC未接",
+      "scenarios": [
+        {
+          "name": "Question after separately handled identifier",
+          "line": 226
+        },
+        {
+          "name": "Identifier and question in one candidate",
+          "line": 231
+        },
+        {
+          "name": "Ordinary phrase containing a number word",
+          "line": 235
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 240,
+      "requirement": "Confirmed playback arbitration",
+      "representative_test": "tests/test_td_playback.py::test_continuation_preserves_active_echo_but_clear_requires_stop_ack_before_next",
+      "coverage_boundary": "E1/E7；WS任务渲染通过；RTC为未实现，不是仅未测试",
+      "scenarios": [
+        {
+          "name": "Client-confirmed echo start",
+          "line": 243
+        },
+        {
+          "name": "Clear overrides ordinary echo continuation",
+          "line": 247
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 252,
+      "requirement": "Controlled response restart on final after partial submission",
+      "representative_test": "tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial",
+      "coverage_boundary": "E1/E6；D-049首有效Final不判断含义；真实厂商取消残留/完整RTC仍缺",
+      "scenarios": [
+        {
+          "name": "Valid final after submitted partial",
+          "line": 255
+        },
+        {
+          "name": "Final before submission",
+          "line": 260
+        },
+        {
+          "name": "Duplicate or stale final revision",
+          "line": 264
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 268,
+      "requirement": "Uniform Jev session request budget",
+      "representative_test": "tests/test_td_jev.py::test_uniform_100_attempt_budget_includes_failures_and_keeps_watchdog",
+      "coverage_boundary": "E1；100次含失败，费用授权独立",
+      "scenarios": [
+        {
+          "name": "Session exhausts the fixed budget",
+          "line": 271
+        }
+      ]
+    },
+    {
+      "spec": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "line": 276,
+      "requirement": "Bounded failure for unavailable ASR source evidence",
+      "representative_test": "tests/test_td_source_frames.py::test_unknown_connection_keeps_raw_text_and_fails_at_existing_deadline",
+      "coverage_boundary": "E1/E8；r43正式WS错误/历史闭环，真实厂商恢复仍缺",
+      "scenarios": [
+        {
+          "name": "Missing source evidence reaches maximum silence",
+          "line": 282
+        },
+        {
+          "name": "Proven recovery before the maximum",
+          "line": 287
+        }
+      ]
+    }
+  ]
+}

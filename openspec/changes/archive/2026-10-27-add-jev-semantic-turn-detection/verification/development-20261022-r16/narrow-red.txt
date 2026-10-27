@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:10847) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:248:1 › formal TD settings remain operable at 390px with actual saved configuration (647ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:248:1 › formal TD settings remain operable at 390px with actual saved configuration 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 45.625
+    Received:    21
+
+      260 |     return {available:input.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),required:context.measureText("999").width+16};
+      261 |   });
+    > 262 |   expect(numberWidth.available).toBeGreaterThanOrEqual(numberWidth.required);
+          |                                 ^
+      263 |   await page.locator("#echo-gap").fill("90");
+      264 |   await page.getByRole("button",{name:"Save TD settings",exact:true}).click();
+      265 |   await expect(page.locator("#save-state")).toHaveText("Saved");
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:262:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-TD-setti-60a10--actual-saved-configuration-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:248:1 › formal TD settings remain operable at 390px with actual saved configuration 

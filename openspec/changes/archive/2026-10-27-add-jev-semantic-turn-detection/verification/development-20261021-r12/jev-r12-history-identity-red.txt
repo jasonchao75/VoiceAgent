@@ -1,0 +1,33 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_final_replacement_retains_each_generated_response_with_original_turn_identity _
+
+    def test_final_replacement_retains_each_generated_response_with_original_turn_identity():
+        from pipecat.frames.frames import LLMFullResponseEndFrame
+    
+        capture = CallCapture(provider="openai", model="fixture")
+        user = TranscriptionFrame("12", "", "")
+        user.metadata.update(td_commit=True, td_source_final=False, td_turn_id=7)
+        capture.observe(user)
+        capture.observe(LLMContextFrame(LLMContext()))
+        for response_id, text in [("7:1", "old partial answer"), ("7:2", "Final answer")]:
+            frame = LLMTextFrame(text)
+            frame.metadata.update(td_turn_id="7", td_response_id=response_id)
+            capture.observe(frame)
+            # First version may be interrupted without an LLMFullResponseEndFrame.
+        capture.observe(LLMFullResponseEndFrame())
+        evidence = [e for e in capture.td_events if e["event"] == "conversation_utterance"]
+>       assert [(e["role"], e["turn_id"], e.get("response_id"), e["text"]) for e in evidence] == [
+            ("user", 7, None, "12"),
+            ("assistant", "7", "7:1", "old partial answer"),
+            ("assistant", "7", "7:2", "Final answer"),
+        ]
+E       AssertionError: assert [] == [('user', 7, ...inal answer')]
+E         
+E         Right contains 3 more items, first extra item: ('user', 7, None, '12')
+E         Use -v to get more diff
+
+tests/test_td_history.py:179: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_final_replacement_retains_each_generated_response_with_original_turn_identity
+1 failed, 8 deselected in 0.45s

@@ -1,0 +1,39 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_loopback_guard_rejects_udp_and_connect_ex_without_sending ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1141f69e0>
+
+    def test_loopback_guard_rejects_udp_and_connect_ex_without_sending(monkeypatch):
+        """Stub native operations first so the red test cannot send an external packet."""
+        calls = []
+    
+        def connect(sock, address):
+            calls.append(('connect', address))
+    
+        def connect_ex(sock, address):
+            calls.append(('connect_ex', address))
+            return 0
+    
+        def sendto(sock, data, *args):
+            calls.append(('sendto', args[-1]))
+            return len(data)
+    
+        monkeypatch.setattr(socket.socket, 'connect', connect)
+        monkeypatch.setattr(socket.socket, 'connect_ex', connect_ex)
+        monkeypatch.setattr(socket.socket, 'sendto', sendto)
+        block_external_connections()
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+>           with pytest.raises(RuntimeError, match='External'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'RuntimeError'>
+
+tests/test_td_local_fixture_safety.py:30: Failed
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_local_fixture_safety.py::test_loopback_guard_rejects_udp_and_connect_ex_without_sending
+1 failed, 1 warning in 0.73s

@@ -1,0 +1,22 @@
+E501 Line too long (101 > 100)
+   --> tests/ui/td_local_app.py:383:101
+    |
+381 |                     'accepted_native_chunks': getattr(native, 'fixture_accepted', 0),
+382 |                     'last_rejected_native': getattr(native, 'fixture_last_rejected', None),
+383 |                     'retained_chunks': len(native._chunks), 'retained_reports': len(native._packets),
+    |                                                                                                     ^
+384 |                     'matching_chunks': chunks, 'point': asdict(point) if point else None,
+385 |                     'capture_anchors': [asdict(anchor) for anchor in self.capture_clock._anchors.values()],
+    |
+
+E501 Line too long (107 > 100)
+   --> tests/ui/td_local_app.py:385:101
+    |
+383 |                     'retained_chunks': len(native._chunks), 'retained_reports': len(native._packets),
+384 |                     'matching_chunks': chunks, 'point': asdict(point) if point else None,
+385 |                     'capture_anchors': [asdict(anchor) for anchor in self.capture_clock._anchors.values()],
+    |                                                                                                     ^^^^^^^
+386 |                 }))
+    |
+
+Found 2 errors.

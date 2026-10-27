@@ -1,0 +1,58 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+________ test_adjacent_commits_from_one_provider_source_both_contribute ________
+
+    def test_adjacent_commits_from_one_provider_source_both_contribute():
+        state = collection()
+>       first = state.bind_snapshot(view(SourceSegment(0, 'a', 1, 0, 1000, '12', True)))
+                ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'IdentifierCollection' object has no attribute 'bind_snapshot'
+
+tests/test_td_identifier_inputs.py:17: AttributeError
+_ test_multi_source_mixed_input_tool_uses_exact_group_and_local_path_deduplicates _
+
+    def test_multi_source_mixed_input_tool_uses_exact_group_and_local_path_deduplicates():
+        state = collection()
+        snapshot = view(SourceSegment(0, 'a', 1, 0, 500, '号码', True),
+                        SourceSegment(0, 'b', 1, 500, 1500, '123', True))
+>       source = state.bind_snapshot(snapshot)
+                 ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'IdentifierCollection' object has no attribute 'bind_snapshot'
+
+tests/test_td_identifier_inputs.py:28: AttributeError
+___ test_overlapping_source_groups_replace_but_adjacent_repeat_is_preserved ____
+
+    def test_overlapping_source_groups_replace_but_adjacent_repeat_is_preserved():
+        state = collection()
+        a = SourceSegment(0, 'a', 1, 0, 1000, '12', False)
+>       first = state.bind_snapshot(view(a))
+                ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'IdentifierCollection' object has no attribute 'bind_snapshot'
+
+tests/test_td_identifier_inputs.py:40: AttributeError
+______ test_tools_bind_the_coordinator_snapshot_for_multi_source_request _______
+
+    def test_tools_bind_the_coordinator_snapshot_for_multi_source_request():
+        state = collection()
+        snapshot = view(SourceSegment(0, 'a', 1, 0, 500, '号码', True),
+                        SourceSegment(0, 'b', 1, 500, 1500, '123', True))
+        owner = ResponseRevisions()
+        response = owner.submit(turn_id='1', source_ids=((0, 'a'), (0, 'b')),
+                                text=snapshot.text, final=True)
+        handlers = IdentifierTools(ResponseScope(owner), state)
+>       handlers.bind_response(response, state.bind_snapshot(snapshot))
+                                         ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'IdentifierCollection' object has no attribute 'bind_snapshot'
+
+tests/test_td_identifier_inputs.py:58: AttributeError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_inputs.py::test_adjacent_commits_from_one_provider_source_both_contribute
+FAILED tests/test_td_identifier_inputs.py::test_multi_source_mixed_input_tool_uses_exact_group_and_local_path_deduplicates
+FAILED tests/test_td_identifier_inputs.py::test_overlapping_source_groups_replace_but_adjacent_repeat_is_preserved
+FAILED tests/test_td_identifier_inputs.py::test_tools_bind_the_coordinator_snapshot_for_multi_source_request
+4 failed, 1 warning in 1.21s

@@ -1,0 +1,39 @@
+{
+  "evidence_level": "external-real",
+  "authorization": "D-053",
+  "batch_id": "jev-synthetic-smoke-v1",
+  "request_sha256": "b6554bcff188a37790374b6a93b3b92b9a569f2b2f1fd7dd6afe99233cf0254d",
+  "decision": "D-053",
+  "status": "claimed_no_automatic_replay",
+  "results": [
+    {
+      "case": 1,
+      "status": "ok",
+      "duration_ms": 1021.617,
+      "model": "jev-1.14.0",
+      "input_tokens": 378,
+      "output_tokens": 50,
+      "noul": 0.85,
+      "probabilities": {
+        "complete": 0.8,
+        "incomplete": 0.2
+      },
+      "estimated_cost_usd": "0.000015876"
+    },
+    {
+      "case": 2,
+      "status": "ok",
+      "duration_ms": 265.974,
+      "model": "jev-1.14.0",
+      "input_tokens": 378,
+      "output_tokens": 52,
+      "noul": 0.04,
+      "probabilities": {
+        "complete": 0.0,
+        "incomplete": 1.0
+      },
+      "estimated_cost_usd": "0.000015876"
+    }
+  ],
+  "total_estimated_cost_usd": "0.000031752"
+}

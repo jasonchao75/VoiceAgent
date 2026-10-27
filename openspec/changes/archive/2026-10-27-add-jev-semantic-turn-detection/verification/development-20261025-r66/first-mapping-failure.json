@@ -1,0 +1,402 @@
+{
+  "send_completed": 51,
+  "receiver_snapshots": [
+    {
+      "receivers": [],
+      "sinks": []
+    },
+    {
+      "receivers": [],
+      "sinks": []
+    },
+    {
+      "receivers": [],
+      "sinks": []
+    },
+    {
+      "receivers": [],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 3,
+          "bytesReceived": 9,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 3,
+          "bytesReceived": 9,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 8,
+          "bytesReceived": 1588,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 8,
+          "bytesReceived": 1588,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 13,
+          "bytesReceived": 2515,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 13,
+          "bytesReceived": 2515,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 18,
+          "bytesReceived": 2530,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 18,
+          "bytesReceived": 2530,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 23,
+          "bytesReceived": 2545,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 23,
+          "bytesReceived": 2545,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 28,
+          "bytesReceived": 2560,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 28,
+          "bytesReceived": 2560,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 33,
+          "bytesReceived": 2575,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 33,
+          "bytesReceived": 2575,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 38,
+          "bytesReceived": 2590,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 38,
+          "bytesReceived": 2590,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 43,
+          "bytesReceived": 2605,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 43,
+          "bytesReceived": 2605,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 48,
+          "bytesReceived": 2620,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    },
+    {
+      "receivers": [
+        {
+          "packetsReceived": 48,
+          "bytesReceived": 2620,
+          "packetsLost": 0,
+          "codecMime": "audio/opus"
+        }
+      ],
+      "sinks": [
+        {
+          "paused": false,
+          "muted": true,
+          "readyState": 4,
+          "hasStream": true
+        }
+      ]
+    }
+  ],
+  "first_failure": {
+    "event": "mapping_failed",
+    "reason": "packet_deadline",
+    "counts": {
+      "packets": 0,
+      "mappings": 51,
+      "decoded": 0
+    }
+  },
+  "decoder_events": [
+    {
+      "event": "decoder_configured"
+    }
+  ]
+}

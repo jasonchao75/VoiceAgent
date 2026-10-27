@@ -1,0 +1,52 @@
+.................................................F..........F            [100%]
+=================================== FAILURES ===================================
+____ test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent _____
+
+runtime_config = RuntimeConfig(language='en', audio=AudioConfig(encoding='linear16', input_sample_rate=16000, output_sample_rate=24000,...nLimits(pending_token_ttl_seconds=120, idle_timeout_seconds=300, max_duration_seconds=1800, max_concurrent_sessions=3))
+
+    def test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent(runtime_config):
+        """D-062: retain raw times while accepting the same actual 16kHz sample extent."""
+        import copy
+        import json
+        from pathlib import Path
+    
+        from pipecat.frames.frames import InterimTranscriptionFrame
+    
+        from src.asr.factory import create_default_asr_registry
+    
+        records = [json.loads(line) for line in Path(
+            'openspec/changes/add-jev-semantic-turn-detection/verification/'
+            'development-20261023-r47/deepgram-td-asr-synthetic-v1-D-062.jsonl'
+        ).read_text().splitlines()]
+        event = records[-1]['events'][-1]
+        payload = copy.deepcopy(event['source_evidence'])
+        payload['transcript'] = event['text']
+        service = create_default_asr_registry().create(
+            provider='deepgram', model='flux-general-en', api_key='inert-no-network',
+            turn_detection_source='self_developed', options={}, audio=runtime_config.audio,
+        )
+        frame = InterimTranscriptionFrame(event['text'], '', '', result=payload)
+        segments = service.normalize_source_frame(frame)
+>       assert len(segments) == 1
+E       assert 0 == 1
+E        +  where 0 = len(())
+
+tests/test_td_asr_events.py:520: AssertionError
+_ test_sample_equivalent_consumed_edge_keeps_final_prefix_and_new_tail_separate _
+
+    def test_sample_equivalent_consumed_edge_keeps_final_prefix_and_new_tail_separate():
+        """The D-062 boundary must not duplicate an old word or erase its new tail."""
+        from dataclasses import replace
+    
+        from src.asr.transcript import SourceSegment, TimedWord, TranscriptLedger
+    
+        ledger = TranscriptLedger()
+>       old = SourceSegment(0, 'stream-source', 1, 0, 2639.9999, 'one', False,
+                            (TimedWord('one', 0, 2640),), sample_rate=16000)
+E       TypeError: SourceSegment.__init__() got an unexpected keyword argument 'sample_rate'
+
+tests/test_td_transcript.py:170: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_saved_flux_digits_boundary_uses_only_its_known_pcm_sample_extent
+FAILED tests/test_td_transcript.py::test_sample_equivalent_consumed_edge_keeps_final_prefix_and_new_tail_separate
+2 failed, 59 passed in 0.99s

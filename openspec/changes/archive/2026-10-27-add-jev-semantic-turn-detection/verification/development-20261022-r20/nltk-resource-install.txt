@@ -1,0 +1,24 @@
+<frozen runpy>:128: RuntimeWarning: 'nltk.downloader' found in sys.modules after import of package 'nltk', but prior to execution of 'nltk.downloader'; this may result in unpredictable behaviour
+[nltk_data] Error loading punkt_tab: Security Violation
+[nltk_data]     [pathsec.urlopen]: refusing a proxied fetch of
+[nltk_data]     'https://raw.githubusercontent.com/nltk/nltk_data/gh-
+[nltk_data]     pages/index.xml'. A configured proxy performs the
+[nltk_data]     egress, so NLTK cannot pin the validated IP and SSRF
+[nltk_data]     protection cannot be enforced (CWE-918). If and only
+[nltk_data]     if the proxy is trusted to be SSRF-safe, opt in via
+[nltk_data]     NLTK_ALLOW_PROXIED_URLOPEN=1 or
+[nltk_data]     nltk.pathsec.ALLOW_PROXIED_FETCH=True.
+Error installing package. Retry? [n/y/e]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/nltk/downloader.py", line 3066, in <module>
+    rv = downloader.download(
+        info_or_id=pkg_id,
+    ...<3 lines>...
+        halt_on_error=options.halt_on_error,
+    )
+  File "/Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/nltk/downloader.py", line 1087, in download
+    choice = input().strip()
+             ~~~~~^^
+EOFError: EOF when reading a line

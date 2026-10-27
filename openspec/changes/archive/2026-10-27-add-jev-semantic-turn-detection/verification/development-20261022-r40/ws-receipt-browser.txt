@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:30:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history (5.9s)
+
+  1 passed (6.2s)

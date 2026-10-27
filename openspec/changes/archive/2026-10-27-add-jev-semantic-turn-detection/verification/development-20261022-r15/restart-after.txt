@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:10310) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:196:1 › formal configuration and audio survive an explicitly coordinated process restart (982ms)
+
+  1 passed (1.4s)

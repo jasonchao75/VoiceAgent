@@ -1,0 +1,9 @@
+{
+  "evidence_level": "local-real",
+  "application_process_restarted": true,
+  "failed_call_id": "cc98a895-9f79-4ef8-a9aa-dd401236cf04",
+  "events_exact": true,
+  "metrics_exact": true,
+  "job_failed": true,
+  "no_vendor_calls": true
+}

@@ -1,0 +1,16 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_fresh_digits_plan_does_not_reuse_consumed_media_or_authorization _____
+
+    def test_fresh_digits_plan_does_not_reuse_consumed_media_or_authorization():
+        """Use the pinned replacement sample independently of vanished old inputs."""
+        module = probe()
+        old = module.build_plan(repair_confirmation=True)
+>       plan = module.build_plan(fresh_digits=True)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: build_plan() got an unexpected keyword argument 'fresh_digits'
+
+tests/test_td_vendor_probe.py:256: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_fresh_digits_plan_does_not_reuse_consumed_media_or_authorization
+1 failed, 13 deselected in 0.04s

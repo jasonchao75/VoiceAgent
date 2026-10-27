@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:84:1 › formal WS identifier echo survives continuation and clear stops only its old generation (9.8s)
+
+  1 passed (10.3s)

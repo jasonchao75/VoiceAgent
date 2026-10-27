@@ -1,0 +1,884 @@
+{
+  "id": "10e9b990-5020-47fa-9260-8cb675bf24a6",
+  "bot_id": "abf46acc-68d8-4eca-b2ad-0bf3ce43e3f7",
+  "bot_name": "Local TD network fixture 1793013356243",
+  "session_type": "web_call",
+  "started_at": "2026-10-26T11:15:56.605419+00:00",
+  "ended_at": "2026-10-26T11:16:01.631863+00:00",
+  "status": "completed",
+  "duration_ms": 4841.4,
+  "llm_provider": "openai",
+  "llm_model": "gpt-4.1-mini",
+  "tts_provider": "deepgram_flux",
+  "tts_model": "flux-general-en",
+  "tts_voice": "flux-alexis-en",
+  "tts_text_aggregation": "token",
+  "has_recording": false,
+  "recording_status": "quota_deleted",
+  "error_category": null,
+  "diagnostic_id": null,
+  "asr_provider": "deepgram",
+  "asr_model": "flux-general-en",
+  "language": "en",
+  "context_mode": "off",
+  "audio_format": "flac",
+  "sample_rate": 16000,
+  "channels": 1,
+  "recording_bytes": 0,
+  "td_events": [
+    {
+      "event": "td_settings_snapshot",
+      "turn_id": null,
+      "audio_ms": 0,
+      "minimum_ms": 600,
+      "maximum_ms": 2500,
+      "final_wait_ms": 200,
+      "alpha": 0.5,
+      "conflict_threshold": 0.8,
+      "vad": {
+        "confidence": 0.7,
+        "start_secs": 0.2,
+        "stop_secs": 0.2,
+        "min_volume": 0.6
+      },
+      "jev_model": "jev-latest",
+      "noul_instructions": "Has the user yielded the floor?",
+      "choice_instructions": "Classify the utterance.",
+      "options": [
+        {
+          "id": "complete",
+          "meaning": "Complete",
+          "wait_ms": 700
+        },
+        {
+          "id": "incomplete",
+          "meaning": "Incomplete",
+          "wait_ms": 1500
+        }
+      ],
+      "created_ms": 196.03675099995144
+    },
+    {
+      "event": "assistant_opening",
+      "text": "Local fixture opening.",
+      "created_ms": 196.37875099999746
+    },
+    {
+      "event": "playback_task_prepared",
+      "playback_id": "1e505d6182c842c88bfa21fcb858ad8c",
+      "kind": "normal",
+      "response_id": null,
+      "turn_id": null,
+      "created_ms": 199.98295899995355
+    },
+    {
+      "event": "playback_queued",
+      "playback_id": "1e505d6182c842c88bfa21fcb858ad8c",
+      "collection_generation": 0,
+      "source_id": "response:1e505d6182c842c88bfa21fcb858ad8c",
+      "source_revision": 1,
+      "status": "queued",
+      "client_start_confirmed": false,
+      "output_kind": "normal",
+      "created_ms": 200.10662599997886
+    },
+    {
+      "event": "playback_dispatched",
+      "playback_id": "1e505d6182c842c88bfa21fcb858ad8c",
+      "collection_generation": 0,
+      "source_id": "response:1e505d6182c842c88bfa21fcb858ad8c",
+      "source_revision": 1,
+      "status": "sent_unknown",
+      "client_start_confirmed": false,
+      "output_kind": "normal",
+      "created_ms": 200.13587599999028
+    },
+    {
+      "event": "playback_client_started",
+      "playback_id": "1e505d6182c842c88bfa21fcb858ad8c",
+      "collection_generation": 0,
+      "source_id": "response:1e505d6182c842c88bfa21fcb858ad8c",
+      "source_revision": 1,
+      "status": "playing",
+      "client_start_confirmed": true,
+      "output_kind": "normal",
+      "created_ms": 213.4695009999632
+    },
+    {
+      "event": "playback_renderer_receipt",
+      "playback_id": "1e505d6182c842c88bfa21fcb858ad8c",
+      "response_id": null,
+      "turn_id": null,
+      "output_kind": "normal",
+      "renderer_event": "task_started",
+      "rendered_samples": 128,
+      "client_elapsed_ms": 391.7999999821186,
+      "request_id": null,
+      "evidence_source": "audio_worklet_render",
+      "failure_reason": null,
+      "render_frame": 3584,
+      "render_sample_rate": 24000,
+      "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+      "created_ms": 213.49195899995266
+    },
+    {
+      "event": "playback_client_finished",
+      "playback_id": "1e505d6182c842c88bfa21fcb858ad8c",
+      "collection_generation": 0,
+      "source_id": "response:1e505d6182c842c88bfa21fcb858ad8c",
+      "source_revision": 1,
+      "status": "finished",
+      "client_start_confirmed": true,
+      "output_kind": "normal",
+      "created_ms": 332.4292089999972
+    },
+    {
+      "event": "playback_renderer_receipt",
+      "playback_id": "1e505d6182c842c88bfa21fcb858ad8c",
+      "response_id": null,
+      "turn_id": null,
+      "output_kind": "normal",
+      "renderer_event": "task_finished",
+      "rendered_samples": 2880,
+      "client_elapsed_ms": 511.5,
+      "request_id": null,
+      "evidence_source": "audio_worklet_render",
+      "failure_reason": null,
+      "render_frame": 6464,
+      "render_sample_rate": 24000,
+      "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+      "created_ms": 332.4408339999536
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 256,
+      "created_ms": 851.461750999988
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 512,
+      "created_ms": 1113.3221259999573
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 768,
+      "created_ms": 1374.0109179999536
+    },
+    {
+      "event": "speech_resumed",
+      "turn_id": 1,
+      "audio_ms": 768,
+      "created_ms": 1513.2247509999388
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 1024,
+      "created_ms": 1625.2467509999633
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 1280,
+      "created_ms": 1880.6511259999752
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 1536,
+      "created_ms": 2133.824376000007
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 1792,
+      "created_ms": 2388.0307099999527
+    },
+    {
+      "event": "candidate_created",
+      "turn_id": 1,
+      "audio_ms": 1792,
+      "candidate": 2,
+      "speech_end_audio_ms": 1848,
+      "created_ms": 2541.9182929999806
+    },
+    {
+      "event": "source_transcript",
+      "turn_id": 1,
+      "audio_ms": 2048,
+      "related_turn_ids": [
+        1
+      ],
+      "source_id": "0",
+      "stream_epoch": 0,
+      "source_revision": 1,
+      "text": "local partial",
+      "source_final": false,
+      "source_withdrawn": false,
+      "created_ms": 2542.515543000036
+    },
+    {
+      "event": "jev_decision_attempt",
+      "turn_id": 1,
+      "audio_ms": 2048,
+      "candidate": 2,
+      "source_revision": 1,
+      "text": "local partial",
+      "assistant": "Local fixture opening.",
+      "transcript_status": "Partial",
+      "created_ms": 2542.682167999942
+    },
+    {
+      "event": "jev_result",
+      "turn_id": 1,
+      "audio_ms": 2048,
+      "source_revision": 1,
+      "duration_ms": 0.05429099996945297,
+      "candidate": 2,
+      "status": "ok",
+      "noul": 1,
+      "probabilities": {
+        "complete": 1,
+        "incomplete": 0
+      },
+      "created_ms": 2542.7395849999357
+    },
+    {
+      "event": "jev_wait_calculated",
+      "turn_id": 1,
+      "audio_ms": 2048,
+      "candidate": 2,
+      "source_revision": 1,
+      "noul_ms": 600,
+      "choice_ms": 700,
+      "target_ms": 650,
+      "remaining_ms": 450,
+      "conflict": false,
+      "alpha": 0.5,
+      "created_ms": 2542.7866269999413
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 2048,
+      "created_ms": 2648.0253769999536
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 2304,
+      "created_ms": 2897.3155019999695
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 2560,
+      "created_ms": 3153.053209999939
+    },
+    {
+      "event": "td_commit",
+      "turn_id": 1,
+      "audio_ms": 2816,
+      "text": "local partial",
+      "source_final": false,
+      "reason": "final_wait_expired",
+      "candidate": 2,
+      "sources": [
+        {
+          "epoch": 0,
+          "source_id": "0",
+          "revision": 1
+        }
+      ],
+      "created_ms": 3302.6007519999894
+    },
+    {
+      "event": "conversation_utterance",
+      "role": "user",
+      "turn_id": 1,
+      "text": "local partial",
+      "history_sequence": 0,
+      "history_metric_index": 0,
+      "source_final": false,
+      "created_ms": 3302.8531689999454
+    },
+    {
+      "event": "conversation_utterance",
+      "role": "assistant",
+      "turn_id": "1",
+      "response_id": "1:1",
+      "text": "Response to local partial.",
+      "history_sequence": 1,
+      "created_ms": 3329.502585
+    },
+    {
+      "event": "playback_task_prepared",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "kind": "normal",
+      "response_id": "1:1",
+      "turn_id": "1",
+      "created_ms": 3351.4655019999964
+    },
+    {
+      "event": "playback_queued",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "collection_generation": 0,
+      "source_id": "response:0233bc392ee2411c9cbb7b41a951813d",
+      "source_revision": 1,
+      "status": "queued",
+      "client_start_confirmed": false,
+      "output_kind": "normal",
+      "created_ms": 3352.6235849999466
+    },
+    {
+      "event": "playback_dispatched",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "collection_generation": 0,
+      "source_id": "response:0233bc392ee2411c9cbb7b41a951813d",
+      "source_revision": 1,
+      "status": "sent_unknown",
+      "client_start_confirmed": false,
+      "output_kind": "normal",
+      "created_ms": 3352.8633769999487
+    },
+    {
+      "event": "playback_client_started",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "collection_generation": 0,
+      "source_id": "response:0233bc392ee2411c9cbb7b41a951813d",
+      "source_revision": 1,
+      "status": "playing",
+      "client_start_confirmed": true,
+      "output_kind": "normal",
+      "created_ms": 3362.4050849999776
+    },
+    {
+      "event": "playback_renderer_receipt",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "response_id": "1:1",
+      "turn_id": "1",
+      "output_kind": "normal",
+      "renderer_event": "task_started",
+      "rendered_samples": 128,
+      "client_elapsed_ms": 3541.5,
+      "request_id": null,
+      "evidence_source": "audio_worklet_render",
+      "failure_reason": null,
+      "render_frame": 79232,
+      "render_sample_rate": 24000,
+      "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+      "created_ms": 3362.4204190000455
+    },
+    {
+      "event": "playback_timing_bounds",
+      "turn_id": "1",
+      "response_id": "1:1",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "playback_range": {
+        "lower_ms": 0,
+        "upper_ms": 20.86450000001605,
+        "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+        "response_id": "1:1",
+        "anchor_ids": [
+          "e9c202882d564b4e80290aa63b2bb894",
+          "c3a3cff34d5245d996c85d11026af8be"
+        ],
+        "source": "authenticated_worklet_causal_bracket",
+        "origin": "server_audio_task_prepared"
+      },
+      "anchors": [
+        {
+          "sample_id": "e9c202882d564b4e80290aa63b2bb894",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 65792,
+          "server_issued_ms": 2798.022084999957,
+          "server_received_ms": 2802.417460000015,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        },
+        {
+          "sample_id": "c3a3cff34d5245d996c85d11026af8be",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 79360,
+          "server_issued_ms": 3364.3013349999364,
+          "server_received_ms": 3372.328209999978,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        }
+      ],
+      "e2e_missing_reason": null,
+      "created_ms": 3372.3771689999467
+    },
+    {
+      "event": "e2e_timing_bounds",
+      "turn_id": "1",
+      "response_id": "1:1",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "e2e_range": {
+        "lower_ms": 245.40704200001073,
+        "upper_ms": 1333.3974170000147,
+        "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+        "response_id": "1:1",
+        "anchor_ids": [
+          "e9c202882d564b4e80290aa63b2bb894",
+          "c3a3cff34d5245d996c85d11026af8be"
+        ],
+        "source": "authenticated_worklet_causal_bracket",
+        "origin": "vad_speech_end_source_sample"
+      },
+      "source_anchors": [
+        {
+          "sample_id": "59f7bae6a48f41219933e778586db21f",
+          "render_clock_id": "f9bd8f1cf347440d975e960670a244fd",
+          "render_sample_rate": 16000,
+          "render_frame": 31744,
+          "server_issued_ms": 2038.9307929999632,
+          "server_received_ms": 2042.1396259999938,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        },
+        {
+          "sample_id": "6e90e970c178436794c4ad74bbc81b7c",
+          "render_clock_id": "f9bd8f1cf347440d975e960670a244fd",
+          "render_sample_rate": 16000,
+          "render_frame": 39936,
+          "server_issued_ms": 2546.252334999963,
+          "server_received_ms": 2552.615042999946,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        }
+      ],
+      "source_coordinates": {
+        "clock_id": "f9bd8f1cf347440d975e960670a244fd",
+        "sample_rate": 16000,
+        "first_frame": 36608,
+        "last_frame": 36608,
+        "input_sample_lower": 29568,
+        "input_sample_upper": 29568,
+        "mapping_spans": [
+          {
+            "input_offset": 28672,
+            "count": 4096,
+            "clock_id": "f9bd8f1cf347440d975e960670a244fd",
+            "sample_rate": 16000,
+            "source_frame": 35712
+          },
+          {
+            "input_offset": 28672,
+            "count": 4096,
+            "clock_id": "f9bd8f1cf347440d975e960670a244fd",
+            "sample_rate": 16000,
+            "source_frame": 35712
+          }
+        ]
+      },
+      "render_anchors": [
+        {
+          "sample_id": "e9c202882d564b4e80290aa63b2bb894",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 65792,
+          "server_issued_ms": 2798.022084999957,
+          "server_received_ms": 2802.417460000015,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        },
+        {
+          "sample_id": "c3a3cff34d5245d996c85d11026af8be",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 79360,
+          "server_issued_ms": 3364.3013349999364,
+          "server_received_ms": 3372.328209999978,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        }
+      ],
+      "created_ms": 3372.385918999953
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 2816,
+      "created_ms": 3412.0317939999723
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 3072,
+      "created_ms": 3663.188544000036
+    },
+    {
+      "event": "source_transcript",
+      "turn_id": 1,
+      "audio_ms": 3328,
+      "related_turn_ids": [
+        1
+      ],
+      "source_id": "0",
+      "stream_epoch": 0,
+      "source_revision": 2,
+      "text": "local final",
+      "source_final": true,
+      "source_withdrawn": false,
+      "created_ms": 3822.9954189999944
+    },
+    {
+      "event": "response_restart",
+      "turn_id": 1,
+      "audio_ms": 3328,
+      "text": "local final",
+      "old_response_id": "1:1",
+      "response_id": "1:2",
+      "reason": "final_replaces_submitted_partial",
+      "created_ms": 3823.031543999946
+    },
+    {
+      "event": "conversation_utterance",
+      "role": "assistant",
+      "turn_id": "1",
+      "response_id": "1:2",
+      "text": "Response to local final.",
+      "history_sequence": 2,
+      "created_ms": 3825.587669000015
+    },
+    {
+      "event": "playback_stop_requested",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "collection_generation": 0,
+      "source_id": "response:0233bc392ee2411c9cbb7b41a951813d",
+      "source_revision": 1,
+      "status": "stop_requested",
+      "client_start_confirmed": true,
+      "output_kind": "normal",
+      "created_ms": 3836.242961000039
+    },
+    {
+      "event": "playback_task_prepared",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "kind": "normal",
+      "response_id": "1:2",
+      "turn_id": "1",
+      "created_ms": 3836.7862110000033
+    },
+    {
+      "event": "playback_queued",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "collection_generation": 0,
+      "source_id": "response:2d535a2a42c34c08b9ebabfcc67fda78",
+      "source_revision": 1,
+      "status": "queued",
+      "client_start_confirmed": false,
+      "output_kind": "normal",
+      "created_ms": 3837.488836000034
+    },
+    {
+      "event": "playback_client_stopped",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "collection_generation": 0,
+      "source_id": "response:0233bc392ee2411c9cbb7b41a951813d",
+      "source_revision": 1,
+      "status": "stopped",
+      "client_start_confirmed": true,
+      "output_kind": "normal",
+      "created_ms": 3843.5602939999853
+    },
+    {
+      "event": "playback_renderer_receipt",
+      "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+      "response_id": "1:1",
+      "turn_id": "1",
+      "output_kind": "normal",
+      "renderer_event": "task_stopped",
+      "rendered_samples": 11520,
+      "client_elapsed_ms": 4021.4000000059605,
+      "request_id": "7a7469a1d5f44cc0855bb180582c59ee",
+      "evidence_source": "audio_worklet_render",
+      "failure_reason": null,
+      "render_frame": 90752,
+      "render_sample_rate": 24000,
+      "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+      "created_ms": 3843.58346099998
+    },
+    {
+      "event": "playback_dispatched",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "collection_generation": 0,
+      "source_id": "response:2d535a2a42c34c08b9ebabfcc67fda78",
+      "source_revision": 1,
+      "status": "sent_unknown",
+      "client_start_confirmed": false,
+      "output_kind": "normal",
+      "created_ms": 3843.647044000022
+    },
+    {
+      "event": "playback_client_started",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "collection_generation": 0,
+      "source_id": "response:2d535a2a42c34c08b9ebabfcc67fda78",
+      "source_revision": 1,
+      "status": "playing",
+      "client_start_confirmed": true,
+      "output_kind": "normal",
+      "created_ms": 3852.2735020000027
+    },
+    {
+      "event": "playback_renderer_receipt",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "response_id": "1:2",
+      "turn_id": "1",
+      "output_kind": "normal",
+      "renderer_event": "task_started",
+      "rendered_samples": 128,
+      "client_elapsed_ms": 4031.5,
+      "request_id": null,
+      "evidence_source": "audio_worklet_render",
+      "failure_reason": null,
+      "render_frame": 90880,
+      "render_sample_rate": 24000,
+      "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+      "created_ms": 3852.2898769999756
+    },
+    {
+      "event": "playback_timing_bounds",
+      "turn_id": "1",
+      "response_id": "1:2",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "playback_range": {
+        "lower_ms": 0,
+        "upper_ms": 25.325958000053106,
+        "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+        "response_id": "1:2",
+        "anchor_ids": [
+          "c3a3cff34d5245d996c85d11026af8be",
+          "157e6f6e7b904df4ad4058ea6c158a33"
+        ],
+        "source": "authenticated_worklet_causal_bracket",
+        "origin": "server_audio_task_prepared"
+      },
+      "anchors": [
+        {
+          "sample_id": "c3a3cff34d5245d996c85d11026af8be",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 79360,
+          "server_issued_ms": 3364.3013349999364,
+          "server_received_ms": 3372.328209999978,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        },
+        {
+          "sample_id": "157e6f6e7b904df4ad4058ea6c158a33",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 91136,
+          "server_issued_ms": 3852.3499189999484,
+          "server_received_ms": 3862.1106690000033,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        }
+      ],
+      "e2e_missing_reason": null,
+      "created_ms": 3862.148210999976
+    },
+    {
+      "event": "e2e_timing_bounds",
+      "turn_id": "1",
+      "response_id": "1:2",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "e2e_range": {
+        "lower_ms": 811.6862919999903,
+        "upper_ms": 1823.1798760000402,
+        "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+        "response_id": "1:2",
+        "anchor_ids": [
+          "c3a3cff34d5245d996c85d11026af8be",
+          "157e6f6e7b904df4ad4058ea6c158a33"
+        ],
+        "source": "authenticated_worklet_causal_bracket",
+        "origin": "vad_speech_end_source_sample"
+      },
+      "source_anchors": [
+        {
+          "sample_id": "59f7bae6a48f41219933e778586db21f",
+          "render_clock_id": "f9bd8f1cf347440d975e960670a244fd",
+          "render_sample_rate": 16000,
+          "render_frame": 31744,
+          "server_issued_ms": 2038.9307929999632,
+          "server_received_ms": 2042.1396259999938,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        },
+        {
+          "sample_id": "6e90e970c178436794c4ad74bbc81b7c",
+          "render_clock_id": "f9bd8f1cf347440d975e960670a244fd",
+          "render_sample_rate": 16000,
+          "render_frame": 39936,
+          "server_issued_ms": 2546.252334999963,
+          "server_received_ms": 2552.615042999946,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        }
+      ],
+      "source_coordinates": {
+        "clock_id": "f9bd8f1cf347440d975e960670a244fd",
+        "sample_rate": 16000,
+        "first_frame": 36608,
+        "last_frame": 36608,
+        "input_sample_lower": 29568,
+        "input_sample_upper": 29568,
+        "mapping_spans": [
+          {
+            "input_offset": 28672,
+            "count": 4096,
+            "clock_id": "f9bd8f1cf347440d975e960670a244fd",
+            "sample_rate": 16000,
+            "source_frame": 35712
+          },
+          {
+            "input_offset": 28672,
+            "count": 4096,
+            "clock_id": "f9bd8f1cf347440d975e960670a244fd",
+            "sample_rate": 16000,
+            "source_frame": 35712
+          }
+        ]
+      },
+      "render_anchors": [
+        {
+          "sample_id": "c3a3cff34d5245d996c85d11026af8be",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 79360,
+          "server_issued_ms": 3364.3013349999364,
+          "server_received_ms": 3372.328209999978,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        },
+        {
+          "sample_id": "157e6f6e7b904df4ad4058ea6c158a33",
+          "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+          "render_sample_rate": 24000,
+          "render_frame": 91136,
+          "server_issued_ms": 3852.3499189999484,
+          "server_received_ms": 3862.1106690000033,
+          "evidence_source": "authenticated_worklet_causal_bracket"
+        }
+      ],
+      "created_ms": 3862.155626999993
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 3328,
+      "created_ms": 3925.084793999986
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 3584,
+      "created_ms": 4178.377544
+    },
+    {
+      "event": "playback_client_finished",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "collection_generation": 0,
+      "source_id": "response:2d535a2a42c34c08b9ebabfcc67fda78",
+      "source_revision": 1,
+      "status": "finished",
+      "client_start_confirmed": true,
+      "output_kind": "normal",
+      "created_ms": 4363.76846099995
+    },
+    {
+      "event": "playback_renderer_receipt",
+      "playback_id": "2d535a2a42c34c08b9ebabfcc67fda78",
+      "response_id": "1:2",
+      "turn_id": "1",
+      "output_kind": "normal",
+      "renderer_event": "task_finished",
+      "rendered_samples": 12480,
+      "client_elapsed_ms": 4541.4000000059605,
+      "request_id": null,
+      "evidence_source": "audio_worklet_render",
+      "failure_reason": null,
+      "render_frame": 103360,
+      "render_sample_rate": 24000,
+      "render_clock_id": "88c339cf50ee44dca712ab982d73a87a",
+      "created_ms": 4363.798460999988
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 3840,
+      "created_ms": 4442.900002999977
+    },
+    {
+      "event": "media_gap",
+      "turn_id": 1,
+      "audio_ms": 4096,
+      "created_ms": 4688.278502999992
+    }
+  ],
+  "turns": [
+    {
+      "sequence": 0,
+      "role": "user",
+      "text": "local partial",
+      "created_ms": 3302.844710000045
+    },
+    {
+      "sequence": 1,
+      "role": "assistant",
+      "text": "Response to local partial.",
+      "created_ms": 3329.4942520000177
+    },
+    {
+      "sequence": 2,
+      "role": "assistant",
+      "text": "Response to local final.",
+      "created_ms": 3825.5817110000407
+    }
+  ],
+  "metrics": [
+    {
+      "turn_index": 0,
+      "asr_final_latency_ms": null,
+      "llm_request_splicing_ms": null,
+      "llm_first_token_ms": 25.1,
+      "tts_initial_ms": 23.9,
+      "tts_first_audio_ms": 0,
+      "playback_ms": null,
+      "server_to_playback_ms": null,
+      "turn_to_playback_ms": null,
+      "timing_ranges": {
+        "playback": {
+          "lower_ms": 0,
+          "upper_ms": 20.86450000001605,
+          "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+          "response_id": "1:1",
+          "anchor_ids": [
+            "e9c202882d564b4e80290aa63b2bb894",
+            "c3a3cff34d5245d996c85d11026af8be"
+          ],
+          "source": "authenticated_worklet_causal_bracket",
+          "origin": "server_audio_task_prepared"
+        },
+        "e2e": {
+          "lower_ms": 245.40704200001073,
+          "upper_ms": 1333.3974170000147,
+          "playback_id": "0233bc392ee2411c9cbb7b41a951813d",
+          "response_id": "1:1",
+          "anchor_ids": [
+            "e9c202882d564b4e80290aa63b2bb894",
+            "c3a3cff34d5245d996c85d11026af8be"
+          ],
+          "source": "authenticated_worklet_causal_bracket",
+          "origin": "vad_speech_end_source_sample"
+        }
+      },
+      "playback_evidence": "client_render_confirmed",
+      "asr_final_reason": "partial_at_td_commit",
+      "incomplete_reason": "bounded_timing_only",
+      "reasoning_tokens": null,
+      "reasoning_status": "not_applicable",
+      "reasoning_control": null,
+      "context_applied": true,
+      "context_failure_reason": null
+    }
+  ]
+}

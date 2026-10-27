@@ -1,0 +1,85 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_submit_schema_handler_mutates_only_proven_source_and_returns_actual_state _
+
+    async def test_submit_schema_handler_mutates_only_proven_source_and_returns_actual_state():
+>       handlers, boundary, owner, state = tools()
+                                           ^^^^^^^
+
+tests/test_td_identifier_tools.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def tools():
+        """Require production tool schemas, not a simulated LLM text interpreter."""
+>       assert util.find_spec('src.pipeline.identifier_tools') is not None, 'Identifier tools absent'
+E       AssertionError: Identifier tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d5e8e0>('src.pipeline.identifier_tools')
+E        +    where <function find_spec at 0x100d5e8e0> = util.find_spec
+
+tests/test_td_identifier_tools.py:15: AssertionError
+_____ test_hallucinated_number_and_unbound_source_never_change_collection ______
+
+    async def test_hallucinated_number_and_unbound_source_never_change_collection():
+>       handlers, boundary, owner, state = tools()
+                                           ^^^^^^^
+
+tests/test_td_identifier_tools.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def tools():
+        """Require production tool schemas, not a simulated LLM text interpreter."""
+>       assert util.find_spec('src.pipeline.identifier_tools') is not None, 'Identifier tools absent'
+E       AssertionError: Identifier tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d5e8e0>('src.pipeline.identifier_tools')
+E        +    where <function find_spec at 0x100d5e8e0> = util.find_spec
+
+tests/test_td_identifier_tools.py:15: AssertionError
+________ test_clear_reanswer_does_not_clear_a_new_collection_generation ________
+
+    async def test_clear_reanswer_does_not_clear_a_new_collection_generation():
+>       handlers, boundary, owner, state = tools()
+                                           ^^^^^^^
+
+tests/test_td_identifier_tools.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def tools():
+        """Require production tool schemas, not a simulated LLM text interpreter."""
+>       assert util.find_spec('src.pipeline.identifier_tools') is not None, 'Identifier tools absent'
+E       AssertionError: Identifier tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d5e8e0>('src.pipeline.identifier_tools')
+E        +    where <function find_spec at 0x100d5e8e0> = util.find_spec
+
+tests/test_td_identifier_tools.py:15: AssertionError
+__________ test_clear_then_submit_from_the_old_generation_is_rejected __________
+
+    async def test_clear_then_submit_from_the_old_generation_is_rejected():
+>       handlers, boundary, owner, state = tools()
+                                           ^^^^^^^
+
+tests/test_td_identifier_tools.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def tools():
+        """Require production tool schemas, not a simulated LLM text interpreter."""
+>       assert util.find_spec('src.pipeline.identifier_tools') is not None, 'Identifier tools absent'
+E       AssertionError: Identifier tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100d5e8e0>('src.pipeline.identifier_tools')
+E        +    where <function find_spec at 0x100d5e8e0> = util.find_spec
+
+tests/test_td_identifier_tools.py:15: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_submit_schema_handler_mutates_only_proven_source_and_returns_actual_state
+FAILED tests/test_td_identifier_tools.py::test_hallucinated_number_and_unbound_source_never_change_collection
+FAILED tests/test_td_identifier_tools.py::test_clear_reanswer_does_not_clear_a_new_collection_generation
+FAILED tests/test_td_identifier_tools.py::test_clear_then_submit_from_the_old_generation_is_rejected
+4 failed, 1 warning in 0.67s

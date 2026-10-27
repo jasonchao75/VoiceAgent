@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:23729) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-rtc-capabilities.spec.js:7:1 › inspect RTP and decoded-audio API boundaries without providers or a call (362ms)
+  ✓  2 [desktop-chromium] › tests/ui/td-rtc-capabilities.spec.js:62:1 › RTP reception precedes decoder and active playback progress (5.4s)
+
+  2 passed (6.2s)

@@ -1,0 +1,43 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_token_guard_stops_abnormal_output_before_forwarding_more_audio ______
+
+    async def test_token_guard_stops_abnormal_output_before_forwarding_more_audio():
+        """Count every reported token including repeated snapshots; do not undercount revisions."""
+        import json
+        class Socket:
+            def __init__(self):
+                self.messages = iter([json.dumps({'tokens': [{'text': '1'}]}),
+                                      json.dumps({'tokens': [{'text': '1'}, {'text': '2'}]})])
+                self.closed = False
+                self.sent = []
+    
+            async def __aiter__(self):
+                for message in self.messages:
+                    yield message
+    
+            async def close(self):
+                self.closed = True
+    
+            async def send(self, data):
+                self.sent.append(data)
+    
+        socket = Socket()
+        wrapper = probe().TokenBoundSocket(socket, limit=2)
+>       await wrapper.__anext__()
+
+tests/test_td_vendor_probe.py:416: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scripts.evaluation.probe_td_compatibility.TokenBoundSocket object at 0x1088202f0>
+
+    async def __anext__(self) -> Any:
+        """Count every raw reported token before the SDK can process another response."""
+>       message = await self.socket.__anext__()
+                        ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Socket' object has no attribute '__anext__'. Did you mean: '__init__'?
+
+scripts/evaluation/probe_td_compatibility.py:212: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_token_guard_stops_abnormal_output_before_forwarding_more_audio
+1 failed, 23 deselected in 0.05s

@@ -1,0 +1,6 @@
+fixture / production route / actual Chromium
+1440x1000 history drawer: legacy source label visible, scrollWidth <= clientWidth
+390x1000 history drawer: legacy source label visible, scrollWidth <= clientWidth
+2 passed (1.9s); screenshots visually inspected. No baseline overwritten.
+First restricted launch failed KERN_SUCCESS Permission denied; allowed local retry passed.
+No backend, paid service, customer data, microphone or recording used.

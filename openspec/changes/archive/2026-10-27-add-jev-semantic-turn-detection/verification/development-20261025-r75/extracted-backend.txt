@@ -1,0 +1,278 @@
+
+==================================== ERRORS ====================================
+______________________ ERROR collecting tests/test_api.py ______________________
+tests/test_api.py:7: in <module>
+    from src.api import _azure_deployment_from_url, create_app
+src/api.py:58: in <module>
+    from src.evaluation import EvaluationStore, create_evaluation_router
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+------------------------------- Captured stderr --------------------------------
+2026-10-25 19:13:42.040 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+_____________________ ERROR collecting tests/test_bots.py ______________________
+tests/test_bots.py:15: in <module>
+    from src.api import create_app
+src/api.py:58: in <module>
+    from src.evaluation import EvaluationStore, create_evaluation_router
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+___________________ ERROR collecting tests/test_echo_api.py ____________________
+tests/test_echo_api.py:10: in <module>
+    from src.api import create_app
+src/api.py:58: in <module>
+    from src.evaluation import EvaluationStore, create_evaluation_router
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+__________________ ERROR collecting tests/test_evaluation.py ___________________
+tests/test_evaluation.py:36: in <module>
+    from src.evaluation.asr_contract import ASRError, ASRResult
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+_______________ ERROR collecting tests/test_evaluation_deploy.py _______________
+tests/test_evaluation_deploy.py:11: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+___________ ERROR collecting tests/test_evaluation_pass1_packing.py ____________
+tests/test_evaluation_pass1_packing.py:9: in <module>
+    from src.evaluation.executor import EvaluationRunner
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+___________ ERROR collecting tests/test_evaluation_pass2_packing.py ____________
+tests/test_evaluation_pass2_packing.py:7: in <module>
+    from src.evaluation.executor import EvaluationRunner, _segment_id
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+_____________ ERROR collecting tests/test_playback_receipts_api.py _____________
+tests/test_playback_receipts_api.py:5: in <module>
+    from src.api import create_app
+src/api.py:58: in <module>
+    from src.evaluation import EvaluationStore, create_evaluation_router
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+__________________ ERROR collecting tests/test_publication.py __________________
+tests/test_publication.py:13: in <module>
+    from src.api import (
+src/api.py:58: in <module>
+    from src.evaluation import EvaluationStore, create_evaluation_router
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+________________ ERROR collecting tests/test_td_credentials.py _________________
+tests/test_td_credentials.py:8: in <module>
+    from src.api import create_app
+src/api.py:58: in <module>
+    from src.evaluation import EvaluationStore, create_evaluation_router
+src/evaluation/__init__.py:3: in <module>
+    from src.evaluation.router import create_evaluation_router
+src/evaluation/router.py:48: in <module>
+    from src.evaluation.storage import EvaluationStore
+src/evaluation/storage.py:37: in <module>
+    from src.evaluation.prompts import (
+src/evaluation/prompts.py:156: in <module>
+    PASS_ONE_SYSTEM_PROMPT = _approved_prompt(
+src/evaluation/prompts.py:149: in _approved_prompt
+    content = (_APPROVED_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r75-review-78gvio5m/openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md'
+=============================== warnings summary ===============================
+../../../../../../../Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_api.py - FileNotFoundError: [Errno 2] No such file or direct...
+ERROR tests/test_bots.py - FileNotFoundError: [Errno 2] No such file or direc...
+ERROR tests/test_echo_api.py - FileNotFoundError: [Errno 2] No such file or d...
+ERROR tests/test_evaluation.py - FileNotFoundError: [Errno 2] No such file or...
+ERROR tests/test_evaluation_deploy.py - FileNotFoundError: [Errno 2] No such ...
+ERROR tests/test_evaluation_pass1_packing.py - FileNotFoundError: [Errno 2] N...
+ERROR tests/test_evaluation_pass2_packing.py - FileNotFoundError: [Errno 2] N...
+ERROR tests/test_playback_receipts_api.py - FileNotFoundError: [Errno 2] No s...
+ERROR tests/test_publication.py - FileNotFoundError: [Errno 2] No such file o...
+ERROR tests/test_td_credentials.py - FileNotFoundError: [Errno 2] No such fil...
+!!!!!!!!!!!!!!!!!!! Interrupted: 10 errors during collection !!!!!!!!!!!!!!!!!!!
+2 warnings, 10 errors in 2.53s

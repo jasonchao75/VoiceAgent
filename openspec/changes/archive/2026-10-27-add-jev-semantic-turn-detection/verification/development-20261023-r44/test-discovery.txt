@@ -1,0 +1,50 @@
+Listing tests:
+  [desktop-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px zh
+  [desktop-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 390px zh
+  [desktop-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px en
+  [desktop-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 390px en
+  [desktop-chromium] › td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 1440px
+  [desktop-chromium] › td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 390px
+  [desktop-chromium] › td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 1440px
+  [desktop-chromium] › td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 390px
+  [desktop-chromium] › td-rtc-capabilities.spec.js:8:1 › inspect RTP and decoded-audio API boundaries without providers or a call
+  [desktop-chromium] › td-rtc-capabilities.spec.js:63:1 › RTP reception precedes decoder and active playback progress
+  [desktop-chromium] › td-runtime.spec.js:33:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history
+  [desktop-chromium] › td-runtime.spec.js:88:1 › missing source evidence closes the formal call with explicit error and failed history
+  [desktop-chromium] › td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation
+  [desktop-chromium] › td-runtime.spec.js:214:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state
+  [desktop-chromium] › td-runtime.spec.js:260:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits
+  [desktop-chromium] › td-runtime.spec.js:290:1 › failed TD save retains draft and retries against the actual API
+  [desktop-chromium] › td-runtime.spec.js:311:1 › formal configuration and audio survive an explicitly coordinated process restart
+  [desktop-chromium] › td-runtime.spec.js:342:1 › late save failure stays with its original Bot after selection changes
+  [desktop-chromium] › td-runtime.spec.js:363:1 › formal TD settings remain operable at 390px with actual saved configuration
+  [desktop-chromium] › td-runtime.spec.js:384:1 › audio generation failure permits an explicit retry without publishing or losing settings
+  [desktop-chromium] › td-runtime.spec.js:403:1 › formal language switch changes labels without changing TD request or user values
+  [desktop-chromium] › td-runtime.spec.js:425:1 › formal TD language defaults to Chinese without replacing user prompts
+  [desktop-chromium] › td-settings.spec.js:9:1 › formal Advanced edits and saves explicit TD settings
+  [desktop-chromium] › td-webrtc-runtime.spec.js:15:1 › formal mobile route establishes the existing WebRTC audio track with local TD
+  [narrow-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px zh
+  [narrow-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 390px zh
+  [narrow-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px en
+  [narrow-chromium] › td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 390px en
+  [narrow-chromium] › td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 1440px
+  [narrow-chromium] › td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 390px
+  [narrow-chromium] › td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 1440px
+  [narrow-chromium] › td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 390px
+  [narrow-chromium] › td-rtc-capabilities.spec.js:8:1 › inspect RTP and decoded-audio API boundaries without providers or a call
+  [narrow-chromium] › td-rtc-capabilities.spec.js:63:1 › RTP reception precedes decoder and active playback progress
+  [narrow-chromium] › td-runtime.spec.js:33:1 › formal browser microphone uplink, Final cancellation and actual render receipts reach persisted history
+  [narrow-chromium] › td-runtime.spec.js:88:1 › missing source evidence closes the formal call with explicit error and failed history
+  [narrow-chromium] › td-runtime.spec.js:132:1 › formal WS identifier echo survives continuation and clear stops only its old generation
+  [narrow-chromium] › td-runtime.spec.js:214:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state
+  [narrow-chromium] › td-runtime.spec.js:260:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits
+  [narrow-chromium] › td-runtime.spec.js:290:1 › failed TD save retains draft and retries against the actual API
+  [narrow-chromium] › td-runtime.spec.js:311:1 › formal configuration and audio survive an explicitly coordinated process restart
+  [narrow-chromium] › td-runtime.spec.js:342:1 › late save failure stays with its original Bot after selection changes
+  [narrow-chromium] › td-runtime.spec.js:363:1 › formal TD settings remain operable at 390px with actual saved configuration
+  [narrow-chromium] › td-runtime.spec.js:384:1 › audio generation failure permits an explicit retry without publishing or losing settings
+  [narrow-chromium] › td-runtime.spec.js:403:1 › formal language switch changes labels without changing TD request or user values
+  [narrow-chromium] › td-runtime.spec.js:425:1 › formal TD language defaults to Chinese without replacing user prompts
+  [narrow-chromium] › td-settings.spec.js:9:1 › formal Advanced edits and saves explicit TD settings
+  [narrow-chromium] › td-webrtc-runtime.spec.js:15:1 › formal mobile route establishes the existing WebRTC audio track with local TD
+Total: 48 tests in 6 files

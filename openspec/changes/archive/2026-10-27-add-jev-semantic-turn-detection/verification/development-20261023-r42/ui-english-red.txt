@@ -1,0 +1,74 @@
+
+Running 1 test using 1 worker
+
+(node:62915) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-baseline.spec.js:46:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px en (2.2s)
+
+
+  1) [desktop-chromium] › tests/ui/td-baseline.spec.js:46:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px en 
+
+    Error: jev-questions static English copy
+
+    expect(received).not.toMatch(expected)
+
+    Expected pattern: not /\p{Script=Han}/u
+    Received string:      "Decision questions
+    Jev uses state + questions, not a chat-style system prompt. Each question has its own instructions. The backend combines the returned decisions.
+    Has the user yielded the turn?
+    Prompt explanation: judge whether the user is waiting for a reply; a pause alone does not mean completion. Language switching never changes these instructions.
+    Speech state
+    Prompt explanation: classify the current utterance using the configured options and conversation context.
+    每行一起配置选项、含义和目标总等待时间。示例值待确认，不是 Jev 内置的 TD 状态。
+    complete：已说完；incomplete：尚未说完；holding_floor：思考或要求等待；unclear：不确定。选项标识与含义是请求内容，切换页面语言不会自动改写。
+    至少两个不重复选项。等待时间从最后人声结束起算，不是 Jev 返回后再等；仅供 TD 使用，不进入发给 Jev 的 questions。
+    Choice weight = 1 − α. Example values need calibration."
+
+      101 |       if (language === 'en') {
+      102 |         const copy = await page.locator(selector).locator('h3:visible,p.hint:visible,p.jev-help:visible').allTextContents();
+    > 103 |         expect.soft(copy.join('\n'), `${name} static English copy`).not.toMatch(/\p{Script=Han}/u);
+          |                                                                         ^
+      104 |       }
+      105 |       await baseline.locator(selector).screenshot({path:`${evidence}/baseline-${name}-${width}-${language}.png`});
+      106 |       await page.locator(selector).screenshot({path:`${evidence}/formal-${name}-${width}-${language}.png`});
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-baseline.spec.js:103:73
+
+    Error: jev-preview static English copy
+
+    expect(received).not.toMatch(expected)
+
+    Expected pattern: not /\p{Script=Han}/u
+    Received string:      "Request preview
+    Sample conversation only. No audio or full system prompt is included. This request is never sent.
+    Authentication uses a server-side Bearer key. Keys are always excluded from this preview.
+    等待时间试算
+    Manual sample inputs, not model output. Editing these values never calls Jev.
+    Choice probability distribution · sample
+    Probabilities must sum to 1. These are manual samples, not Jev output.
+    Waiting preview only. Real user speech cancels pending submission; Final wait may apply afterward, within the same maximum deadline. Options and total waits come from Decision questions. Waiting limits come from Semantic TD."
+
+      101 |       if (language === 'en') {
+      102 |         const copy = await page.locator(selector).locator('h3:visible,p.hint:visible,p.jev-help:visible').allTextContents();
+    > 103 |         expect.soft(copy.join('\n'), `${name} static English copy`).not.toMatch(/\p{Script=Han}/u);
+          |                                                                         ^
+      104 |       }
+      105 |       await baseline.locator(selector).screenshot({path:`${evidence}/baseline-${name}-${width}-${language}.png`});
+      106 |       await page.locator(selector).screenshot({path:`${evidence}/formal-${name}-${width}-${language}.png`});
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-baseline.spec.js:103:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-93cd6-o-frozen-v0-14-at-1440px-en-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-baseline-Checkpoint-A-c-93cd6-o-frozen-v0-14-at-1440px-en-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-baseline-Checkpoint-A-c-93cd6-o-frozen-v0-14-at-1440px-en-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-baseline-Checkpoint-A-c-93cd6-o-frozen-v0-14-at-1440px-en-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-baseline.spec.js:46:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px en 

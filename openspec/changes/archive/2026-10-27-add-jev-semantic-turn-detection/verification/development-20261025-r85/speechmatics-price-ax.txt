@@ -1,0 +1,641 @@
+Browser tab: 1, Title: "Speechmatics pricing: Speech to Text from $0.121/hr", URL: "https://www.speechmatics.com/pricing".
+0 AXWebArea Speechmatics pricing: Speech to Text from $0.121/hr, URL: speechmatics.com/pricing
+	1 container pricing-v2-page
+		2 container
+			3 link Description: Speechmatics, Value: speechmatics.com/
+			4 container Main
+				5 content list
+					6 button (collapsed) Product, ID: radix-:Rd9rm:-trigger-radix-:R1bd9rm:, Secondary Actions: Expand
+						7 text Product
+						8 image
+					9 button (collapsed) Solutions, ID: radix-:Rd9rm:-trigger-radix-:R2bd9rm:, Secondary Actions: Expand
+						10 text Solutions
+						11 image
+					12 button (collapsed) Resources, ID: radix-:Rd9rm:-trigger-radix-:R3bd9rm:, Secondary Actions: Expand
+						13 text Resources
+						14 image
+					15 button (collapsed) Developers, ID: radix-:Rd9rm:-trigger-radix-:R4bd9rm:, Secondary Actions: Expand
+						16 text Developers
+						17 image
+					18 link Description: Enterprise, Value: speechmatics.com/enterprise
+					19 link Description: Security, Value: speechmatics.com/security
+					20 link Description: Pricing, Value: speechmatics.com/pricing
+			21 link Description: Contact sales, Value: speechmatics.com/speak-to-sales
+			22 link Description: Sign in, Value: portal.speechmatics.com/login
+		23 container blocks-wrapper
+			24 container
+				25 heading Pricing, Value: 1
+					26 text Pricing
+				27 text World class Speech to Text
+				28 button How the $0.12 per hour rate is reached
+				29 link Description: Start free • $100 in credits, Value: portal.speechmatics.com/signup
+				30 text No card required
+			31 container Pre-recorded models, ID: models
+				32 container How will you transcribe?
+					33 checkbox Pre-recorded Transcribe from audio or video file, Value: 1
+					34 checkbox Real-time Transcribe from live audio or video, Value: 0
+				35 heading Pre-recorded models, Value: 2, ID: models-heading
+					36 text Pre-recorded models
+				37 text Show rates per
+				38 container Show rates per hour or per minute
+					39 radio button Hours, Value: 1
+					40 radio button Minutes, Value: 0
+				41 container
+					42 heading General purpose, Value: 3
+						43 text General purpose
+					44 heading Melia 1, Value: 4
+						45 text Melia 1
+					46 text $0.12
+					47 text / hr
+					48 text Our next-generation multilingual model. Transcribes 56 languages without choosing one up front, switches language mid-sentence.
+					49 heading Enhanced, Value: 4
+						50 text Enhanced
+					51 text $0.38
+					52 text / hr
+					53 text Our highest accuracy. You pick the language for each transcription. Supports custom dictionary and advanced punctuation.
+					54 heading Medical, Value: 3
+						55 text Medical
+					56 heading Oak 1 Medical, Value: 4
+						57 text Oak 1 Medical
+					58 text $0.15
+					59 text / hr
+					60 text Our latest medical model. For transcription of clinical language: drug names, dosages, abbreviations and procedure terms, with full multilingual support.
+					61 heading Voice agents, Value: 3
+						62 text Voice agents
+					63 heading Linden 1 agent STT, Value: 4
+						64 text Linden 1 agent STT
+					65 container
+						66 text Only available as a
+						67 button Real-time model
+					68 text Our voice agent model, with built-in turn detection for conversational use cases.
+					69 heading More models, Value: 3
+						70 text More models
+					71 heading Standard, Value: 4
+						72 text Standard
+					73 text $0.23
+					74 text / hr
+					75 text Cost-efficient and feature-rich: the same features as Enhanced at a lower rate, with lower accuracy.
+				76 container
+					77 switch Description: Toggle the model-training discount, 33% off, Value: 1
+					78 text Model-training discount 33% off
+				79 button About the model-training discount
+					80 image
+				81 container
+					82 switch Description: Toggle the volume discount, up to 25% off, Value: 1
+					83 text Volume discount: up to 25% off every credit
+				84 button About commitment pricing
+					85 image
+				86 link Description: Calculate costs, Value: speechmatics.com/pricing/calculator
+				87 link Description: Start free • $100 in credits, Value: portal.speechmatics.com/signup
+				88 button How credits work →
+			89 container Features, ID: features
+				90 heading Features, Value: 2, ID: pricing-features-heading
+					91 text Features
+				92 text Included for free.
+				93 container Showing features for
+					94 checkbox Pre-recorded, Value: 1
+					95 checkbox Real-time, Value: 0
+				96 container Features
+					97 table
+						98 container
+							99 row
+								100 cell
+									101 text General purpose
+								102 cell
+									103 text Medical
+								104 cell
+									105 text More models
+							106 row
+								107 cell
+									108 text Model
+								109 cell
+									110 text Melia 1
+								111 cell
+									112 text Enhanced
+								113 cell
+									114 text Oak 1
+								115 cell
+									116 text Standard
+						117 row
+							118 cell
+								119 text Accuracy
+								120 button More detail
+							121 cell
+								122 text High
+							123 cell
+								124 text Highest
+							125 cell
+								126 text Highest
+							127 cell
+								128 text Good
+						129 row
+							130 cell
+								131 text Use case
+							132 cell
+								133 text Multilingual and mixed-language audio
+							134 cell
+								135 text Single-language audio, maximum accuracy
+							136 cell
+								137 text Clinical conversations and dictation
+							138 cell
+								139 text High volume, cost-sensitive workloads
+						140 row
+							141 cell
+								142 text 55+ languages
+								143 button More detail
+							144 cell
+								145 image Available
+							146 cell
+								147 image Available
+							148 cell
+								149 image Available
+							150 cell
+								151 image Available
+						152 row
+							153 cell
+								154 text Mixed-language transcription
+								155 button More detail
+							156 cell
+								157 image Available
+							158 cell
+								159 container Unavailable
+									160 text –
+							161 cell
+								162 image Available
+							163 cell
+								164 container Unavailable
+									165 text –
+						166 row
+							167 cell
+								168 text Code-switching
+								169 button More detail
+							170 cell
+								171 image Available
+							172 cell
+								173 container Unavailable
+									174 text –
+							175 cell
+								176 image Available
+							177 cell
+								178 container Unavailable
+									179 text –
+						180 row
+							181 cell
+								182 text Healthcare vocabulary
+								183 button More detail
+							184 cell
+								185 container Unavailable
+									186 text –
+							187 cell
+								188 container Unavailable
+									189 text –
+							190 cell
+								191 container Unavailable
+									192 text –
+							193 cell
+								194 container Unavailable
+									195 text –
+						196 row
+							197 cell
+								198 text Speaker diarization
+								199 button More detail
+							200 cell
+								201 image Available
+							202 cell
+								203 image Available
+							204 cell
+								205 image Available
+							206 cell
+								207 image Available
+						208 row
+							209 cell
+								210 text Language hints
+								211 button More detail
+							212 cell
+								213 image Available
+							214 cell
+								215 container Unavailable
+									216 text –
+							217 cell
+								218 image Available
+							219 cell
+								220 container Unavailable
+									221 text –
+						222 row
+							223 cell
+								224 text Language labeling
+								225 button More detail
+							226 cell
+								227 image Available
+							228 cell
+								229 container Unavailable
+									230 text –
+							231 cell
+								232 image Available
+							233 cell
+								234 container Unavailable
+									235 text –
+						236 row
+							237 cell
+								238 text Custom dictionary
+								239 button More detail
+							240 cell
+								241 container Unavailable
+									242 text –
+							243 cell
+								244 image Available
+							245 cell
+								246 container Unavailable
+									247 text –
+							248 cell
+								249 image Available
+						250 row
+							251 cell
+								252 text Smart formatting
+								253 button More detail
+							254 cell
+								255 image Available
+							256 cell
+								257 image Available
+							258 cell
+								259 image Available
+							260 cell
+								261 image Available
+						262 row
+							263 cell
+								264 text Timings, word-level
+								265 button More detail
+							266 cell
+								267 image Available
+							268 cell
+								269 image Available
+							270 cell
+								271 image Available
+							272 cell
+								273 image Available
+				274 link Description: See all features in the docs →, Value: docs-git-docs-restructure-test-speechmatics.vercel.app/speech-to-text/availability/
+			275 container Add-ons, ID: addons
+				276 heading Add-ons, Value: 2, ID: pricing-addons-heading
+					277 text Add-ons
+				278 text Extra processing you can bolt onto transcription.
+				279 container Showing add-ons for
+					280 checkbox Pre-recorded, Value: 1
+					281 checkbox Real-time, Value: 0
+				282 container Add-ons
+					283 table
+						284 row
+							285 cell
+								286 text Add-on
+							287 cell
+								288 text Rate
+							289 cell
+								290 text Melia 1
+							291 cell
+								292 text Enhanced
+							293 cell
+								294 text Oak 1
+							295 cell
+								296 text Standard
+						297 row
+							298 cell
+								299 text PII redaction
+								300 button More detail
+							301 cell
+								302 text On request
+							303 cell
+								304 image Available
+							305 cell
+								306 container Unavailable
+									307 text –
+							308 cell
+								309 image Available
+							310 cell
+								311 container Unavailable
+									312 text –
+						313 row
+							314 cell
+								315 text Entity detection
+								316 button More detail
+							317 cell
+								318 text On request
+							319 cell
+								320 image Available
+							321 cell
+								322 container Unavailable
+									323 text –
+							324 cell
+								325 image Available
+							326 cell
+								327 container Unavailable
+									328 text –
+						329 row
+							330 cell
+								331 text Translation
+								332 button More detail
+							333 cell
+								334 text $0.49 / hr
+							335 cell
+								336 container Unavailable
+									337 text –
+							338 cell
+								339 image Available
+							340 cell
+								341 container Unavailable
+									342 text –
+							343 cell
+								344 image Available
+						345 row
+							346 cell
+								347 text Chapters
+								348 button More detail
+							349 cell
+								350 text $0.30 / hr
+							351 cell
+								352 container Unavailable
+									353 text –
+							354 cell
+								355 image Available
+							356 cell
+								357 container Unavailable
+									358 text –
+							359 cell
+								360 image Available
+						361 row
+							362 cell
+								363 text Topics
+								364 button More detail
+							365 cell
+								366 text $0.15 / hr
+							367 cell
+								368 container Unavailable
+									369 text –
+							370 cell
+								371 image Available
+							372 cell
+								373 container Unavailable
+									374 text –
+							375 cell
+								376 image Available
+						377 row
+							378 cell
+								379 text Summaries
+								380 button More detail
+							381 cell
+								382 text $0.09 / hr
+							383 cell
+								384 container Unavailable
+									385 text –
+							386 cell
+								387 image Available
+							388 cell
+								389 container Unavailable
+									390 text –
+							391 cell
+								392 image Available
+						393 row
+							394 cell
+								395 text Sentiment
+								396 button More detail
+							397 cell
+								398 text $0.09 / hr
+							399 cell
+								400 container Unavailable
+									401 text –
+							402 cell
+								403 image Available
+							404 cell
+								405 container Unavailable
+									406 text –
+							407 cell
+								408 image Available
+						409 row
+							410 cell
+								411 text Audio alignment
+								412 button More detail
+							413 cell
+								414 text On request
+							415 cell
+								416 container Unavailable
+									417 text –
+							418 cell
+								419 image Available
+							420 cell
+								421 container Unavailable
+									422 text –
+							423 cell
+								424 image Available
+				425 container
+					426 switch Description: Toggle the volume discount, up to 25% off, Value: 1
+					427 text Volume discount: up to 25% off every credit
+				428 button About commitment pricing
+					429 image
+			430 container Self-serve vs Enterprise, ID: whats-included
+				431 heading Self-serve vs Enterprise, Value: 2, ID: pricing-included-heading
+					432 text Self-serve vs Enterprise
+				433 container Self-serve vs Enterprise
+					434 table
+						435 row
+							436 cell
+								437 text Self-serve vs Enterprise
+							438 cell
+								439 text Self-serve
+								440 link Description: Start free · $100, Value: portal.speechmatics.com/signup
+							441 cell
+								442 text Enterprise
+								443 link Description: Contact sales, Value: speechmatics.com/speak-to-sales
+						444 row included-group-0
+							445 cell
+								446 text Concurrent sessions (Real-time)
+							447 cell
+								448 text 50 (2 on Free)
+							449 cell
+								450 text Dynamically adjusts to demand
+						451 row
+							452 cell
+								453 text Files per second (Pre-recorded)
+							454 cell
+								455 text 10
+							456 cell
+								457 text Unlimited
+						458 row
+							459 cell
+								460 text Support
+							461 cell
+								462 text Community, portal chat & email
+							463 cell
+								464 text Dedicated CSM + Solutions Engineer
+						465 row
+							466 cell
+								467 text Early feature access
+							468 cell
+								469 container Unavailable
+									470 text –
+							471 cell
+								472 image Available
+						473 row
+							474 cell
+								475 button (collapsed) Security and compliance, Secondary Actions: Expand
+						476 row
+							477 cell
+								478 button (collapsed) Account and access, Secondary Actions: Expand
+						479 row
+							480 cell
+								481 button (collapsed) Deployment, Secondary Actions: Expand
+						482 row
+							483 cell
+								484 button (collapsed) Billing, Secondary Actions: Expand
+				485 container
+					486 text Feature availability can differ by model, product package and deployment. Payment methods and discounts are covered under 
+					487 button Ways to buy
+					488 text .
+			489 container Text to Speech
+				490 heading Text to Speech, Value: 2, ID: pricing-tts-heading
+					491 text Text to Speech
+				492 text Natural, low-latency speech synthesis for Voice AI use cases.
+				493 text $0.011 per 1,000 characters
+				494 container
+					495 text First  1 million characters free  (about 20 hours of speech).
+				496 text Built for
+				497 text Voice AI
+				498 text Voice assistants, chatbots and IVR systems.
+				499 text Translation
+				500 text Real-time translation of live events or media.
+				501 text Accessibility
+				502 text Screen readers and assistive technologies.
+				503 text Content creation
+				504 text Podcasts, dubbing, audiobooks and voice-overs.
+				505 text Media production
+				506 text News broadcasts and automated announcements.
+			507 container Frequently asked questions
+				508 heading Frequently asked questions, Value: 2, ID: pricing-faq-heading
+					509 text Frequently asked questions
+				510 heading How does pricing work and how are usage costs calculated?, Value: 3
+					511 button (collapsed) How does pricing work and how are usage costs calculated?, ID: radix-:R1jf6rm:, Secondary Actions: Expand
+						512 text How does pricing work and how are usage costs calculated?
+						513 image
+				514 heading What's the difference between pay as you go, credit packs and a subscription?, Value: 3
+					515 button (collapsed) What's the difference between pay as you go, credit packs and a subscription?, ID: radix-:R2jf6rm:, Secondary Actions: Expand
+						516 text What's the difference between pay as you go, credit packs and a subscription?
+						517 image
+				518 heading Do credits expire?, Value: 3
+					519 button (collapsed) Do credits expire?, ID: radix-:R3jf6rm:, Secondary Actions: Expand
+						520 text Do credits expire?
+						521 image
+				522 heading What happens when my credits run out?, Value: 3
+					523 button (collapsed) What happens when my credits run out?, ID: radix-:R4jf6rm:, Secondary Actions: Expand
+						524 text What happens when my credits run out?
+						525 image
+				526 heading What is the model-training discount program?, Value: 3
+					527 button (collapsed) What is the model-training discount program?, ID: radix-:R5jf6rm:, Secondary Actions: Expand
+						528 text What is the model-training discount program?
+						529 image
+				530 heading Which languages do you support?, Value: 3
+					531 button (collapsed) Which languages do you support?, ID: radix-:R6jf6rm:, Secondary Actions: Expand
+						532 text Which languages do you support?
+						533 image
+				534 heading How is my data handled and kept secure?, Value: 3
+					535 button (collapsed) How is my data handled and kept secure?, ID: radix-:R7jf6rm:, Secondary Actions: Expand
+						536 text How is my data handled and kept secure?
+						537 image
+				538 heading Can I deploy on-premises or on-device?, Value: 3
+					539 button (collapsed) Can I deploy on-premises or on-device?, ID: radix-:R8jf6rm:, Secondary Actions: Expand
+						540 text Can I deploy on-premises or on-device?
+						541 image
+				542 heading How can I talk to someone?, Value: 3
+					543 button (collapsed) How can I talk to someone?, ID: radix-:R9jf6rm:, Secondary Actions: Expand
+						544 text How can I talk to someone?
+						545 image
+		546 container
+			547 button (collapsed) Product, Secondary Actions: Expand
+			548 content list
+				549 link Description: Speech to Text, Value: speechmatics.com/speech-to-text
+				550 link Description: Real-Time, Value: speechmatics.com/product/real-time
+				551 link Description: Languages, Value: speechmatics.com/languages
+				552 link Description: On-Device, Value: speechmatics.com/speech-to-text/on-device
+				553 link Description: Features and deployments, Value: speechmatics.com/product/features-and-deployments
+				554 link Description: Enterprise, Value: speechmatics.com/enterprise
+				555 link Description: Voice Agent API, Value: speechmatics.com/voice-agents
+			556 button (collapsed) Use Cases, Secondary Actions: Expand
+			557 content list
+				558 link Description: Medical & Healthcare, Value: speechmatics.com/use-cases/medical-transcription
+				559 link Description: AI Voice Agents, Value: speechmatics.com/use-cases/ai-voice-agents
+				560 link Description: Legal Transcription, Value: speechmatics.com/use-cases/legal-transcription
+				561 link Description: Contact Center Solutions, Value: speechmatics.com/use-cases/contact-center-solutions
+				562 link Description: Media & Captioning, Value: speechmatics.com/use-cases/media-distribution-and-captioning
+				563 link Description: Speech Analytics, Value: speechmatics.com/use-cases/media-monitoring
+				564 link Description: Note-Taking & Meeting Assistants, Value: speechmatics.com/use-cases/meeting-platforms
+				565 link Description: EdTech, Value: speechmatics.com/use-cases/edtech
+			566 button (collapsed) Pricing, Secondary Actions: Expand
+			567 content list
+				568 link Description: Pricing Options, Value: speechmatics.com/pricing
+			569 button (collapsed) Resources, Secondary Actions: Expand
+			570 content list
+				571 link Description: Documentation, Value: docs.speechmatics.com/
+				572 link Description: Blog and Latest News, Value: speechmatics.com/company/articles-and-news/articles
+				573 link Description: Case Studies, Value: speechmatics.com/product/case-studies
+				574 link Description: Service Status, Value: status.speechmatics.com/
+				575 link Description: Security, Value: speechmatics.com/security
+				576 link Description: Hey AI, learn about us, Value: speechmatics.com/ai-info
+				577 link Description: GitHub Academy, Value: github.com/speechmatics/speechmatics-academy
+			578 button (collapsed) About, Secondary Actions: Expand
+			579 content list
+				580 link Description: About Us, Value: speechmatics.com/company/about-speechmatics
+				581 link Description: Careers, Value: speechmatics.com/company/careers
+				582 link Description: Brand, Value: speechmatics.com/brand
+				583 link Description: Contact Us, Value: speechmatics.com/company/contact
+				584 link Description: Startup Program, Value: speechmatics.com/startup-program
+				585 link Description: Community, Value: speechmatics.com/community
+			586 button (collapsed) Compare, Secondary Actions: Expand
+			587 content list
+				588 link Description: vs AssemblyAI, Value: speechmatics.com/how-we-compare/assemblyai-alternative
+				589 link Description: vs AWS, Value: speechmatics.com/how-we-compare/aws-alternative
+				590 link Description: vs Deepgram, Value: speechmatics.com/how-we-compare/deepgram-alternative
+				591 link Description: vs Gladia, Value: speechmatics.com/how-we-compare/gladia-alternative
+				592 link Description: vs Google, Value: speechmatics.com/how-we-compare/google-alternative
+				593 link Description: vs Microsoft Azure, Value: speechmatics.com/how-we-compare/microsoft-azure-speech-alternative
+				594 link Description: vs Soniox, Value: speechmatics.com/how-we-compare/soniox-alternative
+				595 link Description: vs ElevenLabs, Value: speechmatics.com/how-we-compare/elevenlabs-scribe-alternative
+				596 link Description: vs OpenAI, Value: speechmatics.com/how-we-compare/openai-alternative
+			597 link Description: Speechmatics, Value: speechmatics.com/
+			598 image ISO/IEC 27001
+			599 image Queen's Award for Enterprise 2019
+			600 link Description: G2 High Performer badge, Value: g2.com/products/speechmatics/reviews
+			601 image GDPR Compliant
+			602 image HIPAA Compliant
+			603 image ISO 27001 Certified
+			604 image SOC 2 Certified
+			605 link Description: Start building, Value: portal.speechmatics.com/signup
+			606 content list
+				607 link Description: Privacy Policy, Value: speechmatics.com/legal/privacy-policy
+				608 link Description: Terms of Website, Value: speechmatics.com/legal/terms-of-website
+				609 link Description: Terms of Service, Value: speechmatics.com/legal/terms-of-service
+				610 link Description: Cookie Policy, Value: speechmatics.com/legal/cookie-policy
+				611 link Description: Sitemap, Value: speechmatics.com/sitemap
+			612 text Copyright © Speechmatics  2026
+			613 content list
+				614 link Description: Speechmatics Discord, Value: discord.gg/speechmatics
+				615 link Description: Speechmatics X, Value: x.com/Speechmatics/
+				616 link Description: Speechmatics LinkedIn, Value: linkedin.com/company/speechmatics/
+				617 link Description: Speechmatics YouTube channel, Value: youtube.com/@Speechmatics
+				618 link Description: Speechmatics Reddit, Value: reddit.com/r/Speechmatics/
+				619 link Description: Speechmatics GitHub, Value: github.com/speechmatics
+
+The focused UI element is 0 AXWebArea Speechmatics pricing: Speech to Text from $0.121/hr, URL: speechmatics.com/pricing
+
+After real-time and discount-off selection:
+Browser tab: 1, Title: "Speechmatics pricing: Speech to Text from $0.121/hr", URL: "https://www.speechmatics.com/pricing".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~					46 text $0.40
+~					51 text $0.80
+~					621 text $0.40
+~					622 text $0.30
+~					73 text $0.45
+~					77 switch Description: Toggle the model-training discount, 33% off, Value: 0
+~					82 switch Description: Toggle the volume discount, up to 25% off, Value: 0
+~								334 text $0.65 / hr
+~								350 text $0.40 / hr
+~								366 text $0.20 / hr
+~								382 text $0.12 / hr
+~								398 text $0.12 / hr
+~					426 switch Description: Toggle the volume discount, up to 25% off, Value: 0
+The focused UI element is 82 switch Description: Toggle the volume discount, up to 25% off, Value: 0

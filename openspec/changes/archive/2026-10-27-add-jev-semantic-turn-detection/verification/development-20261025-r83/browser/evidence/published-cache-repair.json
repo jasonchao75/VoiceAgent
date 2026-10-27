@@ -1,0 +1,38 @@
+{
+  "evidenceLevel": "local-real",
+  "publishedRevision": 1,
+  "publishedFingerprint": "126f05ec3b5806f7e67a66a0b7e5833a36be807bbb44c072f08e6a104b7dc24b",
+  "repair": [
+    {
+      "event": "identifier_echo_synthesis_started",
+      "playback_id": "774322a85ea94ae598e99afd027a9b37",
+      "source_id": "range:597b7a31474126d238e7ddb7ef4681030bdfc6785da27d03141b0aa964133c1a",
+      "source_revision": 1,
+      "turn_id": 1,
+      "collection_generation": 0,
+      "unit": "1",
+      "fingerprint": "126f05ec3b5806f7e67a66a0b7e5833a36be807bbb44c072f08e6a104b7dc24b",
+      "created_ms": 2265.479875000892
+    }
+  ],
+  "ready": [
+    {
+      "event": "identifier_echo_resource_ready",
+      "playback_id": "774322a85ea94ae598e99afd027a9b37",
+      "source_id": "range:597b7a31474126d238e7ddb7ef4681030bdfc6785da27d03141b0aa964133c1a",
+      "source_revision": 1,
+      "turn_id": 1,
+      "collection_generation": 0,
+      "unit": "1",
+      "fingerprint": "126f05ec3b5806f7e67a66a0b7e5833a36be807bbb44c072f08e6a104b7dc24b",
+      "resource_version": "451abd1faaa30c1ed01715c776da5ab37ae415fd507bd5f840ceca2b5e1f3573",
+      "recovery_path": true,
+      "elapsed_ms": 65.53729198640212,
+      "created_ms": 2328.2249579788186
+    }
+  ],
+  "sourceVersion": "451abd1faaa30c1ed01715c776da5ab37ae415fd507bd5f840ceca2b5e1f3573",
+  "actualStopSamples": 279944,
+  "oldTask": "774322a85ea94ae598e99afd027a9b37",
+  "providerCalls": "offline replacements only"
+}

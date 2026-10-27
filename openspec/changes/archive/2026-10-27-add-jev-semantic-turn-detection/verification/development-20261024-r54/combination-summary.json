@@ -1,0 +1,144 @@
+{
+  "final": {
+    "actor_actions": [
+      {
+        "event": "scenario_started",
+        "task": "partial-A"
+      },
+      {
+        "event": "final_replaced",
+        "duplicate_restart": false,
+        "tool_replayed": false
+      },
+      {
+        "event": "candidate_failed",
+        "reason": "decode_coordinate_unproven"
+      }
+    ],
+    "actual_receipts": [
+      {
+        "event": "task_started",
+        "playback_id": "partial-A",
+        "rendered_samples": 128,
+        "render_frame": 16128,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 701.3999999994412,
+        "render_clock_id": "2a2a17036ba141a2be95178630d11728",
+        "accepted": true
+      },
+      {
+        "event": "task_stopped",
+        "playback_id": "partial-A",
+        "request_id": "fef52e0f374a43a783e9a6faff0326fb",
+        "rendered_samples": 256,
+        "started": true,
+        "render_frame": 16384,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 706.5999999996275,
+        "render_clock_id": "2a2a17036ba141a2be95178630d11728",
+        "accepted": true
+      },
+      {
+        "event": "task_started",
+        "playback_id": "final-B",
+        "rendered_samples": 128,
+        "render_frame": 18176,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 744,
+        "render_clock_id": "2a2a17036ba141a2be95178630d11728",
+        "accepted": true
+      },
+      {
+        "event": "task_stopped",
+        "playback_id": "final-B",
+        "request_id": "candidate-failed",
+        "rendered_samples": 1416,
+        "started": true,
+        "render_frame": 19968,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 781.2000000001863,
+        "render_clock_id": "2a2a17036ba141a2be95178630d11728",
+        "accepted": true
+      }
+    ],
+    "user_submissions": 1,
+    "last_bound_source": 12168,
+    "last_successful_decode_source": 11208,
+    "failure": [
+      {
+        "side": "bridge",
+        "event": "candidate_failed",
+        "reason": "decode_coordinate_unproven"
+      }
+    ],
+    "expected_output_timestamp_us": 1253500,
+    "observed_output_timestamp_us": null,
+    "overall": "FAILED_STOPPED"
+  },
+  "identifier": {
+    "actor_actions": [
+      {
+        "event": "scenario_started",
+        "task": "cda0d82301e94d96a61c4cd568d8ee8c"
+      },
+      {
+        "event": "continuation_and_question",
+        "active_kind": "echo",
+        "active_status": "playing",
+        "question_status": "cancelled_unplayed",
+        "stop_requests": []
+      },
+      {
+        "event": "clear_result",
+        "result": {
+          "status": "cleared",
+          "value": "",
+          "count": 0,
+          "generation": 1
+        },
+        "generation": 1
+      },
+      {
+        "event": "candidate_failed",
+        "reason": "decode_coordinate_unproven"
+      }
+    ],
+    "actual_receipts": [
+      {
+        "event": "task_started",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "rendered_samples": 128,
+        "render_frame": 9472,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 443.70000000018626,
+        "render_clock_id": "536380bd0c3849c0b687af3acbbc7ab6",
+        "accepted": true
+      },
+      {
+        "event": "task_stopped",
+        "playback_id": "cda0d82301e94d96a61c4cd568d8ee8c",
+        "request_id": "42d702fbb0e341cd93b64cda428f72a7",
+        "rendered_samples": 256,
+        "started": true,
+        "render_frame": 9728,
+        "render_sample_rate": 48000,
+        "elapsed_ms": 449.1000000005588,
+        "render_clock_id": "536380bd0c3849c0b687af3acbbc7ab6",
+        "accepted": true
+      }
+    ],
+    "user_submissions": 0,
+    "last_bound_source": 12168,
+    "last_successful_decode_source": 11208,
+    "failure": [
+      {
+        "side": "bridge",
+        "event": "candidate_failed",
+        "reason": "decode_coordinate_unproven"
+      }
+    ],
+    "expected_output_timestamp_us": 1253500,
+    "observed_output_timestamp_us": null,
+    "overall": "FAILED_STOPPED"
+  }
+}

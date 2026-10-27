@@ -1,0 +1,19 @@
+{
+  "evidence_level": "local-real",
+  "checks": [
+    {
+      "response_id": "1:1",
+      "source_mapping": true,
+      "source_bracket": true,
+      "render_bracket": true,
+      "interval_subtraction": true
+    },
+    {
+      "response_id": "1:2",
+      "source_mapping": true,
+      "source_bracket": true,
+      "render_bracket": true,
+      "interval_subtraction": true
+    }
+  ]
+}

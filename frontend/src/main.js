@@ -1,3 +1,9 @@
+import { TaskMediaManager, TaskWebSocketSerializer } from "./td-playback.js";
+import { RenderClockSampler } from "./td-render-clock.js";
+import { formatLatencyInterval } from "./td-timing.js";
+import { appendTDHistory, appendMissingTD } from "./td-history.js";
+import { mountTDLocale } from "./td-locale.js";
+import { mountTDSettings } from "./td-settings.js";
 import { PipecatClient } from "@pipecat-ai/client-js";
 import { WavMediaManager, WebSocketTransport } from "@pipecat-ai/websocket-transport";
 import encodeQR from "qr";
@@ -372,7 +378,7 @@ app.innerHTML = `
           </form>
         </details>
 
-        <section class="history-panel" hidden>
+        <section class="history-panel td-content" hidden>
           <div class="list-head">
             <h2>Session history</h2>
             <button id="refresh-history" class="inline-button" type="button">Refresh</button>
@@ -383,6 +389,7 @@ app.innerHTML = `
             <select id="history-type" aria-label="Session type"><option value="">All sessions</option><option value="web_call">Web call</option><option value="chat_test">Chat test</option></select>
           </div>
           <div class="history-table-header" aria-hidden="true"><span>Session</span><span>Started</span><span>Type</span><span>Duration / Turns</span><span></span></div>
+          <p id="history-load-error" class="error-banner" role="alert" hidden></p>
           <div id="history-list" class="history-list"></div>
         </section>
       </aside>
@@ -443,7 +450,7 @@ app.innerHTML = `
         </footer>
       </section>
     </section>
-    <aside id="history-dialog" class="history-dialog" aria-label="Session details" hidden>
+    <aside id="history-dialog" class="history-dialog td-history td-content" aria-label="Session details" hidden>
       <header class="history-dialog-header"><strong>Session details</strong><button id="close-history" class="text-button dialog-close" type="button" aria-label="Close session details">×</button></header>
       <div id="history-detail"></div>
     </aside>
@@ -920,14 +927,16 @@ function renderAsrModelFields(bot = null) {
     languageHint.textContent = "Optional catalog hints for the multilingual Flux model.";
   }
   const sources = model.turn_sources || [];
-  elements.botTurnSource.replaceChildren(...sources.map((source) => new Option(source === "off" ? "Off" : "Provider native", source)));
+  elements.botTurnSource.replaceChildren(...sources.map((source) => new Option(source === "off" ? "Off" : source === "self_developed" ? "Self-developed" : "Provider native", source)));
   elements.botTurnSource.value = sources.includes(bot?.turn_detection_source)
     ? bot.turn_detection_source
     : model.default_turn_source;
   elements.botTurnSource.disabled = sources.length === 1;
   elements.botTurnSourceHint.textContent = elements.botTurnSource.value === "off"
     ? "Semantic Turn Detection is off; the provider still closes the Turn with fixed silence."
-    : "The selected provider is the only final Turn authority for this session.";
+    : elements.botTurnSource.value === "self_developed"
+      ? "Use custom turn detection settings in Advanced."
+      : "The selected provider is the only final Turn authority for this session.";
   renderAsrAdvanced(options);
   syncAsrCredential();
 }
@@ -1146,10 +1155,13 @@ function initializeComponentEditor() {
     keyFieldset.querySelector(".save-key-row b").textContent = `Save ${component.toUpperCase()} API key`;
     syncKeyFieldVisibility();
   };
+  let returnFocus = null;
   const close = () => {
+    const restoreFocus = drawer.contains(document.activeElement);
     drawer.hidden = true;
     elements.botForm.classList.remove("drawer-open");
     cards.querySelectorAll("button").forEach((button) => button.classList.remove("active"));
+    if (restoreFocus && returnFocus?.isConnected) returnFocus.focus();
   };
   drawer.querySelector("header button").addEventListener("click", close);
   cards.querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
@@ -1160,7 +1172,9 @@ function initializeComponentEditor() {
     drawer.dataset.component = button.dataset.component;
     syncDrawerCredentials(button.dataset.component);
     drawer.hidden = false;
+    returnFocus = button;
     elements.botForm.classList.add("drawer-open");
+    if (document.activeElement === button) drawer.querySelector("header button").focus();
   }));
 }
 
@@ -1203,6 +1217,19 @@ function initializePrototypeLayout() {
   lifecycleControls.classList.add("test-retention-note");
   conversation.querySelector(".test-tabs").hidden = true;
   document.querySelector(".topbar").innerHTML = '<div class="prototype-title"><b id="current-bot-title">Select a bot</b><span>Draft <i>Saved locally</i></span></div><div class="top-actions"><details class="test-menu"><summary>Test bot⌄</summary><button type="button" data-test-mode="chat">Chat test<small>Text → LLM → TTS</small></button><button type="button" data-test-mode="web">Web call test<small>ASR → LLM → TTS</small></button></details><button class="publish-button" type="button">Publish</button></div>';
+  document.querySelector(".publish-button").addEventListener("click", async (event) => {
+    const bot = selectedBot();
+    if (!bot) return showError("Select a Bot before publishing.");
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      if (document.querySelector(".product-tabs button.active")?.dataset.page !== "share") {
+        await renderSharePage();
+      }
+      const publish = document.querySelector("#share-publish");
+      if (selectedBot()?.id === bot.id && !publish.disabled) await publishSelectedBot(publish);
+    } finally { button.disabled = false; }
+  });
   document.querySelector("#bot-search-input").addEventListener("input", renderBotList);
   document.querySelectorAll("[data-test-mode]").forEach((button) => button.addEventListener("click", () => {
     document.querySelector(".test-menu").open = false;
@@ -1360,9 +1387,19 @@ async function testLlm(kind) {
 }
 
 async function loadHistory() {
-  const data = await apiRequest("/api/history?limit=25&offset=0");
-  historyItems = data.items;
-  renderHistory();
+  const errorNotice = document.querySelector("#history-load-error");
+  try {
+    const data = await apiRequest("/api/history?limit=25&offset=0");
+    historyItems = data.items;
+    renderHistory();
+    errorNotice.hidden = true;
+    errorNotice.textContent = "";
+  } catch (error) {
+    // Sessions hides the call panel, so its errors need a visible local owner.
+    errorNotice.textContent = error instanceof Error ? error.message : "Could not load session history.";
+    errorNotice.hidden = false;
+    throw error;
+  }
 }
 
 function renderHistory() {
@@ -1380,6 +1417,7 @@ function renderHistory() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "history-row";
+    button.dataset.callId = call.id;
     const durationSeconds = call.duration_ms === null ? null : Math.round(call.duration_ms / 1000);
     const duration = durationSeconds === null ? "Pending" : `${String(Math.floor(durationSeconds / 60)).padStart(2, "0")}:${String(durationSeconds % 60).padStart(2, "0")}`;
     const type = call.session_type === "chat_test" ? "Chat test" : "Web call";
@@ -1392,17 +1430,52 @@ function renderHistory() {
   }));
 }
 
+let historyReturnFocus = null;
+let historyReturnCallId = null;
 function closeHistoryDrawer() {
+  const restore = elements.historyDialog.contains(document.activeElement);
   elements.historyDialog.querySelectorAll("audio").forEach((audio) => audio.pause());
   elements.historyDialog.hidden = true;
+  if (restore) {
+    // A list refresh can replace the original trigger while details remain open.
+    const currentRow = [...elements.historyList.querySelectorAll(".history-row")]
+      .find((row) => row.dataset.callId === historyReturnCallId);
+    const target = historyReturnFocus?.isConnected ? historyReturnFocus
+      : currentRow || document.querySelector('[data-page="sessions"]');
+    if (target?.getClientRects().length) target.focus();
+  }
+}
+
+function formatHistoryMetric(metric, turnId = metric.turn_index + 1) {
+  const reasons = {
+    word_timing_unavailable: "ASR word timing unavailable",
+  client_playback_unconfirmed: "client playback not confirmed",
+  render_clock_uncorrelated: "render observed; timing clocks uncorrelated",
+    bounded_timing_only: "only a measured interval is available",
+    source_end_clock_unavailable: "speech-end clock unavailable",
+    audio_clock_mismatch: "ASR audio clock mismatch",
+    interrupted_before_llm_first_token: "interrupted before LLM first token",
+    session_ended_before_llm_first_token: "session ended before LLM first token",
+    interrupted_before_tts_audio: "interrupted before TTS audio",
+    session_ended_before_tts_audio: "session ended before TTS audio",
+    interrupted_before_playback: "interrupted before playback",
+    session_ended_before_playback: "session ended before playback",
+  };
+  const fmt = (value, reason) => {
+    if (value !== null && value !== undefined) return `${value} ms`;
+    return `not available (${reasons[reason] || "event not observed"})`;
+  };
+  return `Turn ${turnId}: ASR final ${fmt(metric.asr_final_latency_ms, metric.asr_final_reason)} · LLM splicing ${fmt(metric.llm_request_splicing_ms, metric.incomplete_reason)} · LLM TTFT ${fmt(metric.llm_first_token_ms, metric.incomplete_reason)} · TTS initial ${fmt(metric.tts_initial_ms, metric.incomplete_reason)} · TTS TTFT ${fmt(metric.tts_first_audio_ms, metric.incomplete_reason)} · playback ${formatPlaybackMetric(metric, "playback_ms", fmt)} · e2e latency ${formatPlaybackMetric(metric, "turn_to_playback_ms", fmt)} · reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`;
 }
 
 async function showHistory(callId) {
+  const trigger = document.activeElement;
   const call = await apiRequest(`/api/history/${callId}`);
   elements.historyDetail.replaceChildren();
   const heading = document.createElement("h2");
   heading.textContent = call.bot_name || "One-off session";
   const meta = document.createElement("p");
+  meta.className = "hint";
   meta.textContent = `${new Date(call.started_at).toLocaleString()} · ${call.llm_provider}/${call.llm_model} · ${call.tts_provider}/${call.tts_model} · ${call.tts_text_aggregation} input · ${call.status}`;
   elements.historyDetail.append(heading, meta);
   if (call.has_recording) {
@@ -1425,30 +1498,24 @@ async function showHistory(callId) {
   metricHelp.className = "hint";
   metricHelp.textContent = "TTS initial measures pipeline handoff to the TTS request; TTS TTFT measures first synthesized audio. In sentence mode, TTS initial therefore includes the wait for the first complete sentence.";
   elements.historyDetail.append(metricHelp);
-  let interactionIndex = 0;
-  for (const turn of call.turns) {
-    addHistoryTurn(turn);
-    if (turn.role !== "assistant") continue;
-    const metric = call.metrics[interactionIndex++];
-    if (!metric) continue;
-    const row = document.createElement("p");
-    row.className = "history-metric";
-    const reasons = {
-      word_timing_unavailable: "ASR word timing unavailable",
-      audio_clock_mismatch: "ASR audio clock mismatch",
-      interrupted_before_llm_first_token: "interrupted before LLM first token",
-      session_ended_before_llm_first_token: "session ended before LLM first token",
-      interrupted_before_tts_audio: "interrupted before TTS audio",
-      session_ended_before_tts_audio: "session ended before TTS audio",
-      interrupted_before_playback: "interrupted before playback",
-      session_ended_before_playback: "session ended before playback",
-    };
-    const fmt = (value, reason) => {
-      if (value !== null && value !== undefined) return `${value} ms`;
-      return `not available (${reasons[reason] || "event not observed"})`;
-    };
-    row.textContent = `Turn ${metric.turn_index + 1}: ASR final ${fmt(metric.asr_final_latency_ms, metric.asr_final_reason)} · LLM splicing ${fmt(metric.llm_request_splicing_ms, metric.incomplete_reason)} · LLM TTFT ${fmt(metric.llm_first_token_ms, metric.incomplete_reason)} · TTS initial ${fmt(metric.tts_initial_ms, metric.incomplete_reason)} · TTS TTFT ${fmt(metric.tts_first_audio_ms, metric.incomplete_reason)} · playback ${fmt(metric.playback_ms, metric.incomplete_reason)} · e2e latency ${fmt(metric.turn_to_playback_ms, metric.incomplete_reason)} · reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`;
-    elements.historyDetail.append(row);
+  const renderedTD = appendTDHistory(elements.historyDetail, call, formatHistoryMetric);
+  if (!renderedTD) {
+    const legacy = document.createElement("section");
+    legacy.className = "td-history";
+    let interactionIndex = 0;
+    for (const turn of call.turns) {
+      addHistoryTurn(turn, legacy);
+      if (turn.role !== "assistant") continue;
+      appendMissingTD(legacy);
+      const metric = call.metrics[interactionIndex++];
+      if (!metric) continue;
+      const row = document.createElement("p");
+      row.className = "history-metric";
+      row.textContent = formatHistoryMetric(metric);
+      legacy.append(row);
+    }
+    mountTDLocale(legacy, {id:"td-history-language"});
+    elements.historyDetail.append(legacy);
   }
   const remove = document.createElement("button");
   remove.className = "card-button danger";
@@ -1461,15 +1528,22 @@ async function showHistory(callId) {
   });
   elements.historyDetail.append(remove);
   elements.historyDialog.hidden = false;
+  // This is a non-modal drawer: preserve background navigation and avoid stealing moved focus.
+  if (document.activeElement === trigger && trigger instanceof HTMLElement) {
+    historyReturnFocus = trigger;
+    historyReturnCallId = callId;
+    elements.closeHistory.focus();
+  }
 }
 
-function addHistoryTurn(turn) {
+function addHistoryTurn(turn, root = elements.historyDetail) {
   const item = document.createElement("article");
   item.className = `message ${turn.role === "user" ? "user" : "agent"}`;
   const text = document.createElement("p");
   text.textContent = turn.text;
+  text.dataset.tdLiteral = "";
   item.append(text);
-  elements.historyDetail.append(item);
+  root.append(item);
 }
 
 function addTranscript(role, text, { interim = false } = {}) {
@@ -1975,7 +2049,7 @@ function openEditor(bot) {
   elements.botSystemPrompt.value = bot ? bot.system_prompt : catalogs.defaults.system_prompt;
   elements.botOpeningScript.value = bot ? bot.opening_script : catalogs.defaults.opening_script;
   elements.botFallbackScript.value = bot?.fallback_script ?? "";
-  syncAdvancedBotContext();
+  syncAdvancedBotContext(true);
   botKeySaveState = {
     asr: Boolean(bot && (bot.has_asr_key ?? bot.has_saved_keys)),
     tts: Boolean(bot && (bot.has_tts_key ?? bot.has_saved_keys)),
@@ -2009,7 +2083,9 @@ function closeEditor() {
   syncAdvancedBotContext();
 }
 
-function syncAdvancedBotContext() {
+let tdEditor;
+
+function syncAdvancedBotContext(force = false) {
   const bot = editingBotId && bots.find((item) => item.id === editingBotId);
   const context = document.querySelector("#advanced-bot-context");
   const save = document.querySelector("#save-advanced-settings");
@@ -2017,6 +2093,24 @@ function syncAdvancedBotContext() {
     ? `Bot-specific settings for ${bot.name}.`
     : "Select a Bot to configure its advanced behavior.";
   save.disabled = !bot;
+  tdEditor ||= mountTDSettings(document.querySelector("#advanced-empty"), {
+    request: apiRequest, saved: result => { bots = bots.map(item => item.id === result.id ? result : item); },
+    hasUnsavedTTS: () => {
+      const current = bots.find(item => item.id === editingBotId);
+      if (!current) return true;
+      const values = {
+        tts_provider:elements.botTts.value, tts_model:elements.botTtsModel.value,
+        tts_voice:elements.botVoice.value, tts_text_aggregation:elements.botTtsAggregation.value,
+        tts_speed:Number(elements.botTts.value === "elevenlabs" ? elements.botTtsSpeed.value : elements.botFluxSpeed.value),
+        tts_expressivity:Number(elements.botFluxExpressivity.value), tts_model_improvement_opt_out:elements.botFluxMipOptOut.checked,
+        tts_stability:Number(elements.botTtsStability.value),tts_similarity_boost:Number(elements.botTtsSimilarity.value),
+        tts_style:Number(elements.botTtsStyle.value),tts_use_speaker_boost:elements.botTtsSpeakerBoost.checked,
+        tts_text_normalization:elements.botTextNormalization.value,
+      };
+      return Object.entries(values).some(([field,value])=>current[field] !== value);
+    },
+  });
+  tdEditor.load(bot || null, elements.botTurnSource.value, force);
 }
 
 function collectAsrOptions() {
@@ -2109,6 +2203,7 @@ async function saveBot(event) {
   if (botKeySaveState.llm && llmKey) payload.llm_api_key = llmKey;
 
   try {
+    if (tdEditor) payload.td_config = tdEditor.collect();
     const saved = editingBotId
       ? await apiRequest(`/api/bots/${editingBotId}`, { method: "PUT", body: payload })
       : await apiRequest("/api/bots", { method: "POST", body: payload });
@@ -2190,6 +2285,22 @@ async function reportBrowserEvent(event, text) {
   }
 }
 
+function formatPlaybackMetric(metric, field, format) {
+  const range=metric.timing_ranges?.[field==="turn_to_playback_ms"?"e2e":"playback"];
+  const measured=formatLatencyInterval(range);
+  if(measured) {
+    const origin=range.origin==='vad_speech_end_source_sample'
+      ? 'VAD speech-end source sample → client render'
+      : 'server audio task ready → client render';
+    return `${measured} (${origin}; response ${range.response_id})`;
+  }
+  const value = format(metric[field], metric.incomplete_reason);
+  if (metric[field] === null || metric[field] === undefined) return value;
+  return metric.playback_evidence === "client_render_confirmed"
+    ? value
+    : `${value} (unverified client report)`;
+}
+
 async function addLiveMetricCard(bubble) {
   if (!bubble || bubble.querySelector(".live-turn-metrics")) return;
   if (!userStoppedAt || !sessionId || !sessionToken) return;
@@ -2207,6 +2318,9 @@ async function addLiveMetricCard(bubble) {
   if (!metric) return;
   const reasons = {
     word_timing_unavailable: "ASR word timing unavailable",
+    client_playback_unconfirmed: "client playback not confirmed",
+    render_clock_uncorrelated: "render observed; timing clocks uncorrelated",
+    source_end_clock_unavailable: "speech-end clock unavailable",
     audio_clock_mismatch: "ASR audio clock mismatch",
     interrupted_before_llm_first_token: "interrupted before LLM first token",
     session_ended_before_llm_first_token: "session ended before LLM first token",
@@ -2227,8 +2341,8 @@ async function addLiveMetricCard(bubble) {
     `LLM TTFT ${fmt(metric.llm_first_token_ms, metric.incomplete_reason)}`,
     `TTS initial ${fmt(metric.tts_initial_ms, metric.incomplete_reason)}`,
     `TTS TTFT ${fmt(metric.tts_first_audio_ms, metric.incomplete_reason)}`,
-    `playback ${fmt(metric.playback_ms, metric.incomplete_reason)}`,
-    `e2e latency ${fmt(metric.turn_to_playback_ms, metric.incomplete_reason)}`,
+    `playback ${formatPlaybackMetric(metric, "playback_ms", fmt)}`,
+    `e2e latency ${formatPlaybackMetric(metric, "turn_to_playback_ms", fmt)}`,
     `reasoning ${metric.reasoning_status}/${metric.reasoning_tokens ?? "not reported"}`,
   );
   const card = document.createElement("div");
@@ -2238,6 +2352,7 @@ async function addLiveMetricCard(bubble) {
 }
 
 function createClient() {
+  let sourceEvidenceFailure = false;
   clientReady = false;
   currentAssistantBubble = undefined;
   currentAssistantText = "";
@@ -2245,6 +2360,30 @@ function createClient() {
       recorderSampleRate: catalogs.defaults.audio.input_sample_rate,
       playerSampleRate: catalogs.defaults.audio.output_sample_rate,
     };
+  if (testMode === "web_call" && selectedBot()?.turn_detection_source === "self_developed") {
+    const ownerSession = sessionId, ownerToken = sessionToken, ownerStartedAt = sessionStartedAt;
+    const manager = new TaskMediaManager(undefined, catalogs.defaults.audio.input_sample_rate, evidence => {
+      if (!ownerSession || !ownerToken || !ownerStartedAt) return;
+      const receipt = {
+        playback_id:evidence.playback_id, event:evidence.event,
+        rendered_samples:evidence.rendered_samples,
+        elapsed_ms:performance.now()-ownerStartedAt,
+        evidence_source:"audio_worklet_render",
+        ...(evidence.render_frame != null ? {
+          render_frame:evidence.render_frame, render_sample_rate:evidence.render_sample_rate,
+          render_clock_id:evidence.render_clock_id,
+        } : {}),
+        ...(evidence.request_id ? {request_id:evidence.request_id} : {}),
+        ...(evidence.reason === "render_queue_limit" ? {failure_reason:evidence.reason} : {}),
+      };
+      fetch(`/api/sessions/${ownerSession}/playback-events`, {
+        method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${ownerToken}`},
+        body:JSON.stringify(receipt),keepalive:true,
+      }).catch(()=>{});
+    }, clock=>new RenderClockSampler({sessionId:ownerSession,token:ownerToken,...clock}));
+    transportOptions.mediaManager = manager;
+    transportOptions.serializer = new TaskWebSocketSerializer(manager);
+  }
   if (testMode === "chat_test") {
     transportOptions.mediaManager = new OutputOnlyMediaManager(
       undefined,
@@ -2286,15 +2425,21 @@ function createClient() {
       onDeviceError: (error) => {
         showError(deviceErrorMessage(error));
       },
-      onError: () => {
-        showError("A voice provider returned an error. Check both API keys, model access, and balance.");
+      onError: (message) => {
+        sourceEvidenceFailure ||= message?.data?.error === "asr_source_evidence_unavailable"
+          || message?.data?.message === "asr_source_evidence_unavailable";
+        showError(sourceEvidenceFailure
+          ? "Speech recognition timing was unavailable. The call ended safely; please start a new call."
+          : "A voice provider returned an error. Check both API keys, model access, and balance.");
         const failedSessionId = sessionId;
         window.setTimeout(async () => {
           if (!failedSessionId) return;
           try {
             const failed = await apiRequest(`/api/history/${failedSessionId}`);
             if (failed.diagnostic_id) {
-              showError(`Provider error: ${failed.error_category}. Diagnostic ID: ${failed.diagnostic_id}`);
+              showError(failed.error_category === "asr_source_evidence_unavailable"
+                ? `Speech recognition timing was unavailable. The call ended safely. Diagnostic ID: ${failed.diagnostic_id}`
+                : `Provider error: ${failed.error_category}. Diagnostic ID: ${failed.diagnostic_id}`);
             }
           } catch {
             // Persistence may still be completing after the WebSocket error.
@@ -2309,12 +2454,11 @@ function createClient() {
         botSpeaking = false;
         setSpeaker(
           "user",
-          interruptedBot ? "You're speaking — Agent audio stopped" : "You're speaking",
+          interruptedBot ? "You're speaking — interrupting Agent" : "You're speaking",
         );
         elements.pipelineStatus.textContent = "Listening";
         if (interruptedBot) {
           reportBrowserEvent("browser_interruption");
-          reportBrowserEvent("audio_stopped");
         }
         currentAssistantBubble = undefined;
         currentAssistantText = "";
@@ -2326,15 +2470,13 @@ function createClient() {
         elements.pipelineStatus.textContent = "ASR → LLM";
       },
       onBotStartedSpeaking: () => {
-        const now = performance.now();
         botSpeaking = true;
         setSpeaker("agent", "Agent is speaking");
         elements.pipelineStatus.textContent = `${selectedBot()?.tts_provider === "elevenlabs" ? "ElevenLabs" : "Flux"} TTS playing`;
-        if (userStoppedAt) elements.e2eLatency.textContent = `${Math.round(now - userStoppedAt)} ms`;
-        if (llmFirstTokenAt) {
-          elements.synthesisLatency.textContent = `${Math.round(now - llmFirstTokenAt)} ms`;
-        }
-        playbackReportPromise = reportBrowserEvent("first_playback");
+        elements.e2eLatency.textContent = "—";
+        elements.synthesisLatency.textContent = "—";
+        // This SDK callback relays a server message, not actual browser rendering.
+        // Leave playback timing missing until the output path supplies evidence.
       },
       onBotStoppedSpeaking: async () => {
         botSpeaking = false;
@@ -2568,6 +2710,7 @@ async function renderSharePage() {
     showError(error instanceof Error ? error.message : "Could not load this Bot’s share settings.");
     return;
   }
+  if (selectedBot()?.id !== bot.id) return;
   controls.forEach((control) => { control.disabled = false; });
   applyShareState(bot, share);
 }
@@ -2631,7 +2774,7 @@ document.querySelector("#share-download").addEventListener("click", downloadShar
     document.querySelectorAll("#share-page .share-status")[0].textContent = "Unpublished changes";
   });
 });
-document.querySelector("#share-publish").addEventListener("click", async (event) => {
+async function publishSelectedBot(button) {
   const bot = selectedBot();
   if (!bot) return;
   if (shareFixtureMode) {
@@ -2644,7 +2787,7 @@ document.querySelector("#share-publish").addEventListener("click", async (event)
     applyShareState(bot, currentShare);
     return;
   }
-  event.currentTarget.disabled = true;
+  button.disabled = true;
   clearError();
   try {
     const share = await apiRequest(`/api/bots/${encodeURIComponent(bot.id)}/publish`, {
@@ -2658,9 +2801,10 @@ document.querySelector("#share-publish").addEventListener("click", async (event)
   } catch (error) {
     showError(error instanceof Error ? error.message : "Could not publish this Bot.");
   } finally {
-    event.currentTarget.disabled = false;
+    button.disabled = false;
   }
-});
+ }
+document.querySelector("#share-publish").addEventListener("click", event => publishSelectedBot(event.currentTarget));
 document.querySelector("#share-toggle").addEventListener("click", async (event) => {
   const bot = selectedBot();
   if (!bot || !currentShare?.published) return;
@@ -2764,9 +2908,12 @@ elements.botAsrLanguage.addEventListener("change", () => {
   if (elements.botAsr.value === "speechmatics") renderAsrAdvanced(collectAsrOptions());
 });
 elements.botTurnSource.addEventListener("change", () => {
+  syncAdvancedBotContext();
   elements.botTurnSourceHint.textContent = elements.botTurnSource.value === "off"
     ? "Semantic Turn Detection is off; the provider still closes the Turn with fixed silence."
-    : "The selected provider is the only final Turn authority for this session.";
+    : elements.botTurnSource.value === "self_developed"
+      ? "Use custom turn detection settings in Advanced."
+      : "The selected provider is the only final Turn authority for this session.";
   syncAsrDependentFields();
 });
 elements.botAsrAdvanced.addEventListener("change", (event) => {
@@ -2892,6 +3039,20 @@ for (const filter of [elements.historyFrom, elements.historyTo, elements.history
 elements.closeHistory.addEventListener("click", (event) => {
   event.preventDefault();
   closeHistoryDrawer();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || event.defaultPrevented) return;
+  if (!elements.historyDialog.hidden) {
+    event.preventDefault();
+    closeHistoryDrawer();
+    return;
+  }
+  const drawer = document.querySelector(".component-drawer:not([hidden])");
+  if (drawer) {
+    event.preventDefault();
+    drawer.querySelector("header button")?.click();
+  }
 });
 
 async function boot() {

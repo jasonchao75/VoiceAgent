@@ -1,0 +1,32 @@
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+_________ test_unbound_late_job_cannot_borrow_new_active_turn_context __________
+
+    async def test_unbound_late_job_cannot_borrow_new_active_turn_context():
+        owner = ResponseRevisions()
+        version = owner.submit(turn_id='t', source_ids=((0, 'a'),), text='new', final=True)
+        tts = service(owner)
+        start = LLMFullResponseStartFrame()
+        start.metadata['td_response_id'] = version.response_id
+        await tts.process_frame(start, FrameDirection.DOWNSTREAM)
+        unbound = tts.create_context_id()
+        await tts.push_frame(TTSAudioRawFrame(b'\x09\x00', 24000, 1, context_id=unbound))
+>       assert tts.sent == []
+E       AssertionError: assert [TTSAudioRawF...ntext_id='2')] == []
+E         
+E         Left contains one more item: TTSAudioRawFrame(audio=b'\t\x00', sample_rate=24000, num_channels=1, num_frames=1, id=61, name='TTSAudioRawFrame#8', p...sibling_id=None, metadata={'td_response_id': 't:1'}, transport_source=None, transport_destination=None, context_id='2')
+E         Use -v to get more diff
+
+tests/test_td_tts_scope.py:186: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+tests/test_td_tts_scope.py::test_actual_sdk_pipeline_fences_late_provider_audio_and_keeps_opening
+  /Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/events.py:89: DeprecationWarning: Passing a worker to WorkerRunner.run() is deprecated; register it with WorkerRunner.add_workers() before calling run() instead.
+    self._context.run(self._callback, *self._args)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_scope.py::test_unbound_late_job_cannot_borrow_new_active_turn_context
+1 failed, 4 passed, 2 warnings in 0.71s

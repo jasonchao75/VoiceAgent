@@ -6,7 +6,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
-from src.asr.config import normalize_provider, validate_asr_options
+from src.asr.config import TurnDetectionSource, normalize_provider, validate_asr_options
+from src.asr.td_config import CustomTDSettings
 
 
 def _validate_optional_key(value: SecretStr | None) -> SecretStr | None:
@@ -28,7 +29,8 @@ class BotConfigFields(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     asr_provider: str = Field(default="deepgram", min_length=1, max_length=50)
     asr_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
-    turn_detection_source: Literal["provider_native", "off"] = "provider_native"
+    turn_detection_source: TurnDetectionSource = "provider_native"
+    td_config: CustomTDSettings | None = None
     asr_options: dict[str, Any] = Field(default_factory=dict)
     asr_language_hints: list[
         Literal["en", "es", "fr", "de", "hi", "ru", "pt", "ja", "it", "nl"]
@@ -86,6 +88,8 @@ class BotConfigFields(BaseModel):
         """Reject combinations unsupported by the selected ASR and TTS models."""
         if self.asr_provider not in {"deepgram", "speechmatics", "soniox", "assemblyai"}:
             return self
+        if self.turn_detection_source == "self_developed" and self.td_config is None:
+            raise ValueError("td_config is required for self_developed")
         options = self.asr_options
         if not options and self.asr_provider == "deepgram" and self.asr_model.startswith("flux-"):
             options = {
@@ -113,6 +117,8 @@ class BotConfigFields(BaseModel):
 class BotCreateRequest(BotConfigFields):
     """Create payload; keys are accepted only when save_keys is enabled."""
 
+    save_jev_key: bool | None = None
+    jev_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     save_keys: bool = False
     save_asr_key: bool | None = None
     save_tts_key: bool | None = None
@@ -124,6 +130,7 @@ class BotCreateRequest(BotConfigFields):
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
     @field_validator(
+        "jev_api_key",
         "asr_api_key",
         "tts_api_key",
         "deepgram_api_key",
@@ -138,6 +145,8 @@ class BotCreateRequest(BotConfigFields):
     @model_validator(mode="after")
     def keys_match_save_intent(self) -> BotCreateRequest:
         """Validate each component's independent save intent."""
+        if self.jev_api_key is not None and self.save_jev_key is not True:
+            raise ValueError("Jev key saving must be enabled when submitting a Jev key")
         components = (
             ("ASR", self.save_asr, self.effective_asr_key),
             ("TTS", self.save_tts, self.effective_tts_key),
@@ -189,6 +198,8 @@ class BotUpdateRequest(BotConfigFields):
     the existing ciphertext; save_keys=true with both keys replaces it.
     """
 
+    save_jev_key: bool | None = None
+    jev_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     save_keys: bool = False
     save_asr_key: bool | None = None
     save_tts_key: bool | None = None
@@ -200,6 +211,7 @@ class BotUpdateRequest(BotConfigFields):
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
     @field_validator(
+        "jev_api_key",
         "asr_api_key",
         "tts_api_key",
         "deepgram_api_key",
@@ -214,6 +226,8 @@ class BotUpdateRequest(BotConfigFields):
     @model_validator(mode="after")
     def keys_follow_component_intent(self) -> BotUpdateRequest:
         """Allow one component key to change without replacing the others."""
+        if self.jev_api_key is not None and self.save_jev_key is not True:
+            raise ValueError("Jev key saving must be enabled when submitting a Jev key")
         components = (
             ("ASR", self.save_asr, self.effective_asr_key),
             ("TTS", self.save_tts, self.effective_tts_key),
@@ -262,6 +276,8 @@ class BotRecord(BotConfigFields):
     """Full internal row including encrypted secrets and timestamps."""
 
     id: str
+    encrypted_jev_key: str | None = None
+    jev_key_endpoint: str | None = None
     encrypted_deepgram_key: str | None
     encrypted_llm_key: str | None
     llm_key_provider: str | None = None
@@ -273,6 +289,15 @@ class BotRecord(BotConfigFields):
     asr_account_catalog: dict[str, object] | None = None
     created_at: str
     updated_at: str
+
+    @property
+    def has_jev_key(self) -> bool:
+        """Require both saved ciphertext and the matching explicit receiver endpoint."""
+        return bool(
+            self.encrypted_jev_key
+            and self.td_config
+            and self.jev_key_endpoint == self.td_config.jev.endpoint
+        )
 
     @property
     def has_saved_keys(self) -> bool:
@@ -299,6 +324,7 @@ class BotResponse(BotConfigFields):
     """Public representation; never carries plaintext or ciphertext keys."""
 
     id: str
+    has_jev_key: bool = False
     has_saved_keys: bool
     has_asr_key: bool
     has_tts_key: bool
@@ -313,6 +339,8 @@ class BotResponse(BotConfigFields):
         return cls(
             **record.model_dump(
                 exclude={
+                    "encrypted_jev_key",
+                    "jev_key_endpoint",
                     "encrypted_deepgram_key",
                     "encrypted_llm_key",
                     "llm_key_provider",
@@ -323,6 +351,7 @@ class BotResponse(BotConfigFields):
                     "encrypted_tts_key",
                 }
             ),
+            has_jev_key=record.has_jev_key,
             has_saved_keys=record.has_saved_keys,
             has_asr_key=record.has_asr_key,
             has_tts_key=record.has_tts_key,

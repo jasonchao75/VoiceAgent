@@ -1,0 +1,1652 @@
+{
+  "defaults": {
+    "llm_provider": "openai",
+    "llm_base_url": "https://api.openai.com/v1",
+    "llm_model": "gpt-4.1-mini",
+    "reasoning_mode": "provider_default",
+    "system_prompt": "You are a concise, friendly English voice assistant. Use natural spoken English, keep answers brief, and do not use markdown.",
+    "opening_script": "Hi! I'm your voice assistant. How can I help today?",
+    "flux_voice": "flux-alexis-en",
+    "audio": {
+      "encoding": "linear16",
+      "input_sample_rate": 16000,
+      "output_sample_rate": 24000,
+      "sample_width_bytes": 2,
+      "channels": 1
+    }
+  },
+  "flux_voices": {
+    "source_url": "https://developers.deepgram.com/docs/flux-tts/voices",
+    "listen_url": "https://talk.deepgram.com/",
+    "verified_at": "2026-09-01",
+    "voices": [
+      {
+        "name": "Alexis",
+        "model_id": "flux-alexis-en",
+        "accent": "American",
+        "gender": "Female",
+        "age": "Adult",
+        "traits": [
+          "clear",
+          "professional",
+          "calm",
+          "empathetic"
+        ],
+        "use_cases": [
+          "customer service",
+          "IVR",
+          "financial services"
+        ]
+      },
+      {
+        "name": "Hannah",
+        "model_id": "flux-hannah-en",
+        "accent": "American",
+        "gender": "Female",
+        "age": "Young",
+        "traits": [
+          "clear",
+          "confident",
+          "thoughtful",
+          "pleasant"
+        ],
+        "use_cases": [
+          "casual chat",
+          "storytelling"
+        ]
+      },
+      {
+        "name": "Kit",
+        "model_id": "flux-kit-en",
+        "accent": "British",
+        "gender": "Male",
+        "age": "Young Adult",
+        "traits": [
+          "friendly",
+          "energetic",
+          "thoughtful",
+          "helpful"
+        ],
+        "use_cases": [
+          "customer service",
+          "narration",
+          "financial services"
+        ]
+      },
+      {
+        "name": "Sienna",
+        "model_id": "flux-sienna-en",
+        "accent": "American",
+        "gender": "Female",
+        "age": "Young Adult",
+        "traits": [
+          "clear",
+          "professional",
+          "calm",
+          "warm"
+        ],
+        "use_cases": [
+          "customer service",
+          "financial services",
+          "narration"
+        ]
+      },
+      {
+        "name": "Cole",
+        "model_id": "flux-cole-en",
+        "accent": "American",
+        "gender": "Male",
+        "age": "Young",
+        "traits": [
+          "friendly",
+          "clear",
+          "energetic",
+          "engaging"
+        ],
+        "use_cases": [
+          "customer service",
+          "IVR"
+        ]
+      },
+      {
+        "name": "Colin",
+        "model_id": "flux-colin-en",
+        "accent": "British",
+        "gender": "Male",
+        "age": "Adult",
+        "traits": [
+          "warm",
+          "friendly",
+          "trustworthy",
+          "authoritative"
+        ],
+        "use_cases": [
+          "customer service",
+          "financial services",
+          "narration"
+        ]
+      },
+      {
+        "name": "Haley",
+        "model_id": "flux-haley-en",
+        "accent": "American",
+        "gender": "Female",
+        "age": "Young Adult",
+        "traits": [
+          "clear",
+          "professional",
+          "caring",
+          "calm"
+        ],
+        "use_cases": [
+          "customer service",
+          "financial services",
+          "IVR"
+        ]
+      },
+      {
+        "name": "Heather",
+        "model_id": "flux-heather-en",
+        "accent": "American",
+        "gender": "Female",
+        "age": "Young",
+        "traits": [
+          "clear",
+          "engaging",
+          "energetic",
+          "friendly"
+        ],
+        "use_cases": [
+          "customer service",
+          "IVR"
+        ]
+      },
+      {
+        "name": "Miles",
+        "model_id": "flux-miles-en",
+        "accent": "American",
+        "gender": "Male",
+        "age": "Adult",
+        "traits": [
+          "clear",
+          "calm",
+          "professional",
+          "sincere"
+        ],
+        "use_cases": [
+          "customer service",
+          "financial services",
+          "informative"
+        ]
+      },
+      {
+        "name": "Sean",
+        "model_id": "flux-sean-en",
+        "accent": "British",
+        "gender": "Male",
+        "age": "Mature",
+        "traits": [
+          "friendly",
+          "kind",
+          "caring",
+          "calming"
+        ],
+        "use_cases": [
+          "IVR"
+        ]
+      }
+    ]
+  },
+  "llm_providers": {
+    "verified_at": "2026-09-15",
+    "providers": [
+      {
+        "id": "openai",
+        "name": "OpenAI",
+        "base_url": "https://api.openai.com/v1",
+        "recommended_models": [
+          "gpt-4.1-mini",
+          "gpt-4.1",
+          "gpt-5-mini"
+        ],
+        "default_model": "gpt-4.1-mini",
+        "api_key_url": "https://platform.openai.com/api-keys",
+        "models_url": "https://platform.openai.com/docs/models",
+        "supports_custom_model": true
+      },
+      {
+        "id": "google_gemini",
+        "name": "Google Gemini",
+        "base_url": "https://generativelanguage.googleapis.com",
+        "recommended_models": [
+          "gemini-2.5-flash-lite",
+          "gemini-2.5-flash",
+          "gemini-3.5-flash-lite",
+          "gemini-3.6-flash",
+          "gemini-3.8-flash"
+        ],
+        "default_model": "gemini-2.5-flash-lite",
+        "api_key_url": "https://aistudio.google.com/app/apikey",
+        "models_url": "https://ai.google.dev/gemini-api/docs/models",
+        "supports_custom_model": false
+      },
+      {
+        "id": "custom",
+        "name": "Custom OpenAI-compatible",
+        "base_url": "",
+        "recommended_models": [],
+        "default_model": "",
+        "api_key_url": "https://platform.openai.com/docs/api-reference/authentication",
+        "models_url": "https://platform.openai.com/docs/api-reference/models/list",
+        "supports_custom_model": true
+      }
+    ]
+  },
+  "asr_providers": {
+    "providers": [
+      {
+        "id": "deepgram",
+        "name": "Deepgram",
+        "models": [
+          {
+            "id": "flux-general-en",
+            "name": "Flux ASR · English",
+            "language_control": {
+              "kind": "fixed",
+              "values": [
+                "en"
+              ]
+            },
+            "turn_sources": [
+              "provider_native",
+              "self_developed"
+            ],
+            "default_turn_source": "provider_native",
+            "advanced_title": "Deepgram Flux",
+            "advanced_fields": [
+              {
+                "name": "eot_threshold",
+                "id": "asr-eot-threshold",
+                "label": "EOT threshold",
+                "kind": "number",
+                "min": 0.5,
+                "max": 1.0,
+                "step": 0.05,
+                "default": 0.7
+              },
+              {
+                "name": "eot_timeout_ms",
+                "id": "asr-eot-timeout",
+                "label": "EOT timeout (ms)",
+                "kind": "number",
+                "min": 500,
+                "max": 60000,
+                "step": 1,
+                "default": 5000
+              },
+              {
+                "name": "keyterms",
+                "id": "asr-keyterms",
+                "label": "Keyterms · one per line",
+                "kind": "lines",
+                "default": []
+              },
+              {
+                "name": "profanity_filter",
+                "id": "asr-profanity",
+                "label": "Profanity filter",
+                "kind": "boolean",
+                "default": false
+              },
+              {
+                "name": "numerals",
+                "id": "asr-numerals",
+                "label": "Numerals",
+                "kind": "boolean",
+                "default": false
+              },
+              {
+                "name": "redact",
+                "id": "asr-redact",
+                "label": "Redact",
+                "kind": "select",
+                "options": [
+                  [
+                    null,
+                    "Off"
+                  ],
+                  [
+                    "numbers",
+                    "Numbers"
+                  ],
+                  [
+                    "aggressive_numbers",
+                    "Aggressive numbers"
+                  ]
+                ],
+                "default": null
+              }
+            ]
+          },
+          {
+            "id": "flux-general-multi",
+            "name": "Flux ASR · Multilingual",
+            "language_control": {
+              "kind": "hints",
+              "values": [
+                "en",
+                "es",
+                "fr",
+                "de",
+                "hi",
+                "ru",
+                "pt",
+                "ja",
+                "it",
+                "nl"
+              ]
+            },
+            "turn_sources": [
+              "provider_native",
+              "self_developed"
+            ],
+            "default_turn_source": "provider_native",
+            "advanced_title": "Deepgram Flux",
+            "advanced_fields": [
+              {
+                "name": "eot_threshold",
+                "id": "asr-eot-threshold",
+                "label": "EOT threshold",
+                "kind": "number",
+                "min": 0.5,
+                "max": 1.0,
+                "step": 0.05,
+                "default": 0.7
+              },
+              {
+                "name": "eot_timeout_ms",
+                "id": "asr-eot-timeout",
+                "label": "EOT timeout (ms)",
+                "kind": "number",
+                "min": 500,
+                "max": 60000,
+                "step": 1,
+                "default": 5000
+              },
+              {
+                "name": "keyterms",
+                "id": "asr-keyterms",
+                "label": "Keyterms · one per line",
+                "kind": "lines",
+                "default": []
+              },
+              {
+                "name": "profanity_filter",
+                "id": "asr-profanity",
+                "label": "Profanity filter",
+                "kind": "boolean",
+                "default": false
+              },
+              {
+                "name": "numerals",
+                "id": "asr-numerals",
+                "label": "Numerals",
+                "kind": "boolean",
+                "default": false
+              },
+              {
+                "name": "redact",
+                "id": "asr-redact",
+                "label": "Redact",
+                "kind": "select",
+                "options": [
+                  [
+                    null,
+                    "Off"
+                  ],
+                  [
+                    "numbers",
+                    "Numbers"
+                  ],
+                  [
+                    "aggressive_numbers",
+                    "Aggressive numbers"
+                  ]
+                ],
+                "default": null
+              }
+            ]
+          },
+          {
+            "id": "nova-3",
+            "name": "Nova-3",
+            "language_control": {
+              "kind": "single",
+              "values": [
+                "multi",
+                "af",
+                "af-ZA",
+                "ar",
+                "ar-AE",
+                "ar-SA",
+                "ar-QA",
+                "ar-KW",
+                "ar-SY",
+                "ar-LB",
+                "ar-PS",
+                "ar-JO",
+                "ar-EG",
+                "ar-SD",
+                "ar-TD",
+                "ar-MA",
+                "ar-DZ",
+                "ar-TN",
+                "ar-IQ",
+                "ar-IR",
+                "hy",
+                "as",
+                "as-IN",
+                "be",
+                "bn",
+                "bs",
+                "bg",
+                "ca",
+                "zh-HK",
+                "zh",
+                "zh-CN",
+                "zh-Hans",
+                "zh-TW",
+                "zh-Hant",
+                "hr",
+                "cs",
+                "cs-CZ",
+                "da",
+                "da-DK",
+                "nl",
+                "en",
+                "en-US",
+                "en-AU",
+                "en-GB",
+                "en-IN",
+                "en-NZ",
+                "et",
+                "fi",
+                "nl-BE",
+                "fr",
+                "fr-CA",
+                "ka",
+                "ka-GE",
+                "de",
+                "de-CH",
+                "el",
+                "gu",
+                "gu-IN",
+                "he",
+                "hi",
+                "hu",
+                "id",
+                "it",
+                "ja",
+                "kn",
+                "kk",
+                "kk-KZ",
+                "ko",
+                "ko-KR",
+                "lv",
+                "lt",
+                "mk",
+                "ms",
+                "mr",
+                "mn",
+                "ne",
+                "no",
+                "ps",
+                "ps-AF",
+                "fa",
+                "pl",
+                "pt",
+                "pt-BR",
+                "pt-PT",
+                "pa",
+                "pa-IN",
+                "ro",
+                "ru",
+                "sr",
+                "sk",
+                "sl",
+                "es",
+                "es-419",
+                "sv",
+                "sv-SE",
+                "tl",
+                "ta",
+                "te",
+                "th",
+                "th-TH",
+                "tr",
+                "tr-TR",
+                "uk",
+                "ur",
+                "vi"
+              ]
+            },
+            "turn_sources": [
+              "off",
+              "self_developed"
+            ],
+            "default_turn_source": "off",
+            "advanced_title": "Deepgram Nova-3",
+            "advanced_fields": [
+              {
+                "name": "endpointing_ms",
+                "id": "asr-endpointing",
+                "label": "Endpointing silence (ms)",
+                "kind": "number",
+                "min": 1,
+                "step": 1,
+                "default": 300
+              },
+              {
+                "name": "interim_results",
+                "id": "asr-interim",
+                "label": "Interim results",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "vad_events",
+                "id": "asr-vad-events",
+                "label": "VAD events",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "keyterms",
+                "id": "asr-keyterms",
+                "label": "Keyterms · one per line",
+                "kind": "lines",
+                "default": []
+              },
+              {
+                "name": "smart_format",
+                "id": "asr-smart-format",
+                "label": "Smart format",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "numerals",
+                "id": "asr-numerals",
+                "label": "Numerals",
+                "kind": "boolean",
+                "default": false
+              },
+              {
+                "name": "redact",
+                "id": "asr-redact",
+                "label": "Redact",
+                "kind": "select",
+                "options": [
+                  [
+                    null,
+                    "Off"
+                  ],
+                  [
+                    "numbers",
+                    "Numbers"
+                  ],
+                  [
+                    "aggressive_numbers",
+                    "Aggressive numbers"
+                  ]
+                ],
+                "default": null
+              },
+              {
+                "name": "profanity_filter",
+                "id": "asr-profanity",
+                "label": "Profanity filter",
+                "kind": "boolean",
+                "default": false
+              },
+              {
+                "name": "diarize_model",
+                "id": "asr-diarize-model",
+                "label": "Diarize model",
+                "kind": "text",
+                "default": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "speechmatics",
+        "name": "Speechmatics",
+        "models": [
+          {
+            "id": "enhanced",
+            "name": "Realtime Enhanced",
+            "language_control": {
+              "kind": "single",
+              "values": [
+                "ar",
+                "ar_en",
+                "ba",
+                "eu",
+                "be",
+                "bg",
+                "bn",
+                "yue",
+                "ca",
+                "hr",
+                "cs",
+                "da",
+                "nl",
+                "en",
+                "en_ms",
+                "en_ta",
+                "eo",
+                "et",
+                "fa",
+                "fi",
+                "fr",
+                "gl",
+                "de",
+                "el",
+                "he",
+                "hi",
+                "hu",
+                "ia",
+                "it",
+                "id",
+                "ga",
+                "ja",
+                "ko",
+                "lv",
+                "lt",
+                "ms",
+                "mt",
+                "cmn",
+                "cmn_en",
+                "cmn_en_ms_ta",
+                "mr",
+                "mn",
+                "nn",
+                "no",
+                "pl",
+                "pt",
+                "ro",
+                "ru",
+                "sk",
+                "sl",
+                "es",
+                "sv",
+                "sw",
+                "tl",
+                "ta",
+                "th",
+                "tr",
+                "ug",
+                "uk",
+                "ur",
+                "vi",
+                "cy"
+              ],
+              "account_filtered": false,
+              "source": "bundled Feature Discovery snapshot"
+            },
+            "domains_by_language": {
+              "ar_en": [
+                "medical"
+              ],
+              "da": [
+                "medical"
+              ],
+              "de": [
+                "medical"
+              ],
+              "en": [
+                "finance",
+                "medical"
+              ],
+              "es": [
+                "bilingual-en",
+                "medical"
+              ],
+              "fi": [
+                "medical"
+              ],
+              "fr": [
+                "medical"
+              ],
+              "nl": [
+                "medical"
+              ],
+              "no": [
+                "medical"
+              ],
+              "sv": [
+                "medical"
+              ]
+            },
+            "punctuation_marks_by_language": {
+              "ar": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ar_en": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ba": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "eu": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "be": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "bg": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "bn": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "yue": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ca": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "hr": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "cs": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "da": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "nl": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "en": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "en_ms": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "en_ta": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "eo": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "et": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "fa": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "fi": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "fr": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "gl": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "de": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "el": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "he": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "hi": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "hu": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ia": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "it": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "id": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ga": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ja": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ko": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "lv": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "lt": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ms": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "mt": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "cmn": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "cmn_en": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "cmn_en_ms_ta": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "mr": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "mn": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "nn": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "no": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "pl": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "pt": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ro": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ru": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "sk": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "sl": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "es": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "sv": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "sw": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "tl": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ta": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "th": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "tr": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ug": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "uk": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "ur": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "vi": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ],
+              "cy": [
+                ".",
+                ",",
+                "?",
+                "!"
+              ]
+            },
+            "turn_sources": [
+              "provider_native",
+              "off",
+              "self_developed"
+            ],
+            "default_turn_source": "provider_native",
+            "advanced_title": "Speechmatics",
+            "advanced_fields": [
+              {
+                "name": "domain",
+                "id": "asr-domain",
+                "label": "Domain",
+                "kind": "domain",
+                "default": null
+              },
+              {
+                "name": "max_delay",
+                "id": "asr-max-delay",
+                "label": "Maximum delay (s)",
+                "kind": "number",
+                "min": 0,
+                "step": 0.1,
+                "default": 0.7
+              },
+              {
+                "name": "include_partials",
+                "id": "asr-include-partials",
+                "label": "Include partials",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "emit_sentences",
+                "id": "asr-emit-sentences",
+                "label": "Emit completed sentences",
+                "kind": "boolean",
+                "help": "AddSegment accumulates text; only EndOfTurn submits to the LLM.",
+                "default": false
+              },
+              {
+                "name": "turn_detection_mode",
+                "id": "asr-turn-mode",
+                "label": "Turn mode",
+                "kind": "select",
+                "options": [
+                  [
+                    "smart_turn",
+                    "Smart Turn"
+                  ],
+                  [
+                    "adaptive",
+                    "Adaptive"
+                  ],
+                  [
+                    "fixed",
+                    "Fixed silence"
+                  ]
+                ],
+                "default": "smart_turn"
+              },
+              {
+                "name": "end_of_utterance_silence_trigger",
+                "id": "asr-silence-trigger",
+                "label": "Silence trigger (s)",
+                "kind": "number",
+                "min": 0.1,
+                "max": 2,
+                "step": 0.1,
+                "default": 0.5
+              },
+              {
+                "name": "end_of_utterance_max_delay",
+                "id": "asr-max-eou-delay",
+                "label": "Maximum EOU delay (s)",
+                "kind": "number",
+                "min": 0.2,
+                "step": 0.1,
+                "help": "Must be strictly greater than the silence trigger. SDK default: 10.0 seconds.",
+                "default": 10.0
+              },
+              {
+                "name": "additional_vocab",
+                "id": "asr-vocabulary",
+                "label": "Additional vocabulary",
+                "kind": "vocabulary",
+                "default": []
+              },
+              {
+                "name": "punctuation_overrides.sensitivity",
+                "id": "asr-punctuation-sensitivity",
+                "label": "Punctuation sensitivity",
+                "kind": "number",
+                "min": 0,
+                "max": 1,
+                "step": 0.1,
+                "default": 0.5
+              },
+              {
+                "name": "punctuation_overrides.permitted_marks",
+                "id": "asr-punctuation-mode",
+                "label": "Permitted punctuation marks",
+                "kind": "marks",
+                "default": "all"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "soniox",
+        "name": "Soniox",
+        "models": [
+          {
+            "id": "stt-rt-v5",
+            "name": "stt-rt-v5",
+            "language_control": {
+              "kind": "hints",
+              "values": [
+                "af",
+                "sq",
+                "ar",
+                "az",
+                "eu",
+                "be",
+                "bn",
+                "bs",
+                "bg",
+                "ca",
+                "zh",
+                "hr",
+                "cs",
+                "da",
+                "nl",
+                "en",
+                "et",
+                "fi",
+                "fr",
+                "gl",
+                "de",
+                "el",
+                "gu",
+                "he",
+                "hi",
+                "hu",
+                "id",
+                "it",
+                "ja",
+                "kn",
+                "kk",
+                "ko",
+                "lv",
+                "lt",
+                "mk",
+                "ms",
+                "ml",
+                "mr",
+                "no",
+                "fa",
+                "pl",
+                "pt",
+                "pa",
+                "ro",
+                "ru",
+                "sr",
+                "sk",
+                "sl",
+                "es",
+                "sw",
+                "sv",
+                "tl",
+                "ta",
+                "te",
+                "th",
+                "tr",
+                "uk",
+                "ur",
+                "vi",
+                "cy"
+              ],
+              "labels": {
+                "af": "Afrikaans",
+                "sq": "Albanian",
+                "ar": "Arabic",
+                "az": "Azerbaijani",
+                "eu": "Basque",
+                "be": "Belarusian",
+                "bn": "Bengali",
+                "bs": "Bosnian",
+                "bg": "Bulgarian",
+                "ca": "Catalan",
+                "zh": "Chinese",
+                "hr": "Croatian",
+                "cs": "Czech",
+                "da": "Danish",
+                "nl": "Dutch",
+                "en": "English",
+                "et": "Estonian",
+                "fi": "Finnish",
+                "fr": "French",
+                "gl": "Galician",
+                "de": "German",
+                "el": "Greek",
+                "gu": "Gujarati",
+                "he": "Hebrew",
+                "hi": "Hindi",
+                "hu": "Hungarian",
+                "id": "Indonesian",
+                "it": "Italian",
+                "ja": "Japanese",
+                "kn": "Kannada",
+                "kk": "Kazakh",
+                "ko": "Korean",
+                "lv": "Latvian",
+                "lt": "Lithuanian",
+                "mk": "Macedonian",
+                "ms": "Malay",
+                "ml": "Malayalam",
+                "mr": "Marathi",
+                "no": "Norwegian",
+                "fa": "Persian",
+                "pl": "Polish",
+                "pt": "Portuguese",
+                "pa": "Punjabi",
+                "ro": "Romanian",
+                "ru": "Russian",
+                "sr": "Serbian",
+                "sk": "Slovak",
+                "sl": "Slovenian",
+                "es": "Spanish",
+                "sw": "Swahili",
+                "sv": "Swedish",
+                "tl": "Tagalog",
+                "ta": "Tamil",
+                "te": "Telugu",
+                "th": "Thai",
+                "tr": "Turkish",
+                "uk": "Ukrainian",
+                "ur": "Urdu",
+                "vi": "Vietnamese",
+                "cy": "Welsh"
+              },
+              "source": "bundled GET /v1/models snapshot"
+            },
+            "turn_sources": [
+              "provider_native",
+              "self_developed"
+            ],
+            "default_turn_source": "provider_native",
+            "advanced_title": "Soniox",
+            "advanced_fields": [
+              {
+                "name": "language_hints_strict",
+                "id": "asr-strict-hints",
+                "label": "Strict language hints",
+                "kind": "boolean",
+                "default": false
+              },
+              {
+                "name": "enable_language_identification",
+                "id": "asr-language-id",
+                "label": "Language identification",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "endpoint_sensitivity",
+                "id": "asr-endpoint-sensitivity",
+                "label": "Endpoint sensitivity",
+                "kind": "number",
+                "min": -1,
+                "max": 1,
+                "step": 0.1,
+                "default": 0.3
+              },
+              {
+                "name": "endpoint_latency_adjustment_level",
+                "id": "asr-latency-level",
+                "label": "Latency adjustment level",
+                "kind": "select",
+                "options": [
+                  [
+                    0,
+                    "0"
+                  ],
+                  [
+                    1,
+                    "1"
+                  ],
+                  [
+                    2,
+                    "2"
+                  ],
+                  [
+                    3,
+                    "3"
+                  ]
+                ],
+                "default": 0
+              },
+              {
+                "name": "max_endpoint_delay_ms",
+                "id": "asr-max-endpoint-delay",
+                "label": "Max endpoint delay (ms)",
+                "kind": "number",
+                "min": 500,
+                "max": 3000,
+                "step": 1,
+                "default": 1500
+              },
+              {
+                "name": "context_general",
+                "id": "asr-context-general",
+                "label": "General context · key=value per line",
+                "kind": "key_values",
+                "default": []
+              },
+              {
+                "name": "context_text",
+                "id": "asr-context-text",
+                "label": "Context text",
+                "kind": "textarea",
+                "default": ""
+              },
+              {
+                "name": "context_terms",
+                "id": "asr-context-terms",
+                "label": "Terms · one per line",
+                "kind": "lines",
+                "default": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "assemblyai",
+        "name": "AssemblyAI",
+        "models": [
+          {
+            "id": "universal-3-5-pro",
+            "name": "Universal-3.5 Pro",
+            "language_control": {
+              "kind": "steering",
+              "values": [
+                "en",
+                "ar",
+                "es",
+                "fr",
+                "de",
+                "it",
+                "pt",
+                "da",
+                "nl",
+                "fi",
+                "he",
+                "hi",
+                "ja",
+                "zh",
+                "no",
+                "sv",
+                "tr",
+                "vi"
+              ],
+              "labels": {
+                "en": "English",
+                "ar": "Arabic",
+                "es": "Spanish",
+                "fr": "French",
+                "de": "German",
+                "it": "Italian",
+                "pt": "Portuguese",
+                "da": "Danish",
+                "nl": "Dutch",
+                "fi": "Finnish",
+                "he": "Hebrew",
+                "hi": "Hindi",
+                "ja": "Japanese",
+                "zh": "Chinese",
+                "no": "Norwegian",
+                "sv": "Swedish",
+                "tr": "Turkish",
+                "vi": "Vietnamese"
+              },
+              "max_selected": 10
+            },
+            "turn_sources": [
+              "provider_native",
+              "self_developed"
+            ],
+            "default_turn_source": "provider_native",
+            "advanced_title": "AssemblyAI",
+            "advanced_fields": [
+              {
+                "name": "mode",
+                "id": "asr-assembly-mode",
+                "label": "Mode",
+                "kind": "select",
+                "options": [
+                  [
+                    "balanced",
+                    "Balanced"
+                  ],
+                  [
+                    "min_latency",
+                    "Minimum latency"
+                  ],
+                  [
+                    "max_accuracy",
+                    "Maximum accuracy"
+                  ]
+                ],
+                "default": "balanced"
+              },
+              {
+                "name": "prompt",
+                "id": "asr-prompt",
+                "label": "Prompt",
+                "kind": "textarea",
+                "default": ""
+              },
+              {
+                "name": "keyterms_prompt",
+                "id": "asr-keyterms-prompt",
+                "label": "Keyterms prompt · one per line",
+                "kind": "lines",
+                "default": []
+              },
+              {
+                "name": "continuous_partials",
+                "id": "asr-continuous-partials",
+                "label": "Continuous partials",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "min_turn_silence",
+                "id": "asr-min-silence",
+                "label": "Minimum turn silence (ms)",
+                "kind": "number",
+                "min": 0,
+                "step": 1,
+                "class": "asr-assembly-mode-value",
+                "default": 128
+              },
+              {
+                "name": "max_turn_silence",
+                "id": "asr-max-silence",
+                "label": "Maximum turn silence (ms)",
+                "kind": "number",
+                "min": 1,
+                "step": 1,
+                "class": "asr-assembly-mode-value",
+                "default": 1280
+              },
+              {
+                "name": "vad_threshold",
+                "id": "asr-vad-threshold",
+                "label": "VAD threshold",
+                "kind": "number",
+                "min": 0,
+                "max": 1,
+                "step": 0.05,
+                "help": "Lower detects quieter speech; higher reduces noise triggers. Independent of Mode.",
+                "default": 0.3
+              },
+              {
+                "name": "interruption_delay",
+                "id": "asr-interruption-delay",
+                "label": "Interruption delay (ms)",
+                "kind": "number",
+                "min": 0,
+                "max": 1000,
+                "step": 1,
+                "class": "asr-assembly-mode-value",
+                "default": 500
+              },
+              {
+                "name": "agent_context_enabled",
+                "id": "asr-agent-context",
+                "label": "Agent Context",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "user_context_carryover_enabled",
+                "id": "asr-user-context",
+                "label": "User Context Carryover",
+                "kind": "boolean",
+                "default": true
+              },
+              {
+                "name": "previous_context_n_turns",
+                "id": "asr-previous-context",
+                "label": "Previous context entries",
+                "kind": "number",
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "default": 5
+              },
+              {
+                "name": "voice_focus",
+                "id": "asr-voice-focus",
+                "label": "Voice Focus",
+                "kind": "select",
+                "options": [
+                  [
+                    null,
+                    "Off"
+                  ],
+                  [
+                    "near-field",
+                    "Near-field"
+                  ],
+                  [
+                    "far-field",
+                    "Far-field"
+                  ]
+                ],
+                "default": null
+              },
+              {
+                "name": "voice_focus_threshold",
+                "id": "asr-voice-focus-threshold",
+                "label": "Voice Focus threshold",
+                "kind": "number",
+                "min": 0,
+                "max": 1,
+                "step": 0.05,
+                "placeholder": "Provider default",
+                "default": null
+              },
+              {
+                "name": "speaker_labels",
+                "id": "asr-speaker-labels",
+                "label": "Speaker labels",
+                "kind": "boolean",
+                "default": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

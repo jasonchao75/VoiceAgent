@@ -1,0 +1,30 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_renderer_causal_coordinates_accept_network_reordering_but_reject_impossible_samples _
+
+    def test_renderer_causal_coordinates_accept_network_reordering_but_reject_impossible_samples():
+        """Receipt arrival can reorder; output sample coordinates cannot contradict each other."""
+        for terminal in ('task_finished', 'task_stopped'):
+            for terminal_first in (False, True):
+                capture = CallCapture(provider='openai', model='fixture')
+                capture.record_td_event({'event': 'playback_task_prepared', 'playback_id': 'p',
+                                         'response_id': '1:1', 'turn_id': 1, 'kind': 'normal'})
+                calls = []
+                capture.playback_listener = lambda *args: calls.append(args)
+                clock = {'render_sample_rate': 24000, 'render_clock_id': 'a' * 32}
+                start = ('task_started', 128, 1000)
+                finish = (terminal, 500, 1499)
+                first, second = (finish, start) if terminal_first else (start, finish)
+                assert capture.playback_receipt('p', first[0], first[1], 10,
+                                                render_frame=first[2], **clock)
+                before = list(capture.td_events)
+>               assert not capture.playback_receipt('p', second[0], second[1], 20,
+                                                    render_frame=second[2], **clock)
+E               AssertionError: assert not True
+E                +  where True = playback_receipt('p', 'task_finished', 500, 20, render_frame=1499, **{'render_clock_id': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'render_sample_rate': 24000})
+E                +    where playback_receipt = CallCapture(provider='openai', model='fixture', recorder=None, chat_mode=False, started=1355967.079900541, turns=[], t..._renderer_causal_coordinates_accept_network_reordering_but_reject_impossible_samples.<locals>.<lambda> at 0x1100894e0>).playback_receipt
+
+tests/test_td_history.py:27: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_renderer_causal_coordinates_accept_network_reordering_but_reject_impossible_samples
+1 failed, 9 deselected in 0.76s

@@ -1,0 +1,12 @@
+{
+  "requirements": 32,
+  "scenarios": 62,
+  "snapshot_files": 231,
+  "archive_bytes": 1202506,
+  "links_missing": [],
+  "source_and_archive_hashes": "match",
+  "frozen_prototype": "unchanged",
+  "business_tests_run_this_round": false,
+  "external_calls_this_round": 0,
+  "stage_review_only": true
+}

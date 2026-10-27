@@ -1,0 +1,63 @@
+
+Running 1 test using 1 worker
+
+(node:64811) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:85:1 › missing source evidence closes the formal call with explicit error and failed history (11.4s)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:85:1 › missing source evidence closes the formal call with explicit error and failed history 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#history-dialog')
+    Timeout: 5000ms
+    - Expected substring  - 1
+    + Received string     + 4
+
+    - Session evidence without turn attribution
+    +
+    +       Session details×
+    +       Source failure 179275386283910/23/2026, 11:11:03 AM · openai/gpt-4.1-mini · deepgram_flux/flux-general-en · token input · failedFLAC · mono · 16 kHz · user uplink only · Agent TTS is not retainedTTS initial measures pipeline handoff to the TTS request; TTS TTFT measures first synthesized audio. In sentence mode, TTS initial therefore includes the wait for the first complete sentence.页面语言 / Language中文EnglishDelete call
+    +     
+
+    Call log:
+      - Expect "toContainText" locator('#history-dialog') with timeout 5000ms
+      - waiting for locator('#history-dialog')
+        - locator resolved to <aside hidden="" id="history-dialog" class="history-dialog" aria-label="Session details">…</aside>
+        - unexpected value "
+          Session details×
+          
+        "
+        13 × locator resolved to <aside id="history-dialog" class="history-dialog" aria-label="Session details">…</aside>
+           - unexpected value "
+          Session details×
+          Source failure 179275386283910/23/2026, 11:11:03 AM · openai/gpt-4.1-mini · deepgram_flux/flux-general-en · token input · failedFLAC · mono · 16 kHz · user uplink only · Agent TTS is not retainedTTS initial measures pipeline handoff to the TTS request; TTS TTFT measures first synthesized audio. In sentence mode, TTS initial therefore includes the wait for the first complete sentence.页面语言 / Language中文EnglishDelete call
+        "
+
+
+      119 |   await page.getByRole('button',{name:'Sessions',exact:true}).click();
+      120 |   await page.locator('.history-row').filter({hasText:session.session_id}).click();
+    > 121 |   await expect(page.locator('#history-dialog')).toContainText('Session evidence without turn attribution');
+          |                                                 ^
+      122 |   await page.locator('#history-dialog summary').filter({hasText:'Session evidence without turn attribution'}).click();
+      123 |   await expect(page.locator('#history-dialog')).toContainText('local input without source evidence');
+      124 |   await expect(page.locator('#history-dialog')).toContainText('ASR source evidence unavailable');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:121:49
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-missing-source--b820a-it-error-and-failed-history-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-missing-source--b820a-it-error-and-failed-history-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-missing-source--b820a-it-error-and-failed-history-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-missing-source--b820a-it-error-and-failed-history-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:85:1 › missing source evidence closes the formal call with explicit error and failed history 

@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:3672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings (5.6s)
+
+
+  1) [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 1
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      34 |   await expect(page.locator("#minimum")).toHaveValue("600");
+      35 |   const grid = page.locator('[data-pane="semantic"] .td-grid').first();
+    > 36 |   await expect.poll(() => grid.evaluate(node => getComputedStyle(node).gridTemplateColumns.split(" ").length)).toBe(2);
+         |                                                                                                                ^
+      37 |   await page.locator("#minimum").fill("650");
+      38 |   await page.getByRole("button",{name:"Save TD settings",exact:true}).click();
+      39 |   await expect.poll(()=>saved?.td_config?.minimum_ms).toBe(650);
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-settings.spec.js:36:112
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings 

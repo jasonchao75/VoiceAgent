@@ -1,0 +1,31 @@
+{
+  "mode": "external",
+  "status": "ok",
+  "connections": 1,
+  "speak_attempts": 2,
+  "sessions": 1,
+  "old_terminal": false,
+  "cancel_ack": true,
+  "render_gate_released": true,
+  "incoming": [
+    "Connected",
+    "SpeechStarted",
+    "Flushed",
+    "SpeechInterrupted",
+    "SpeechStarted",
+    "Flushed",
+    "SpeechMetadata"
+  ],
+  "outgoing": [
+    "Speak",
+    "Flush",
+    "Interrupt",
+    "Speak",
+    "Flush"
+  ],
+  "audio_bytes": 141792,
+  "speech_id_hashes": [
+    "47f15ce626da429e2ca30fd9d31e70cc621b794bb9876f29d01a8543be84d2a3",
+    "89ca8a987d7779d0a7ec7c5262fac5ab8319bf2bebf23270a544a07025c956ab"
+  ]
+}

@@ -1,0 +1,4 @@
+isolated_source_directory=/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-r74-review-iog7aqx3
+PASS: extracted runtime/catalog configuration, correct probes, frozen SHA
+
+exit_code=0

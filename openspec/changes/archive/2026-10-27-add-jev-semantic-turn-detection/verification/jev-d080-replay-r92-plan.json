@@ -1,0 +1,69 @@
+{
+  "batch_id": "jev-d080-recorded-asr-replay-r92-v1",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model": "jev-1.14.0",
+  "source_evidence": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261026-r91/deepgram-D081.jsonl",
+  "source_sha256": "a6ea32275671bf13f0511af2840016f4abe66a5d4d3c6df3df74d2b4ccb5fcdf",
+  "requests": [
+    {
+      "model": "jev-1.14.0",
+      "state": {
+        "assistant": "How can I help you?",
+        "user": "please do not cancel my booking.",
+        "transcript_status": "Partial"
+      },
+      "questions": {
+        "yield": {
+          "type": "noul",
+          "instructions": "Has the user finished their utterance and yielded the turn?"
+        },
+        "speech_state": {
+          "type": "choice",
+          "instructions": "Classify the current user utterance.",
+          "criteria": {
+            "complete": "The request is complete.",
+            "incomplete": "The user is still forming a request."
+          }
+        }
+      }
+    },
+    {
+      "model": "jev-1.14.0",
+      "state": {
+        "assistant": "How can I help you?",
+        "user": "please do not cancel my booking. I would like to",
+        "transcript_status": "Partial"
+      },
+      "questions": {
+        "yield": {
+          "type": "noul",
+          "instructions": "Has the user finished their utterance and yielded the turn?"
+        },
+        "speech_state": {
+          "type": "choice",
+          "instructions": "Classify the current user utterance.",
+          "criteria": {
+            "complete": "The request is complete.",
+            "incomplete": "The user is still forming a request."
+          }
+        }
+      }
+    }
+  ],
+  "max_calls": 2,
+  "timeout_seconds": 3,
+  "cost_ceiling_usd": "0.01",
+  "maximum_public_price_usd": "0.005376",
+  "default_context_tokens_per_request": 64000,
+  "input_usd_per_million": "0.042",
+  "pricing_source": "https://docs.typesafe.ai/models",
+  "price_verified": "2026-10-26",
+  "asr_calls": 0,
+  "llm_tts_calls": 0,
+  "retries": 0,
+  "long_context": false,
+  "clock_scope": "controlled audio clock; not live ASR arrival or measured media latency",
+  "stop": "first error, unexpected payload, missing usage/model/range, or budget violation",
+  "acceptance": "record actual fused targets; D080 only triggered if second target exceeds old Final deadline; no resampling or repeat until triggered",
+  "request_sha256": "37366f09654e4f3f93565137e61bcf473180da107fe958fd0a34427270db7a1d"
+}

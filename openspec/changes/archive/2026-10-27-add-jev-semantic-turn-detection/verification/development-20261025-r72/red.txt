@@ -1,0 +1,26 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_legacy_playback_event_cannot_manufacture_td_render_latency ________
+
+    def test_legacy_playback_event_cannot_manufacture_td_render_latency():
+        """Legacy current-turn telemetry cannot correlate an identified TD render clock."""
+        from pipecat.frames.frames import TTSAudioRawFrame, TTSStartedFrame
+    
+        capture = CallCapture(provider='openai', model='fixture')
+        committed = TranscriptionFrame('hello', '', '')
+        committed.metadata.update(td_commit=True, td_source_final=False, td_turn_id=7)
+        capture.observe(committed)
+        capture.observe(LLMContextFrame(LLMContext()))
+        capture.observe(LLMTextFrame('answer'))
+        capture.observe(TTSStartedFrame())
+        capture.observe(TTSAudioRawFrame(bytes(256), 24000, 1))
+        capture.browser_event('first_playback', 10)
+        metric = capture.metrics_snapshot()[0]
+>       assert metric.playback_ms is None
+E       AssertionError: assert 0.0 is None
+E        +  where 0.0 = TurnMetric(turn_index=0, asr_final_latency_ms=None, llm_request_splicing_ms=None, llm_first_token_ms=0.0, tts_initial_..._tokens=None, reasoning_status='unverified', reasoning_control=None, context_applied=None, context_failure_reason=None).playback_ms
+
+tests/test_td_history.py:254: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_legacy_playback_event_cannot_manufacture_td_render_latency
+1 failed in 0.76s

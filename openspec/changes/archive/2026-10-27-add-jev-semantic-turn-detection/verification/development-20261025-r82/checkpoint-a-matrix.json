@@ -1,0 +1,194 @@
+{
+  "checkpoint": "A",
+  "status": "developer_fixture_checks_complete",
+  "prototype_sha256": "657d49b9abf71c872eeaf7f6ccc0b3dfd96b1e4dc9bcd52bb92f43b0778902b4",
+  "approved_differences": [
+    "D-056",
+    "D-072",
+    "D-073"
+  ],
+  "verification_scope": "production routes/components with fixed fixture; independent C and product acceptance excluded",
+  "rows": [
+    {
+      "scope": "配置六子页/1440/zh",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261023-r42/baseline-comparison-1440-zh.json",
+          "sha256": "e2d15e9afb3126641f2aa6c7debffebf41139db7cf3aff6436f3bb9955a9ac7b"
+        }
+      ]
+    },
+    {
+      "scope": "配置六子页/1440/en",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261023-r42/baseline-comparison-1440-en.json",
+          "sha256": "e2d15e9afb3126641f2aa6c7debffebf41139db7cf3aff6436f3bb9955a9ac7b"
+        }
+      ]
+    },
+    {
+      "scope": "配置六子页/390/zh",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261023-r42/baseline-comparison-390-zh.json",
+          "sha256": "ce6d6685410c16f420081a143d349d56cf3167656bfa02cbb91299106bd04142"
+        }
+      ]
+    },
+    {
+      "scope": "配置六子页/390/en",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261023-r42/baseline-comparison-390-en.json",
+          "sha256": "ce6d6685410c16f420081a143d349d56cf3167656bfa02cbb91299106bd04142"
+        }
+      ]
+    },
+    {
+      "scope": "Sessions列表/详情结构及标题可见/1440",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/final/history-structure-1440.json",
+          "sha256": "eac24ffd72284b0c731760bcaf3af3b0b87990fab47dbf63fee268dcc5085e93"
+        },
+        {
+          "path": "verification/development-20261025-r82/final/history-title-geometry-1440.json",
+          "sha256": "6af01786739112a65ab473bb66d02aa061152b7c02980b58b4014df119ad2918"
+        }
+      ]
+    },
+    {
+      "scope": "六模型来源/native-off/草稿保留/1440",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/sources-fixed/six-source-entries-1440.json",
+          "sha256": "b70ee122acb2146bb74e39880adb06777175a700cd2304b11acd24c6e60f0dac"
+        }
+      ]
+    },
+    {
+      "scope": "Share冻结卡片及禁用/恢复/草稿/1440",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/share-fixed/share-shell-1440.json",
+          "sha256": "8a49baa2590f3cbf9e699b83b4e33cf589f05a9b13e6cb3744841d3198481183"
+        },
+        {
+          "path": "verification/development-20261025-r82/share-fixed/share-states-1440.json",
+          "sha256": "08552b8e461d5aad5675358ab1dd5d06b76d313b1210303bc983f677727bcb8f"
+        }
+      ]
+    },
+    {
+      "scope": "配置四类错误/保留草稿/修正保存/1440/en",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/errors-fixed/invalid-drafts-1440-en.json",
+          "sha256": "30ddb7cac1e4d80c08e9688def86b86cd54d654b03154040a95117038d2e4312"
+        }
+      ]
+    },
+    {
+      "scope": "配置四类错误/保留草稿/修正保存/1440/zh",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/errors-fixed/invalid-drafts-1440-zh.json",
+          "sha256": "e7f76ba9519bd4ac932f9e202b9b7048ac0f51bf6c97780723370794370151be"
+        }
+      ]
+    },
+    {
+      "scope": "Sessions列表/详情结构及标题可见/390",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/final/history-structure-390.json",
+          "sha256": "c8516137ef0a183fbb8c1bb7ac752397a4b265e1f36e9a29b9d8670ec20c5058"
+        },
+        {
+          "path": "verification/development-20261025-r82/final/history-title-geometry-390.json",
+          "sha256": "58899a35e692ca194a23a186017f1d1a8656f669adf43dce980311b78981d624"
+        }
+      ]
+    },
+    {
+      "scope": "六模型来源/native-off/草稿保留/390",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/sources-fixed/six-source-entries-390.json",
+          "sha256": "b70ee122acb2146bb74e39880adb06777175a700cd2304b11acd24c6e60f0dac"
+        }
+      ]
+    },
+    {
+      "scope": "Share冻结卡片及禁用/恢复/草稿/390",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/share-fixed/share-shell-390.json",
+          "sha256": "dd86dc81090b239cf6a16337e8fa686fff1985eff59e4376485f19e85968b759"
+        },
+        {
+          "path": "verification/development-20261025-r82/share-fixed/share-states-390.json",
+          "sha256": "08552b8e461d5aad5675358ab1dd5d06b76d313b1210303bc983f677727bcb8f"
+        }
+      ]
+    },
+    {
+      "scope": "配置四类错误/保留草稿/修正保存/390/en",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/errors-fixed/invalid-drafts-390-en.json",
+          "sha256": "30ddb7cac1e4d80c08e9688def86b86cd54d654b03154040a95117038d2e4312"
+        }
+      ]
+    },
+    {
+      "scope": "配置四类错误/保留草稿/修正保存/390/zh",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/errors-fixed/invalid-drafts-390-zh.json",
+          "sha256": "e7f76ba9519bd4ac932f9e202b9b7048ac0f51bf6c97780723370794370151be"
+        }
+      ]
+    },
+    {
+      "scope": "旧历史/多候选/Final版本/两端范围/中英/失败空态",
+      "evidence_level": "fixture",
+      "status": "developer_verified",
+      "artifacts": [
+        {
+          "path": "verification/development-20261025-r82/history-final.txt",
+          "sha256": "8fced9d60059965d3b4b0411866b603b40992fb8616d05e5ddba82ce7473aad0"
+        }
+      ]
+    }
+  ]
+}

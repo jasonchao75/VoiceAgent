@@ -1,0 +1,11 @@
+{
+  "head_errors": 53,
+  "head_files": 12,
+  "head_sources": 49,
+  "current_errors": 47,
+  "current_files": 9,
+  "current_sources": 75,
+  "comparison": "file + exact error message, ignoring line-number drift",
+  "current_error_signatures_not_in_head": [],
+  "note": "same installed SDK/mypy, Python3.13 override, isolated git archive HEAD; not blanket typecheck PASS"
+}

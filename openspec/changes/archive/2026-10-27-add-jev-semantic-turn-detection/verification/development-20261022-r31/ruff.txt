@@ -1,0 +1,12 @@
+E501 Line too long (101 > 100)
+   --> src/pipeline/custom_td.py:799:101
+    |
+797 |                 if state == VADState.SPEAKING and self._state != VADState.SPEAKING:
+798 |                     await self.coordinator.speech_started()
+799 |                 if state == VADState.QUIET and self._state in {VADState.SPEAKING, VADState.STOPPING}:
+    |                                                                                                     ^
+800 |                     end = max(0, self._audio_ms - self.coordinator.settings.vad.stop_secs * 1000)
+801 |                     await self.coordinator.speech_stopped(end)
+    |
+
+Found 1 error.

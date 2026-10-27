@@ -1,0 +1,25 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+________________ test_actual_td_events_survive_history_restart _________________
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-35/test_actual_td_events_survive_0')
+
+    async def test_actual_td_events_survive_history_restart(tmp_path):
+        """Persist distinct candidate and commit evidence atomically with existing history."""
+        store = HistoryStore(tmp_path)
+        await store.initialize()
+        await store.start_call(call_id='td-fixture', bot_id=None, bot_name=None,
+                               llm_provider='openai', llm_model='fixture',
+                               asr_provider='deepgram', asr_model='flux-general-en',
+                               language='en', sample_rate=16000, channels=1)
+        events = [{'event': 'candidate_created', 'turn_id': 1, 'candidate': 1, 'audio_ms': 1000},
+                  {'event': 'td_commit', 'turn_id': 1, 'source_final': False, 'text': '12'}]
+>       await store.finish_call(call_id='td-fixture', status='completed', duration_ms=1000,
+                                turns=[], metrics=[], recording_path=None,
+                                recording_status='not_applicable', td_events=events)
+E       TypeError: HistoryStore.finish_call() got an unexpected keyword argument 'td_events'
+
+tests/test_td_history.py:40: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_actual_td_events_survive_history_restart
+1 failed, 1 passed in 0.68s

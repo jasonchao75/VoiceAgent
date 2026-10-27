@@ -1,0 +1,32 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_consumed_source_evidence_does_not_exhaust_a_long_session _________
+
+    def test_consumed_source_evidence_does_not_exhaust_a_long_session():
+        """Already-bound packet source records are retired without losing the next span."""
+        ledger = RTPTaskLedger()
+        for index in range(10010):
+            start = index * 960
+            ledger.record_source(start, 960, 48000, "A")
+            payload = str(index).encode()
+            ledger.record_encoded(payload, start, 960)
+            packet = RtpPacket(payload_type=111, sequence_number=index % 65536,
+                               timestamp=(100 + start) % 2**32)
+            packet.ssrc = 33
+            packet.payload = payload
+            assert ledger.bind_rtp(packet)["spans"] == [
+                {"start":start,"end":start+960,"task":"A"}]
+>           assert len(ledger.sources) <= 1
+E           AssertionError: assert 2 <= 1
+E            +  where 2 = len([{'end': 960, 'start': 0, 'task': 'A'}, {'end': 1920, 'start': 960, 'task': 'A'}])
+E            +    where [{'end': 960, 'start': 0, 'task': 'A'}, {'end': 1920, 'start': 960, 'task': 'A'}] = <src.pipeline.rtp_mapping.RTPTaskLedger object at 0x115728ad0>.sources
+
+tests/test_td_rtp_mapping.py:85: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_rtp_mapping.py::test_consumed_source_evidence_does_not_exhaust_a_long_session
+1 failed, 1 warning in 0.98s

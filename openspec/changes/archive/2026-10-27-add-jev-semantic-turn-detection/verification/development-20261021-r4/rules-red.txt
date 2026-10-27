@@ -1,0 +1,83 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+____ test_keyword_gate_and_full_input_format_are_required_before_collection ____
+
+    def test_keyword_gate_and_full_input_format_are_required_before_collection():
+>       rules = policy()
+                ^^^^^^^^
+
+tests/test_td_identifier_rules.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def policy():
+>       assert util.find_spec('src.pipeline.identifier_rules') is not None, 'Priority runtime absent'
+E       AssertionError: Priority runtime absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1015428e0>('src.pipeline.identifier_rules')
+E        +    where <function find_spec at 0x1015428e0> = util.find_spec
+
+tests/test_td_identifier_rules.py:12: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 02:03:09.318 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+____ test_business_units_ignore_asr_token_count_and_window_trailing_silence ____
+
+    def test_business_units_ignore_asr_token_count_and_window_trailing_silence():
+>       rules = policy()
+                ^^^^^^^^
+
+tests/test_td_identifier_rules.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def policy():
+>       assert util.find_spec('src.pipeline.identifier_rules') is not None, 'Priority runtime absent'
+E       AssertionError: Priority runtime absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1015428e0>('src.pipeline.identifier_rules')
+E        +    where <function find_spec at 0x1015428e0> = util.find_spec
+
+tests/test_td_identifier_rules.py:12: AssertionError
+___ test_slow_single_unit_and_unknown_timing_still_collect_without_fake_wpm ____
+
+    def test_slow_single_unit_and_unknown_timing_still_collect_without_fake_wpm():
+>       rules = policy()
+                ^^^^^^^^
+
+tests/test_td_identifier_rules.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def policy():
+>       assert util.find_spec('src.pipeline.identifier_rules') is not None, 'Priority runtime absent'
+E       AssertionError: Priority runtime absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1015428e0>('src.pipeline.identifier_rules')
+E        +    where <function find_spec at 0x1015428e0> = util.find_spec
+
+tests/test_td_identifier_rules.py:12: AssertionError
+_ test_partial_mixed_revision_withdraws_local_value_without_extracting_digits __
+
+    def test_partial_mixed_revision_withdraws_local_value_without_extracting_digits():
+>       rules = policy()
+                ^^^^^^^^
+
+tests/test_td_identifier_rules.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def policy():
+>       assert util.find_spec('src.pipeline.identifier_rules') is not None, 'Priority runtime absent'
+E       AssertionError: Priority runtime absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1015428e0>('src.pipeline.identifier_rules')
+E        +    where <function find_spec at 0x1015428e0> = util.find_spec
+
+tests/test_td_identifier_rules.py:12: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_identifier_rules.py::test_keyword_gate_and_full_input_format_are_required_before_collection
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_rules.py::test_keyword_gate_and_full_input_format_are_required_before_collection
+FAILED tests/test_td_identifier_rules.py::test_business_units_ignore_asr_token_count_and_window_trailing_silence
+FAILED tests/test_td_identifier_rules.py::test_slow_single_unit_and_unknown_timing_still_collect_without_fake_wpm
+FAILED tests/test_td_identifier_rules.py::test_partial_mixed_revision_withdraws_local_value_without_extracting_digits
+4 failed, 1 warning in 1.16s

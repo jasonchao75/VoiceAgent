@@ -1,0 +1,84 @@
+..........FF                                                             [100%]
+=================================== FAILURES ===================================
+______ test_pure_incomplete_identifier_bypasses_jev_and_ordinary_maximum _______
+
+    async def test_pure_incomplete_identifier_bypasses_jev_and_ordinary_maximum():
+        """Collection protection is independent; a fast segment still contributes without echo."""
+        from pipecat.frames.frames import TTSSpeakFrame, TranscriptionFrame
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_rule_settings import priority_settings
+    
+        settings = IdentifierRuleSettings.model_validate(priority_settings())
+        state = IdentifierCollection(IdentifierVocabulary({'1': ['1'], '2': ['2'], '3': ['3']}),
+                                     target_length=3)
+        rules = IdentifierRules(settings, state)
+>       td = coordinator(identifier_rules=rules)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_runtime.py:414: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kwargs = {'identifier_rules': <src.pipeline.identifier_rules.IdentifierRules object at 0x115b8ee40>}
+@py_assert1 = None, @py_assert3 = None, @py_assert5 = None, @py_assert8 = None
+@py_assert7 = None
+
+    def coordinator(**kwargs):
+        """Use the production processor and replace only its output transport in tests."""
+        assert util.find_spec("src.pipeline.custom_td") is not None, "Runtime TD coordinator is absent"
+        module = import_module("src.pipeline.custom_td")
+        source = ASRService(
+            processor=None, source_normalizer=SourceNormalizer("deepgram", "flux-general-en")
+        )
+>       return module.CustomTDCoordinator(
+            asr=source, settings=CustomTDSettings.model_validate(td_settings()), decide=None, **kwargs
+        )
+E       TypeError: CustomTDCoordinator.__init__() got an unexpected keyword argument 'identifier_rules'
+
+tests/test_td_runtime.py:21: TypeError
+_ test_question_after_processed_pure_input_reuses_state_without_resubmitting_digits _
+
+    async def test_question_after_processed_pure_input_reuses_state_without_resubmitting_digits():
+        """Once a local segment was independently handled, only the later question enters LLM."""
+        from pipecat.frames.frames import TranscriptionFrame
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_rule_settings import priority_settings
+    
+        settings = IdentifierRuleSettings.model_validate(priority_settings())
+        state = IdentifierCollection(IdentifierVocabulary({'1': ['1'], '2': ['2'], '3': ['3']}),
+                                     target_length=3)
+>       td = coordinator(identifier_rules=IdentifierRules(settings, state))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_runtime.py:447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kwargs = {'identifier_rules': <src.pipeline.identifier_rules.IdentifierRules object at 0x1165e4190>}
+@py_assert1 = None, @py_assert3 = None, @py_assert5 = None, @py_assert8 = None
+@py_assert7 = None
+
+    def coordinator(**kwargs):
+        """Use the production processor and replace only its output transport in tests."""
+        assert util.find_spec("src.pipeline.custom_td") is not None, "Runtime TD coordinator is absent"
+        module = import_module("src.pipeline.custom_td")
+        source = ASRService(
+            processor=None, source_normalizer=SourceNormalizer("deepgram", "flux-general-en")
+        )
+>       return module.CustomTDCoordinator(
+            asr=source, settings=CustomTDSettings.model_validate(td_settings()), decide=None, **kwargs
+        )
+E       TypeError: CustomTDCoordinator.__init__() got an unexpected keyword argument 'identifier_rules'
+
+tests/test_td_runtime.py:21: TypeError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_runtime_does_not_forward_provider_endpoint_or_partial
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_pure_incomplete_identifier_bypasses_jev_and_ordinary_maximum
+FAILED tests/test_td_runtime.py::test_question_after_processed_pure_input_reuses_state_without_resubmitting_digits
+2 failed, 10 passed, 1 warning in 1.20s

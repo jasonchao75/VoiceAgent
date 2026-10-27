@@ -1,0 +1,10 @@
+✔ saved 1253499us output remains bound to its own 1253500us decode job without a tolerance (10.428416ms)
+✔ real output extent disagreement remains rejected instead of guessing ownership (5.623333ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2057.287167

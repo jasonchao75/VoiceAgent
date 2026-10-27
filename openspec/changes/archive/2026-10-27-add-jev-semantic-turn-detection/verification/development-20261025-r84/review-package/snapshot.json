@@ -1,0 +1,3534 @@
+{
+  "head": "2aff076d07599c5352b390edf83106d49e7bb2cb",
+  "purpose": "r84 stage review source/evidence; shared worktree context, not ownership or final acceptance",
+  "files": [
+    {
+      "path": ".codex/hooks/change_delivery_guard.py",
+      "sha256": "3f7b011ab06be848702f2cad7a547d6690b5bbde7c66da7a0b4e12979ac84437"
+    },
+    {
+      "path": ".codex/hooks.json",
+      "sha256": "542762211fd69c8665cbfd321ebf612ce71e0ecb0232548d0c722d081213de39"
+    },
+    {
+      "path": ".codex/skills/change-delivery-guard/SKILL.md",
+      "sha256": "efbb8880d26c83db1f6170dc6e476e881cf54f3457dd92655574e4e082646e55"
+    },
+    {
+      "path": ".codex/skills/change-verifier/SKILL.md",
+      "sha256": "f3c8315b84d3c925a92c93d1f7497f83374121302f2e29b1ae647bb8926d142d"
+    },
+    {
+      "path": ".dockerignore",
+      "sha256": "8a934c7bd5f73737e1e1435352f6ea6c9c4087e14985e0d8283b10bd15741d33"
+    },
+    {
+      "path": ".opencode/skills/change-delivery-guard/SKILL.md",
+      "sha256": "4ee57a3a5ecccb975584b5080f559e04eee93233463fff04e227585df6a2b1e2"
+    },
+    {
+      "path": ".opencode/skills/change-verifier/SKILL.md",
+      "sha256": "6f9ed7e914a954b81053b20c5415eb900ea7ae123d51391207048bb211d744bd"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "449e308d4d96cc75153d61b2037ed1208ace971d81c24a68fb42e2be0fc00ca2"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "39604898bdb37718ff78602a55b54f62eb485b44bfb85f38c40910955b070df2"
+    },
+    {
+      "path": "configs/runtime/agent.json",
+      "sha256": "f14020f431198e1be0784d743b94f7fd56ade15add613b5ca81a0057dd468509"
+    },
+    {
+      "path": "configs/runtime/flux_voices.json",
+      "sha256": "785a0a93ea4c66292421cafb5b77c316e7e64db5a46c3bea8543a7b39a9ceeb5"
+    },
+    {
+      "path": "configs/runtime/llm_providers.json",
+      "sha256": "ccd41c2c006c6ec6fb5d8a84fcff757959dd992ab2be4302218785933f9945b4"
+    },
+    {
+      "path": "frontend/evaluation.html",
+      "sha256": "50448f2b78301e43b8fbd7214a2fcaa776ddbef60e79483bb4bd2223c07a28bd"
+    },
+    {
+      "path": "frontend/index.html",
+      "sha256": "3d0581a97b0600cd874ea8c21ee02472edfadf4824bd63f02b410325234343cd"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "sha256": "81b12639a2ca6ebd6fd6018827a26f1daaf7b4fac5c3723debfbee5ec4245b36"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "e909d3f98211a3b392fc20cba4945e24673b2d3324f49c3869e43fce5d92e9ef"
+    },
+    {
+      "path": "frontend/playwright.config.js",
+      "sha256": "175844cf7a248bec69ef046dd671df04bb013aa37ad81afc3d3aadf834b28cc6"
+    },
+    {
+      "path": "frontend/src/evaluation-runtime.css",
+      "sha256": "890495c1e122a9193b58371fd9127d31c253c798acf260dbe6747a00978f4c9a"
+    },
+    {
+      "path": "frontend/src/evaluation-runtime.js",
+      "sha256": "bd848b9c51dc568ed037fcb74cf37c0ef7551f5919632d02ac3177d3b8968da8"
+    },
+    {
+      "path": "frontend/src/login.css",
+      "sha256": "3b1eb943592f707c10e6c62e6e5e806dbc984c39bbc08e0d307b81081748519c"
+    },
+    {
+      "path": "frontend/src/login.js",
+      "sha256": "0cf308e24ef01562a33f0e3bcec717ef1a99cb2a6bc1da48e6d6cbaa5317ebe0"
+    },
+    {
+      "path": "frontend/src/main.js",
+      "sha256": "bbe1bd6eb8497051319e497cf048fdc1d547a6e19fd3f7382697a29e14f7254f"
+    },
+    {
+      "path": "frontend/src/mobile-demo.css",
+      "sha256": "796a2d2a8109e5082f92c4701c25be156ae0911bf2000d0ed45c9ac451015833"
+    },
+    {
+      "path": "frontend/src/mobile-demo.js",
+      "sha256": "4701a92e1f8b356b6f0c5a24e4401c0af0cc56d41c79f308ec0ab65739ce9249"
+    },
+    {
+      "path": "frontend/src/styles.css",
+      "sha256": "8fdf6adb192af0659c48f3c30be46b2f30a0e2a0fb52920e795c77c79a727f90"
+    },
+    {
+      "path": "frontend/src/td-audio-worklet.js",
+      "sha256": "fe0226a9509ead6b0ebff0787cc68683a014e285f6d33287e38334dc40b203b9"
+    },
+    {
+      "path": "frontend/src/td-history.js",
+      "sha256": "491e50842a3a52701ad19e6127afafd09e6376edb15a411084ae33051fda808e"
+    },
+    {
+      "path": "frontend/src/td-input-source.js",
+      "sha256": "316ec619af800e0f1f3b154487868e647d6a48c3b544d8deb4dd627d9fac3afc"
+    },
+    {
+      "path": "frontend/src/td-locale.js",
+      "sha256": "b62048b5872d2f8e6d012be5aeb750bb33ff89536250b14eb087e1ad35e1cad2"
+    },
+    {
+      "path": "frontend/src/td-playback.js",
+      "sha256": "e6169e594383e88502115407e83c2be3855786687eab412e1684c3a5504614dc"
+    },
+    {
+      "path": "frontend/src/td-render-clock.js",
+      "sha256": "9b14d326d0fcbed183292918ce8c238d0eb1e898856fdb2219555699138b34c5"
+    },
+    {
+      "path": "frontend/src/td-rtc-entry.js",
+      "sha256": "d1486cbbe86179bc1eed0ad719fa6c834140ae6e01a8ae461655e957adbe633c"
+    },
+    {
+      "path": "frontend/src/td-rtp-candidate-playback.js",
+      "sha256": "c811ccf377a9b5632a820045411f09f60be4869d7f1773bce5077114be603411"
+    },
+    {
+      "path": "frontend/src/td-rtp-candidate-worker.js",
+      "sha256": "73ac0da1b1175fbb408ce07989c22b44dc17a40b74146a3e10d0ff4848147050"
+    },
+    {
+      "path": "frontend/src/td-rtp-decode-job.js",
+      "sha256": "4b6d8ce0ede52668172968acd30a070978a535bb3bd6c8603052c1b450e4ae8b"
+    },
+    {
+      "path": "frontend/src/td-settings.css",
+      "sha256": "8341f7e9f4835564add104d09db9186129317c409dcba3edc41d89ea1a9d2be8"
+    },
+    {
+      "path": "frontend/src/td-settings.html",
+      "sha256": "eb6500cf4293d90858defec74dfde90fbf2de83b3411cbdd6182f0ef55057b99"
+    },
+    {
+      "path": "frontend/src/td-settings.js",
+      "sha256": "f94cbdefa3f01be4f18531399a7801ebba04681c38abaf5fb29398d3519b9236"
+    },
+    {
+      "path": "frontend/src/td-timing.js",
+      "sha256": "257be6df6707614188130b87266f896209f0c79c4d95dcc23a5bcd9e50f9b2ba"
+    },
+    {
+      "path": "frontend/tests/ui/auth.spec.js",
+      "sha256": "8c9a2761934be17e9a47429a788cc05207db6ec7f25a37dd2683090448a30c59"
+    },
+    {
+      "path": "frontend/tests/ui/evaluation-gate3.spec.js",
+      "sha256": "c951d2ca4bb568b3f0f51c9ef6b07b248089b6a4d16a58050601001ddde8f60e"
+    },
+    {
+      "path": "frontend/tests/ui/evaluation.spec.js",
+      "sha256": "833a5b419da97e848ae2489e50e418d60d4791d4bf5abc0b636b797eb132df4c"
+    },
+    {
+      "path": "frontend/tests/ui/fixtures/asr-evaluation.json",
+      "sha256": "a366f71a73c06d5b53eadccb2c2e26c81e89751e266ce015a481c9fa433380c1"
+    },
+    {
+      "path": "frontend/tests/ui/fixtures/td-catalog.json",
+      "sha256": "5c5a07c4dadbbd64e3c7ed00aec35d2ace10e03dcb8434a1d61688132e99ffd0"
+    },
+    {
+      "path": "frontend/tests/ui/fixtures/td-task-wire.json",
+      "sha256": "533c9a44668d1abfcb802b08b1f4366b8db1448f08989179372dc3d69efe6c63"
+    },
+    {
+      "path": "frontend/tests/ui/mobile-demo.spec.js",
+      "sha256": "657196ead9c63f52efb304161f879c8cf9566ad55b8d31a2ef86c28f4b271715"
+    },
+    {
+      "path": "frontend/tests/ui/share-page.spec.js",
+      "sha256": "4a89c7ea14cb7fd126659b4d3e035cbda5c0d6cb55ef83fa4d2ef241badf08bd"
+    },
+    {
+      "path": "frontend/tests/ui/share-real-api.spec.js",
+      "sha256": "e0a756a9b8e42712bd61ca641e14ae57e7a58b616620f0acb169e9fcb78da9c2"
+    },
+    {
+      "path": "frontend/tests/ui/td-asr-source-entry.spec.js",
+      "sha256": "c976fc5c7fc01c43ab4322a31a8bd1c8303d1893a43f5baa3a6658d764f50a36"
+    },
+    {
+      "path": "frontend/tests/ui/td-baseline.spec.js",
+      "sha256": "dda33ad6b52fd4da33d568facfea712f01d3b5a97775789f44ce3a83ac574164"
+    },
+    {
+      "path": "frontend/tests/ui/td-clock-sampler.spec.js",
+      "sha256": "293b65f77a0f3371cc21db221b98ab3c26e6f5579cdbcd02e450658109547a61"
+    },
+    {
+      "path": "frontend/tests/ui/td-history-baseline.spec.js",
+      "sha256": "ef1d74aaab5e71ac27d4dc389a6badc0f7dea9329900fd8b7e119e3ed7b360db"
+    },
+    {
+      "path": "frontend/tests/ui/td-history-evidence.spec.js",
+      "sha256": "e8f0bd4313ffa01dc48c31498512db9cfb677d8116e788746e629718150c2583"
+    },
+    {
+      "path": "frontend/tests/ui/td-history-real-api.spec.js",
+      "sha256": "43a3274f70da4781a517005fd508e8d6407560dd5ad0c7c9cdb8899a68fea8a5"
+    },
+    {
+      "path": "frontend/tests/ui/td-history-recovery.spec.js",
+      "sha256": "6bf9b32643d862c56b31d0a75eb7b42c64e333b23e181e4e48c80762876ed4ef"
+    },
+    {
+      "path": "frontend/tests/ui/td-playback-renderer.spec.js",
+      "sha256": "ed83600e145b53bf67ce2ec046d303fc668b5ebd96ba0194388ed55e09f7372c"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtc-capabilities.spec.js",
+      "sha256": "16208a8250133355d89beb72c272a63657dfe30fd8874a356074a8386a6fc8b9"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtc-delivery-diagnostic.spec.js",
+      "sha256": "7c2d1585e2f088fdb1fce7b4cc8b811086f3651c5f6d01339033b99908525777"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtc-entry-diagnostic.spec.js",
+      "sha256": "26db2d1370d4ad2490767086d5c8a6c160e9d26ea8f330426f5735b7dfe6039b"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtc-entry.spec.js",
+      "sha256": "1d6ebeeac92e56b74c23022945ecc2e8b022c16a90e6d7861213b8f19fe30a9d"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtc-identifier-entry.spec.js",
+      "sha256": "5f55e5ca8099ce14b23730f033ef621a343d186a4c2b36d8453bf59b8db419b3"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtc-latency-entry.spec.js",
+      "sha256": "4592a676aab97878980f9c7413d38c42231840f4226e931f71370948e6e6357a"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtc-order-confirmation.spec.js",
+      "sha256": "d2a8fc0b10f606bc681167280c40ffba6d327cb6d4b563e0d35661dcc8147981"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtp-candidate.spec.js",
+      "sha256": "2dfb35a00344a92edae7c253bb5a17eaa4831f328fb4982b9ec90731b1e22c61"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtp-coordinate-diagnostic.spec.js",
+      "sha256": "640d84a4d3c8a57fbb4f720bfaa2ffb482f570d8797708da1f77db6ae49591e7"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtp-repair-gate.spec.js",
+      "sha256": "f4ac80e1d36d1051789927b588508da83a7b24cbd1ad4337cfffd0b96679ac41"
+    },
+    {
+      "path": "frontend/tests/ui/td-rtp-serial.spec.js",
+      "sha256": "9e56a3965a2d034e441a49dd6eaa3f812cc4a6e72a9084144634a57f53390cd6"
+    },
+    {
+      "path": "frontend/tests/ui/td-runtime.spec.js",
+      "sha256": "7ae5e850d2dd42880a61f955d06099b4e047ebf438ac63df1eb4bd0768a33264"
+    },
+    {
+      "path": "frontend/tests/ui/td-settings.spec.js",
+      "sha256": "f9cace7f0fccb08f42888e4d857e1b3de91cf31d3208dfc974ad5bc273016cb9"
+    },
+    {
+      "path": "frontend/tests/ui/td-shell-baseline.spec.js",
+      "sha256": "15d9477420abce1751d1b3eeb2889d3995881d12e6df3885fcb4a6d9fcf02174"
+    },
+    {
+      "path": "frontend/tests/ui/td-timing-history.spec.js",
+      "sha256": "f6697f83a97fa9ee137e205f84c32c22596c1e9414a4d372b22224c8ff25bff9"
+    },
+    {
+      "path": "frontend/tests/ui/td-validation-states.spec.js",
+      "sha256": "e1fd7ed07946c3de2d07ac0f92b4f1dd83f8aca64d9f2e3ff3c8e3ae890ef93b"
+    },
+    {
+      "path": "frontend/tests/ui/td-webrtc-runtime.spec.js",
+      "sha256": "41e61ba1496f8e6aa918433165154f19b2f9d6f7941e07ec224030aa51b32a38"
+    },
+    {
+      "path": "frontend/tests/ui/voice-bot.spec.js",
+      "sha256": "3919e889dbf2863dcf2c607cdcd67e6c6e7e1b9f418e1ee6a745093b5142b0b4"
+    },
+    {
+      "path": "frontend/tests/unit/td-audio-worklet.test.js",
+      "sha256": "64c06b7a4530adae4dd717e064c86bdf05aa68370342ddfb55a454ae3e3f67d0"
+    },
+    {
+      "path": "frontend/tests/unit/td-history.test.js",
+      "sha256": "68f86937df045e625ce83a442f4743cbd0b415348ad67040022a7399548ec907"
+    },
+    {
+      "path": "frontend/tests/unit/td-input-source.test.js",
+      "sha256": "c698d0a395d19725facbfcbe5019087c002404583a6e98613e0c9fa36ab64685"
+    },
+    {
+      "path": "frontend/tests/unit/td-render-clock.test.js",
+      "sha256": "99a062bce0bacd5a508d74700cc52f21d23c55e4458bcf287cf3dd4ca3defd5e"
+    },
+    {
+      "path": "frontend/tests/unit/td-rtc-entry.test.js",
+      "sha256": "829964dc2f7cef990a76ece253ed723827b5e42ef2bdfb14746116cc7d364da3"
+    },
+    {
+      "path": "frontend/tests/unit/td-rtp-decode-job.test.js",
+      "sha256": "88f769002f0cc5cd38c2a3ca3e85c71e2c3d2c8c612702815031ea9a9d6d9ab7"
+    },
+    {
+      "path": "frontend/tests/unit/td-timing.test.js",
+      "sha256": "fa2c6ed6361d239108bd261d6ed986a64537f7cfa9a850911d0237f9613929b5"
+    },
+    {
+      "path": "frontend/vite.config.js",
+      "sha256": "e9e85a9add7c89365a2042c9ca13574cf5433b1b64211e5d81297b29786c94bc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/README.md",
+      "sha256": "fd2f5fc1a17a551659a25485b554e7092810cca99ceb84684dc235bc38b4f4c6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/appendices/asr-event-mapping.md",
+      "sha256": "e705c578730e7c16bed2ec3b27f94f05b856eb774d2abe3ac02b6a2d55bd1bac"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/appendices/behavior-details.md",
+      "sha256": "9279980b1bd3b83b45fa1a294604dbb8d5af95b2f5f61135fa37dde71a2932fa"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/appendices/corrections-and-cautions.md",
+      "sha256": "00576b4fc495808640d37c1f0d5ee8a3627601b8eef1f13e5c7a38fa87041231"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/appendices/development-guide.md",
+      "sha256": "d6feb28407158d973415c1adbb815f5ed795699f860670167387fa824de7973a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/appendices/echo-audio-cache.md",
+      "sha256": "02f16eefa824cc81ac8f921ccfa11301744166fb00a2ea586b611440c42f6fff"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/assumptions.md",
+      "sha256": "62bdb47e241d55cec4aac4b9800799ec53f597b45f99ac5945e825343b2f4c7f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/confirmed-questions-20261020.md",
+      "sha256": "1bfb8ca4b14104ea4003ca3f69d75a79eb6f1b18076ddf639a5f71ea1ca4db6e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/decision-log.md",
+      "sha256": "2ad2c4d31749619ca7dfae92aa63b87f8bc417760ae14b29130c1d70c5914b71"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/open-questions.md",
+      "sha256": "525d237ec8d6396b8ee38581fa340d9ef9dcc8988c83868424f98c624dab3c5c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/playback-decisions.md",
+      "sha256": "d8f24a69ce2cee253aea35e8112ecb72607470cec335151b0be1768d7756e1ee"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/question-review-20261020.md",
+      "sha256": "7981dc176c7187aeb8c878c4c699409ba6c9bb9f95b70a58180005513d38872d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/decisions/source-message.md",
+      "sha256": "ef08a872ab0c5f77d427f0b9d7f7e006ddd843c38e43f32b3097d0dfd5424c4c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/design.md",
+      "sha256": "0c9d1f3174088ae8cd1ec361d12be16bdd43f0e1ac5a1882e7d4260ba808a15a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/handoff.md",
+      "sha256": "d97bd13e16342f8a86ac59bda51651fd646f3eae1c7317c8e07c929da55704df"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/proposal.md",
+      "sha256": "cca31dd49ca9b581ae6d626d0a4cfb4e60b085012e438c4966a1325f84080696"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/prototypes/README.md",
+      "sha256": "5f2d00f2a3004871e9372e6300104f0f7d460d88edbd4ae385129d7e0e350cd7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/prototypes/index.html",
+      "sha256": "657d49b9abf71c872eeaf7f6ccc0b3dfd96b1e4dc9bcd52bb92f43b0778902b4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/specs/bot-config/spec.md",
+      "sha256": "7001e58fceadd6e48823210f3b397dfe1f780484649ba433897d7ae6cdf09e7d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/specs/voice-pipeline/spec.md",
+      "sha256": "286b9f259d11cf815c2fb0e3fcc89c5fa385eab598ae43a4ce782e2897267b2b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/tasks.md",
+      "sha256": "9124cbdb9797db24d465a31944711f8327aaa4b96c3e90e3700096fac73b1337"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-asr-batch-plan.json",
+      "sha256": "115f3f377c0f32eb0f294b7afcb8e9bd5e77027f849b64e7d443239ee5f7bcef"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-asr-digits-confirmation-plan.json",
+      "sha256": "7520551a2b1a5f03ea9937dec3b01cc5b3a75e141dccd4c84be2d22b9f6cf05d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-asr-range-diagnostic-plan.json",
+      "sha256": "d561c05a918687e4430bd9058fae068efc84a1a4ff75b0cefc6c511e64e4ba76"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-fresh-digits-confirmation-plan.json",
+      "sha256": "e25d498b78b14150c14ea897c1f187ed3aa0b6686b93a4a8458261e88593a0c7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-remaining-models-plan.json",
+      "sha256": "637fe6b823b549190245dd49a101e45c63a8f580d4013ea33720d5e604994181"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-tts-batch-plan.json",
+      "sha256": "0e0944b234104fc9b522fcd214de1d4986dfc6e2befec54e460a95252065d399"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/deepgram-tts-one-confirmation-plan.json",
+      "sha256": "f44c691c1df307c6f593c8168863970a68d230b03a5d5cf88edbb819e5df493c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/delivery-status.json",
+      "sha256": "4e43f81d9b6a571b00a2edc75902e0b63f84cd6f75e70bfa5c3e19bb2546965c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r38/external-results.json",
+      "sha256": "96e93f5905256f62d8af0d3224d5c94a71c2f01e523f27ce9d38dd093453f26a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r38/smoke-final.txt",
+      "sha256": "71d476732fb2f01b1f9f259dc8655339db9a1068310b5cb269b2f9f511663234"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r38/smoke-green.txt",
+      "sha256": "c2e064a51ce8fc164dd397775a7f255f4b3c956a334af5f91f3a074a5d8660e9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r38/smoke-red.txt",
+      "sha256": "9caf23e4a6df66e180fde7e80c0ae5417d313e07490316a6a7eae3f9a2c814df"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/asr-resegmentation-final.txt",
+      "sha256": "6d15849f93b77f6e5cf57bf315ef697525994b54abbbd99044d74fa0dfb36b8f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/asr-resegmentation-green.txt",
+      "sha256": "da43756bfae81863f3a53c09c71586da267d2620ce3eb1a69f2791c39bdbb6d7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/asr-resegmentation-red.txt",
+      "sha256": "668c30790fbbcbcf47943fa6a77e59913b2a2a522903bc13ccd364c1986f42f4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/asr-resegmentation-scoped.txt",
+      "sha256": "4161a7bfe023bcbd3f177775fed3c76c8d1e1eb802cfc5690f9f06dd1c67265a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-comparison-1440.json",
+      "sha256": "e2d15e9afb3126641f2aa6c7debffebf41139db7cf3aff6436f3bb9955a9ac7b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-comparison-390.json",
+      "sha256": "ce6d6685410c16f420081a143d349d56cf3167656bfa02cbb91299106bd04142"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-final-pending-q044.txt",
+      "sha256": "4d7bcb9fbfae91d534c74ae22dc690f6f1521ec97904b5f95d1eeccdaf4d8ec8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-full-controls.txt",
+      "sha256": "a78f1ea358d50b9ccc386a4b2cb74d22a26516e05e80f30abd466e5d6261b850"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-initial.txt",
+      "sha256": "870f2d86158deb5072c92b1539235a12ed46ac03a9440b12dea0fc8d3857008d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-jev-connection-1440.png",
+      "sha256": "e85ff6a3255be51cc811ccad61f2c7c9bb51b7039ea9386dc5d8728d9cc32cf6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-jev-connection-390.png",
+      "sha256": "f184256e435bba2eae3731a7303972abfa3ce38d4d231c4fa92689e62ce09197"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-jev-preview-1440.png",
+      "sha256": "0b925a454ea08a128e594ff82e1d6bd6b3ae10465f29b2d7cd45ff1a834c1859"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-jev-preview-390.png",
+      "sha256": "99ef6548fb6d77ff2d805f048f52b360132f9e26b0ab5f0732f0e1be97e2a6bb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-jev-questions-1440.png",
+      "sha256": "cf14daa93160259e3a4390bdce4c3135527b71c2919f70527e8a647e27b9947b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-jev-questions-390.png",
+      "sha256": "cf402cba5112dbbd41d35b3243519d8102846e9f0904b29224eb65de93d78afe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-layout-fix.txt",
+      "sha256": "e40e5a71a5738f018089b553511ade046c20c20ee894e9c71b406d94502b44f5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-only-q044.txt",
+      "sha256": "106aba6c7afacc93eb95a2d62e382eb21628f660c6c27cff64e499410eed32c6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-rules-1440.png",
+      "sha256": "c8bc62317405cc8a771c87d012c94ddf13d1200229a2daf6c7f1def41bbbbbd2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-rules-390.png",
+      "sha256": "f011cb14f31bdc29af0fbc616318d7c3828060b1e247d9768f1c37839be21fdf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-semantic-1440.png",
+      "sha256": "23e5d5ee152f1c67f976c68b93acd8c82fa7e6bbcd123b0a816f42cc7c56ca16"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-semantic-390.png",
+      "sha256": "972fa0ac034b3033c5344e7879bd66696d9eec4d58e0b3f3f35accb38f272a95"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-vad-1440.png",
+      "sha256": "16407e1e3bc9d3ad81e714f47210817be4ea330eb0856a038c9e935f38c4841e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/baseline-vad-390.png",
+      "sha256": "7d550cac056bdb1d318acfc548b993b10f4065fddd74a5c3643b5afba199b484"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-jev-connection-1440.png",
+      "sha256": "ac7c72103cd8ac83e8e3a7b2d70fa58a940689f5ab0e1200c81dc7e1c206b347"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-jev-connection-390.png",
+      "sha256": "ede9ad34b7f1746d71b431322a2542b486080b4f8a4efa55dfa5ab3115df1433"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-jev-preview-1440.png",
+      "sha256": "a6518057422f61164125516cf81417effab82b25ddf6f542fc73c1000259a499"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-jev-preview-390.png",
+      "sha256": "1fa4caf79b74ccdb49263f15f6a0d8dba23d7c950ecbae3c8ae8d7fab91ff660"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-jev-questions-1440.png",
+      "sha256": "c9e0cd855e3dd94f2e9d419f45ea4ed1848c789f8d98dedae9c5b0de1297e1cf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-jev-questions-390.png",
+      "sha256": "f6b3054e010dd3f4815f2864063a7e1f3c7ccb26092d77ee4f44ededb1e79de2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-rules-1440.png",
+      "sha256": "3932307342545dda54e24de810b3097cb5759c912c851b933565088f27843d67"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-rules-390.png",
+      "sha256": "5c73932af2dd870c27e293e65301bb72f8fa792f58c994725d3a0fa603be7e14"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-semantic-1440.png",
+      "sha256": "c06eafba6a3f4b4059f37bcbab8e04e117a8ed1a6c88c12a6f32db3eac7802f0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-semantic-390.png",
+      "sha256": "55d32bc2616533a8b9d0a4f1f58043d0a918928c60e51c2cafb50b3a5005fcfb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-vad-1440.png",
+      "sha256": "690343c42c79ebaf91f0806b79242efea9786cb1e63f30b9b288a09dad304b85"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/formal-vad-390.png",
+      "sha256": "00ffae3ec84c257b7948dd881856af68c5a14449f695ec13ceb13cdd48333a49"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/frontend-build-final.txt",
+      "sha256": "92d0493d9bfa7fa47bd6e6a4be3f42c250d3b0896c3e76f5b4a03e242f0b2b05"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/frontend-build.txt",
+      "sha256": "42195438e55caed8de34677949e89950d34e357564697bfa93b3389067b5447b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/full-backend.txt",
+      "sha256": "4c2d76a7151a923e2e8d3d9c601e8920835e39fbe3a473c172cd48be69179e63"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/history-causality-final.txt",
+      "sha256": "90d22d58fee8b6a74266e89570013c44cc514e18a446aad45e83d0270968fc7a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/history-causality-green.txt",
+      "sha256": "f5c2bc23045b110ae80b494b249fe658ee0338120c8c3a6ea88ca44c12b44800"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/history-causality-red.txt",
+      "sha256": "aad18057f424c1bfcc4a19df9ec3f64ee6c66e35dc494c9043507c2f2ddee39b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/history-final.txt",
+      "sha256": "16a12b5a1a39112f64db5097ef6f9322bfa44da0979059925f67c927c17e9a4f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/history-reason-red.txt",
+      "sha256": "1bd668c92a5af4833a9459ea2a153607537a36a98983f932a41d7c240287d48c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/mypy-all-modified.txt",
+      "sha256": "ab35ee42183d4d6d3ba483825ab037d18a5a15622d03be01d82220b1564851ff"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/mypy-runtime313.txt",
+      "sha256": "f9b031e5c45aa702cd4fef028d465551cb20a2c4698e0913c7b00766b20ac4d8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/probe-final.txt",
+      "sha256": "2d647e39f607506cb16150262612bd5270404813f833d2049f29df139e0cb4f6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/probe-green.txt",
+      "sha256": "99cef98de12a8b8a90abbcb2033d076bfc563ea7951d4da90263da27288d16f6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/probe-red.txt",
+      "sha256": "0890e0bd8ca14e27e86f13eac6d116c3c4139c685521349e87209ce99b14f843"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/probe-sdk.txt",
+      "sha256": "a9d16c7dc3e8422e31cf4c76dfaccabb8cfe2ada96ec8ee14dc033000e659c75"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/tts-probe-final.txt",
+      "sha256": "89064c7e643b49b7261ca8bb7ad7d53abb4a09f70d90e84c4ad1962e9a57e978"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/tts-probe-red.txt",
+      "sha256": "4896c12e815c81b8937283f4906cc04942e39aa90be38c191783dca814f57b0f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/tts-standalone-fixed.txt",
+      "sha256": "d7f15f0e2e98acd75934e19c55be622910bf6b43054e25623f5ec7cb49639c8b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ui-b-narrow-fixed.txt",
+      "sha256": "b61dcf8859606c90f3ca9bdec8bf8dec2e93dd2289747bd93eec8cdb20d14500"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ui-b-restart-after.txt",
+      "sha256": "59108f390330d9f41305c195d15274962d197848d4fbe20ac40e703487cd1f8e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ui-b-restart-before.txt",
+      "sha256": "17c6cab8de8f89d932761b25fb88ce6ff561184d3a935d7af26d39922bd29148"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ui-b-state-matrix.txt",
+      "sha256": "ae61db67d66a613b3241b1e90f16b053a1448b5692db93645a0600361a8312b9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/vendor-pricing-verification.md",
+      "sha256": "4dd0cfbc4e25c7c20a046cca8c95d4b8a90948975fcbf57ea3963124a0779d2a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/vendor-probes-green.txt",
+      "sha256": "a71e8291235026664d9b5025fe1f327214c12686fca8435b40b3f010868c28af"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ws-history-clock-reason.txt",
+      "sha256": "d8e3f34c80a71f386857c29d8520365cbc112ff43c5f04fdaba870224ce16f2a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ws-identifier-combination.json",
+      "sha256": "d1138509f0542feb8a71aaf2c4e9bcef2c428d9f291397aa2ffc5f7470bc48e5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ws-identifier-first.txt",
+      "sha256": "38a23a70cd4308a785765577b8b2893cf59d3da9e76d0d52ccc8b8cdcc0b2c83"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r40/ws-receipt-browser.txt",
+      "sha256": "0cce9e1b2def070b3ebb07b3f8d48a84a499f3a9bda065c0e47210b39b172551"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-comparison-1440-en.json",
+      "sha256": "e2d15e9afb3126641f2aa6c7debffebf41139db7cf3aff6436f3bb9955a9ac7b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-comparison-1440-zh.json",
+      "sha256": "e2d15e9afb3126641f2aa6c7debffebf41139db7cf3aff6436f3bb9955a9ac7b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-comparison-390-en.json",
+      "sha256": "ce6d6685410c16f420081a143d349d56cf3167656bfa02cbb91299106bd04142"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-comparison-390-zh.json",
+      "sha256": "ce6d6685410c16f420081a143d349d56cf3167656bfa02cbb91299106bd04142"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-connection-1440-en.png",
+      "sha256": "e85ff6a3255be51cc811ccad61f2c7c9bb51b7039ea9386dc5d8728d9cc32cf6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-connection-1440-zh.png",
+      "sha256": "e85ff6a3255be51cc811ccad61f2c7c9bb51b7039ea9386dc5d8728d9cc32cf6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-connection-390-en.png",
+      "sha256": "f184256e435bba2eae3731a7303972abfa3ce38d4d231c4fa92689e62ce09197"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-connection-390-zh.png",
+      "sha256": "f184256e435bba2eae3731a7303972abfa3ce38d4d231c4fa92689e62ce09197"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-preview-1440-en.png",
+      "sha256": "0b925a454ea08a128e594ff82e1d6bd6b3ae10465f29b2d7cd45ff1a834c1859"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-preview-1440-zh.png",
+      "sha256": "0b925a454ea08a128e594ff82e1d6bd6b3ae10465f29b2d7cd45ff1a834c1859"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-preview-390-en.png",
+      "sha256": "99ef6548fb6d77ff2d805f048f52b360132f9e26b0ab5f0732f0e1be97e2a6bb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-preview-390-zh.png",
+      "sha256": "99ef6548fb6d77ff2d805f048f52b360132f9e26b0ab5f0732f0e1be97e2a6bb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-questions-1440-en.png",
+      "sha256": "cf14daa93160259e3a4390bdce4c3135527b71c2919f70527e8a647e27b9947b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-questions-1440-zh.png",
+      "sha256": "cf14daa93160259e3a4390bdce4c3135527b71c2919f70527e8a647e27b9947b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-questions-390-en.png",
+      "sha256": "cf402cba5112dbbd41d35b3243519d8102846e9f0904b29224eb65de93d78afe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-jev-questions-390-zh.png",
+      "sha256": "cf402cba5112dbbd41d35b3243519d8102846e9f0904b29224eb65de93d78afe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-rules-1440-en.png",
+      "sha256": "c8bc62317405cc8a771c87d012c94ddf13d1200229a2daf6c7f1def41bbbbbd2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-rules-1440-zh.png",
+      "sha256": "c8bc62317405cc8a771c87d012c94ddf13d1200229a2daf6c7f1def41bbbbbd2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-rules-390-en.png",
+      "sha256": "f011cb14f31bdc29af0fbc616318d7c3828060b1e247d9768f1c37839be21fdf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-rules-390-zh.png",
+      "sha256": "f011cb14f31bdc29af0fbc616318d7c3828060b1e247d9768f1c37839be21fdf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-semantic-1440-en.png",
+      "sha256": "23e5d5ee152f1c67f976c68b93acd8c82fa7e6bbcd123b0a816f42cc7c56ca16"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-semantic-1440-zh.png",
+      "sha256": "23e5d5ee152f1c67f976c68b93acd8c82fa7e6bbcd123b0a816f42cc7c56ca16"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-semantic-390-en.png",
+      "sha256": "972fa0ac034b3033c5344e7879bd66696d9eec4d58e0b3f3f35accb38f272a95"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-semantic-390-zh.png",
+      "sha256": "972fa0ac034b3033c5344e7879bd66696d9eec4d58e0b3f3f35accb38f272a95"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-vad-1440-en.png",
+      "sha256": "16407e1e3bc9d3ad81e714f47210817be4ea330eb0856a038c9e935f38c4841e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-vad-1440-zh.png",
+      "sha256": "16407e1e3bc9d3ad81e714f47210817be4ea330eb0856a038c9e935f38c4841e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-vad-390-en.png",
+      "sha256": "7d550cac056bdb1d318acfc548b993b10f4065fddd74a5c3643b5afba199b484"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/baseline-vad-390-zh.png",
+      "sha256": "7d550cac056bdb1d318acfc548b993b10f4065fddd74a5c3643b5afba199b484"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/change-gate.txt",
+      "sha256": "02b4f8e18b2857d9f25dea08b41ee17b5afe3fe81eb21d50be1e9e51b707435e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-connection-1440-en.png",
+      "sha256": "0821d7199d3a5e9598238e7557407ac7bb6ee7edb5a3365f37260cc62f26001f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-connection-1440-zh.png",
+      "sha256": "ac7c72103cd8ac83e8e3a7b2d70fa58a940689f5ab0e1200c81dc7e1c206b347"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-connection-390-en.png",
+      "sha256": "86e7e5e0d1e78ebf81d2a9a7cf619c4d4cf9a88ca212f28e465d393863bd8a3c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-connection-390-zh.png",
+      "sha256": "ede9ad34b7f1746d71b431322a2542b486080b4f8a4efa55dfa5ab3115df1433"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-preview-1440-en.png",
+      "sha256": "b8e75a9a72532ed45cc6598e338cb7ba5fd7ee3a9c9d92c89cf8fcd21e90ccbd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-preview-1440-zh.png",
+      "sha256": "a6518057422f61164125516cf81417effab82b25ddf6f542fc73c1000259a499"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-preview-390-en.png",
+      "sha256": "93683e74ee8d0f02e3c7abeeddbf2bbf8057b3afc23f7be243eb06119e5989fc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-preview-390-zh.png",
+      "sha256": "1fa4caf79b74ccdb49263f15f6a0d8dba23d7c950ecbae3c8ae8d7fab91ff660"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-questions-1440-en.png",
+      "sha256": "3ef1451e75107cbd60c074fa8ce2a6b37bc6c819e7dc6be4ddd57efdbd2a0ba0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-questions-1440-zh.png",
+      "sha256": "c9e0cd855e3dd94f2e9d419f45ea4ed1848c789f8d98dedae9c5b0de1297e1cf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-questions-390-en.png",
+      "sha256": "97ec420831f5d4238f6e3176e70908d84a6c0ad09f06e914429b1c1c77c4f902"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-jev-questions-390-zh.png",
+      "sha256": "f6b3054e010dd3f4815f2864063a7e1f3c7ccb26092d77ee4f44ededb1e79de2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-rules-1440-en.png",
+      "sha256": "ccad37d20805737dcde0158799af1e6d2eeca9e163dbf699f70232bc7d7b7f94"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-rules-1440-zh.png",
+      "sha256": "3932307342545dda54e24de810b3097cb5759c912c851b933565088f27843d67"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-rules-390-en.png",
+      "sha256": "813760f8e668259f3bfd74724fb47d33495d7127a8abdc230da332e350177f32"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-rules-390-zh.png",
+      "sha256": "5c73932af2dd870c27e293e65301bb72f8fa792f58c994725d3a0fa603be7e14"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-semantic-1440-en.png",
+      "sha256": "b83bee0505e265b4806df1c8259afaf3792175833644fc1b320dcdfccdb133db"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-semantic-1440-zh.png",
+      "sha256": "c06eafba6a3f4b4059f37bcbab8e04e117a8ed1a6c88c12a6f32db3eac7802f0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-semantic-390-en.png",
+      "sha256": "007b1ed8fb60b36a8b922a399240c3a70242f343c7bd69efb536a216a595bf8d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-semantic-390-zh.png",
+      "sha256": "55d32bc2616533a8b9d0a4f1f58043d0a918928c60e51c2cafb50b3a5005fcfb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-vad-1440-en.png",
+      "sha256": "618cf3a5303f5652425971cc2f8a8c037efbc0a13c40afe42a6cd73bde8ef74e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-vad-1440-zh.png",
+      "sha256": "690343c42c79ebaf91f0806b79242efea9786cb1e63f30b9b288a09dad304b85"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-vad-390-en.png",
+      "sha256": "2269c1e1464fa70d03ed79a046d4822b48e9611da53cfc0ccb969aef9307d0b5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/formal-vad-390-zh.png",
+      "sha256": "00ffae3ec84c257b7948dd881856af68c5a14449f695ec13ceb13cdd48333a49"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/frontend-build.txt",
+      "sha256": "5c6f45e69cda31273dc3d6ab7bf46f92af6169513b2ae125540e52324d641c97"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/source-final.txt",
+      "sha256": "54ac552a0a42ed194837e043cccae90bca76657e379af06abe5242614edfdb02"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/source-gate.txt",
+      "sha256": "02b4f8e18b2857d9f25dea08b41ee17b5afe3fe81eb21d50be1e9e51b707435e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/source-green.txt",
+      "sha256": "b9589cd3a5461a383edd1faa1397c7b958df7c6a59dc8aceae91ccef5c5da268"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/source-red.txt",
+      "sha256": "f71fc66722fb9eb576953eec595ca09a988b22e011e2d93b5db90dbb0cdf1317"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/ui-a-final.txt",
+      "sha256": "4335bbdfd755c0061a925c91c8bd19d134066f127bc0b3ba4347415ba5081347"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/ui-a-matrix.txt",
+      "sha256": "1f70fbec7111340c6842b3dad0aa7332a0e7fb64776160e8a02824c7e19f0cab"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r42/ui-english-red.txt",
+      "sha256": "21385485ff8e5ccb1c56d4ad6b075be43b09a4e55c2c9418ed7dd182535308eb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/README.md",
+      "sha256": "d47519b9040a9e50bea8ca3a45869583e407dfc646b1621a16c0a7ccb9d8cad4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-history-final.txt",
+      "sha256": "1347ac05814b294ed9a27b4cbada9a63333289decdc9507fd7dcd55aedd2a4c9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-history-green.txt",
+      "sha256": "8fb3c4ede032f2bf4290c5c263663e7e99a761eb83b197aebb2c182b77bb8ded"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-history-red.txt",
+      "sha256": "63f17a7f33e6a8c724a53d50c19280a489fcf2474332a87c2ae286d1090a92b4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-recovery-1440-en.png",
+      "sha256": "6e3eaf83ee72e3e7b4b7ba18d4f58196a7459b38f05a5f9aab7a6a0c11c60c64"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-recovery-1440-zh.png",
+      "sha256": "02b6a657342a019b289feab97a6ed363abeb7c3c0a8f5a69da2e0e7ec7f00bbc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-recovery-390-en.png",
+      "sha256": "d21501422e572b3b67ba7097433bb32550f24ed3e43618bc27c653b5b4388ac3"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-recovery-390-zh.png",
+      "sha256": "c329f8cbe6577685d2bbfc9b8a26a8cac81b60f328a133f1eac422e98cf39b7f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-runtime-network.txt",
+      "sha256": "a2e7eca21c99ba0e854d2c23d9da94d04b6af663e34378173109c61b0f94d96b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/cache-runtime-red.txt",
+      "sha256": "ed0de464c1ae44ca83f778ab4a3e8789fb60045105bfdb924281bbc3e798127b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/change-gate-before.txt",
+      "sha256": "7619283b1d5a092664a9ec4f08a4bc47077b8c99bf9f33d3ab4472cf3c12cd45"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/change-gate-final.txt",
+      "sha256": "107928d32b72b721151bd6029f237754cb2c91322f4935d85a3b40e697d4246d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/frontend-build-final.txt",
+      "sha256": "f27ce117e66cc5c18baf48ee1da051fd1a06d93edbbd140f9ef9b9ae70a1ccb2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/frontend-build.txt",
+      "sha256": "dbd930a1d34a47f0596127f56d335081028fe0040efd931e05b4763a2b63d1dc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/frontend-unit.txt",
+      "sha256": "a375a09b9bd1e94e5eae8be3e75f99f08592e500bfc17a107031373b0d29b4f2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-labels-final.txt",
+      "sha256": "0ef35291573ffa2156c69fb0aa6c8fdbba83ad12380c891d05baf1caf929fc4d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-labels-red.txt",
+      "sha256": "6a4a766ea4ea5f0ef5792fbcd43f9c6c871cc692250082723846925a6b195aff"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-review-final.txt",
+      "sha256": "6034f886e52b344f1ccc1ac004aaf5e4e99b101c3abaa9e0dabcf7384efc85b8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-screenshots-final.txt",
+      "sha256": "9f11219e4c7b902a5656f203fe5186353f2c83a17c1dee4343a3c1135e72c0fe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-screenshots.txt",
+      "sha256": "170052fc23d8ff336a5ece23db3fbaed7982291b37bc972e4d74e2ae7d6e3d40"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-tool-1440-en.png",
+      "sha256": "be6ef4a5e7080b8e9b0b3dad4016fb5b9cd29f4f76e1a09541ac84686263d5c4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-tool-1440-zh.png",
+      "sha256": "210c5f432c5cdc3a44fbf2913d42d10bbb93d0a5776332a8c0568362b2fb9e24"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-tool-390-en.png",
+      "sha256": "27fb085abe46c36fc066181227be5b796a96aa4f0d65a98c13e491d7b4013e32"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/history-tool-390-zh.png",
+      "sha256": "856684bcb9ad094fccdc9b633c38d8a43ae8b68a3a3e5996d529cd2660990f38"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/server-final.txt",
+      "sha256": "6733f708d7569ceafce2878dd7916629ef8fc99369808c8d3ec39d9057743dba"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/server-recovery.txt",
+      "sha256": "086bbea5c165f62dd0f089e5b08d5d8d0ef076249188d4f2d11cab67f539e5e7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/server.txt",
+      "sha256": "89bc0868eaa41d7c771bd67c174eb990787a1bde9b73306bc4623f4c06eb7dce"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r45/ws-identifier-combination.json",
+      "sha256": "f9d3d8e5a00310d77be30e45a64dce0e68499a6def8219346d92c993593d1320"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/README.md",
+      "sha256": "d1222abba1628e730f3d829449ec661d1bee662fc6299f1a168170fb926a7625"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/asr-dry.txt",
+      "sha256": "3e656b929c8441ce15b1c3b9583ba4739caa023fbbfee86ba5732e9b69f42ff4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/asr-execution.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/change-gate-before.txt",
+      "sha256": "e2d51f3002eb958b5b86d385ed0f09af4182a1b0f8173f0f8f85c794a9147c04"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/change-gate-final.txt",
+      "sha256": "07056ebd43ed63c897f45dd7ca8afa19835c790ee5c0dbd9d1908b4da09d956b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/deepgram-td-asr-synthetic-v1-D-062.jsonl",
+      "sha256": "d28ed84a232a74a588274807633eacc9d025f178f7b1e990368ebcd4e9af5b2f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/deepgram-td-tts-synthetic-v1-D-063.jsonl",
+      "sha256": "31d77a40a3ddbcc2f775fa7b1d4c87ce3e8b160f2deec7a292cecbd7b64e9b59"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/tts-dry.txt",
+      "sha256": "f69845442b6b97a0da9ecc6dd9f6e498ac15252150fe8f7947a66cdade23e357"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/tts-exact-text-final.txt",
+      "sha256": "f6b8ddd643459297b60c9293f5e693105f10cb56c04370ed02f720898aae5821"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/tts-exact-text-green.txt",
+      "sha256": "48b3a0f0d663da676d57fbe61c6e1332e69ba8ed75b408fff0803cf708b83174"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/tts-exact-text-red.txt",
+      "sha256": "eef40e19c1e15e8cbdbc6c028122c03101b70ffca4da3184673f710839ff309a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/tts-execution.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261023-r47/types.txt",
+      "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r55/README.md",
+      "sha256": "ab1c3293dadffa395eb05ae77c3d1e55c84960792f039bc093c192b60770e6d1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r55/gate-final.txt",
+      "sha256": "c409fb6f0417f5822aa140f5a1b3079b83d2dc681e43ee31258549f1568c6668"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r55/price-recheck.json",
+      "sha256": "4a673eb9d221ce2b0e250d1e60d4097207a375079054b27ab6ddeffe37f28aea"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/README.md",
+      "sha256": "c71ad48034ec861751888f0d52b3405a5aadd030ecb675f94c5219dc97568ba5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/claim.json",
+      "sha256": "84c55326c3f752057f5b33538ef50fdaf857f077276524f5bc29d3b64172c989"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/combination-summary.json",
+      "sha256": "38799f9271a3016fde6da01e566a0c07e913967c91c4de80169f760c867f7f24"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/formal-entry-proposal.md",
+      "sha256": "075b51f0bdd25d44cd4ced25c25ce983a8fee0820f3ca33774400369af00b186"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/gate-before.txt",
+      "sha256": "1f0404767358a66ac30c1b876d82c265ad905c585d11751595338d893c6f7d34"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/gate-final.txt",
+      "sha256": "663a886ab10db0ba99715cec8770b61e3f04c1fc69877fe52ffd61af094c914f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/mapping-gate.txt",
+      "sha256": "6644d38ed25245f4cb8688ecc45ecf6189b6ac2921d4288bfc605ccd549a4dbb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/repair-gate.json",
+      "sha256": "df2e627f9a8ce543edec62fff311d78a5de818168ad745e65ec9588a50e3cc61"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/serial-final.json",
+      "sha256": "1c743262cd35b63a6acfc3912781009e77dd380075c4591414d762b8b85aa537"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/serial-identifier.json",
+      "sha256": "52da2b1ebe2f666cfd7823e6fa1e6dac6595d36d931dca7f5c7ead286e9382ac"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/serial.txt",
+      "sha256": "cc2b3f634ca72db01f9aac3d5f2680afe7cfd55fcf53c120bea55699e5f248d1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261024-r59/server.txt",
+      "sha256": "cb291b4f2f30b75f264b0ee4d4470eb920183d40cd14b493f576f41b9fc4f6c9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/README.md",
+      "sha256": "d273bef573a37852f4320d53982aba363a23df58de300d0befe621d8c419474d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/first-browser-ui-assertion-failed.txt",
+      "sha256": "195423c2bab15241d6885ac923c0d5503c5d9506a124cd4cea6fe16a2d105010"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/first-final-history.json",
+      "sha256": "a2aff5415c9badb55dd95386e8e47043e7aa85100c6246353ac245099edfda0c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/formal-authenticated-receipts.json",
+      "sha256": "2a851de9ce23e984d718042a2b784639203f8963b36d49a8111ed9fd06a34425"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/formal-final-history.json",
+      "sha256": "c525c4b8647530de798e1a6ea273618373c45586356785b15fcb14ab636565c5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/formal-final-passed.txt",
+      "sha256": "cd7fbd412cf05ca4e3aadff0229767260b49b1204e78586af46ec0c95665156d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/ledger-red.txt",
+      "sha256": "5b25731b20494f56d22a952633bbce91524a8b22db30d084a4ce32766b8e64cc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/rtc-probe-diagnostics.desktop-chromium.json",
+      "sha256": "e369adbf957f34662c4563df6ae783d3aa3c590e2db8b124bb2ca66ff9c23d29"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r68/targeted-ledger.txt",
+      "sha256": "bfaa3587e122336b48bb0806fd27f06fc8bdbe25c46a1d68eb2a94738e4eef41"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/README.md",
+      "sha256": "296675c9a8967ff815493167c03888f3d8f90f8583a2f3e875373fc0f07ec10b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/first-fixture-failed.txt",
+      "sha256": "12f21933c0bbf98f1baaaf9142d53eff5fdad5e950fc34739d3e41316aefbf0b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/first-unactivated-history.json",
+      "sha256": "f845dca7d5f96c6ebb119870a3fb5921d10de8db879b66f64170b8f4397e82a1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/formal-identifier-history.json",
+      "sha256": "714c2283efca999eafec5c463644d751a7039e088db7b6f6f69948fa1f1955e1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/formal-identifier-passed.txt",
+      "sha256": "8bbde995bdf7d71349bb90ed7bd7273c06a4d671831555690fc34cd46a6d1687"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/formal-identifier-receipts.json",
+      "sha256": "7b1dad873e577d612f1d404b5efaff3d14d965462664d5179010766d92f780df"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/gate-final.txt",
+      "sha256": "f8f3c45894fbebe2b17aa2ccc55f4e6150d40e75668a1148bc91a23a167086fe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r69/rtc-probe-diagnostics.desktop-chromium.json",
+      "sha256": "fad1755cfea8ae11a8a48d7d5c2ff5c6585781e0c8d180dea261afa8892e503c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/README.md",
+      "sha256": "d2c2e6c620a58d9ab76af06e150aae0fb3e24ea2e67b89530e305e2a5ee58c93"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/candidate-observer-passed.txt",
+      "sha256": "0cc338e2818bd523709215c6630cebdafbd734b3f948a73ba75125baf17b137d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/comparison.json",
+      "sha256": "f527221d969582ee06d0d56209e9c6143a431da076194f769545568ae8d52b86"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/first-observer-failed.txt",
+      "sha256": "479e5339c79f3838f6789f56aa44702269c93855a17f3040064d295b282bb3a8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/gate-final.txt",
+      "sha256": "7567eeeb0d28132bc47b75d01adc0507c9eabfd7ac42e037476bd1e262e3ebae"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/native-capture-passed.txt",
+      "sha256": "caca7e38bb9a19fb3da22a6446fde71e2db4bba7d385dc9cb021918a44ae536d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/rtc-probe-diagnostics.desktop-chromium.json",
+      "sha256": "f658c540b77710a56bfb46d671afb78b0b33e48d7a446c9b8f40e835beb4b6ed"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/second-observer-failed.txt",
+      "sha256": "7b5edef746c9eff01374bd20801a3b9b25966a22ca94e7d2e0b3666c8a784cba"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/timing-candidate.json",
+      "sha256": "9663f344ac4145bb3be3d777118c3d2e754a93dc88b18682fd6337f1de712588"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r70/timing-native.json",
+      "sha256": "e0770c815443e264a1d639ade0d5249a3a02e7368440126da53d449bc3d9cadd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r77/README.md",
+      "sha256": "ed8151407e78475f21e2cb8d0dc8b8625b5de8a4874ed2b0e2bd3ba7eafb568e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r77/backend-targeted.txt",
+      "sha256": "7b34bd0b9a7cec89954678f1caf3964fe80e9a398d67790c2aadd3f2f9033820"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r77/clock-api-red.txt",
+      "sha256": "7ffcb51d7e61059be79a3318b24bcf3be877082fc4b5ec6952bc3ef5974dbfd5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r77/clock-green.txt",
+      "sha256": "75f5f59b79835a6236802e60fa6d1e6bc93dbe292a4bae059c6ac072e8194b87"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r77/clock-red.txt",
+      "sha256": "f015ce0c43ba4dc574fad2cf224b12b2ac166bb0b161298191ee6bead7b0f4f5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r77/gate.txt",
+      "sha256": "ac1a6215c6048c2cac09502dc836c297e5556957e9cbedd2eac9134b16bd8a77"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/README.md",
+      "sha256": "928972e43160e12470f51ed8fc983526b08d5dd7f5f20fdc5756f0e392c24f75"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/api-process-restart.json",
+      "sha256": "fda938dc55c655228b30e074560c2d07df4a1fc7a437c01c4f3decc9ab5ecb53"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/backend-full.txt",
+      "sha256": "556291da3204afd73c86dcf5b20ffb9363364b896d562554f3627189c6ca3218"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/backend-targeted.txt",
+      "sha256": "32b7e18a6d271973c8153ceb897b5c95d93dafc7a197747c6e39faba1acbbb9a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/build-final.txt",
+      "sha256": "74f8adcea6f9c6468ea588fc151a4b2653667a987be72a961be8228ddade6ad9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/client-final.txt",
+      "sha256": "46b7914a94075e1cc2f3649573d822c723e40199ccbadc00b07b941c6c8ae413"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/client-green.txt",
+      "sha256": "c9fb756beac943b98a9486d308a824d3e3cfee2307d6db945935845150215c20"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/client-integrated.txt",
+      "sha256": "01e40a291751260d07c8dd51979155813d56c436840f94ee74017a05e141e0d9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/encoder-annotation-regression.txt",
+      "sha256": "ba9dc60cee0b4a7bc9144469b6c161bb7665c33e720b731ad57f78718f40f643"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/gate-final.txt",
+      "sha256": "a27e576e03202738be260f2257bccf58d0fda10c3c4eacda1573f47520f7aa95"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/gate.txt",
+      "sha256": "464e53d769fa16c9dbccf816769b6e679826a66dd16e4d82ed4f45b4eb09010e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/idle-volume-red.txt",
+      "sha256": "b5f9f11c9204da1c6f252a7dee274fe132726fff5019aa09b49dffaabc83ddad"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/mypy-baseline-comparison.json",
+      "sha256": "7ad12948af90e2b96840d16bf3ae0c39622ff641048afbcce22449538a5df99b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/mypy-clean.txt",
+      "sha256": "b1d14a638cdcd6b7a7d5368e3cc2ca927b3e1f1b4e26cbe9b1844d7698aabdf2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/mypy-full.txt",
+      "sha256": "96bde03ded4dcc81579dead38baa6b727b76fab37f66b7143eb40eca5abe5f2f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/native-fetch-controlled-green.txt",
+      "sha256": "e2ef80814a2f937ba56b211c53f74e547c3530b0a9dc4bcd05bcdc2ffe2ea338"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/native-fetch-controlled-red.txt",
+      "sha256": "9617ae9a04c2706a9cb68c576077eed5c878c2fb4be8f9fad98c4a3e05dcbaf7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/native-fetch-green.txt",
+      "sha256": "25a110f23d21e1fd68bfb1ebe30e9e0d47b886ffe0561d65b06151b47d9c03a6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/native-fetch-red.txt",
+      "sha256": "e124d512404e0db43720b477e83f15d86e4454100d841869d9faced853ffebb5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/native-globals-green.txt",
+      "sha256": "834e0a7eb3a62a306a5d4b78b03a4ab5c917bde070f36af5dc55878245666912"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/origin-green.txt",
+      "sha256": "b7a4c9922dfbf468920dbb80f9d426982816b7d67d52b997a6d53f99a53bacae"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/origin-red.txt",
+      "sha256": "d92b2980f6526436c0121ff801800ddd230b42d05ac52342e160d11b04e5bd7b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/range-green.txt",
+      "sha256": "b4eb7be9000651a3e89c6a77e8b346d05d1d706d620aa6f8193e574a39b3ced1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/range-red.txt",
+      "sha256": "0282854711fde3553042b2f13e1a144837520f3355655bfea9dc3f8633ef3480"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/rtc/rtc-probe-diagnostics.desktop-chromium.json",
+      "sha256": "06641eea7b97141a4135bf540d8fff54e4d24693d90ab3c3d11a8f55a576df06"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/rtc-clock-fixed.txt",
+      "sha256": "55ca65a6337bb97e80994d29ee2c9b796f5d659c2cfe362311f7bc9413019f3d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/rtc-clock.txt",
+      "sha256": "dcd9849af044717b1ab03eee00ab7f1e17ba9547d8a4cae749898d0fb5e6ac97"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/rtc-fixed/formal-authenticated-receipts.json",
+      "sha256": "647e23a7c27a2554112781e01e0c3ac03da9f7f0556f86f5f6bce1afa3c423ee"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/rtc-fixed/formal-final-history.json",
+      "sha256": "497ce1ce72b030d16833e4b924f27abffb94b54d4875bc2648231e68defd0f50"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/rtc-fixed/rtc-probe-diagnostics.desktop-chromium.json",
+      "sha256": "834584de77a01bfab747eb29dc964265dc9d2c48676d852c50661b268d21b0c4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/rtc-range-proof-audit.json",
+      "sha256": "e41a14d9ac7d662939f008478eeb432aeca808723e0576ece72a8e6a133dfb30"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/storage-red.txt",
+      "sha256": "86891effe26ba83371888a9c69f8b0e9ce75fa9854c68d7a09c262ad72de1d6e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ui/range-history-1440.png",
+      "sha256": "abad084866f9e9df2db362df16441eb721756a5cf4714f569688b54504788a8d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ui/range-history-390.png",
+      "sha256": "9aec8ac1f5f14f2b3f3b6847c22205e2585338ab7721b8cefddcf9e9a4a87229"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ui-origin/range-history-390.png",
+      "sha256": "54eaa741cbcd76c0f4ba25590a0bf2056c5fcf64d17914b73ce83954b65ce2bf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ui-range-green.txt",
+      "sha256": "aeda97ae5028ca63b182b06f8da15feb5b4fef3b76befbaa5d9f39dcf5c04f6f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ui-range-red.txt",
+      "sha256": "28f534054b52423b3b79d6f9e52258386961420a5ce4f49fad8d3f361a0b7dd0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/worklet-green.txt",
+      "sha256": "706e44c0402bfd65b127a180eed115142aa4dda2cd4bafe1c0a89df39bd26808"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/worklet-red.txt",
+      "sha256": "91a2e89544bb462c452b66ce4e4c934726c2e5ed874b419ace19186e6c37d75b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ws/ws-timing-history.json",
+      "sha256": "0a48416ef112a1d3f6cb971c338e02834694d06452b94e602889d031302b0df5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r78/ws-clock.txt",
+      "sha256": "acfc0be45c13c18e1d01db8f8a09610ddf082bd328f58858764babbf87c7df0b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r79/README.md",
+      "sha256": "1b94dff0b1f3f66fa03cc8c1b64a346acf647db37577838991e9430ee53129d8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r79/gate.txt",
+      "sha256": "9b5a14eb87a85c4cd7f8d3c8ac9fa684e56ab81d73974e2382b9c7f767435e33"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r79/targeted.txt",
+      "sha256": "17976ed47a1eac338097117af13240c806ffc73fb7a26c24d0cc56dec2c26e5b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r80/README.md",
+      "sha256": "a25d614f6eadc8e0c13d89d8b8ca6806c5ff71b72973fe8c9b9940b5265d25ad"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r80/actual-input-identity.json",
+      "sha256": "48b4ac4b91bb61515d4760c6cb4d0caf3993d7dd8f00141fc529591d6df66032"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r80/client.txt",
+      "sha256": "71a272dac8d49e4a0e1c23414bbc88b1a6b350d2b582c83ece8aaccb73d16b5a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r80/gate.txt",
+      "sha256": "0dedf6eb680135947cd3fd8364863e21a351a0bd26051ad19f298beed13ecb6e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/README.md",
+      "sha256": "13de762b8d27686c1353f4a630107a5cd476f49013b30ae03d20d2507a3bec3b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/api-process-restart.json",
+      "sha256": "77f3d7c02999af7727fc292d767d5ca18c5a601b2ff0cc41f74740396f9ff754"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/api-proof-process-restart.json",
+      "sha256": "17c21b3ca6e109952116834b96a42a392c56b9b6a0091c8d3ee5c9381308551b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/api-type-regression.txt",
+      "sha256": "390a90517f6e3678a833500404a0e1667257ec84c1b92c97170a6914a98762a6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/backend.txt",
+      "sha256": "b323080d5b5d6e2bb5a1a6eab40d257b2e6db8d1b39d85f5cf9dcb3026b15951"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/build.txt",
+      "sha256": "446e3bb6681d1c5f149042c9da31c687752d1e219d62dc672f2308895511e2fa"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/client.txt",
+      "sha256": "ece358135339ed7a9a387749f10e9ec30b73c9b8c13e3c960bf940e7deeab2b0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/gate.txt",
+      "sha256": "715e3749c0d8579817bad29f4c31a2ff82a9e2d15b466827aff2331101810a7d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/mypy-full.txt",
+      "sha256": "6de57c7814104e6de9b6c70898a5f0e106413d679270d2dee07f3e93c936e234"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/mypy-target-fixed.txt",
+      "sha256": "e317872697c2cbfdefa321527a6efe73290dff3a390b0fa8723b87092eccba6a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/mypy.txt",
+      "sha256": "9e08050bc93cc3c2ed5e312a885bfd33a1e24452f473c12279603ec3b2604d9a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/proof-audit.json",
+      "sha256": "9b3f647914d7a5172e9c1322a8e5324a4d013a6bf0aa1dd97cc4ec4af7114977"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/ui/range-history-1440.png",
+      "sha256": "8de2ad4c7a56bbbd2dd909a28bc9a1333ff5214d1904e987d98344f9f4655e34"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/ui/range-history-390.png",
+      "sha256": "1061cef9ba3bdca95a4a7603c17303f963b44e674eddd193993568c003123594"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/ui.txt",
+      "sha256": "a6a0da54b57787321bcb22e1c136ed0790f55830600df3b0478c2c6db9b6c94b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/ws-timing-evidence.json",
+      "sha256": "b989b866a59ddb3e39c398548011fb2870212723d76546dd6127d77faa242577"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r81/ws-timing-proof.json",
+      "sha256": "adb2473b321e49f150a1faecd94d05ed7623588d845dfb85d32d6a4df5c7a6ce"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/README.md",
+      "sha256": "9f2243aaf761c2379d27ed8a7e439b4fc5eda7c58b59db0cba4f5ad6d7176626"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/build.txt",
+      "sha256": "4d5ac92a1d364e9720fdbbac0a1d981f6d312ab039e14c4763afa983498f8172"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/checkpoint-a-matrix.json",
+      "sha256": "69b1f4df1514f489a97074bbd1b61a3c6ad4fc6826dd0a1132895a7019e07344"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/client-history.txt",
+      "sha256": "f88e3364d027bac367ee2efe19702433ef06cc1baa9296fad34bfef5ab660f62"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-draft-1440-en.png",
+      "sha256": "8d4b7bc1be2336c0f4d15a2ba4be7f8e3e661594cd197dc9e6b1bdb4383780aa"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-draft-1440-zh.png",
+      "sha256": "a419f6bc86c94f3f31e47efdd0e42cfa3cadc2c9f173b96478d49c505db8dbc9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-draft-390-en.png",
+      "sha256": "2a2eb576165de67fbc621e8bb4a11e2665f953b384e0e6d3da384a18286bfdf8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-draft-390-zh.png",
+      "sha256": "6af065ed5b78f0a3807d2027b42495d061c529c908aa259f08a46369b499e533"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-drafts-1440-en.json",
+      "sha256": "30ddb7cac1e4d80c08e9688def86b86cd54d654b03154040a95117038d2e4312"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-drafts-1440-zh.json",
+      "sha256": "e7f76ba9519bd4ac932f9e202b9b7048ac0f51bf6c97780723370794370151be"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-drafts-390-en.json",
+      "sha256": "30ddb7cac1e4d80c08e9688def86b86cd54d654b03154040a95117038d2e4312"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/errors-fixed/invalid-drafts-390-zh.json",
+      "sha256": "e7f76ba9519bd4ac932f9e202b9b7048ac0f51bf6c97780723370794370151be"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-evidence-1440.png",
+      "sha256": "b0263bba727c65e848f16d5b9bfe845e086c8b3df707446bafbd3d06ff741abe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-evidence-390.png",
+      "sha256": "be47627a6b9ef27e9bf94fee18339a7aac037e8708a0ce7a0b9de4a245076011"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-failed-1440.png",
+      "sha256": "8f4be4733f02b1597a3e739784eeb398c426741217861c1b4de4aaabc7f2743d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-failed-390.png",
+      "sha256": "19f430fafad0b81d026da127e2ea2b7f30ac7e62952894f7db2c17e88066104c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-recovered-1440.png",
+      "sha256": "0f59321065a477c814742b21f72a75203d345a3e751d11a519e5568c5d77da7a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-recovered-390.png",
+      "sha256": "3f33d5fee8668cf076bac40f593f2544db0847beda147ca51ce4d23acb02d106"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-structure-1440.json",
+      "sha256": "eac24ffd72284b0c731760bcaf3af3b0b87990fab47dbf63fee268dcc5085e93"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-structure-1440.png",
+      "sha256": "3e5f4ceea5807279612e3d1b18399d01d15e31487a8cda4318f863cbdfa9d407"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-structure-390.json",
+      "sha256": "c8516137ef0a183fbb8c1bb7ac752397a4b265e1f36e9a29b9d8670ec20c5058"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-structure-390.png",
+      "sha256": "77a211ecbe57faf8568bf76afa1790e05e70fb10ebd6b268ef9b6ebf473f5a91"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-title-geometry-1440.json",
+      "sha256": "6af01786739112a65ab473bb66d02aa061152b7c02980b58b4014df119ad2918"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-title-geometry-390.json",
+      "sha256": "58899a35e692ca194a23a186017f1d1a8656f669adf43dce980311b78981d624"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-turns-1440.png",
+      "sha256": "80c5bd7de7555302ad03e7676b28e3fb8b0c3016d9ae04c030fc9e56d60b26d7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-turns-390.png",
+      "sha256": "758cc910b657f7980174e1a1b339f80b2079957766ad2392c7d251a251fe6939"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-turns-zh-1440.png",
+      "sha256": "b9324f2c12045df4d2387d2cece4e1fd21035d88e1f7b4e56ca15e0d531a8d9e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/history-turns-zh-390.png",
+      "sha256": "0817725c61726edc6d2f1f765fbedb594a139beb9ca04b48af50162cfb1cd064"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/range-history-1440.png",
+      "sha256": "82eb08be58e647fc757f53b74fa29429ef9475aec172968600803e25e307cf57"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/final/range-history-390.png",
+      "sha256": "c5013bdcb11e9cf655abf9d1e4cdf82a81ca0cd3265d70b17acb55144479f72b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/gate.txt",
+      "sha256": "315a32f9d3b9a9eb01da8b70a65490c7462b62fafd1ae1411cc04a0297da477a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/history-final.txt",
+      "sha256": "8fced9d60059965d3b4b0411866b603b40992fb8616d05e5ddba82ce7473aad0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/history-font-red.txt",
+      "sha256": "ca58b564eec97552ccec9959d780ca4577b27f90ccb3687a78f05cce82dd9f13"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/history-header-red.txt",
+      "sha256": "5dc73f5a5d6da19d4902edb98479c13bfecf64cbdc173aff17f82a58325c6260"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/list-red.txt",
+      "sha256": "f68efdab148ef260f1b417e650b80f009212a2bc11164721f3952977bbeaf439"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/metadata-red.txt",
+      "sha256": "28c3852363a3209e0352bb2d93af4eaa0064282ba041a69f37650d50f8cd6429"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-final.txt",
+      "sha256": "cda33dde09cbf3517e2a9ac7d42e60b378c0f31b8a7a9c41543436377bc4ae5d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-formal-1440.png",
+      "sha256": "3b6e67c0091279c9ea59a0dd052b629dda50a5fdc69f1b8546014f954680f047"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-formal-390.png",
+      "sha256": "d1ee4e33c69f0c25268e4acc36ac00944dc1501d4b66c29d75dad2259687b941"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-frozen-1440.png",
+      "sha256": "de9d4bbd5c4a5ff3064fd42bebe0950eeed0d77c049644eca3a8486e94a67717"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-frozen-390.png",
+      "sha256": "6e6233d61fdf2287f5ed325d4a4cc6357cfc0fbc6582e5f7aca866c8820efe85"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-shell-1440.json",
+      "sha256": "8a49baa2590f3cbf9e699b83b4e33cf589f05a9b13e6cb3744841d3198481183"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-shell-390.json",
+      "sha256": "dd86dc81090b239cf6a16337e8fa686fff1985eff59e4376485f19e85968b759"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-states-1440.json",
+      "sha256": "08552b8e461d5aad5675358ab1dd5d06b76d313b1210303bc983f677727bcb8f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-fixed/share-states-390.json",
+      "sha256": "08552b8e461d5aad5675358ab1dd5d06b76d313b1210303bc983f677727bcb8f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/share-server-stopped.txt",
+      "sha256": "f49f3b63f5d9c0316a4e49280d1a3f610211a26de52ca637d03146b718bad0fd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-final.txt",
+      "sha256": "024cc660be69792b5095f4c754b6cd7d8d8d884257af58b9eae6bc9fce568174"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/six-source-entries-1440.json",
+      "sha256": "b70ee122acb2146bb74e39880adb06777175a700cd2304b11acd24c6e60f0dac"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/six-source-entries-390.json",
+      "sha256": "b70ee122acb2146bb74e39880adb06777175a700cd2304b11acd24c6e60f0dac"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-enhanced-1440.png",
+      "sha256": "01b3f5287a44132cb7ca28eba321311b5da90149fc0c369906418b4b8d74349d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-enhanced-390.png",
+      "sha256": "837098a144e121c4e95286c4afa98496ccd3c76342e724449069e96b2a16f4d0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-flux-general-en-1440.png",
+      "sha256": "e396093c12bbe1e149a8c0ede1a74edc3f0772c2430d51e2b8f09305b1b8c4d4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-flux-general-en-390.png",
+      "sha256": "159e365a153f706408ed72dcaae570a343b8c5709fb7e2ce4a713d6d06788fb1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-flux-general-multi-1440.png",
+      "sha256": "e9b957ee61c1b43d39f32a28ec4dc27db2f74fd420ef4bd4efc7a47f5e620f3e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-flux-general-multi-390.png",
+      "sha256": "37d7ee79a3446f73611ceb7f6326b94bf525c88f385ea3fd87c25fd5b81bc1ee"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-nova-3-1440.png",
+      "sha256": "da073a4e3e87174efea2ed6feb01cbcbbc2f968174817617add26b89ac580a00"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-nova-3-390.png",
+      "sha256": "48ce5d4a36d8fe67986cb1deac8c09a86ec1c133a34b3c86b9224195a063f0b6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-stt-rt-v5-1440.png",
+      "sha256": "6182b80f2462fea8641c1369216bac94c46dc32e62b0d84d705314ce92d6a45f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-stt-rt-v5-390.png",
+      "sha256": "4fc0a17473b90edcc99485ecd24c843de6d23c3f03b581d0e3b8c682e9a4ff41"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-universal-3-5-pro-1440.png",
+      "sha256": "84f9e06c3bc431b6d062d73c76cb65daee8e24f5599cf95bba06f2ec174f60eb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-fixed/source-universal-3-5-pro-390.png",
+      "sha256": "8485abbe4e80c232f9f4cc98e04ff8a19f0f978cc72408f725c1999d1dce8945"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/sources-probe-red.txt",
+      "sha256": "c1ec9ac055310d9b48ebc07e37d593640be7272294da0a142d25e94acfd251a0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/title-red.txt",
+      "sha256": "9a7d43667c6101f9b85cda553a4de15f9f24be156c4c27986e2e9c51db9c2d2d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/validation-final.txt",
+      "sha256": "cebf02f75cd833e732b67722845ee3f8f06ca63f3d6177d66d898fa2d0cbdd4b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r82/validation-red.txt",
+      "sha256": "4a3b8686b957297ded6519cada57d6626106679cec55e8cbad021fb69076dda5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/README.md",
+      "sha256": "6cf3b5a413a0b2c04cefe41f41ec568d0f5b14d41862843127368b87db547c57"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/backend-full.txt",
+      "sha256": "ebd5c45866165ac935dfe232d32590912c0afed58af512d7f39d19877b512313"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/backend-junit.xml",
+      "sha256": "6d9a6590b44b1d9d62db3e54bcabb033d720c0d1948b6cabf2d27b26b76b27d6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/before-contract-fix-backend-full.txt",
+      "sha256": "9b148277ac6e92b19746d14c74fe5260ffcfebdffaf9e6cf10190c7c3dc5c1b8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/before-contract-fix-backend-junit.xml",
+      "sha256": "3c6626ce493c65a7df3e824433741a0e9f53ea4dae4b70c05a36a9663723afbd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/before-contract-fix-candidate-source.json",
+      "sha256": "141dd6a036d59750d8aab5eb8b4e0ef7bdd67f611c455d23a0a19465ef5a251e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/evidence/formal-identifier-history.json",
+      "sha256": "b5a186d5527bf4598de250ba63bef54801268beb92756f6eea87eb2e8dae4be8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/evidence/formal-identifier-receipts.json",
+      "sha256": "7a94e5eba223df119b65a73e165f78d91e480cf3a82d27d6dfdfb88b6ce0a128"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/evidence/published-cache-repair.json",
+      "sha256": "ca85858581cac684baa91638fd588bd716da92b11766eae3f8dca7b0ef99af99"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/failure-fixed/formal-identifier-history.json",
+      "sha256": "401745999c035d9e3f14df0e6ae99098eb84d5fd225c4fbed9dd3d15fb1d12eb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/failure-fixed/formal-identifier-receipts.json",
+      "sha256": "b3789f63ecdfcf1d8b725e4f69870cfa17c4bc55b0085e74b4685f0335c9222c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/failure-fixed/published-cache-failure.json",
+      "sha256": "d867be829326aff9c089f0a1ffd96071ae732dc3a1b867370240feaa939d48a5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-comparison-1440-en.json",
+      "sha256": "e2d15e9afb3126641f2aa6c7debffebf41139db7cf3aff6436f3bb9955a9ac7b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-comparison-1440-zh.json",
+      "sha256": "e2d15e9afb3126641f2aa6c7debffebf41139db7cf3aff6436f3bb9955a9ac7b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-comparison-390-en.json",
+      "sha256": "ce6d6685410c16f420081a143d349d56cf3167656bfa02cbb91299106bd04142"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-comparison-390-zh.json",
+      "sha256": "ce6d6685410c16f420081a143d349d56cf3167656bfa02cbb91299106bd04142"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-connection-1440-en.png",
+      "sha256": "e85ff6a3255be51cc811ccad61f2c7c9bb51b7039ea9386dc5d8728d9cc32cf6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-connection-1440-zh.png",
+      "sha256": "e85ff6a3255be51cc811ccad61f2c7c9bb51b7039ea9386dc5d8728d9cc32cf6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-connection-390-en.png",
+      "sha256": "f184256e435bba2eae3731a7303972abfa3ce38d4d231c4fa92689e62ce09197"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-connection-390-zh.png",
+      "sha256": "f184256e435bba2eae3731a7303972abfa3ce38d4d231c4fa92689e62ce09197"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-preview-1440-en.png",
+      "sha256": "0b925a454ea08a128e594ff82e1d6bd6b3ae10465f29b2d7cd45ff1a834c1859"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-preview-1440-zh.png",
+      "sha256": "0b925a454ea08a128e594ff82e1d6bd6b3ae10465f29b2d7cd45ff1a834c1859"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-preview-390-en.png",
+      "sha256": "99ef6548fb6d77ff2d805f048f52b360132f9e26b0ab5f0732f0e1be97e2a6bb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-preview-390-zh.png",
+      "sha256": "99ef6548fb6d77ff2d805f048f52b360132f9e26b0ab5f0732f0e1be97e2a6bb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-questions-1440-en.png",
+      "sha256": "cf14daa93160259e3a4390bdce4c3135527b71c2919f70527e8a647e27b9947b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-questions-1440-zh.png",
+      "sha256": "cf14daa93160259e3a4390bdce4c3135527b71c2919f70527e8a647e27b9947b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-questions-390-en.png",
+      "sha256": "cf402cba5112dbbd41d35b3243519d8102846e9f0904b29224eb65de93d78afe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-jev-questions-390-zh.png",
+      "sha256": "cf402cba5112dbbd41d35b3243519d8102846e9f0904b29224eb65de93d78afe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-rules-1440-en.png",
+      "sha256": "c8bc62317405cc8a771c87d012c94ddf13d1200229a2daf6c7f1def41bbbbbd2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-rules-1440-zh.png",
+      "sha256": "c8bc62317405cc8a771c87d012c94ddf13d1200229a2daf6c7f1def41bbbbbd2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-rules-390-en.png",
+      "sha256": "f011cb14f31bdc29af0fbc616318d7c3828060b1e247d9768f1c37839be21fdf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-rules-390-zh.png",
+      "sha256": "f011cb14f31bdc29af0fbc616318d7c3828060b1e247d9768f1c37839be21fdf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-semantic-1440-en.png",
+      "sha256": "23e5d5ee152f1c67f976c68b93acd8c82fa7e6bbcd123b0a816f42cc7c56ca16"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-semantic-1440-zh.png",
+      "sha256": "23e5d5ee152f1c67f976c68b93acd8c82fa7e6bbcd123b0a816f42cc7c56ca16"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-semantic-390-en.png",
+      "sha256": "972fa0ac034b3033c5344e7879bd66696d9eec4d58e0b3f3f35accb38f272a95"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-semantic-390-zh.png",
+      "sha256": "972fa0ac034b3033c5344e7879bd66696d9eec4d58e0b3f3f35accb38f272a95"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-vad-1440-en.png",
+      "sha256": "16407e1e3bc9d3ad81e714f47210817be4ea330eb0856a038c9e935f38c4841e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-vad-1440-zh.png",
+      "sha256": "16407e1e3bc9d3ad81e714f47210817be4ea330eb0856a038c9e935f38c4841e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-vad-390-en.png",
+      "sha256": "7d550cac056bdb1d318acfc548b993b10f4065fddd74a5c3643b5afba199b484"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/baseline-vad-390-zh.png",
+      "sha256": "7d550cac056bdb1d318acfc548b993b10f4065fddd74a5c3643b5afba199b484"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-connection-1440-en.png",
+      "sha256": "0821d7199d3a5e9598238e7557407ac7bb6ee7edb5a3365f37260cc62f26001f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-connection-1440-zh.png",
+      "sha256": "ac7c72103cd8ac83e8e3a7b2d70fa58a940689f5ab0e1200c81dc7e1c206b347"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-connection-390-en.png",
+      "sha256": "86e7e5e0d1e78ebf81d2a9a7cf619c4d4cf9a88ca212f28e465d393863bd8a3c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-connection-390-zh.png",
+      "sha256": "ede9ad34b7f1746d71b431322a2542b486080b4f8a4efa55dfa5ab3115df1433"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-preview-1440-en.png",
+      "sha256": "b8e75a9a72532ed45cc6598e338cb7ba5fd7ee3a9c9d92c89cf8fcd21e90ccbd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-preview-1440-zh.png",
+      "sha256": "a6518057422f61164125516cf81417effab82b25ddf6f542fc73c1000259a499"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-preview-390-en.png",
+      "sha256": "93683e74ee8d0f02e3c7abeeddbf2bbf8057b3afc23f7be243eb06119e5989fc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-preview-390-zh.png",
+      "sha256": "1fa4caf79b74ccdb49263f15f6a0d8dba23d7c950ecbae3c8ae8d7fab91ff660"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-questions-1440-en.png",
+      "sha256": "3ef1451e75107cbd60c074fa8ce2a6b37bc6c819e7dc6be4ddd57efdbd2a0ba0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-questions-1440-zh.png",
+      "sha256": "c9e0cd855e3dd94f2e9d419f45ea4ed1848c789f8d98dedae9c5b0de1297e1cf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-questions-390-en.png",
+      "sha256": "97ec420831f5d4238f6e3176e70908d84a6c0ad09f06e914429b1c1c77c4f902"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-jev-questions-390-zh.png",
+      "sha256": "f6b3054e010dd3f4815f2864063a7e1f3c7ccb26092d77ee4f44ededb1e79de2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-rules-1440-en.png",
+      "sha256": "ccad37d20805737dcde0158799af1e6d2eeca9e163dbf699f70232bc7d7b7f94"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-rules-1440-zh.png",
+      "sha256": "3932307342545dda54e24de810b3097cb5759c912c851b933565088f27843d67"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-rules-390-en.png",
+      "sha256": "813760f8e668259f3bfd74724fb47d33495d7127a8abdc230da332e350177f32"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-rules-390-zh.png",
+      "sha256": "5c73932af2dd870c27e293e65301bb72f8fa792f58c994725d3a0fa603be7e14"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-semantic-1440-en.png",
+      "sha256": "b83bee0505e265b4806df1c8259afaf3792175833644fc1b320dcdfccdb133db"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-semantic-1440-zh.png",
+      "sha256": "c06eafba6a3f4b4059f37bcbab8e04e117a8ed1a6c88c12a6f32db3eac7802f0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-semantic-390-en.png",
+      "sha256": "007b1ed8fb60b36a8b922a399240c3a70242f343c7bd69efb536a216a595bf8d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-semantic-390-zh.png",
+      "sha256": "55d32bc2616533a8b9d0a4f1f58043d0a918928c60e51c2cafb50b3a5005fcfb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-vad-1440-en.png",
+      "sha256": "618cf3a5303f5652425971cc2f8a8c037efbc0a13c40afe42a6cd73bde8ef74e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-vad-1440-zh.png",
+      "sha256": "690343c42c79ebaf91f0806b79242efea9786cb1e63f30b9b288a09dad304b85"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-vad-390-en.png",
+      "sha256": "2269c1e1464fa70d03ed79a046d4822b48e9611da53cfc0ccb969aef9307d0b5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/formal-vad-390-zh.png",
+      "sha256": "00ffae3ec84c257b7948dd881856af68c5a14449f695ec13ceb13cdd48333a49"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-evidence-1440.png",
+      "sha256": "60788d9335770053c0203384195099eae5c47542918817d197b839cdb9a031db"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-evidence-390.png",
+      "sha256": "be47627a6b9ef27e9bf94fee18339a7aac037e8708a0ce7a0b9de4a245076011"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-failed-1440.png",
+      "sha256": "8f4be4733f02b1597a3e739784eeb398c426741217861c1b4de4aaabc7f2743d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-failed-390.png",
+      "sha256": "19f430fafad0b81d026da127e2ea2b7f30ac7e62952894f7db2c17e88066104c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-recovered-1440.png",
+      "sha256": "d515690f2c52670d38d04518ee3000cc7487e2d7cceccddd85a9f07d92819257"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-recovered-390.png",
+      "sha256": "3f33d5fee8668cf076bac40f593f2544db0847beda147ca51ce4d23acb02d106"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-structure-1440.json",
+      "sha256": "eac24ffd72284b0c731760bcaf3af3b0b87990fab47dbf63fee268dcc5085e93"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-structure-1440.png",
+      "sha256": "3e5f4ceea5807279612e3d1b18399d01d15e31487a8cda4318f863cbdfa9d407"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-structure-390.json",
+      "sha256": "c8516137ef0a183fbb8c1bb7ac752397a4b265e1f36e9a29b9d8670ec20c5058"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-structure-390.png",
+      "sha256": "77a211ecbe57faf8568bf76afa1790e05e70fb10ebd6b268ef9b6ebf473f5a91"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-title-geometry-1440.json",
+      "sha256": "6af01786739112a65ab473bb66d02aa061152b7c02980b58b4014df119ad2918"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-title-geometry-390.json",
+      "sha256": "58899a35e692ca194a23a186017f1d1a8656f669adf43dce980311b78981d624"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-turns-1440.png",
+      "sha256": "80c5bd7de7555302ad03e7676b28e3fb8b0c3016d9ae04c030fc9e56d60b26d7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-turns-390.png",
+      "sha256": "758cc910b657f7980174e1a1b339f80b2079957766ad2392c7d251a251fe6939"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-turns-zh-1440.png",
+      "sha256": "0cd4bbc83cd56166552a0f310d32a6496662765a39b3eb241511d7e4cc2cd363"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/history-turns-zh-390.png",
+      "sha256": "0817725c61726edc6d2f1f765fbedb594a139beb9ca04b48af50162cfb1cd064"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-draft-1440-en.png",
+      "sha256": "8d4b7bc1be2336c0f4d15a2ba4be7f8e3e661594cd197dc9e6b1bdb4383780aa"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-draft-1440-zh.png",
+      "sha256": "a419f6bc86c94f3f31e47efdd0e42cfa3cadc2c9f173b96478d49c505db8dbc9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-draft-390-en.png",
+      "sha256": "2a2eb576165de67fbc621e8bb4a11e2665f953b384e0e6d3da384a18286bfdf8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-draft-390-zh.png",
+      "sha256": "7e6037ea322c7f25cca4f08d0d821a93c0040d25feebd74f104b8f77a3db07b5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-drafts-1440-en.json",
+      "sha256": "30ddb7cac1e4d80c08e9688def86b86cd54d654b03154040a95117038d2e4312"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-drafts-1440-zh.json",
+      "sha256": "e7f76ba9519bd4ac932f9e202b9b7048ac0f51bf6c97780723370794370151be"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-drafts-390-en.json",
+      "sha256": "30ddb7cac1e4d80c08e9688def86b86cd54d654b03154040a95117038d2e4312"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/invalid-drafts-390-zh.json",
+      "sha256": "e7f76ba9519bd4ac932f9e202b9b7048ac0f51bf6c97780723370794370151be"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/jev-preview-1440.png",
+      "sha256": "e16b7650ef88c85d485410f3917b8260f3b149f70fd472561fd3fbc33aed8be0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/jev-preview-390.png",
+      "sha256": "9496886db3d9d4205fb3cfc42fff88cba45a7f3810b3acc552e1fdd01fdc1b4a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/range-history-1440.png",
+      "sha256": "2ea43e80253507aa329d214e3ad7d20bf0628ad199cd8870c778f8f55a06e528"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/range-history-390.png",
+      "sha256": "c5013bdcb11e9cf655abf9d1e4cdf82a81ca0cd3265d70b17acb55144479f72b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-formal-1440.png",
+      "sha256": "3b6e67c0091279c9ea59a0dd052b629dda50a5fdc69f1b8546014f954680f047"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-formal-390.png",
+      "sha256": "d1ee4e33c69f0c25268e4acc36ac00944dc1501d4b66c29d75dad2259687b941"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-frozen-1440.png",
+      "sha256": "de9d4bbd5c4a5ff3064fd42bebe0950eeed0d77c049644eca3a8486e94a67717"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-frozen-390.png",
+      "sha256": "6e6233d61fdf2287f5ed325d4a4cc6357cfc0fbc6582e5f7aca866c8820efe85"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-shell-1440.json",
+      "sha256": "8a49baa2590f3cbf9e699b83b4e33cf589f05a9b13e6cb3744841d3198481183"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-shell-390.json",
+      "sha256": "dd86dc81090b239cf6a16337e8fa686fff1985eff59e4376485f19e85968b759"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-states-1440.json",
+      "sha256": "08552b8e461d5aad5675358ab1dd5d06b76d313b1210303bc983f677727bcb8f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/share-states-390.json",
+      "sha256": "08552b8e461d5aad5675358ab1dd5d06b76d313b1210303bc983f677727bcb8f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/six-source-entries-1440.json",
+      "sha256": "b70ee122acb2146bb74e39880adb06777175a700cd2304b11acd24c6e60f0dac"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/six-source-entries-390.json",
+      "sha256": "b70ee122acb2146bb74e39880adb06777175a700cd2304b11acd24c6e60f0dac"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-enhanced-1440.png",
+      "sha256": "01b3f5287a44132cb7ca28eba321311b5da90149fc0c369906418b4b8d74349d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-enhanced-390.png",
+      "sha256": "837098a144e121c4e95286c4afa98496ccd3c76342e724449069e96b2a16f4d0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-flux-general-en-1440.png",
+      "sha256": "0bae3636c0451efaf2f81978b7b4910281d07192948485ff103e2c56e40da10e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-flux-general-en-390.png",
+      "sha256": "159e365a153f706408ed72dcaae570a343b8c5709fb7e2ce4a713d6d06788fb1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-flux-general-multi-1440.png",
+      "sha256": "1d4d0562b73b9bc3814f6e1d2253edd3f184fb41c58d7469c26eed3ec238b098"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-flux-general-multi-390.png",
+      "sha256": "37d7ee79a3446f73611ceb7f6326b94bf525c88f385ea3fd87c25fd5b81bc1ee"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-nova-3-1440.png",
+      "sha256": "697c0160304697b41907b22f5172cb05bbaa6a7ccb10e8153f0122b0f9c85235"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-nova-3-390.png",
+      "sha256": "9cd220d257877e0aa71f98b2aeb3a7e0bde46e6190a156a7c60cc2f6b421cf47"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-stt-rt-v5-1440.png",
+      "sha256": "496a246350332aebea958f7d83c34fc33cec486eecf09c083654876515cf8f15"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-stt-rt-v5-390.png",
+      "sha256": "4fc0a17473b90edcc99485ecd24c843de6d23c3f03b581d0e3b8c682e9a4ff41"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-universal-3-5-pro-1440.png",
+      "sha256": "03ce943f63c1bad1e8f80ba3a4e73f120e3ea443c7a3331e12722219fb521dad"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/final-ui/source-universal-3-5-pro-390.png",
+      "sha256": "8485abbe4e80c232f9f4cc98e04ff8a19f0f978cc72408f725c1999d1dce8945"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history/real-history-recovered-1440.png",
+      "sha256": "f2f46f9cf05834f51236c4448611c649aefd7e98c70468e42ff62dd1646e4cc7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history/real-history-recovered-390.png",
+      "sha256": "74dbdd7e26eb8506e288b70a32a57ece2bde55fd53352209f6da30c3917d1d1f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history/real-history-recovery-1440.json",
+      "sha256": "d4d17ff85774eae2696acf08d4896a8536703288f0804148be2456d84f565714"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history/real-history-recovery-390.json",
+      "sha256": "d4d17ff85774eae2696acf08d4896a8536703288f0804148be2456d84f565714"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history-failure/real-history-recovered-1440.png",
+      "sha256": "c76a9c842f2a365d225f366b296281e3704ec679e2b47d8267444197620a0778"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history-failure/real-history-recovered-390.png",
+      "sha256": "beb4468fcba9ab704a412218343ec9fc3ce02d3f7422eeb40f44b38fcbf56f23"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history-failure/real-history-recovery-1440.json",
+      "sha256": "d4d17ff85774eae2696acf08d4896a8536703288f0804148be2456d84f565714"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser/history-failure/real-history-recovery-390.json",
+      "sha256": "d4d17ff85774eae2696acf08d4896a8536703288f0804148be2456d84f565714"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser-public-failure.txt",
+      "sha256": "0e78f1676061ace2382d2c33e3a96aa6265b51757989fb18fe79e523af6b42bd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/browser-public-repair.txt",
+      "sha256": "451dbe8a59464043e3759bf6ec23876016dd2dba09d655635aec091a0e60f833"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/build.txt",
+      "sha256": "ff350bb50e48a33045bef15040e147b744b6f7a2396cc648a50cd2b15ecd590b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/candidate-source.json",
+      "sha256": "9ebe9b7b280abb8cf899cc2e5aae20bd0cc9e00197e9cef30e4f03a395c02e9b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/change-gate-final.txt",
+      "sha256": "a9769040370ea92013166920d451f9792ebbe4e1e2a12e0c7f8a860100bd1082"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/change-gate.txt",
+      "sha256": "a9769040370ea92013166920d451f9792ebbe4e1e2a12e0c7f8a860100bd1082"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/client-unit-full.txt",
+      "sha256": "144b814548d647c8bebdae92e5ea99a048be6fb5bab4457369fdf0a51b2ee8f4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/config-b-fixed.txt",
+      "sha256": "090b20dc96d2bfc50666462c27561b1b6423045f3a805708d74501eebcfb0da7"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/config-b-ordinary-ready.txt",
+      "sha256": "ebbd4254ed07ffe2914d36cb1dbe459cb60081885e5a8899169d334b995692f4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/config-b-ordinary.txt",
+      "sha256": "c881179d35d879f9ba52e275371c2bd9a89252d58e2b4f7f65c8a284d256eb98"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/config-b.txt",
+      "sha256": "d40435bb864c6988380f3a229173c29cb2b6f457f22843c8cd062a0f30c09f17"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/failure-final-red.txt",
+      "sha256": "7608e276358b733d06ecc1d496a2e225b9eeaad6fc2f02a7c60539850db43ebe"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/frontend-contract-current.txt",
+      "sha256": "beb56dc96bf547b3e3ebc73df3fb27259e122e5c71b40fff49a38dd9692fcd8a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/frontend-contract-fixed.txt",
+      "sha256": "1112ff58c06500a279433c9cafd4e11cb1cadbee38c55d8e635b8eed5319bbaf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/history-api-failure.txt",
+      "sha256": "5d791aa86e1f1eb8275b9b683ed6cd61b3f40880e12c6e42c7dcd9de894075c2"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/history-api-positive.txt",
+      "sha256": "3982053c51698224883ffde5e1923dc5764319b531d92882577c7b62a75394d8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/mypy-full.txt",
+      "sha256": "6de57c7814104e6de9b6c70898a5f0e106413d679270d2dee07f3e93c936e234"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/mypy-output.txt",
+      "sha256": "f9b031e5c45aa702cd4fef028d465551cb20a2c4698e0913c7b00766b20ac4d8"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/navigation-current.txt",
+      "sha256": "51d8fc3da2e571a5917e49a642a08c4dc6e5aa803e23da8071edc09b3d365e25"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/output-targeted-final.txt",
+      "sha256": "d4bbff135ac8a035fbb83250d71dd40377e4e0b1a115f8aeee3157162c98bd12"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/output-targeted.txt",
+      "sha256": "2a1da1c91498f8cec47a1d207f0502465537a9d8b1d60b3b814339ef8967bea6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/partial-source-red.txt",
+      "sha256": "c203d26829dd545d9871b0a6841d91e483edaec532e8d83fce32253c0aa7ea70"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/pytest-collection.txt",
+      "sha256": "9245b0f14bbdc2830cfceddf0bc387d41274fff296e1f45be1fe43255170ebf0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/restart-failed-history.json",
+      "sha256": "b783d3ee6f12ffd3e913ed1b2c16416afea17f74ec07b8f31ddd238d334fd566"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/restart-published-history.json",
+      "sha256": "5309d5094c06e4e31fed0aa099e89755d88e00473e2e6e756249084db1553d61"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/ruff-full.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/udp-guard-green.txt",
+      "sha256": "f7f2afa95e38213729f7d0ea937e1d0f452340b8d7bc9d668405dfbe68baa89e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/udp-guard-red.txt",
+      "sha256": "027862cc81a4ef845519df841f5444ad846c8fc0e67bac139c59d13f738ce66b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r83/ui-current.txt",
+      "sha256": "29ea78e95fea5d5e6287dcf074de0636f6ca57e81df1cb0f522f259d7ce60088"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/README.md",
+      "sha256": "11ec7f499e0441557e0ff686ab6ff7d9b3a607962335f31634e8a3f720764d0d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/change-gate-final.txt",
+      "sha256": "b936082418530ac876fc1861068b487628e3b3e58d91cf89fe630bee0fc58bfc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/change-gate.txt",
+      "sha256": "a9769040370ea92013166920d451f9792ebbe4e1e2a12e0c7f8a860100bd1082"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/checkpoint-b-matrix.json",
+      "sha256": "92560cba82956d150f241822440cd2d339ca764522f098cb89fa1bcdb00c8579"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/deepgram-fresh-digits-D075.jsonl",
+      "sha256": "c5d397001dbfec4db2fbccac68c38a767f8ebb984f1c3451d983588ca30578e5"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/deepgram-remaining-D076.jsonl",
+      "sha256": "7ad0f7af3e3563b1ce344fc751304b193b12366a49629af944dfe989ca591cce"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/fresh-execution.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/fresh-plan-dry.txt",
+      "sha256": "41a9b717d491a68d99853c720a5d8a5eee99e85ca4dc16007a99520f5656016f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/fresh-plan-red.txt",
+      "sha256": "26c0ec56a2bf813186953db0e230270e87b8f1e8c69531c66a5896d53c735288"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/pre-D076-gate.txt",
+      "sha256": "442bc23b85fcac26f5c384e6f49a462e5a40e7855a31f87e9782343930f4b3ed"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/pre-external-gate-fixed.txt",
+      "sha256": "a9769040370ea92013166920d451f9792ebbe4e1e2a12e0c7f8a860100bd1082"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/pre-external-gate.txt",
+      "sha256": "6fcd612cce0269767237a179337c6f5d69ca96599329f74281ed47c8c2106e79"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/probe-final-lint.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/probe-final.txt",
+      "sha256": "f6d44a8dabb89cf113d2d72e0fcdbabe742e7cfafe82aa55666ac6caaf5f5168"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/probe-lint.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/probe-mypy.txt",
+      "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/probe-regression.txt",
+      "sha256": "c561bf2eb780a622046c98b0cd408d4eac6cff0a79f989cd79a767ee68a5ccaa"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/remaining-execution.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/remaining-plan-dry.txt",
+      "sha256": "f948fd54d44d10cb770a467e512d39e73710bc29c3ea5673a6b0c469b0df0747"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/remaining-plan-red.txt",
+      "sha256": "e63ee1df09fc718416b3106dc88fd29c513cc119a84dd7cb6f41acb65c74312b"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/development-20261025-r84/review-package/README.md",
+      "sha256": "b130d87a069d1f694c3d3761309f215b35867edc105234244b31e3e0383e99ab"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/jev-smoke-plan.json",
+      "sha256": "c17f35d34024fa2fac88e82a8860bc3bd4dd897305ebfff786efe2855009a693"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-plan.md",
+      "sha256": "7e730483409025b34f60fe9f83b563cee31563002d061d4aba68fb1db2537fb0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report-r37.md",
+      "sha256": "0f8393c3a39cb4a3ba920c9951104ba03b3d05653d963fc7a8c9d30ab97ff98c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report-r38.md",
+      "sha256": "0745d7610672febb499de7d59140e016d5dfaccf2b37894b3a5c07e331fabebd"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report-r39.md",
+      "sha256": "f3fd135d6a324e42e5ba1983ad594d06dc7bf71fd435d6d6478415c2b2d1dccc"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report-through-r41.md",
+      "sha256": "6ec6a261869d5e19f96ebe4486af7bd2531ddc8ad7ff002cbfca1d34e60fedd0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report-through-r42.md",
+      "sha256": "70c80dff2c7bf33b7c6ac3cc191f74f62f87d770f8639cb53415b11031a54c5d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.md",
+      "sha256": "b971a92ace986b2ed622441a448be90d282d2f962f3f44a7d3bd6f108b8775d3"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round1.md",
+      "sha256": "6c5e5eb7fc5cb6c60231f3fde775323d30fd54bacdd92ac8b266f5e971e42dc4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round10.md",
+      "sha256": "b2987caf676e6af357677f339aed506da93b63672f476ddbf0e33cafae68b93e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round11.md",
+      "sha256": "9f165f21e80a69087c9445952e1da50dbf32e9678a492b895f3fe591db7bc90a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round12.md",
+      "sha256": "eab5b5a2f5f1648e7c99d2e367eaeaee95d0754e4d60e5bf975bab90710e3cc3"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round13.md",
+      "sha256": "e7b6ce3a269d78b0ee47ef4973cfa2adc7c2710937214ac67d88a7672e183202"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round14.md",
+      "sha256": "db61e97467d11ccaddb23fe55b5d5a177a6b8113a040de5f8bc831ccaa304780"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round15.md",
+      "sha256": "8af4815942d7c22711657be605db93ad14f21c959d5298dde54271d1e2e4e9a9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round16.md",
+      "sha256": "e291f46100514422399bd7a343eeda14a91b99b620e4b006bab72bb2497c3dc0"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round18.md",
+      "sha256": "16a5a822270e906e0035c34ba3b18f6175fa19b2bb0c0f11d4e7c3a84dadeda6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round19.md",
+      "sha256": "7392802010260952216fb304edd4af0fc313efa42dbf4d8594080e2e2f6ac05d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round2.md",
+      "sha256": "f19551b366e2dfae198e2f249f8fda4c4124b9acd4347878647d4d6b1741f75c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round20.md",
+      "sha256": "572390e75bdcdac019f368a10d31005935964f416c59474eb61a403130ca8a0c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round21.md",
+      "sha256": "bf9ebccc0f18ff3a17efebd2de412b3580176f9475ae0e55657f4d30f39c9c43"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round22.md",
+      "sha256": "177ac4d339857e19777955fa9df926df5a9a30697d9b4f33e351759d00b8575c"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round23.md",
+      "sha256": "e5c8c2f93893f712d7e63c0c79b60f95a821dc257bb0d763a1e405dbda366220"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round24.md",
+      "sha256": "4d8222c791ad46bb514bea537345b663c613ca9a582dbef01f8e7070fccaca98"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round25.md",
+      "sha256": "cf5107af97473bf381a8fa08f8e8f0cd584aed08f5d40770101bec6b3308eea9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round26.md",
+      "sha256": "801ee7934439a9812e490fc8938fbb61f84e8e160e001f834f9bcafd810962d9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round27.md",
+      "sha256": "0252ce02279bdafa4145bd6ad0b3de2a4ce7abf1cd33f6eb01918c5b08a478f9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round28.md",
+      "sha256": "cca416b8e965ae0c97b8826e978d3fa1096793c4adc04683e52e8191c5388f81"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round29.md",
+      "sha256": "6dc358edf97f7126638e3d60a5ff9664b6aa30bc9263e708f0c656bd463c7f75"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round3.md",
+      "sha256": "43ac473853526995bef3505f4b324188f9063d7516f4efee00b28f3cb376c252"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round30.md",
+      "sha256": "f27915ef54da79445a95354972cc7d72e831f41ff1c93e6400c14ee9287ef005"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round31.md",
+      "sha256": "765c61c377423a6f7155ce6b94cd24cfde79da61262d58b124b47960a9b43577"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round32.md",
+      "sha256": "0dabf34b3846cddf076928c2797ab1708d13a9bada29db7cae21bdb32b1345c3"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round33.md",
+      "sha256": "c7afa2dcb5eb3ddb46b2fd41852a8f12e7d966d22c0e777290d2e26b70606b3e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round34.md",
+      "sha256": "88f63ef3ccca968db863815d13aceb7bcdcbee68ed7290912b0e8544aace07f1"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round35.md",
+      "sha256": "10f88d9fbcbed93f7f0e99af226342fd1f99ff7afdcf1d740ed162418ccebc66"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round36.md",
+      "sha256": "ce26c9906315db9396756954dba5ed7f1e4c4e32e4fdf28c198720137a3d4310"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round4.md",
+      "sha256": "6af520e4b5c434026866919b7f2be7cde1d15d777f879c94cd26cfd53a1ff5ad"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round5.md",
+      "sha256": "cf950ed4c6c8d795f33aa5301b6c8a6b3da80e867d8fc5cebb3678103cd46efb"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round6.md",
+      "sha256": "9e6b33eb4884dd2885cd65e4cde363736b9f571c21e347349b47894febe956ed"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round7.md",
+      "sha256": "f96f54f067a24c37f5235402f57715c19fa6c0e8d23aa8b06129548f14cf4d41"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round8.md",
+      "sha256": "a72d1773687fa0cddb98c9e459a2ff65bda2037e7815d3a06869b2e66f4e9e90"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-report.round9.md",
+      "sha256": "7c71aed2e9c0d3d8b8aef8cbc9a178ab957488f3f8cd0001e5674215edf3a850"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/self-test-scope.md",
+      "sha256": "b3782d450f0883a6d2e1994272ef921c51dc8b82d8f89c9c8d8039fed3eb449a"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/README.md",
+      "sha256": "22dcdcfc252937307ce2c6c48fcea58c0d2bd93268c171781d3b10af6546fbb4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/blocker-report.md",
+      "sha256": "555002a664526f601f0817e6a857f9844a0b79595374103e858f7b0fc28aca8e"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/direction-check-20261024.md",
+      "sha256": "b6fa474e5de429ba572aabfa3b448e929de01385045e2afbcaeeec5da148da6d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/direction-check-20261025.md",
+      "sha256": "c417aa807dba882fac0b456472d48ffb7fc9f9c47f395b12093a6558b62178bf"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/preliminary-d073.md",
+      "sha256": "a9face02c9538eb4bf7d386b0d16f385cbbd0773dd9a267c7e869e0d79938c3f"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/preliminary-r74.md",
+      "sha256": "b54993f465f7a1d87b8ad311fc52b351de13fb1b5251ad4fa78ebf6a11193987"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/r83-independent/change-gate.txt",
+      "sha256": "f0348483a6ef50179016419a936cc1dc40b04dd4abb36231c932b1e03230e8e9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/r83-independent/targeted-extracted.txt",
+      "sha256": "43483634311ac8959d030768d417b11ba96ec95cd591a7c6e1063e81ad09cdff"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/r83-independent/targeted-worktree.txt",
+      "sha256": "9dfee33483a973610a874564778859b220d51e08dc30700a0c2bba086789acd6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/reproduction.md",
+      "sha256": "962f450d8544b4b6f0a9756aa75a0c72c633fe777dda367b5acdc9f0a4cf8d0d"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/scenario-matrix.md",
+      "sha256": "663a075265a7ee3dfe42ff222261516591cfa663a32ff9be0407d9295d4017c9"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/stage-review/vendor-analysis.md",
+      "sha256": "4028590b30f36511b91195c1b44148c926e151e7d44de84613a216d485d9b408"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/task-evidence-matrix.md",
+      "sha256": "c7937ee19469da014d35a1612da4470a77427529c64088985f56fba79c4c16a4"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/ui-checklist.md",
+      "sha256": "e3dde5e1a9aa1997e1c7aa7a86b7cd695d6316d7e2e8f4431ee8f29d501101f6"
+    },
+    {
+      "path": "openspec/changes/add-jev-semantic-turn-detection/verification/vendor-synthetic-data.json",
+      "sha256": "7a924ff13d7020226f554c607c370612d940d1714252c21e60eeede5190556f2"
+    },
+    {
+      "path": "openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-evaluation-context-v1.md",
+      "sha256": "ca6b8426dff2449f2f760e80b0fa365e57268ad1b47f4211b6dec7ec9dc6ca28"
+    },
+    {
+      "path": "openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-event-aligner-system-prompt-v1.md",
+      "sha256": "57fd4b7dc5fb8178ad6fb9fc66eabaf7495f9136b7265116fd3191c2328548fd"
+    },
+    {
+      "path": "openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v1.md",
+      "sha256": "273a522129ee6e3981e8bb8a97712155b9923eb1d762cbb1f9cfb79186a82923"
+    },
+    {
+      "path": "openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-1-system-prompt-v2.md",
+      "sha256": "24b22c9736f9cdeb630f373e1c1938e8148c6e9fbd4b3a412611ff062400990c"
+    },
+    {
+      "path": "openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v1.md",
+      "sha256": "42620e4570461c44f5d5ecd8567d3841bf72508c7bd87805c62fead0e1b3ce48"
+    },
+    {
+      "path": "openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-pass-2-system-prompt-v2.md",
+      "sha256": "05b75ac261eb0b18cd268170ae8850be2447041a68a1ece13583d68fffed9977"
+    },
+    {
+      "path": "openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/riyadbank-reference-dictionary-v1.csv",
+      "sha256": "01843bc1f646e75f88845032308b6783d7f8786f891968528d2aa9174e033ab0"
+    },
+    {
+      "path": "openspec/specs/asr-automated-evaluation/spec.md",
+      "sha256": "f201e0e5e17cc71f2646a945b813687fe929f0e0b69b867ac0b89380630d2743"
+    },
+    {
+      "path": "openspec/specs/benchmark-library/spec.md",
+      "sha256": "07c6dcce61382cffcf9b0bbdff6dc4537d8aa2f02695ea627fe797dcd5124b77"
+    },
+    {
+      "path": "openspec/specs/bot-config/spec.md",
+      "sha256": "2977c468ebd40d4b1c8ed432fc9cae54bedc5fa120d6a1122eb2d0867ee4516e"
+    },
+    {
+      "path": "openspec/specs/call-history/spec.md",
+      "sha256": "d344b0aff1eded2f5afb60f8e8ec2264d6779be88c21977283434f80428e2063"
+    },
+    {
+      "path": "openspec/specs/change-governance/spec.md",
+      "sha256": "948e9eeddfa8f29d0d94c05615b629dc32b0542eb6f85f647303914d216c92c3"
+    },
+    {
+      "path": "openspec/specs/evaluation-configuration/spec.md",
+      "sha256": "3a459c424d9994ef04b35f4f302332710deeba8f6617272e8e7a19bdc1f2c3f9"
+    },
+    {
+      "path": "openspec/specs/llm-diagnostics/spec.md",
+      "sha256": "55bdb9de34eb706d2f981594925a777bca24923be4e955e290c2596869432812"
+    },
+    {
+      "path": "openspec/specs/vendor-evaluation/spec.md",
+      "sha256": "3296c1257a854a027b8c25850b559df94cc58922c413bf52a080687dab579694"
+    },
+    {
+      "path": "openspec/specs/voice-pipeline/spec.md",
+      "sha256": "b1012b47e0c6918166e98d4110e479efcc39fd0fa0f8fa8ab6fb93aa5d16e684"
+    },
+    {
+      "path": "openspec/specs/voice-session/spec.md",
+      "sha256": "89114139ae5fea167ecad891bb19f266186730d78644e84f09654c3f9f5e07cb"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "f2f87bdb3e89f3756d248b77d5bee8d8ef0221896285beb59ff5e6c8652cb6e6"
+    },
+    {
+      "path": "requirements.lock",
+      "sha256": "b1a7e4407804ed3337627a6e1ac38ba49be5b4a82f4272c9747f8b861234f5e9"
+    },
+    {
+      "path": "scripts/ci/run_checks.py",
+      "sha256": "dcae61f5321a6e7c05d6db207cbf8c3acdb11f3ddea462ebfe114f908f4d94a5"
+    },
+    {
+      "path": "scripts/deploy/platform_voiceagent.sh",
+      "sha256": "423ba8a2d9870ae64639fab73e3d055ba1c8ce898e554975e95b0dde9fad051c"
+    },
+    {
+      "path": "scripts/deploy/rotate_storage_key.py",
+      "sha256": "428cb53e29e4469b2d3d5310dfd1473dcdb9f997c93941ad2ee1a9d498020489"
+    },
+    {
+      "path": "scripts/deploy/verify_evaluation_production.py",
+      "sha256": "91d7f5bff178a3e3874723f55681793c50a1e08359b12ec5e2fa694820209ac0"
+    },
+    {
+      "path": "scripts/deploy/verify_webrtc_production.py",
+      "sha256": "5c5528469c757704fa51757f63d47146cb46a265705cf30ec203d28c5622eaff"
+    },
+    {
+      "path": "scripts/download_riyadbank_conversations.py",
+      "sha256": "3e1f2c07a2673d995aceeb39b30c3a2e56bd4ebb81bbac85af894a6c5ea12edd"
+    },
+    {
+      "path": "scripts/evaluation/audit_riyadbank_dataset.py",
+      "sha256": "cbb3b9fbcaac2b23b1b90563a5c3c0886006eeef4b4e2e6867fe4fbecdd7d2ae"
+    },
+    {
+      "path": "scripts/evaluation/probe_td_compatibility.py",
+      "sha256": "2535316ebc25fce67a803a38332d169d1141684fafbe0968ae9c3791a128e79d"
+    },
+    {
+      "path": "scripts/evaluation/probe_td_tts.py",
+      "sha256": "cc46129d79e99b1a1e716e650d2cc1e879762a724f3457c5a5908aee404aaa48"
+    },
+    {
+      "path": "scripts/quality/verify_change.py",
+      "sha256": "09fe2e88c237fc56c2bf11e81b768fdd2d6fdb48a4eac654211df79b211c5083"
+    },
+    {
+      "path": "scripts/quality/verify_streaming_asr_external.py",
+      "sha256": "8ae8dcb0f49f7cffba1d94061b553cad78f15a4321ceb65b10cb978220aaeba5"
+    },
+    {
+      "path": "scripts/vendor/azure/test_azure.py",
+      "sha256": "a8227128e411d601d705afca00df5218a82bf046b0e89974170fd681984b200f"
+    },
+    {
+      "path": "scripts/vendor/deepgram/test_batch.py",
+      "sha256": "48e82c985c12d8e4285957191a2141e01d144b80f2eeb4cfd7673c53d4540713"
+    },
+    {
+      "path": "scripts/vendor/elevenlabs/test_elevenlabs.py",
+      "sha256": "a8701e9603f03a01673ec09cd3c1557653c7ad3a5488657309ee7d5716894013"
+    },
+    {
+      "path": "scripts/vendor/soniox/batch_transcribe_riyadbank.py",
+      "sha256": "b219cd4fe1dfae59d5bc40dd12ee4a269c7a54cf829fd9b7ea0b88396a7f4346"
+    },
+    {
+      "path": "scripts/vendor/soniox/test_batch.py",
+      "sha256": "0f1c654c241513136b7553b7b6b1158dba62454e8f0465c87d9cdccb08d99dc0"
+    },
+    {
+      "path": "scripts/vendor/soniox/test_soniox.py",
+      "sha256": "f7fd46dcbc0e2e9731f4d6109bde5faf448fcc542c5c6d8b8b5604e7be6a4b1e"
+    },
+    {
+      "path": "scripts/vendor/speechmatics/test_batch_library_ar.py",
+      "sha256": "937ea7306ab3434a5d3b4208362f50f45a69507352e97773b40b368b66d53a76"
+    },
+    {
+      "path": "scripts/vendor/speechmatics/test_batch_speechmatics.py",
+      "sha256": "3253bdd36331d49b31de1ae38e59dab39a4c870f94cbd10b2bed41e97dae3306"
+    },
+    {
+      "path": "scripts/vendor/speechmatics/test_speechmatics.py",
+      "sha256": "67f3d983e358c353a1acb681ba3ded57345f7f594899c3119ad7c06c617acf24"
+    },
+    {
+      "path": "scripts/vendor/typesafe/test_jev.py",
+      "sha256": "313b4cc16d9a9c3875d3d40c90729bfacdd30e83524072f0459db94df7e87dee"
+    },
+    {
+      "path": "src/__init__.py",
+      "sha256": "3ce588459bfcf630c4bfe37a4eaa3825ef702ab758e1da4f1dd2e094f0b95b07"
+    },
+    {
+      "path": "src/api.py",
+      "sha256": "031d6933b14660efdeabb24a955ac95a5ae80eda306628b6b531d6e5b4e8a13a"
+    },
+    {
+      "path": "src/asr/__init__.py",
+      "sha256": "1d3c659ba3aca02f60f4ee937808b83826329b3bbe75f75d32bbb7f9b2b792b1"
+    },
+    {
+      "path": "src/asr/catalog.py",
+      "sha256": "54816a4d4b4dba593e4eb9cf10be7574d2392feb67f48d18234afd024c9ed52e"
+    },
+    {
+      "path": "src/asr/config.py",
+      "sha256": "791915b7065d87457352df934dc9e0d3ad0af8fee48a02b6781ed4894f8d6fda"
+    },
+    {
+      "path": "src/asr/deepgram_flux.py",
+      "sha256": "479242b66f55bb500c18622300fa28605b07a11112397ef577c6c3d7f11fdf42"
+    },
+    {
+      "path": "src/asr/factory.py",
+      "sha256": "77b5fb190c4910f864ef15182afbb363162b703fd28e27a2a77dd2d88c10a31f"
+    },
+    {
+      "path": "src/asr/source_frames.py",
+      "sha256": "01eb4208dc7551479b011e07fe465a3f66ae2d34fa65cb8f6041dc2ebf8ac21e"
+    },
+    {
+      "path": "src/asr/td_config.py",
+      "sha256": "ce920768210366a0761234d017a1fbdb227719b6adc21a7aa0b074d5d6bb3ed8"
+    },
+    {
+      "path": "src/asr/transcript.py",
+      "sha256": "d5e33401e82baf8b6c91df95cd1578261770cf083ed41b289c817d43dfcd65d2"
+    },
+    {
+      "path": "src/asr/turn_events.py",
+      "sha256": "55283c7bdedef0261b60679e409871cd78737d1770813cfb9c66368e61c02945"
+    },
+    {
+      "path": "src/auth.py",
+      "sha256": "5631d4acbee9c5f0194feaae35d2bd19578655a35326955bb0c418ae16cafc01"
+    },
+    {
+      "path": "src/bots/__init__.py",
+      "sha256": "af8fb20c3370639d93a712be7445030bae2b8dfab41d80c57c2f77a4f0c70be3"
+    },
+    {
+      "path": "src/bots/crypto.py",
+      "sha256": "3aef94681ad26ed3f6a7c85fd3bd52be820e0b59f2ae5b7f01788e4808c8d88e"
+    },
+    {
+      "path": "src/bots/models.py",
+      "sha256": "956349c4bb19221602ba59e526cf2ffeee542f96d5d916e1d21d55557eee92b0"
+    },
+    {
+      "path": "src/bots/storage.py",
+      "sha256": "281b014cb8befe09ee25c68bdea05379c23aaefb0858605256dfaadd5ec15460"
+    },
+    {
+      "path": "src/bots/validation.py",
+      "sha256": "edebd5174e7e21890b65120af359ee42beddb18c2824a9ec867da2af1f65b910"
+    },
+    {
+      "path": "src/config.py",
+      "sha256": "49b8ab3d67f5c66e91b3304e58ad0ac17f296face68ee61f2098269946524448"
+    },
+    {
+      "path": "src/evaluation/__init__.py",
+      "sha256": "446b8ef86567a1aff4ae4bc3ad6236e8132d51ceb6956d5f393a09dc54b6386a"
+    },
+    {
+      "path": "src/evaluation/alignment.py",
+      "sha256": "697b9cdbefb7128127841277ec0e9f322ff55e15a8180c6e54d0a735b9f731cc"
+    },
+    {
+      "path": "src/evaluation/asr_contract.py",
+      "sha256": "c0d29cc5a2852b3d46549abd2cff9f131e91343fde85777c080c8f41fb766b10"
+    },
+    {
+      "path": "src/evaluation/connections.py",
+      "sha256": "1b643af1cc651290de6683805c1125075e9ec7375affdb444e8cd4bda943323d"
+    },
+    {
+      "path": "src/evaluation/dataset.py",
+      "sha256": "5c5b6bd81ca590ddc77dc4e98136f5f47f7af6884e9fdbd1c2b7f111e984b560"
+    },
+    {
+      "path": "src/evaluation/executor.py",
+      "sha256": "dfc33dba6fc459d53a415b915040cfe748de0c14e03b71ee4917d41cd67ef2aa"
+    },
+    {
+      "path": "src/evaluation/imports.py",
+      "sha256": "16f190713b66744fae0c8ec9a64a64c61d48bb0534d4736de9a0133d4c1ab63f"
+    },
+    {
+      "path": "src/evaluation/models.py",
+      "sha256": "b53639e450d34c379ca8a89dafad533d3c25a2e9459e28e2435736b5f900b789"
+    },
+    {
+      "path": "src/evaluation/pass2_packing.py",
+      "sha256": "b009a616e55b6ddea42f6f7b23149e99de6b0ba8c437b97ada3be27940916904"
+    },
+    {
+      "path": "src/evaluation/pricing.py",
+      "sha256": "6303fedad6b608ece16ec0f9630d84eeb78df238febc97654d531297ee86e824"
+    },
+    {
+      "path": "src/evaluation/prompts.py",
+      "sha256": "c5aabfbd7c997df41317fd0f71c2a6bf5a1c70b87bd62625f4769cdaafa1fa3c"
+    },
+    {
+      "path": "src/evaluation/router.py",
+      "sha256": "9b52d7cf83e15093361dc7e096e5a5f1cf062dfb3a694cbe1481e6a3db9d5377"
+    },
+    {
+      "path": "src/evaluation/storage.py",
+      "sha256": "b9b25aae9e3f0a0727a72d25fcf089f3b40fc35ce1106c9f045061e51e7162e4"
+    },
+    {
+      "path": "src/history/__init__.py",
+      "sha256": "e4d4846939b7ab57a3c1161e5c0379223d850dcf45312d2e80500867afc5615c"
+    },
+    {
+      "path": "src/history/capture.py",
+      "sha256": "966e4d3f85bf40de10b53a281b734ffc6a973d3c589ad12fed1f24a89be9beb4"
+    },
+    {
+      "path": "src/history/models.py",
+      "sha256": "58cb8a7a2fba466297aa5ed4af1bd04f7b62e92192308c21344391e1bde4e730"
+    },
+    {
+      "path": "src/history/recording.py",
+      "sha256": "b60fdddd932e4877b19f5a158dc4c193353efaf896cac3b5b16e00f3e58a0dd4"
+    },
+    {
+      "path": "src/history/render_clock.py",
+      "sha256": "01a18921576489d59e3ad7f525822a3ec2fb2201b6dbd88b11a14bd48bbd9fd8"
+    },
+    {
+      "path": "src/history/source_clock.py",
+      "sha256": "2e96b2e9e021ccb03f353321ef3e1b72d134a09d2fda6d0a1a74fe46b3c84aee"
+    },
+    {
+      "path": "src/history/storage.py",
+      "sha256": "f4fd4578fca5d2536c208fd6e660852a27056add682af9a651b8e5fae0c1019c"
+    },
+    {
+      "path": "src/llm/__init__.py",
+      "sha256": "e8480501f94bd043dc415ecd700b71b91ce0d48186dc92816303e91e03ec7e73"
+    },
+    {
+      "path": "src/llm/capabilities.py",
+      "sha256": "f997b38c95ee669881de57497f716200f0eb7654cd2fcbfe458e7fe2edfbf7d1"
+    },
+    {
+      "path": "src/llm/diagnostics.py",
+      "sha256": "977fe5fd98465529c881b1ff2dd26d05a71f5244a34edfeeeab8c523857fd721"
+    },
+    {
+      "path": "src/llm/factory.py",
+      "sha256": "064435266e3f0aa42841e0fa8bc72789d48143609eba2a3e5976684c4c614c3b"
+    },
+    {
+      "path": "src/llm/openai_compatible.py",
+      "sha256": "2545698f2350decec31f07eeaa5d72d9a1a9b8c5a085281cab643ffc9e73595f"
+    },
+    {
+      "path": "src/llm/qwen_dashscope.py",
+      "sha256": "2c612f4b5f1711be9aa0eedfaa38424796801f47a6fe74e62c5a7acf1a3e4042"
+    },
+    {
+      "path": "src/llm/scoped.py",
+      "sha256": "bc6c4ca858a13d949d1c210818f5b397eef42a7de58d3248941d1102552f323a"
+    },
+    {
+      "path": "src/observability.py",
+      "sha256": "7e2a65f1a3b886b2cb33570c94b5e8233dda915dd75f5ae981284fbe9b85feb9"
+    },
+    {
+      "path": "src/pipeline/__init__.py",
+      "sha256": "11c805069533effca3345b565004251e55015a3c196a23f32116eb8fefe44659"
+    },
+    {
+      "path": "src/pipeline/assistant_context.py",
+      "sha256": "bb7ca84e3dc24ee1e44136d06b693675fa5248a36cc2cb26f0666bce63518db6"
+    },
+    {
+      "path": "src/pipeline/audio_identity.py",
+      "sha256": "6cf8c9ead35da14fbcdaaf4bb3d5a2a5bb11f3cbb726e97a248b68f783aeb8f0"
+    },
+    {
+      "path": "src/pipeline/custom_td.py",
+      "sha256": "5f95afff88fb10b15f2d34ce25b43a8d70524b7f54fd30032559d1597e12ce72"
+    },
+    {
+      "path": "src/pipeline/echo_audio.py",
+      "sha256": "423d9e57583f2feb00b44e3333f5a9fa171e4baa5bc8a6776b82552647730a7a"
+    },
+    {
+      "path": "src/pipeline/identifier.py",
+      "sha256": "701f589f0076157f862eade7ce6066f2d9542d6801fe940ec36c89716da2d7f7"
+    },
+    {
+      "path": "src/pipeline/identifier_output.py",
+      "sha256": "9e1f175e5a510c86166193d20ed456b4a6b26763c67668008ff0ec95e5049ec2"
+    },
+    {
+      "path": "src/pipeline/identifier_rules.py",
+      "sha256": "a5ab623824f00c14a26a2f7f6d72ef623c077cca58674976e276dab8f01ce944"
+    },
+    {
+      "path": "src/pipeline/identifier_tools.py",
+      "sha256": "f417baf0ad2695e8ba310ddf41ef8b495dc6d9a0af967ad10264132ba60cc58c"
+    },
+    {
+      "path": "src/pipeline/jev.py",
+      "sha256": "05bc1de8d10bbfa17ed218407b0cb3e51b62767561cfd1f710fb201471f5a099"
+    },
+    {
+      "path": "src/pipeline/playback.py",
+      "sha256": "ffb7c3cb15f7e74fe3525e51f414e5e41fbbeda10c94d825590d7415c66016f4"
+    },
+    {
+      "path": "src/pipeline/response_revision.py",
+      "sha256": "1f87bb0de795e1a79099d190325e23cd9b27c7daafe634cc113180681026bf16"
+    },
+    {
+      "path": "src/pipeline/response_scope.py",
+      "sha256": "a47e3a7c23009c1e90c4772983dce0e395a003a824cd2f16bcf3ae96efd4426d"
+    },
+    {
+      "path": "src/pipeline/rtp_mapping.py",
+      "sha256": "d8778b5ab89f54f8dd92d25467cf85637d2256d2bffbcb9fb4f4e12cc2b166b7"
+    },
+    {
+      "path": "src/pipeline/rtp_output.py",
+      "sha256": "f59c250d99ff900f050c631bea2a07e8ec420ba4215a029257e4921e28381dcd"
+    },
+    {
+      "path": "src/pipeline/serial_output.py",
+      "sha256": "3e5f975d7050138a87e23df110133d308e634003d72deb1cc815898b4d4ba4d7"
+    },
+    {
+      "path": "src/pipeline/speed_control.py",
+      "sha256": "660ed1b49b39a0fbf6bd057889c7d3a155d93faf3e39983402b3f1b5416ee307"
+    },
+    {
+      "path": "src/pipeline/td_strategies.py",
+      "sha256": "e1aceee0733c34bdb892718da07034652de9a35c96d97953c3ee9be331da3a5c"
+    },
+    {
+      "path": "src/pipeline/turn_detection.py",
+      "sha256": "e14cf606683ccbc9bd18cae1e300cd46015ea9eae560476fda16afc1082cdd07"
+    },
+    {
+      "path": "src/pipeline/voice_agent.py",
+      "sha256": "9fb82d5529379fb6537529c12891f88583bd4a7b6b1b74ba68b8a2f38134659d"
+    },
+    {
+      "path": "src/pipeline/webrtc_cancel.py",
+      "sha256": "14c43f73608cce6b712cbdea7e1eb0ab3eb09ed72d61c7b621062e0f8b2b5500"
+    },
+    {
+      "path": "src/publication.py",
+      "sha256": "1125c13577c28c2bbee78bc353ee837872e2eeb57e4073ebd60f1589c7cb947b"
+    },
+    {
+      "path": "src/session.py",
+      "sha256": "44dd7681239afd615a2702af02008019ebe993661b4c4f02a32b03486e42e04b"
+    },
+    {
+      "path": "src/tts/__init__.py",
+      "sha256": "0376192f20e2b2d0886ec5fef154e9c987a634204ae509ad59da45c770c1ab43"
+    },
+    {
+      "path": "src/tts/confirmed_flux.py",
+      "sha256": "8066aa34fcd6ade30749b6158be8948cefa7e214dc2ca7778db4bda8e52d498e"
+    },
+    {
+      "path": "src/tts/echo_cache.py",
+      "sha256": "6e5e75aeaa89b2167eaa74e5c120098cd852b1216d47f2385cce0f526aa8e7bb"
+    },
+    {
+      "path": "src/tts/factory.py",
+      "sha256": "62f986fed3c3ddfb6332e04b3f8a3c7e201d24aa53f18943a71f18aa3212f262"
+    },
+    {
+      "path": "src/tts/response_scope.py",
+      "sha256": "ce64c33d31330025045879a9b5616e5ca1d1c1a7acc51d6d8bceef9ab3ed00c5"
+    },
+    {
+      "path": "src/tts/scoped.py",
+      "sha256": "be432e9e6e3a7d22e77e59de8255705a43319c539b2dabf74985863d867c4f89"
+    },
+    {
+      "path": "src/tts/unit_synthesis.py",
+      "sha256": "5cf54cd4b1438690ba8879d09aee597ced7130fe298321da9cecf95fdc09891b"
+    },
+    {
+      "path": "src/webrtc.py",
+      "sha256": "3546abfad95839759382c7f7242a2e278cf4fc7f0ad985ee18a81a733aec851a"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "a2e1c6654963c4fd10429055ab46b1fd9ab04e5be7df7b230d8aceade3028c68"
+    },
+    {
+      "path": "tests/quality/test_codex_change_delivery_hook.py",
+      "sha256": "5e4e4ce52f680bece1b8dcf1101f3c848a6174c8947715e6733ffdc4762a7b6e"
+    },
+    {
+      "path": "tests/quality/test_verify_change.py",
+      "sha256": "fe5fa4a533928fb7cce8867bc86d36053b50d166ce58a1840f5eb0b6f5979725"
+    },
+    {
+      "path": "tests/test_api.py",
+      "sha256": "9919c6d8aeaa6d6c27d12a7eba5896db6727b92fb9b406ec4425916338b175b2"
+    },
+    {
+      "path": "tests/test_asr_bot_config.py",
+      "sha256": "47f8e889f36d582487d9cf0e589cbb029af5037801f9ff855af6f77255dfe654"
+    },
+    {
+      "path": "tests/test_asr_factory.py",
+      "sha256": "9426d75d1ca7212ae9a00ac2c048afe28f448f80afdc484a7dc75f3174535cba"
+    },
+    {
+      "path": "tests/test_assistant_context.py",
+      "sha256": "e78102b6995b5d331b29ae1e8301cee13a9756d257edc64fa8ef32c8e50ba7ee"
+    },
+    {
+      "path": "tests/test_auth.py",
+      "sha256": "44af9ed4d609c3755bd1c34d3b1bb3d5f7b23e15956915dc8677b3cabc5fc99d"
+    },
+    {
+      "path": "tests/test_bots.py",
+      "sha256": "0abf9c49ffefa4f49d20407294bbd99e956a089e2d32a3a6932412866255ab1e"
+    },
+    {
+      "path": "tests/test_capture.py",
+      "sha256": "46581b75d98fb06541630ac36fc66b1c406d87783b3328ddb0f07cb46a510886"
+    },
+    {
+      "path": "tests/test_capture_source_clock.py",
+      "sha256": "da4a89a0a799d445972af6d242398dc03fa90637719902e02c7c96850082444c"
+    },
+    {
+      "path": "tests/test_config.py",
+      "sha256": "fbc3110baaac402056c37f4e3b282c825b582f6295971b5ba61b08596c0a793f"
+    },
+    {
+      "path": "tests/test_confirmed_flux.py",
+      "sha256": "8fe73f8bf7eb4529abafc7fe0e78012dcd2b69164da8aef412f69837a8482faa"
+    },
+    {
+      "path": "tests/test_echo_api.py",
+      "sha256": "ab9831825e163c8198dc0f2435e2b3694ec4c6b35ffe12666a58d7fee98f6f98"
+    },
+    {
+      "path": "tests/test_echo_cache.py",
+      "sha256": "259dfe89514f4942fd3a489db8555d7414d161fe591ebb02928be70a1ba5cbca"
+    },
+    {
+      "path": "tests/test_echo_runtime.py",
+      "sha256": "d07381acefa4f4d5d5f92fab0d8a9cad97efd632719345109b682f918a8fe7d7"
+    },
+    {
+      "path": "tests/test_echo_synthesis.py",
+      "sha256": "0105c0f2941a2374040e26242cad6ccdb57d1b2b7fb5c3129c6401654d7f1aa5"
+    },
+    {
+      "path": "tests/test_evaluation.py",
+      "sha256": "a9822a42a3277e840ce4ee69b88dd9d44a9626429a0d09e30080ea1adc09b209"
+    },
+    {
+      "path": "tests/test_evaluation_deploy.py",
+      "sha256": "a45e735adfda89b513a119b7ff9fec36553de968834645f53f1295b34747659b"
+    },
+    {
+      "path": "tests/test_evaluation_pass1_packing.py",
+      "sha256": "fd2f06d5f88d348f26af9c6ce245432d39d051dec794ab809936243f357ec4e5"
+    },
+    {
+      "path": "tests/test_evaluation_pass2_packing.py",
+      "sha256": "ddedc385af93cfa431c9090e871b44989c61f76ed53e45a3a92e08cfd56db616"
+    },
+    {
+      "path": "tests/test_evaluation_ui_contract.py",
+      "sha256": "78197f1121a7cc11d959974a4014a4cad1da23da6a243fc27019cbc420435c2e"
+    },
+    {
+      "path": "tests/test_frontend_contract.py",
+      "sha256": "bb4448c449f89d5344dd9f6e9abd2e4b7821af90c339445986211a3cb5f5bd15"
+    },
+    {
+      "path": "tests/test_history.py",
+      "sha256": "a35db838f3589aade36b5b16053fd23869fed4eb683308917c64aa5679db663a"
+    },
+    {
+      "path": "tests/test_jev_vendor_smoke.py",
+      "sha256": "a49ff8b3dc716cac4fc3039a21d53bc675aee44af9bc418c99fc9e3ca4f90561"
+    },
+    {
+      "path": "tests/test_llm_diagnostics.py",
+      "sha256": "80fc204c9188250031983c9e797b0cd9321718921fa7ecdadb26125a6d59bdd4"
+    },
+    {
+      "path": "tests/test_observability.py",
+      "sha256": "574020139f811d8786c849b27f81006dd4de732d879cfcd14c0ab4d02681e241"
+    },
+    {
+      "path": "tests/test_pipeline.py",
+      "sha256": "7c5998dfd96c1dfe06fd4d5045e92ebf908f73268e98ad239ec0988f5aa79546"
+    },
+    {
+      "path": "tests/test_playback_receipts_api.py",
+      "sha256": "ef8664100be06431b9f2bca4b81194731e53fab6d7acc563e444d21b417d1011"
+    },
+    {
+      "path": "tests/test_publication.py",
+      "sha256": "57a57de81acfa273bfd179864014e4ace545d005cdd4dce381701b3d0d40bde8"
+    },
+    {
+      "path": "tests/test_qwen_dashscope.py",
+      "sha256": "c574e2f836ea759d194a91482e0906f0045ae557bc92c69ad925fcc97eb708fa"
+    },
+    {
+      "path": "tests/test_render_clock.py",
+      "sha256": "7e6d30ac6ff28a845d3739b1b42f49df71c3dd9858aea89d0ed6fff4c681c1a6"
+    },
+    {
+      "path": "tests/test_rotate_storage_key.py",
+      "sha256": "0312920f788c19f766acfd20c7682c081601c44bab7d5e0205312c1e987737ce"
+    },
+    {
+      "path": "tests/test_session.py",
+      "sha256": "b72e6f2d4d9e5b520897771df48a0039c5390dcbb77356e52b866c448e4b7b21"
+    },
+    {
+      "path": "tests/test_speed_control.py",
+      "sha256": "495cb8c7b44c601455b813bdcc560aea2c4dcdb26c97f52843e345cc2be5318f"
+    },
+    {
+      "path": "tests/test_td_asr_events.py",
+      "sha256": "4d646e56135bb3c7347ff94a3ad543951417b5703176006cc10ce7a80cc871cc"
+    },
+    {
+      "path": "tests/test_td_audio_identity.py",
+      "sha256": "46f59566bbb558d04cf07d6410f37cb08ceddb0588ef2ab0f42493df08b76d43"
+    },
+    {
+      "path": "tests/test_td_authority.py",
+      "sha256": "db505bce3083428421b976589e35845eef223e5aaa229cc9b4390f456f276a14"
+    },
+    {
+      "path": "tests/test_td_config.py",
+      "sha256": "e546d5498aca9bc53b681ce5361e3f910bfb6f674e797e4091189a77a499939f"
+    },
+    {
+      "path": "tests/test_td_credentials.py",
+      "sha256": "d59f80ca3de455cf4daf9134f84b98759656d42113906fc9b7414290122298d4"
+    },
+    {
+      "path": "tests/test_td_history.py",
+      "sha256": "8122a4f913e23aa038eab696fc1ed3854c446240304d00559ba7df0446cdeab7"
+    },
+    {
+      "path": "tests/test_td_identifier.py",
+      "sha256": "3bac2121846e62c4574ff1ac96319fcd9fb8f45971224260875f10f7b8e5ace0"
+    },
+    {
+      "path": "tests/test_td_identifier_inputs.py",
+      "sha256": "953866651d7ffb8794af0bf423868b43b277c94369abc200f67984a148017ecf"
+    },
+    {
+      "path": "tests/test_td_identifier_output.py",
+      "sha256": "1e88379801e37918912a6171a186087330c600ed0ceb42ccec28bafcb1ac166b"
+    },
+    {
+      "path": "tests/test_td_identifier_pipeline.py",
+      "sha256": "46d8e68cf763dbd252b6a0a0fadb99632bd2971216a24f76d0b0035f539a13f2"
+    },
+    {
+      "path": "tests/test_td_identifier_rules.py",
+      "sha256": "bedc684bccfbe57a60d82d66899aeddf70375d3fda32792183fb2cab20e4686a"
+    },
+    {
+      "path": "tests/test_td_identifier_tools.py",
+      "sha256": "ce437a4e39cbd1168bbdfe657b6240edb777d5defd4b6811a6403d41e7e42e2b"
+    },
+    {
+      "path": "tests/test_td_jev.py",
+      "sha256": "980ac72d974dfc3afe13ab92c4b6e9d4f2a3873a72cadd3c7cad889eb6da23e3"
+    },
+    {
+      "path": "tests/test_td_local_fixture_safety.py",
+      "sha256": "4988c60a6c3387286c7a7c2c71e7e064c3ad73186e31d70cfc1c62149b09139d"
+    },
+    {
+      "path": "tests/test_td_playback.py",
+      "sha256": "1e4da14eba6cb1108031052eb6386cf31673b1a020af1e695a5c9a543a63bdd7"
+    },
+    {
+      "path": "tests/test_td_response_revision.py",
+      "sha256": "9f5487b6f106a96e3a8b351959d71e97f53547de40dbb38c095ed267535ccf75"
+    },
+    {
+      "path": "tests/test_td_rtp_integration.py",
+      "sha256": "16ffc1a36114352d6ae0426e7be18d32193e5f61410614652d9d8a0066c48143"
+    },
+    {
+      "path": "tests/test_td_rtp_mapping.py",
+      "sha256": "f43693a8843e792b50ee7da4d069adc3d264826199a10aafff5c530834c5c041"
+    },
+    {
+      "path": "tests/test_td_rtp_writer.py",
+      "sha256": "3162d479b79e8ced298b6a8a620dc016ba10c59ae416006f0975086f4f2c66f0"
+    },
+    {
+      "path": "tests/test_td_rule_settings.py",
+      "sha256": "6074a2c50e3f8041acf3670e06e39ee2e68051e8d7f69811411c8972d57d24c1"
+    },
+    {
+      "path": "tests/test_td_runtime.py",
+      "sha256": "ebce071fbdabb788cbaea8f9ec44b1678f79979778fc5536c96322821d1c5a2d"
+    },
+    {
+      "path": "tests/test_td_serial_output.py",
+      "sha256": "0144a42b4ce4ca8cb5ae4ca5427e1a2af9e23474dc075523e8d1ec781f593992"
+    },
+    {
+      "path": "tests/test_td_source_frames.py",
+      "sha256": "990b3ff334dd37634357c180ad3662264d488c81506b458e8d0649d5ffb0c544"
+    },
+    {
+      "path": "tests/test_td_timing.py",
+      "sha256": "a9e684c70df9ec4a5b3697ed5ac1c78b6ad873bcc5a9f59992127b671d321d5f"
+    },
+    {
+      "path": "tests/test_td_tool_scope.py",
+      "sha256": "f2a3b20ecc14fa4971a07bd736005dec1370e5da20000929b2d8946372ca1d1d"
+    },
+    {
+      "path": "tests/test_td_transcript.py",
+      "sha256": "668bb9758e2603e6c3b143d97c5549bbf8adcd0dcf113e93613f4226b6b14eac"
+    },
+    {
+      "path": "tests/test_td_tts_scope.py",
+      "sha256": "7b0491b28c2e9697ac782e5b83790444a411b497d18bc10d5305bcda723ad1c8"
+    },
+    {
+      "path": "tests/test_td_tts_vendor_probe.py",
+      "sha256": "2ca57a765ae20f614d64b9729eb5b26e0bbb73310ab6e44867873bb96b87188b"
+    },
+    {
+      "path": "tests/test_td_vendor_probe.py",
+      "sha256": "72970fc49bec1f6fe7ba1d9c6c4d786acc392fe9fda0f4a4d47dbe312bb67b5b"
+    },
+    {
+      "path": "tests/test_td_webrtc_cancel.py",
+      "sha256": "2c14d558931bc1b08fa530f3696b0ea44b4dce4584cdb1c31427928622e10496"
+    },
+    {
+      "path": "tests/test_tts_factory.py",
+      "sha256": "57c120ebfffbe9bf4eb02cff4b2275b96dd2bf53779e665735a20a93e8121322"
+    },
+    {
+      "path": "tests/test_webrtc.py",
+      "sha256": "02203d12119b6965e9e7c75db3bc2c0aad55c5fe3bf0a303d642ff2e30fb4b4f"
+    },
+    {
+      "path": "tests/test_webrtc_deploy.py",
+      "sha256": "8f0fa42b1f85f5a5c925bdf287ddd8c532d9e3e3bcbaa1aac289d77f8c7c1d8d"
+    },
+    {
+      "path": "tests/ui/fixtures/README.md",
+      "sha256": "dbcc2b1cb58cb123628bd81a30af1b31dae9395ad9ef7f073f2d5f8bee8fc6b8"
+    },
+    {
+      "path": "tests/ui/fixtures/voice-bot-editor.json",
+      "sha256": "1057f4aecde237444ebe3e4aedba4d058f521ff74b2c76eaf68024e9d0dc01a2"
+    },
+    {
+      "path": "tests/ui/td_local_app.py",
+      "sha256": "9b3a926f0f7b747f8bf34648a8f02c14e238f1e6dbb48625c2739cef5ae20714"
+    },
+    {
+      "path": "tests/ui/td_rtp_candidate_app.py",
+      "sha256": "4e34037220ef095785c4ce46901f7737551bb1596e0249045869b2eff7dd0513"
+    },
+    {
+      "path": "tests/ui/td_rtp_serial_fixture.py",
+      "sha256": "94958d3c7bf8791182742d9e572de8e22b745ccb96aed1fe0f56e86d1d28552c"
+    }
+  ]
+}

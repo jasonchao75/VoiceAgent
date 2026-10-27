@@ -1,0 +1,90 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+______________ test_successful_effect_is_not_replayed_after_final ______________
+
+    async def test_successful_effect_is_not_replayed_after_final():
+        """A new tool_call_id/response version must not apply the same speed change again."""
+>       boundary, owner = scope()
+                          ^^^^^^^
+
+tests/test_td_tool_scope.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def scope():
+        """Require the production tool boundary, rather than a test-only dedup model."""
+>       assert util.find_spec('src.pipeline.response_scope') is not None, 'Response-scoped tools absent'
+E       AssertionError: Response-scoped tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100a3a8e0>('src.pipeline.response_scope')
+E        +    where <function find_spec at 0x100a3a8e0> = util.find_spec
+
+tests/test_td_tool_scope.py:13: AssertionError
+_________________ test_old_context_cannot_act_on_new_user_turn _________________
+
+    async def test_old_context_cannot_act_on_new_user_turn():
+        """Reading global current state at callback time would incorrectly authorize this call."""
+>       boundary, owner = scope()
+                          ^^^^^^^
+
+tests/test_td_tool_scope.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def scope():
+        """Require the production tool boundary, rather than a test-only dedup model."""
+>       assert util.find_spec('src.pipeline.response_scope') is not None, 'Response-scoped tools absent'
+E       AssertionError: Response-scoped tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100a3a8e0>('src.pipeline.response_scope')
+E        +    where <function find_spec at 0x100a3a8e0> = util.find_spec
+
+tests/test_td_tool_scope.py:13: AssertionError
+______ test_final_arriving_during_effect_does_not_cancel_or_duplicate_it _______
+
+    async def test_final_arriving_during_effect_does_not_cancel_or_duplicate_it():
+        """Once sent, a bounded provider update settles once even if old LLM work is cancelled."""
+        import asyncio
+>       boundary, owner = scope()
+                          ^^^^^^^
+
+tests/test_td_tool_scope.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def scope():
+        """Require the production tool boundary, rather than a test-only dedup model."""
+>       assert util.find_spec('src.pipeline.response_scope') is not None, 'Response-scoped tools absent'
+E       AssertionError: Response-scoped tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100a3a8e0>('src.pipeline.response_scope')
+E        +    where <function find_spec at 0x100a3a8e0> = util.find_spec
+
+tests/test_td_tool_scope.py:13: AssertionError
+_________ test_failure_result_is_not_automatically_retried_by_reanswer _________
+
+    async def test_failure_result_is_not_automatically_retried_by_reanswer():
+        """An ambiguous provider timeout must not become another automatic side effect."""
+>       boundary, owner = scope()
+                          ^^^^^^^
+
+tests/test_td_tool_scope.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def scope():
+        """Require the production tool boundary, rather than a test-only dedup model."""
+>       assert util.find_spec('src.pipeline.response_scope') is not None, 'Response-scoped tools absent'
+E       AssertionError: Response-scoped tools absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100a3a8e0>('src.pipeline.response_scope')
+E        +    where <function find_spec at 0x100a3a8e0> = util.find_spec
+
+tests/test_td_tool_scope.py:13: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tool_scope.py::test_successful_effect_is_not_replayed_after_final
+FAILED tests/test_td_tool_scope.py::test_old_context_cannot_act_on_new_user_turn
+FAILED tests/test_td_tool_scope.py::test_final_arriving_during_effect_does_not_cancel_or_duplicate_it
+FAILED tests/test_td_tool_scope.py::test_failure_result_is_not_automatically_retried_by_reanswer
+4 failed, 1 warning in 1.14s

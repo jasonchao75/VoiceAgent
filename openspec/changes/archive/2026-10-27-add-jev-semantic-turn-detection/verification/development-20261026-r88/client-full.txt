@@ -1,0 +1,35 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (1.988292ms)
+✔ targeted clear removes future samples without claiming they rendered (0.921041ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (2.02725ms)
+✔ clock challenge is observed in an actual later quantum without changing audio (0.764875ms)
+✔ explicit original turn identity groups resumed candidates and Final response versions (0.438083ms)
+✔ legacy sessions invent no TD attempts, turns or probabilities (0.067833ms)
+Locked SDK PCM parity, initial silence trim, contiguous merge and missing provenance passed
+Locked serializer accepts annotated protobuf; decoded PCM unchanged
+✔ frontend/tests/unit/td-input-source.test.js (87.382208ms)
+✔ hung start receipt has a deadline; stop cannot bypass it and failure is explicit once (2.007291ms)
+✔ server acceptance with lost HTTP response never becomes a guessed successful receipt (0.358666ms)
+✔ close aborts and settles a pending request without failure callback or queued delivery (1.371875ms)
+✔ successful receipt order and HTTP rejection keep the authenticated protocol (0.79925ms)
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (3.422542ms)
+✔ closing during a delayed probe never writes to a replaced renderer (1.853625ms)
+✔ renderer-only state does not escape strict API receipt schema (0.37375ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (0.90425ms)
+✔ capture metadata observation binds the sender without changing the receiver worker (0.175458ms)
+✔ optional sender timing capability cannot disable existing RTP playback (0.873083ms)
+✔ formal RTC entry fails and interrupts on a hung receipt instead of stalling the stop queue (6.752916ms)
+✔ native metadata waits for server epoch and uses a separate authenticated capture sampler (2.809709ms)
+✔ closing aborts metadata work without retrying a batch or touching native audio (0.937667ms)
+✔ saved 1253499us output remains bound to its own 1253500us decode job without a tolerance (15.644875ms)
+✔ real output extent disagreement remains rejected instead of guessing ownership (6.664333ms)
+✔ missing native captureTime stays missing instead of using observation time (3.87625ms)
+✔ native bytes are unchanged while async payload proof is bounded and acknowledged (0.835542ms)
+✔ display rounding expands bounds and never creates a midpoint or fake missing zero (0.290917ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2084.488291

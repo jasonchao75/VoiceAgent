@@ -1,0 +1,52 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_identifier_audio_hook_waits_for_pause_and_refreshes_same_text_final ___
+
+    async def test_identifier_audio_hook_waits_for_pause_and_refreshes_same_text_final():
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_identifier import collection
+        from tests.test_td_rule_settings import priority_settings
+    
+        received = []
+        rules = IdentifierRules(
+            IdentifierRuleSettings.model_validate(priority_settings()), collection()
+        )
+>       td = coordinator(
+            identifier_rules=rules,
+            identifier_output=lambda view, evaluation: received.append((view, evaluation)),
+        )
+
+tests/test_td_runtime.py:647: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kwargs = {'identifier_output': <function test_identifier_audio_hook_waits_for_pause_and_refreshes_same_text_final.<locals>.<lambda> at 0x108488540>, 'identifier_rules': <src.pipeline.identifier_rules.IdentifierRules object at 0x113005010>}
+@py_assert1 = None, @py_assert3 = None, @py_assert5 = None, @py_assert8 = None
+@py_assert7 = None
+
+    def coordinator(**kwargs):
+        """Use the production processor and replace only its output transport in tests."""
+        assert util.find_spec("src.pipeline.custom_td") is not None, "Runtime TD coordinator is absent"
+        module = import_module("src.pipeline.custom_td")
+        source = ASRService(
+            processor=None, source_normalizer=SourceNormalizer("deepgram", "flux-general-en")
+        )
+>       return module.CustomTDCoordinator(
+            asr=source,
+            settings=CustomTDSettings.model_validate(td_settings()),
+            decide=kwargs.pop("decide", None),
+            **kwargs,
+        )
+E       TypeError: CustomTDCoordinator.__init__() got an unexpected keyword argument 'identifier_output'. Did you mean 'identifier_rules'?
+
+tests/test_td_runtime.py:21: TypeError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 20:11:26.357 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_identifier_audio_hook_waits_for_pause_and_refreshes_same_text_final
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_identifier_audio_hook_waits_for_pause_and_refreshes_same_text_final
+1 failed, 19 deselected, 1 warning in 1.04s

@@ -1,0 +1,24 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (2.447125ms)
+✔ targeted clear removes future samples without claiming they rendered (1.95625ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (1.214041ms)
+✔ clock challenge is observed in an actual later quantum without changing audio (0.986334ms)
+✔ explicit original turn identity groups resumed candidates and Final response versions (0.63575ms)
+✔ legacy sessions invent no TD attempts, turns or probabilities (0.083167ms)
+Locked SDK PCM parity, initial silence trim, contiguous merge and missing provenance passed
+Locked serializer accepts annotated protobuf; decoded PCM unchanged
+✔ frontend/tests/unit/td-input-source.test.js (89.597708ms)
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (3.826375ms)
+✔ closing during a delayed probe never writes to a replaced renderer (1.0305ms)
+✔ renderer-only state does not escape strict API receipt schema (0.356584ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (0.179166ms)
+✔ saved 1253499us output remains bound to its own 1253500us decode job without a tolerance (17.238667ms)
+✔ real output extent disagreement remains rejected instead of guessing ownership (8.946292ms)
+✔ display rounding expands bounds and never creates a midpoint or fake missing zero (0.412458ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2078.223

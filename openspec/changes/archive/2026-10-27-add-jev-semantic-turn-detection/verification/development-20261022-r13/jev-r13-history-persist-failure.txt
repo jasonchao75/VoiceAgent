@@ -1,0 +1,200 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_formal_websocket_pipeline_sends_task_pcm_and_accepts_matching_receipts __
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x113706c40>
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_formal_websocket_pipeline_sends_task_pcm_and_accepts_matching_receipts(
+        monkeypatch, session_request
+    ):
+        """Keep the real route, transport, SDK queues and serial output; stub external services only."""
+        import json
+    
+        from pipecat.frames.frames import TTSAudioRawFrame, TTSStoppedFrame
+        from pipecat.frames.protobufs import frames_pb2
+        from pipecat.processors.frame_processor import FrameProcessor
+        from pipecat.services.settings import TTSSettings
+        from pipecat.services.tts_service import TTSService
+    
+        from src.asr.factory import ASRService
+        from src.pipeline.audio_identity import decode_audio_identity
+        from src.tts.response_scope import ResponseScopedTTSMixin
+        from tests.test_td_config import td_settings
+    
+        class Pass(FrameProcessor):
+            async def process_frame(self, frame, direction):
+                await super().process_frame(frame, direction)
+                await self.push_frame(frame, direction)
+    
+        class ASR:
+            def create(self, **kwargs):
+                return ASRService(processor=Pass())
+    
+        class Synth(ResponseScopedTTSMixin, TTSService):
+            async def run_tts(self, text, context_id):
+                yield TTSAudioRawFrame(b"\x01\x00" * 2400, 24000, 1, context_id=context_id)
+                yield TTSStoppedFrame(context_id=context_id)
+    
+        class TTS:
+            def create(self, **kwargs):
+                return Synth(
+                    response_owner=kwargs.get("response_owner"),
+                    sample_rate=24000,
+                    settings=TTSSettings(model=None, voice=None, language=None),
+                )
+    
+        import traceback
+    
+        from src.pipeline.voice_agent import run_voice_agent_session as actual_session
+    
+        errors = []
+    
+        async def checked_session(**kwargs):
+            try:
+                await actual_session(**kwargs)
+            except Exception:
+                errors.append(traceback.format_exc())
+                raise
+    
+        monkeypatch.setattr("src.api.run_voice_agent_session", checked_session)
+        monkeypatch.setattr("src.api.create_default_asr_registry", ASR)
+        monkeypatch.setattr("src.api.create_default_tts_registry", TTS)
+        monkeypatch.setattr("src.pipeline.voice_agent.create_llm_service", lambda **kwargs: Pass())
+        payload = session_request.model_dump(mode="json")
+        payload.update(
+            turn_detection_source="self_developed",
+            td_config=td_settings(),
+            jev_api_key="fixture-no-network-jev",
+            opening_script="Welcome.",
+        )
+        with TestClient(create_app()) as client:
+            created = client.post(
+                "/api/sessions", json=payload, headers={"Origin": "http://localhost:8000"}
+            )
+            assert created.status_code == 201, created.text
+            session = created.json()
+            with client.websocket_connect(
+                session["websocket_path"], headers={"Origin": "http://localhost:8000"}
+            ) as socket:
+                ready = frames_pb2.Frame()
+                ready.message.data = json.dumps(
+                    {
+                        "label": "rtvi-ai",
+                        "type": "client-ready",
+                        "id": "fixture",
+                        "data": {"version": "1.0.0"},
+                    }
+                )
+                socket.send_bytes(ready.SerializeToString())
+                identity = None
+                samples = 0
+                # The existing sender may split/pad short PCM; every output chunk retains identity.
+                for _ in range(100):
+                    try:
+                        frame = frames_pb2.Frame.FromString(socket.receive_bytes())
+                    except Exception:
+                        assert not errors, errors
+                        raise
+                    if frame.WhichOneof("frame") == "audio":
+                        found = decode_audio_identity(frame.audio.name)
+                        assert found is not None
+                        identity = identity or found
+                        assert found == identity
+                        samples += len(frame.audio.audio) // 2
+                    elif frame.WhichOneof("frame") == "message":
+                        message = json.loads(frame.message.data)
+                        if (
+                            message.get("label") == "voice-agent-playback"
+                            and message.get("event") == "task_end"
+                        ):
+                            assert identity and message["playback_id"] == identity["playback_id"]
+                            break
+                else:
+                    raise AssertionError("No task EOS from formal pipeline")
+                assert identity["kind"] == "normal" and identity["response_id"] is None
+                assert samples >= 2400
+                url = f"/api/sessions/{session['session_id']}/playback-events"
+                headers = {"Authorization": f"Bearer {session['session_token']}"}
+                for event in ["task_started", "task_finished"]:
+                    response = client.post(
+                        url,
+                        headers=headers,
+                        json={
+                            "playback_id": identity["playback_id"],
+                            "event": event,
+                            "rendered_samples": samples,
+                            "elapsed_ms": 100,
+                            "evidence_source": "audio_worklet_render",
+                        },
+                    )
+                    assert response.status_code == 204, response.text
+    
+            history = client.get(f"/api/history/{session['session_id']}")
+            assert history.status_code == 200, history.text
+            events = history.json()["td_events"]
+>           settings = next(event for event in events if event["event"] == "td_settings_snapshot")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           StopIteration
+
+tests/test_playback_receipts_api.py:210: StopIteration
+----------------------------- Captured stderr call -----------------------------
+2026-10-22 00:29:15.501 | DEBUG    | pipecat.audio.vad.silero:__init__:147 - Loading Silero VAD model...
+2026-10-22 00:29:15.566 | DEBUG    | pipecat.audio.vad.silero:__init__:169 - Loaded Silero VAD
+2026-10-22 00:29:15.566 | DEBUG    | pipecat.audio.vad.vad_analyzer:set_params:157 - Setting VAD params to: confidence=0.7 start_secs=0.2 stop_secs=0.2 min_volume=0.6
+2026-10-22 00:29:15.593 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> FastAPIWebsocketInputTransport#0
+2026-10-22 00:29:15.593 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking FastAPIWebsocketInputTransport#0 -> CustomTDAudioInput#0
+2026-10-22 00:29:15.593 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDAudioInput#0 -> Pass#0
+2026-10-22 00:29:15.594 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pass#0 -> CustomTDCoordinator#0
+2026-10-22 00:29:15.594 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDCoordinator#0 -> TDUserAggregator#0
+2026-10-22 00:29:15.594 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking TDUserAggregator#0 -> Pass#1
+2026-10-22 00:29:15.594 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pass#1 -> AssistantContextBridge#0
+2026-10-22 00:29:15.595 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking AssistantContextBridge#0 -> Synth#0
+2026-10-22 00:29:15.595 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Synth#0 -> AudioTaskTagger#0
+2026-10-22 00:29:15.595 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking AudioTaskTagger#0 -> SerialAudioOutput#0
+2026-10-22 00:29:15.596 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking SerialAudioOutput#0 -> FastAPIWebsocketOutputTransport#0
+2026-10-22 00:29:15.596 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking FastAPIWebsocketOutputTransport#0 -> LLMAssistantAggregator#0
+2026-10-22 00:29:15.596 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking LLMAssistantAggregator#0 -> Pipeline#0::Sink
+2026-10-22 00:29:15.597 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63::Source -> RTVIProcessor#0
+2026-10-22 00:29:15.597 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking RTVIProcessor#0 -> Pipeline#0
+2026-10-22 00:29:15.597 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63::Sink
+2026-10-22 00:29:15.598 | WARNING  | pipecat.utils.base_object:add_event_handler:206 - Pass#1: event handler on_completion_timeout not registered
+2026-10-22 00:29:15.598 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-19ab2fa3': added worker 'voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63'
+2026-10-22 00:29:15.598 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-19ab2fa3': started running
+2026-10-22 00:29:15.599 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-19ab2fa3': starting worker 'voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63'
+[nltk_data] Error loading punkt_tab: <urlopen error pathsec.urlopen:
+[nltk_data]     no validated address for host
+[nltk_data]     'raw.githubusercontent.com'; refusing to connect by
+[nltk_data]     unvalidated hostname>
+2026-10-22 00:29:15.696 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-10-22 00:29:15.697 | DEBUG    | pipecat.serializers.protobuf:deserialize:149 - ProtobufFrameSerializer: Transport message InputTransportMessageFrame#0(message: {'label': 'rtvi-ai', 'type': 'client-ready', 'id': 'fixture', 'data': {'version': '1.0.0'}})
+2026-10-22 00:29:15.697 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:_handle_client_ready:386 - Received client-ready: version 1.0.0
+2026-10-22 00:29:15.698 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:_handle_client_ready:423 - Client Details: library='unknown' library_version=None platform=None platform_version=None platform_details=None
+2026-10-22 00:29:15.698 | DEBUG    | pipecat.processors.frameworks.rtvi.processor:set_client_ready:130 - RTVIProcessor#0: client is ready
+2026-10-22 00:29:15.699 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63' ready (local)
+2026-10-22 00:29:15.699 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-19ab2fa3': broadcasting registry: ['voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63']
+2026-10-22 00:29:15.700 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63': activated
+2026-10-22 00:29:15.700 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-10-22 00:29:15.702 | DEBUG    | pipecat.services.tts_service:_push_tts_frames:1307 - Synth#0: Generating TTS [Welcome.]
+2026-10-22 00:29:15.702 | DEBUG    | pipecat.services.tts_service:append_to_audio_context:1533 - Synth#0 recreating audio context aeb2c312-e324-4a96-8dfe-c282ddd9d9d1
+2026-10-22 00:29:15.703 | DEBUG    | pipecat.services.tts_service:push_frame:935 - Synth#0 cleaning up TTS context aeb2c312-e324-4a96-8dfe-c282ddd9d9d1
+2026-10-22 00:29:15.704 | DEBUG    | pipecat.transports.base_output:_bot_started_speaking:706 - Bot started speaking
+2026-10-22 00:29:15.785 | DEBUG    | pipecat.transports.base_output:_handle_frame:824 - Bot stopped speaking based on TTSStoppedFrame
+2026-10-22 00:29:15.785 | DEBUG    | pipecat.transports.base_output:_bot_stopped_speaking:758 - Bot stopped speaking
+2026-10-22 00:29:15.789 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63
+2026-10-22 00:29:15.789 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-22 00:29:15.790 | DEBUG    | pipecat.pipeline.worker:_handle_worker_cancel:1347 - Worker 'voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63': received cancel
+2026-10-22 00:29:15.790 | DEBUG    | pipecat.pipeline.worker:run:856 - Pipeline worker voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63 got cancelled from outside...
+2026-10-22 00:29:15.791 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker voice-session-c76c00d9-be09-41a7-9b58-71fc9e08df63 is finishing...
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_playback_receipts_api.py::test_formal_websocket_pipeline_sends_task_pcm_and_accepts_matching_receipts
+1 failed, 1 deselected, 2 warnings in 2.03s

@@ -1,0 +1,93 @@
+{
+  "evidence_level": "local-real",
+  "decision": "D-067",
+  "actual_connections": 3,
+  "source_media_hard_caps_seconds": [
+    1,
+    2,
+    2
+  ],
+  "external_services": false,
+  "formal_entry_integrated": false,
+  "production_adopted": false,
+  "cases": {
+    "mapping": {
+      "result": "passed",
+      "decode_jobs": 46,
+      "decode_job_ms": {
+        "median": 0.20000000298023224,
+        "p95_local_packet_sample": 0.6000000014901161,
+        "max": 0.8000000044703484
+      },
+      "meaning": "worker decode+flush completion only, not added E2E latency or target-host P95"
+    },
+    "final": {
+      "result": "passed",
+      "decode_jobs": 27,
+      "decode_job_ms": {
+        "median": 0.10000000149011612,
+        "p95_local_packet_sample": 0.30000000447034836,
+        "max": 0.30000000447034836
+      },
+      "meaning": "worker decode+flush completion only, not added E2E latency or target-host P95",
+      "old_rendered_samples_at_stop": 256,
+      "new_rendered_samples_at_finish": 14880,
+      "same_render_clock_stop_to_new_start_ms": 16.0,
+      "actions": [
+        {
+          "event": "scenario_started",
+          "task": "partial-A"
+        },
+        {
+          "event": "final_replaced",
+          "duplicate_restart": false,
+          "tool_replayed": false
+        }
+      ],
+      "user_submissions": 1
+    },
+    "identifier": {
+      "result": "passed",
+      "decode_jobs": 22,
+      "decode_job_ms": {
+        "median": 0.20000000298023224,
+        "p95_local_packet_sample": 0.3999999985098839,
+        "max": 0.5
+      },
+      "meaning": "worker decode+flush completion only, not added E2E latency or target-host P95",
+      "old_rendered_samples_at_stop": 256,
+      "new_rendered_samples_at_finish": 14880,
+      "same_render_clock_stop_to_new_start_ms": 37.333333333333336,
+      "actions": [
+        {
+          "event": "scenario_started",
+          "task": "a02edea2159e4b7b9cd7cf729f802c6a"
+        },
+        {
+          "event": "continuation_and_question",
+          "active_kind": "echo",
+          "active_status": "playing",
+          "question_status": "queued",
+          "stop_requests": []
+        },
+        {
+          "event": "clear_result",
+          "result": {
+            "status": "cleared",
+            "value": "",
+            "count": 0,
+            "generation": 1
+          },
+          "generation": 1
+        }
+      ],
+      "user_submissions": 0
+    }
+  },
+  "unverified": [
+    "same-input native-player versus candidate E2E latency baseline",
+    "Opus waveform/listening quality across per-packet flush",
+    "formal mobile-demo/SDK transport and authenticated API integration",
+    "Safari/mobile/hardware/AEC/weak-network/reconnect/target CPU capacity"
+  ]
+}

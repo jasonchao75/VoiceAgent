@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from pipecat.services.tts_service import TextAggregationMode, TTSService
 
 from src.config import AudioConfig, TTSConfig
+
+if TYPE_CHECKING:
+    from src.pipeline.response_revision import ResponseRevisions
 
 TTSBuilder = Callable[[str, TTSConfig, AudioConfig], TTSService]
 
@@ -33,13 +37,26 @@ class TTSProviderRegistry:
         self._builders[provider] = builder
 
     def create(
-        self, *, provider: str, api_key: str, config: TTSConfig, audio: AudioConfig
+        self,
+        *,
+        provider: str,
+        api_key: str,
+        config: TTSConfig,
+        audio: AudioConfig,
+        response_owner: ResponseRevisions | None = None,
     ) -> TTSService:
         """Create a configured TTS service from the selected provider."""
         builder = self._builders.get(provider)
         if builder is None:
             raise ValueError(f"Unsupported TTS provider: {provider}")
-        return builder(api_key, config, audio)
+        service = builder(api_key, config, audio)
+        if response_owner is not None:
+            from src.tts.response_scope import ResponseScopedTTSMixin
+
+            if not isinstance(service, ResponseScopedTTSMixin):
+                raise ValueError("Custom TD requires a response-scoped TTS provider")
+            service.response_owner = response_owner
+        return service
 
     @property
     def providers(self) -> tuple[str, ...]:
@@ -49,7 +66,7 @@ class TTSProviderRegistry:
 
 def _build_deepgram_flux(api_key: str, config: TTSConfig, audio: AudioConfig) -> TTSService:
     """Build the only production TTS provider included in the MVP."""
-    from src.tts.confirmed_flux import ConfirmedDeepgramFluxTTSService
+    from src.tts.scoped import ScopedDeepgramFluxTTSService as ConfirmedDeepgramFluxTTSService
 
     return ConfirmedDeepgramFluxTTSService(
         api_key=api_key,
@@ -66,7 +83,7 @@ def _build_deepgram_flux(api_key: str, config: TTSConfig, audio: AudioConfig) ->
 
 def _build_elevenlabs(api_key: str, config: TTSConfig, audio: AudioConfig) -> TTSService:
     """Build low-latency ElevenLabs WebSocket synthesis."""
-    from pipecat.services.elevenlabs.tts import ElevenLabsTTSService
+    from src.tts.scoped import ScopedElevenLabsTTSService as ElevenLabsTTSService
 
     return ElevenLabsTTSService(
         api_key=api_key,

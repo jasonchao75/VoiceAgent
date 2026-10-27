@@ -1,0 +1,56 @@
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/test_td_runtime.py:724:5
+    |
+723 |   async def test_jev_history_keeps_sent_snapshot_duration_and_wait_decomposition():
+724 | /     import asyncio
+725 | |     from src.pipeline.jev import JevResult
+    | |__________________________________________^
+726 |
+727 |       events = []
+    |
+help: Organize imports
+    |
+724 |     import asyncio
+725 +
+726 |     from src.pipeline.jev import JevResult
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/test_td_runtime.py:757:5
+    |
+756 |   async def test_late_cancel_ignoring_jev_result_keeps_original_turn_in_discard_history():
+757 | /     import asyncio
+758 | |     from src.pipeline.jev import JevResult
+    | |__________________________________________^
+759 |
+760 |       started, cancelled, release = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    |
+help: Organize imports
+    |
+757 |     import asyncio
+758 +
+759 |     from src.pipeline.jev import JevResult
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/test_td_runtime.py:794:5
+    |
+793 |   async def test_unsubmitted_old_local_range_revised_to_mixed_returns_to_current_td_once():
+794 | /     from pipecat.frames.frames import TranscriptionFrame
+795 | |     from src.asr.td_config import IdentifierRuleSettings
+796 | |     from src.pipeline.identifier_rules import IdentifierRules
+797 | |     from tests.test_td_identifier import collection
+798 | |     from tests.test_td_rule_settings import priority_settings
+    | |_____________________________________________________________^
+799 |
+800 |       rules = IdentifierRules(
+    |
+help: Organize imports
+    |
+794 |     from pipecat.frames.frames import TranscriptionFrame
+795 +
+796 |     from src.asr.td_config import IdentifierRuleSettings
+    |
+
+Found 3 errors.
+[*] 3 fixable with the `--fix` option.

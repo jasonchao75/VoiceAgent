@@ -1,0 +1,24 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_flux_real_overlapping_word_times_keep_the_proven_source_range ______
+
+    def test_flux_real_overlapping_word_times_keep_the_proven_source_range():
+        """D-057: overlapping ASR word times are not reordered or guessed split points."""
+        from src.asr.transcript import TranscriptLedger
+    
+        raw = {'event': 'Update', 'turn_index': 0, 'transcript': 'I was lying to',
+               'audio_window_start': 0.0, 'audio_window_end': .96,
+               'words': [{'word': 'I', 'start': 0., 'end': .08},
+                         {'word': 'was', 'start': 0., 'end': .56},
+                         {'word': 'lying', 'start': .56, 'end': .8},
+                         {'word': 'to', 'start': .8, 'end': .96}]}
+        parser = normalizer('deepgram', 'flux-general-en')
+        segments = parser.normalize(raw)
+>       assert parser.missing_reason is None and len(segments) == 1
+E       AssertionError: assert ('invalid_source_audio_evidence' is None)
+E        +  where 'invalid_source_audio_evidence' = <src.asr.turn_events.SourceNormalizer object at 0x10a6c2f90>.missing_reason
+
+tests/test_td_asr_events.py:26: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_flux_real_overlapping_word_times_keep_the_proven_source_range
+1 failed, 39 deselected in 0.05s

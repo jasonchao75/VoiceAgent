@@ -1,0 +1,22 @@
+................F                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_audio_units_preserve_vocabulary_boundaries_and_repeated_values ______
+
+    def test_audio_units_preserve_vocabulary_boundaries_and_repeated_values():
+        """Echo composition cannot recover word boundaries from the concatenated collection."""
+        from src.pipeline.identifier import IdentifierVocabulary
+    
+        vocabulary = IdentifierVocabulary({"12": ["twelve"], "alpha": ["alpha"], "1": ["one"]})
+>       assert vocabulary.audio_units("twelve alpha one one") == ("1", "2", "alpha", "1", "1")
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'IdentifierVocabulary' object has no attribute 'audio_units'
+
+tests/test_td_identifier.py:108: AttributeError
+=============================== warnings summary ===============================
+tests/test_td_identifier.py::test_strict_local_accepts_whole_identifier_without_minimum[123-123]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier.py::test_audio_units_preserve_vocabulary_boundaries_and_repeated_values
+1 failed, 16 passed, 1 warning in 1.14s

@@ -1,0 +1,20 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_serial_frames_wait_for_client_finish_and_ignore_foreign_receipt _____
+
+    async def test_serial_frames_wait_for_client_finish_and_ignore_foreign_receipt():
+>       assert util.find_spec("src.pipeline.serial_output") is not None, "Serial output adapter absent"
+E       AssertionError: Serial output adapter absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x100c0a8e0>('src.pipeline.serial_output')
+E        +    where <function find_spec at 0x100c0a8e0> = util.find_spec
+
+tests/test_td_serial_output.py:17: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_serial_output.py::test_serial_frames_wait_for_client_finish_and_ignore_foreign_receipt
+1 failed, 1 warning in 1.13s

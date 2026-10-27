@@ -1,0 +1,30 @@
+{
+  "id": "D064-local-decode-coordinate-diagnostic-proposal-v1",
+  "status": "prepared_not_authorized",
+  "purpose": "Distinguish missing output timestamp key, unexpected AudioData frame length, and output sample rate; no tolerance change or architecture retry",
+  "recipient": "Only loopback 127.0.0.1 Chromium/aiortc, no external vendor",
+  "source": "same local synthetic 30ms 1000Hz A + 30ms 3000Hz B at 24k mono PCM16, plus native silence",
+  "max_connections": 1,
+  "media_seconds_max": 1,
+  "setup_timeout_seconds": 8,
+  "stop_condition": "First mismatching AudioData emits safe observed/expected metadata and immediately stops the sole connection; any other error stops; no retries, no Final/identifier reruns",
+  "cost_ceiling_usd": "0.00",
+  "audio_transport": "Opus/RTP only",
+  "control_scope": [
+    "timestamp",
+    "sample_rate",
+    "frame_count",
+    "pending_timestamp_keys",
+    "payload_digest",
+    "source_intervals"
+  ],
+  "prohibited": [
+    "ASR/LLM/Jev/TTS calls",
+    "customer audio",
+    "production playback replacement",
+    "datachannel audio",
+    "generic API investigation"
+  ],
+  "command_requirement": "single selected diagnostic case and --max-failures=1",
+  "execution": "not_started"
+}

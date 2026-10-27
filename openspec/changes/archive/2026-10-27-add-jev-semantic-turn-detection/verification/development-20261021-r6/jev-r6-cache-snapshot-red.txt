@@ -1,0 +1,51 @@
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+___________ test_async_preparation_captures_settings_before_first_io ___________
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-123/test_async_preparation_capture0')
+
+    async def test_async_preparation_captures_settings_before_first_io(tmp_path):
+        """A draft edit cannot retarget an already requested batch's voice/speed fingerprint."""
+        import asyncio
+        store = cache(tmp_path)
+        requested = tts()
+        frozen = requested.model_copy(deep=True)
+    
+        async def synthesize(unit, config, sample_rate, *, timeout):
+            return b'\x01\x00' * 10
+    
+        job = asyncio.create_task(store.prepare('bot', ['1'], requested, 24000, synthesize, timeout=2))
+        await asyncio.sleep(0)
+        requested.speed = 1.2
+        await job
+>       assert await store.manifest('bot', ['1'], frozen, 24000)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_echo_cache.py:112: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <src.tts.echo_cache.EchoAudioCache object at 0x10d028290>, bot_id = 'bot'
+units = ['1']
+config = TTSConfig(provider='deepgram_flux', voice='fixture-voice', model='flux-general-en', text_aggregation='token', speed=1....ment_opt_out=False, stability=0.5, similarity_boost=0.8, style=0.0, use_speaker_boost=False, text_normalization='auto')
+sample_rate = 24000
+
+    async def manifest(self, bot_id: str, units: Iterable[str], config: TTSConfig,
+                       sample_rate: int) -> dict[str, str]:
+        """Validate only; publishing must never trigger synthesis or borrow mismatched assets."""
+        required = tuple(dict.fromkeys(units))
+        rows = await self.status(bot_id, required, config, sample_rate)
+        missing = [unit for unit, row in zip(required, rows, strict=True)
+                   if row is None or row.status != 'ready']
+        if missing:
+>           raise ValueError('Echo audio missing: ' + ', '.join(missing))
+E           ValueError: Echo audio missing: 1
+
+src/tts/echo_cache.py:151: ValueError
+=============================== warnings summary ===============================
+tests/test_echo_cache.py::test_durable_units_deduplicate_generation_but_not_playback
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_echo_cache.py::test_async_preparation_captures_settings_before_first_io
+1 failed, 4 passed, 1 warning in 0.07s

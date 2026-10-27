@@ -1,0 +1,33 @@
+{
+  "batch_id": "deepgram-td-asr-range-diagnostic-v1",
+  "cases": [
+    {
+      "id": "continuation",
+      "path": "/tmp/voiceagent-jev-r39-synthetic/continuation-ready.wav",
+      "text": "I would like to check my booking. Please wait. I need to change the date.",
+      "duration_seconds": 6.18925,
+      "sample_rate": 16000,
+      "channels": 1,
+      "format": "WAV PCM16",
+      "sha256": "7e30cb58eb37a9a7d92794e2458a21e6ebb0902df3d7134baa04e82a94b125d4",
+      "generation": "Offline macOS Albert 135wpm; no vendor TTS, no human/customer recording",
+      "model": "flux-general-en",
+      "provider": "deepgram",
+      "options": {},
+      "silence_tail_seconds": 3
+    }
+  ],
+  "max_calls": 1,
+  "connection_wall_seconds": 30,
+  "connect_timeout_seconds": 5,
+  "cost_ceiling_usd": "0.02",
+  "maximum_public_price_usd": "0.00325",
+  "price_verified": "2026-10-22",
+  "pricing_source": "https://deepgram.com/pricing",
+  "turn_detection_source": "self_developed",
+  "retries": 0,
+  "recipient": "api.deepgram.com",
+  "llm_jev_tts_calls": 0,
+  "source_evidence": "whitelisted provider timestamps and words; stop first gap",
+  "request_sha256": "c61570be335b03ef781bec4b5ce2077a727979cb3fbf21fb6589f2c6571c9365"
+}

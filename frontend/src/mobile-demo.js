@@ -1,3 +1,4 @@
+import {prepareRTCPlayback} from './td-rtc-entry.js';
 import { PipecatClient } from "@pipecat-ai/client-js";
 import { SmallWebRTCTransport } from "@pipecat-ai/small-webrtc-transport";
 import "./mobile-demo.css";
@@ -59,6 +60,7 @@ let sessionToken;
 let connectionStage = "permission";
 let turns = [];
 let currentAgent = "";
+let remoteAudio;
 const unavailableCopy = "This demo is no longer available.";
 const pageLoadedAt = performance.now();
 
@@ -194,10 +196,29 @@ function monitorConnection() {
   }, 250);
 }
 
+let taskPlayback;
+
 function createClient() {
   transport = new SmallWebRTCTransport();
+  const ownerTransport = transport;
+  function attachRemoteAudio(track) {
+    if (transport !== ownerTransport || !track || !ownerTransport.pc?.getReceivers().some(receiver => receiver.track === track)) return;
+    remoteAudio ||= document.createElement("audio");
+    if (remoteAudio.srcObject?.getAudioTracks()[0] === track) return;
+    remoteAudio.autoplay = true;
+    remoteAudio.muted = Boolean(taskPlayback);
+    remoteAudio.setAttribute("playsinline", "");
+    remoteAudio.hidden = true;
+    if (!remoteAudio.isConnected) document.body.append(remoteAudio);
+    remoteAudio.srcObject = new MediaStream([track]);
+    // SmallWebRTC exposes remote tracks; its default media manager does not play them.
+    void remoteAudio.play().catch(() => {
+      if (transport === ownerTransport && !endingCall) void failCall("Call interrupted", "Audio playback is unavailable. Try the call again.", "call_interrupted", "provider");
+    });
+  }
   return new PipecatClient({ transport, enableMic: true, enableCam: false, disconnectOnBotDisconnect: true, callbacks: {
     onConnected: () => {
+      attachRemoteAudio(transport?.pc?.getReceivers().find(receiver => receiver.track?.kind === "audio")?.track);
       connectionStage = "live";
       showScreen("live"); if (!startedAt) beginTimer(); showReconnectState(false); monitorConnection();
       void selectedCandidateType().then((candidateType) => reportSessionEvent("mobile_webrtc_connected", {
@@ -211,6 +232,7 @@ function createClient() {
       if (startedAt && (state === "connected" || state === "ready")) showReconnectState(false);
     },
     onBotReady: () => setMode("listening", "Listening", "Go ahead — your guide can hear you."),
+    onTrackStarted: track => { if (track.kind === "audio") attachRemoteAudio(track); },
     onUserStartedSpeaking: () => setMode("listening", "Listening", "You’re speaking — Maya is listening."),
     onUserStoppedSpeaking: () => setMode("thinking", "Thinking", "Maya is preparing a response."),
     onBotStartedSpeaking: () => setMode("speaking", "Speaking", "You can interrupt naturally at any time."),
@@ -218,7 +240,14 @@ function createClient() {
     onUserTranscript: (data) => { if (data.final) addTurn("user", data.text); },
     onBotTtsText: (data) => { addTurn("agent", data.text, { append: Boolean(currentAgent) }); currentAgent += data.text; },
     onDeviceError: () => { if (startedAt) void failCall("Microphone unavailable", "Allow microphone access in your browser, then try again.", "microphone_unavailable", "provider"); },
-    onError: () => { if (startedAt) void failCall("Call interrupted", "Check your network and try the call again.", "call_interrupted", "provider"); },
+    onError: (message) => {
+      if (!startedAt || endingCall) return;
+      if (message?.data?.error === "asr_source_evidence_unavailable"
+        || message?.data?.message === "asr_source_evidence_unavailable") {
+        endingCall = true;
+        void failCall("Speech recognition error", "Speech timing was unavailable. Please start a new call.", "asr_source_evidence_unavailable", "provider");
+      } else void failCall("Call interrupted", "Check your network and try the call again.", "call_interrupted", "provider");
+    },
   }});
 }
 
@@ -255,6 +284,10 @@ async function startCall() {
     sessionToken = decodeURIComponent(session.connection_url.split("/").at(-1));
     connectionStage = "signaling";
     transport.iceServers = session.ice_servers || [];
+    if(session.playback_mode === "rtp_candidate") {
+      taskPlayback=await prepareRTCPlayback(transport,{sessionId,token:sessionToken,
+        onFailure:()=>void failCall("Call interrupted","Audio playback could not be verified. Please start a new call.","call_interrupted","provider")});
+    }
     await client.connect({ connection_url: session.connection_url });
   } catch (error) {
     const category = connectionStage === "permission" ? "microphone_unavailable"
@@ -263,9 +296,9 @@ async function startCall() {
   }
 }
 
-async function releaseClient() { endingCall = true; try { await client?.disconnect(); } catch {} client = undefined; transport = undefined; }
+async function releaseClient() { endingCall = true; await taskPlayback?.close(); taskPlayback=undefined; remoteAudio?.pause(); if (remoteAudio) remoteAudio.srcObject = null; try { await client?.disconnect(); } catch {} client = undefined; transport = undefined; }
 async function finishCall() { stopTimer(); await reportSessionEvent("mobile_call_end", { end_reason: "user" }); await releaseClient(); startedAt = undefined; sessionId = undefined; sessionToken = undefined; showScreen("ended"); }
-async function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection") { stopTimer(); await reportSessionEvent("mobile_call_error", { safe_error_category: safeErrorCategory, stage: connectionStage, end_reason: endReason }); await releaseClient(); startedAt = undefined; sessionId = undefined; sessionToken = undefined; showError(title, copy); }
+async function failCall(title, copy, safeErrorCategory = "connection_failed", endReason = "connection") { stopTimer(); void reportSessionEvent("mobile_call_error", { safe_error_category: safeErrorCategory, stage: connectionStage, end_reason: endReason }); await releaseClient(); startedAt = undefined; sessionId = undefined; sessionToken = undefined; showError(title, copy); }
 function showError(title, copy) { stopTimer(); startedAt = undefined; refs["error-title"].textContent = title; refs["error-copy"].textContent = copy; showScreen("error"); }
 
 function applyFixtureState() {

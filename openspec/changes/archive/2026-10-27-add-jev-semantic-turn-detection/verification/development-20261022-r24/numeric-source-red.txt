@@ -1,0 +1,65 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_same_numeric_start_uses_one_source_despite_json_number_format[speechmatics-enhanced] _
+
+provider = 'speechmatics', model = 'enhanced'
+
+    @pytest.mark.parametrize("provider,model", [("speechmatics", "enhanced"), ("deepgram", "nova-3")])
+    def test_same_numeric_start_uses_one_source_despite_json_number_format(provider, model):
+        from src.asr.transcript import TranscriptLedger
+    
+        parser = normalizer(provider, model)
+        ledger = TranscriptLedger()
+        if provider == "speechmatics":
+            def event(start, text):
+                return {"message": "AddPartialSegment", "segments": [{
+                    "speaker_id": "S1", "text": text,
+                    "metadata": {"start_time": start, "end_time": 1},
+                }]}
+        else:
+            def event(start, text):
+                return {"start": start, "duration": 1, "is_final": False,
+                        "channel": {"alternatives": [{"transcript": text}]}}
+        first = parser.normalize(event(0, "1"))[0]
+        revised = parser.normalize(event(0.0, "12"))[0]
+>       assert first.source_id == revised.source_id
+E       AssertionError: assert 'S1:0' == 'S1:0.0'
+E         
+E         - S1:0.0
+E         ?     --
+E         + S1:0
+
+tests/test_td_asr_events.py:251: AssertionError
+_ test_same_numeric_start_uses_one_source_despite_json_number_format[deepgram-nova-3] _
+
+provider = 'deepgram', model = 'nova-3'
+
+    @pytest.mark.parametrize("provider,model", [("speechmatics", "enhanced"), ("deepgram", "nova-3")])
+    def test_same_numeric_start_uses_one_source_despite_json_number_format(provider, model):
+        from src.asr.transcript import TranscriptLedger
+    
+        parser = normalizer(provider, model)
+        ledger = TranscriptLedger()
+        if provider == "speechmatics":
+            def event(start, text):
+                return {"message": "AddPartialSegment", "segments": [{
+                    "speaker_id": "S1", "text": text,
+                    "metadata": {"start_time": start, "end_time": 1},
+                }]}
+        else:
+            def event(start, text):
+                return {"start": start, "duration": 1, "is_final": False,
+                        "channel": {"alternatives": [{"transcript": text}]}}
+        first = parser.normalize(event(0, "1"))[0]
+        revised = parser.normalize(event(0.0, "12"))[0]
+>       assert first.source_id == revised.source_id
+E       AssertionError: assert '0' == '0.0'
+E         
+E         - 0.0
+E         + 0
+
+tests/test_td_asr_events.py:251: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_asr_events.py::test_same_numeric_start_uses_one_source_despite_json_number_format[speechmatics-enhanced]
+FAILED tests/test_td_asr_events.py::test_same_numeric_start_uses_one_source_despite_json_number_format[deepgram-nova-3]
+2 failed, 12 deselected in 0.04s

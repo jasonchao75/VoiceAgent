@@ -1,0 +1,64 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_unit_renderer_bounds_sdk_setup_and_releases_partial_resources ______
+
+    async def test_unit_renderer_bounds_sdk_setup_and_releases_partial_resources():
+        """The real worker must close a partially connected processor when setup times out."""
+        import asyncio
+        import time
+    
+        from src.tts.unit_synthesis import synthesize_unit
+    
+        resources = {'open': False}
+    
+        class SlowSetup(FrameProcessor):
+            """Model a socket opened before a provider's ready signal, without any network."""
+    
+            async def setup(self, setup):
+                await super().setup(setup)
+                resources['open'] = True
+                await asyncio.Event().wait()
+    
+            async def cleanup(self):
+                resources['open'] = False
+                await super().cleanup()
+    
+        class Registry:
+            def create(self, **kwargs):
+                return SlowSetup()
+    
+        started = time.monotonic()
+        with pytest.raises(TimeoutError):
+            await synthesize_unit(
+                Registry(), 'inert-key', 'one', TTSConfig(voice='fixture'), 24000, timeout=.1,
+            )
+        assert resources['open'] is False
+>       assert time.monotonic() - started < 1
+E       AssertionError: assert (1390366.877382875 - 1390346.866411625) < 1
+E        +  where 1390366.877382875 = <built-in function monotonic>()
+E        +    where <built-in function monotonic> = <module 'time' (built-in)>.monotonic
+
+tests/test_echo_synthesis.py:67: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-23 04:02:21.825 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> SlowSetup#0
+2026-10-23 04:02:21.825 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking SlowSetup#0 -> Sink#0
+2026-10-23 04:02:21.825 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-23 04:02:21.826 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-23 04:02:21.826 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-10-23 04:02:21.826 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-eb049399': added worker 'PipelineWorker#0'
+2026-10-23 04:02:21.827 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-eb049399': started running
+2026-10-23 04:02:21.827 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-eb049399': starting worker 'PipelineWorker#0'
+2026-10-23 04:02:21.929 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-23 04:02:22.032 | DEBUG    | pipecat.pipeline.worker:_handle_worker_cancel:1347 - Worker 'PipelineWorker#0': received cancel
+2026-10-23 04:02:41.830 | ERROR    | pipecat.pipeline.worker:_setup_within_timeout:1255 - PipelineWorker#0: timeout setting the pipeline up (a processor blocked while connecting?), stopping the pipeline.
+2026-10-23 04:02:41.832 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#0 is finishing...
+2026-10-23 04:02:41.833 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#0 has finished
+2026-10-23 04:02:41.835 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-eb049399': finished running
+=============================== warnings summary ===============================
+tests/test_echo_synthesis.py::test_unit_renderer_bounds_sdk_setup_and_releases_partial_resources
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_echo_synthesis.py::test_unit_renderer_bounds_sdk_setup_and_releases_partial_resources
+1 failed, 3 deselected, 1 warning in 20.10s

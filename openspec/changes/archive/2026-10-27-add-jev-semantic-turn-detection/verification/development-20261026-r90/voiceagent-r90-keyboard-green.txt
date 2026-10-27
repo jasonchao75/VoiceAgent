@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:67999) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:16:2 › keyboard section navigation and named controls at 1440px (1.0s)
+  ✓  2 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:44:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 1440px (484ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:60:2 › keyboard Sessions drawer opens and Escape restores its trigger at 1440px (427ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard ASR component drawer focus and source selection at 1440px (425ms)
+  ✓  5 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:16:2 › keyboard section navigation and named controls at 390px (742ms)
+  ✓  6 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:44:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 390px (428ms)
+  ✓  7 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:60:2 › keyboard Sessions drawer opens and Escape restores its trigger at 390px (413ms)
+  ✓  8 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard ASR component drawer focus and source selection at 390px (418ms)
+
+  8 passed (4.8s)

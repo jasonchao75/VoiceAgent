@@ -1,0 +1,359 @@
+FFFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+_ test_every_model_allows_custom_source_without_expanding_off[deepgram-flux-general-en] _
+
+provider = 'deepgram', model = 'flux-general-en'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    def test_every_model_allows_custom_source_without_expanding_off(provider, model):
+        """The new source must be available in both validation and server catalog."""
+>       options = validate_asr_options(provider=provider, model=model,
+                                       turn_detection_source='self_developed', options={})
+
+tests/test_td_config.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+            raise ValueError("Unsupported ASR provider/model combination")
+        model_type, allowed_sources, _default_source = contract
+        if turn_detection_source not in allowed_sources:
+>           raise ValueError("Turn Detection source is unavailable for the selected ASR model")
+E           ValueError: Turn Detection source is unavailable for the selected ASR model
+
+src/asr/config.py:997: ValueError
+_ test_every_model_allows_custom_source_without_expanding_off[deepgram-flux-general-multi] _
+
+provider = 'deepgram', model = 'flux-general-multi'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    def test_every_model_allows_custom_source_without_expanding_off(provider, model):
+        """The new source must be available in both validation and server catalog."""
+>       options = validate_asr_options(provider=provider, model=model,
+                                       turn_detection_source='self_developed', options={})
+
+tests/test_td_config.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+            raise ValueError("Unsupported ASR provider/model combination")
+        model_type, allowed_sources, _default_source = contract
+        if turn_detection_source not in allowed_sources:
+>           raise ValueError("Turn Detection source is unavailable for the selected ASR model")
+E           ValueError: Turn Detection source is unavailable for the selected ASR model
+
+src/asr/config.py:997: ValueError
+_ test_every_model_allows_custom_source_without_expanding_off[deepgram-nova-3] _
+
+provider = 'deepgram', model = 'nova-3'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    def test_every_model_allows_custom_source_without_expanding_off(provider, model):
+        """The new source must be available in both validation and server catalog."""
+>       options = validate_asr_options(provider=provider, model=model,
+                                       turn_detection_source='self_developed', options={})
+
+tests/test_td_config.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+            raise ValueError("Unsupported ASR provider/model combination")
+        model_type, allowed_sources, _default_source = contract
+        if turn_detection_source not in allowed_sources:
+>           raise ValueError("Turn Detection source is unavailable for the selected ASR model")
+E           ValueError: Turn Detection source is unavailable for the selected ASR model
+
+src/asr/config.py:997: ValueError
+_ test_every_model_allows_custom_source_without_expanding_off[speechmatics-enhanced] _
+
+provider = 'speechmatics', model = 'enhanced'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    def test_every_model_allows_custom_source_without_expanding_off(provider, model):
+        """The new source must be available in both validation and server catalog."""
+>       options = validate_asr_options(provider=provider, model=model,
+                                       turn_detection_source='self_developed', options={})
+
+tests/test_td_config.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+            raise ValueError("Unsupported ASR provider/model combination")
+        model_type, allowed_sources, _default_source = contract
+        if turn_detection_source not in allowed_sources:
+>           raise ValueError("Turn Detection source is unavailable for the selected ASR model")
+E           ValueError: Turn Detection source is unavailable for the selected ASR model
+
+src/asr/config.py:997: ValueError
+_ test_every_model_allows_custom_source_without_expanding_off[soniox-stt-rt-v5] _
+
+provider = 'soniox', model = 'stt-rt-v5'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    def test_every_model_allows_custom_source_without_expanding_off(provider, model):
+        """The new source must be available in both validation and server catalog."""
+>       options = validate_asr_options(provider=provider, model=model,
+                                       turn_detection_source='self_developed', options={})
+
+tests/test_td_config.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+            raise ValueError("Unsupported ASR provider/model combination")
+        model_type, allowed_sources, _default_source = contract
+        if turn_detection_source not in allowed_sources:
+>           raise ValueError("Turn Detection source is unavailable for the selected ASR model")
+E           ValueError: Turn Detection source is unavailable for the selected ASR model
+
+src/asr/config.py:997: ValueError
+_ test_every_model_allows_custom_source_without_expanding_off[assemblyai-universal-3-5-pro] _
+
+provider = 'assemblyai', model = 'universal-3-5-pro'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('deepgram', 'flux-general-multi'),
+        ('deepgram', 'nova-3'), ('speechmatics', 'enhanced'),
+        ('soniox', 'stt-rt-v5'), ('assemblyai', 'universal-3-5-pro'),
+    ])
+    def test_every_model_allows_custom_source_without_expanding_off(provider, model):
+        """The new source must be available in both validation and server catalog."""
+>       options = validate_asr_options(provider=provider, model=model,
+                                       turn_detection_source='self_developed', options={})
+
+tests/test_td_config.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def validate_asr_options(
+        *, provider: str, model: str, turn_detection_source: str, options: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate and normalize one provider/model configuration branch.
+    
+        Args:
+            provider: Provider ID, including the legacy Deepgram alias.
+            model: Provider model ID.
+            turn_detection_source: Product-level turn source.
+            options: Provider-specific persisted JSON object.
+    
+        Returns:
+            A JSON-compatible dictionary containing defaults and normalized values.
+    
+        Raises:
+            ValueError: If the model, turn source, or options are unsupported.
+        """
+        canonical_provider = normalize_provider(provider)
+        contract = _MODEL_CONTRACTS.get((canonical_provider, model))
+        if contract is None:
+            raise ValueError("Unsupported ASR provider/model combination")
+        model_type, allowed_sources, _default_source = contract
+        if turn_detection_source not in allowed_sources:
+>           raise ValueError("Turn Detection source is unavailable for the selected ASR model")
+E           ValueError: Turn Detection source is unavailable for the selected ASR model
+
+src/asr/config.py:997: ValueError
+____________ test_td_draft_persists_when_source_hidden_and_restart _____________
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-22/test_td_draft_persists_when_so0')
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    async def test_td_draft_persists_when_source_hidden_and_restart(tmp_path: Path, session_request):
+        """A native-source Bot can keep a custom draft without accidentally enabling it."""
+        request = session_request.model_dump(exclude={'deepgram_api_key', 'llm_api_key',
+                                                      'flux_voice', 'session_type'})
+>       config = BotConfigFields.model_validate({**request, 'name': 'TD config',
+            'tts_provider': 'deepgram_flux', 'tts_voice': session_request.flux_voice,
+            'td_config': td_settings()})
+E       pydantic_core._pydantic_core.ValidationError: 4 validation errors for BotConfigFields
+E       asr_api_key
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=None, input_type=NoneType]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+E       tts_api_key
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=None, input_type=NoneType]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+E       elevenlabs_api_key
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=None, input_type=NoneType]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+E       td_config
+E         Extra inputs are not permitted [type=extra_forbidden, input_value={'minimum_ms': 600, 'maxi...te', 'wait_ms': 1500}]}}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+
+tests/test_td_config.py:51: ValidationError
+____________ test_explicit_td_settings_are_deep_copied_into_session ____________
+
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+runtime_config = RuntimeConfig(language='en', audio=AudioConfig(encoding='linear16', input_sample_rate=16000, output_sample_rate=24000,...nLimits(pending_token_ttl_seconds=120, idle_timeout_seconds=300, max_duration_seconds=1800, max_concurrent_sessions=3))
+voice_catalog = VoiceCatalog(source_url='https://developers.deepgram.com/docs/flux-tts/voices', listen_url='https://talk.deepgram.com/..., accent='British', gender='Male', age='Mature', traits=['friendly', 'kind', 'caring', 'calming'], use_cases=['IVR'])])
+llm_catalog = LLMProviderCatalog(verified_at='2026-09-15', providers=[LLMProviderEntry(id='openai', name='OpenAI', base_url='https:/...authentication', models_url='https://platform.openai.com/docs/api-reference/models/list', supports_custom_model=True)])
+
+    def test_explicit_td_settings_are_deep_copied_into_session(
+        session_request, runtime_config, voice_catalog, llm_catalog,
+    ):
+        """Later edits of a Bot draft cannot mutate an already created session snapshot."""
+>       request = SessionRequest.model_validate({**session_request.model_dump(),
+            'turn_detection_source': 'self_developed', 'td_config': td_settings(),
+            'jev_api_key': 'fixture-jev-inert-key'})
+E       pydantic_core._pydantic_core.ValidationError: 3 validation errors for SessionRequest
+E       turn_detection_source
+E         Input should be 'provider_native' or 'off' [type=literal_error, input_value='self_developed', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+E       td_config
+E         Extra inputs are not permitted [type=extra_forbidden, input_value={'minimum_ms': 600, 'maxi...te', 'wait_ms': 1500}]}}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+E       jev_api_key
+E         Extra inputs are not permitted [type=extra_forbidden, input_value='fixture-jev-inert-key', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+
+tests/test_td_config.py:67: ValidationError
+___________ test_custom_source_without_explicit_settings_is_rejected ___________
+
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_custom_source_without_explicit_settings_is_rejected(session_request):
+        """Illustrative prototype values must not silently become production defaults."""
+        with pytest.raises(ValidationError, match='td_config'):
+>           SessionRequest.model_validate({**session_request.model_dump(),
+                                            'turn_detection_source': 'self_developed'})
+E           pydantic_core._pydantic_core.ValidationError: 1 validation error for SessionRequest
+E           turn_detection_source
+E             Input should be 'provider_native' or 'off' [type=literal_error, input_value='self_developed', input_type=str]
+E               For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+
+tests/test_td_config.py:82: ValidationError
+
+During handling of the above exception, another exception occurred:
+
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_custom_source_without_explicit_settings_is_rejected(session_request):
+        """Illustrative prototype values must not silently become production defaults."""
+>       with pytest.raises(ValidationError, match='td_config'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'td_config'
+E        Input: "1 validation error for SessionRequest\nturn_detection_source\n  Input should be 'provider_native' or 'off' [type=literal_error, input_value='self_developed', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error"
+
+tests/test_td_config.py:81: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off[deepgram-flux-general-en]
+FAILED tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off[deepgram-flux-general-multi]
+FAILED tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off[deepgram-nova-3]
+FAILED tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off[speechmatics-enhanced]
+FAILED tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off[soniox-stt-rt-v5]
+FAILED tests/test_td_config.py::test_every_model_allows_custom_source_without_expanding_off[assemblyai-universal-3-5-pro]
+FAILED tests/test_td_config.py::test_td_draft_persists_when_source_hidden_and_restart
+FAILED tests/test_td_config.py::test_explicit_td_settings_are_deep_copied_into_session
+FAILED tests/test_td_config.py::test_custom_source_without_explicit_settings_is_rejected
+9 failed in 0.08s

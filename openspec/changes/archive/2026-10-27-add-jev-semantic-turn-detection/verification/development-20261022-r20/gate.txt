@@ -1,0 +1,26 @@
+WARNING: Open known_issues[1]: 普通TD、唯一提交、编号工具/缓存、WS串行与历史已接；正式本地WS/假麦克风/AudioWorklet实际回执/Final取消及持久历史刷新已有浏览器证据，后端574通过。未知范围/重连、RTC、精确指标、完整UI与真实厂商仍未闭环。D-049取消实质改义门槛。
+WARNING: Open known_issues[12]: Flux原始Update桥接、Speechmatics metadata/fragments（含null详情）及自建端点隔离已实现并通过fixture；真实六模型回包、时间覆盖与重连兼容仍未验证，不以来源选项可见宣称兼容。
+WARNING: Open known_issues[15]: 已补Speechmatics时间字段和Flux Update保留、SDK连接代次frame及fixture归一化；未知音频范围的可靠切分、跨连接本地时钟对齐与实际时间覆盖尚未闭环。
+WARNING: Open known_issues[17]: 严格全输入编号、WPM/保护/提醒、受控工具、成功换代和未提交旧纯范围改混合句回流已通过SDK回归；WS缓存跟读已接。真实模型范围/语速覆盖、完整浏览器通话及UI A/B仍未完成。
+WARNING: Open known_issues[20]: 速度/编号工具不可变来源、幂等与Final结果共享已通过SDK；WS清空/停播/缓存代次组合通过。完整网络传输/真实厂商取消及RTC停止仍未验证，整体保持Open。
+WARNING: Open known_issues[25]: 普通TD、编号/工具、WS缓存/串行与历史已接；本地正式WS网络Final取消及历史刷新通过。未知范围/真实重连、完整编号浏览器组合、RTC、精确指标及完整UI A/B仍未闭环，不提交独立审核。
+WARNING: Open known_issues[33]: 正式WS任务身份、AudioWorklet/认证回执、缓存与串行已接，本地正式网络验证Partial在播Final取消和实际停止后新答。旧指标保留unverified，新数值不由回执接收时刻伪算。真实厂商、RTC、精确时钟/硬件指标仍未闭环。
+WARNING: Open known_issues[37]: 正式TD编号/工具/保护与WS缓存跟读/更正/清空/串行输出已接，逐轮正式历史组件已有fixture证据；完整浏览器网络、RTC与历史真实API重启/精确指标仍未闭环，不宣称端到端完成。
+WARNING: Open known_issues[38]: 纯/混合成功换代、旧纯范围跨续说改混合句回流、只提交/写入一次和已提交旧turn隔离均通过SDK；WS修订补读与清空停播组合通过。完整浏览器/厂商网络、RTC及失败恢复仍未验证。
+WARNING: Open known_issues[47]: 正式UI已有未保存草稿保护；真实本地API生成/双单元试听/改间隔保持缓存/发布校验/Bot隔离/失败重试/重启保持版本已通过浏览器。真实TTS/音质、完整中英/视觉/可访问性矩阵尚缺，不宣称UI A/B完成。
+WARNING: Open known_issues[59]: 全目录mypy在numpy/__init__.pyi:737遇到Python3.12 type语法，项目mypy目标3.11；未将该失败宣称通过。需分离本次相关源文件检查与既有全目录依赖环境问题。 本次相关34源文件检查已通过，保留全目录环境限制。
+WARNING: Open known_issues[63]: 原turn/response版本捕获及正式逐轮抽屉已接；fixture覆盖旧历史与缺失事实，本地正式WS/API持久化刷新保留Partial/Final两版。独立历史DB重启/全部查询状态与逐版本精确指标仍未闭环。
+WARNING: Open known_issues[79]: 正式TD/Jev已补默认中文/英文与本地语言偏好，原型文案复用；实际保存请求体切换前后相同，默认中文及输入保持桌面/窄屏4通过。历史语言与完整标签/可访问性/视觉矩阵尚未闭环。
+WARNING: Open known_issues[80]: 服务端待发块清理及原音轨本地浏览器测试通过：旧440Hz合成答未播满5秒，Final 880Hz接续且700ms观察窗无旧音回流；正式audio元素播放和释放通过。仍不证明硬件零残留、弱网/实机、精确逐任务回执和完整编号串行。
+WARNING: Open unverified_items[1]: 已实现Jev后端安全客户端、显式问题/融合、MockTransport错误测试及普通TD编排；没有真实调用，语言效果、实际P95延迟、费用和厂商兼容仍未实测。
+WARNING: Open unverified_items[2]: 未验证 ASR 单元时间戳、Partial 修订去重、双向同时说话时的回声及跟读队列行为。
+WARNING: Open unverified_items[3]: 历史v0.10原型证据保留；正式逐轮组件已实现并有桌面/390px fixture，以及本地WS真实API持久历史刷新证据。正式中英切换、完整历史状态/视觉矩阵及真实厂商ASR效果仍未验证，不再用原型证据代替正式实现。
+WARNING: Open unverified_items[4]: ASR事件映射基于官方文档、当前注册和锁定依赖静态审阅；未验证真实回包顺序、迟到Final/重连及时间戳覆盖，不证明自建TD已实现。
+WARNING: Open unverified_items[5]: 历史v0.12为原型；正式缓存/发布检查/显式生成/双单元试听/间隔保存/隔离/失败重试/进程重启保持已有本地API浏览器证据，音频为合成fixture。真实TTS音质、发布后缓存故障完整浏览器矩阵及动态语速组合仍未验证。
+WARNING: Open unverified_items[6]: 本轮证实官方/SDK字段存在及Speechmatics静态适配不匹配，未执行真实厂商回包测试；各Partial覆盖、重连、修订与队列仍需工程fixture/授权联调。
+WARNING: Open unverified_items[8]: D-049替代实质改义门槛；SDK上下文单次提交与真实本地WS/浏览器AudioWorklet取消旧Partial再播放Final已验证。真实厂商LLM/TTS取消残留、完整工具副作用组合与RTC仍未验证。
+WARNING: Open unverified_items[9]: AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。
+WARNING: Open unverified_items[12]: 真实AudioWorklet样本事件已验证；当前client_elapsed_ms是主线程收到渲染消息的时刻，不是硬件首播或精确render quantum时刻。数值播放指标仍明确缺失，渲染时钟关联与端到端指标待补。
+WARNING: Open unverified_items[13]: 用户已把TYPESAFE_API_KEY放到根目录.env；只检查变量唯一、非空、Git忽略且未跟踪，未显示或发送密钥。正式Bot尚未配置且不自动读此变量；Key有效性、额度、真实厂商效果/兼容/延迟未验证，实际调用仍须单批数据/厂商/费用上限/停止条件授权。
+WARNING: 34 tasks remain unchecked
+PASS: 0 errors, 25 warning(s)

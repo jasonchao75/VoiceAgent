@@ -1,0 +1,33 @@
+{
+  "batch_id": "deepgram-td-asr-digits-confirmation-v1",
+  "cases": [
+    {
+      "id": "digits",
+      "path": "/tmp/voiceagent-jev-r39-synthetic/digits-ready.wav",
+      "text": "One two three. Four five six. Seven eight nine.",
+      "duration_seconds": 5.1675,
+      "sample_rate": 16000,
+      "channels": 1,
+      "format": "WAV PCM16",
+      "sha256": "f43daeb5ba88c445000499c4c7fed38e1ab73dc60aac834e9f7a13cfd99af2a0",
+      "generation": "Offline macOS Albert 135wpm; no vendor TTS, no human/customer recording",
+      "model": "flux-general-en",
+      "provider": "deepgram",
+      "options": {},
+      "silence_tail_seconds": 3
+    }
+  ],
+  "max_calls": 1,
+  "connection_wall_seconds": 30,
+  "connect_timeout_seconds": 5,
+  "cost_ceiling_usd": "0.02",
+  "maximum_public_price_usd": "0.00325",
+  "price_verified": "2026-10-22",
+  "pricing_source": "https://deepgram.com/pricing",
+  "turn_detection_source": "self_developed",
+  "retries": 0,
+  "recipient": "api.deepgram.com",
+  "llm_jev_tts_calls": 0,
+  "source_evidence": "known PCM rate, raw times, normalized ranges; stop first gap",
+  "request_sha256": "5de231deec136f6c0b1e9406edd024a33ff3879eac7b2891a6a5152dbf310183"
+}

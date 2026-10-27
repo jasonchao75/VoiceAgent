@@ -1,0 +1,36 @@
+WARNING: Open known_issues[1]: 当前本地实现覆盖普通TD/唯一提交/编号工具/缓存/WS实际Worklet回执/Final取消/持久历史及D-061缺来源失败；r46完整后端683通过。RTC任务映射/编号串行、跨连接绝对时钟、精确指标、完整UI与真实厂商仍未闭环。D-049不做含义判断。
+WARNING: Open known_issues[12]: Flux原始Update桥接、Speechmatics metadata/fragments（含null详情）及自建端点隔离已实现并通过fixture；真实六模型回包、时间覆盖与重连兼容仍未验证，不以来源选项可见宣称兼容。
+WARNING: Open known_issues[15]: 已知来源/非法范围、匿名/混合快照缺口、同SDK快照恢复、接收任务代次与无上下文回调不猜当前连接、D-061有界失败均有本地证据。跨连接绝对音频时钟、真实六模型范围/修订/重连仍未验证，整体Open。
+WARNING: Open known_issues[17]: 严格全输入编号、WPM/保护/提醒、受控工具、成功换代和未提交旧纯范围改混合句回流已通过SDK回归；WS缓存跟读已接。真实模型范围/语速覆盖、完整浏览器通话及UI A/B仍未完成。
+WARNING: Open known_issues[20]: 速度/编号工具不可变来源、幂等与Final结果共享已通过SDK；WS清空/停播/缓存代次组合通过。完整网络传输/真实厂商取消及RTC停止仍未验证，整体保持Open。
+WARNING: Open known_issues[25]: 普通TD/编号工具/缓存/WS串行/历史及未知来源D-061本地已接，正式WS Final取消、编号清空、缓存恢复和历史刷新有网络证据。跨连接绝对音频时钟、真实厂商、RTC任务仲裁、精确指标与完整UI A/B仍缺；不提交最终独立审核。
+WARNING: Open known_issues[33]: 正式WS任务身份、AudioWorklet/认证回执、缓存与串行已接，本地正式网络验证Partial在播Final取消和实际停止后新答。旧指标保留unverified，新数值不由回执接收时刻伪算。真实厂商、RTC、精确时钟/硬件指标仍未闭环。
+WARNING: Open known_issues[37]: WS已补正式API/永久缓存/SDK受控清空/Worklet的完整编号网络组合：续说保留在播跟读、混合提问正常排队、清空停旧代次并拒绝其待播。SDK其他优先级矩阵已有证据；RTC逐任务映射/编号串行与真实厂商仍未闭环。
+WARNING: Open known_issues[38]: 纯/混合成功换代、旧纯范围跨续说改混合句回流、只提交/写入一次和已提交旧turn隔离均通过SDK；WS修订补读与清空停播组合通过。完整浏览器/厂商网络、RTC及失败恢复仍未验证。
+WARNING: Open known_issues[47]: 正式UI已有未保存草稿保护；真实本地API生成/双单元试听/改间隔保持缓存/发布校验/Bot隔离/失败重试/重启保持版本已通过浏览器。真实TTS/音质、完整中英/视觉/可访问性矩阵尚缺，不宣称UI A/B完成。
+WARNING: Open known_issues[59]: 全目录mypy在numpy/__init__.pyi:737遇到Python3.12 type语法，项目mypy目标3.11；未将该失败宣称通过。需分离本次相关源文件检查与既有全目录依赖环境问题。 本次相关34源文件检查已通过，保留全目录环境限制。
+WARNING: Open known_issues[63]: 原turn/response版本和逐轮抽屉、WS实际API持久刷新及HistoryStore重建保留事件/证据标记已有本地测试；全部正式历史API重启查询状态、逐版本精确跨钟指标仍未闭环。
+WARNING: Open known_issues[79]: 正式TD/Jev、新旧历史语言入口已接；原对话/事件值/来源ID排除翻译，动态候选状态和普通回复标签分片翻译。旧指标不重算，重复打开单控件，8历史视口通过。全部动态文案/全状态及视觉可访问性矩阵仍未闭环。
+WARNING: Open known_issues[80]: 服务端待发块清理及原音轨本地浏览器测试通过：旧440Hz合成答未播满5秒，Final 880Hz接续且700ms观察窗无旧音回流；正式audio元素播放和释放通过。仍不证明硬件零残留、弱网/实机、精确逐任务回执和完整编号串行。
+WARNING: Open known_issues[99]: 原RTP精确任务/渲染桥接仍Open。r36以虚拟采集权限使本地对ICE/DTLS连通；无播放器收250包但无解码，添加静音播放器后12个AudioData/5个RTP进度。旧无sink正向假设未复现；新阶段对照2项通过仅作诊断，不算任务回执或硬件播放通过。未更换下行架构。
+WARNING: Open known_issues[101]: 2026-10-22官方models页称jev-latest指向jev-1.13.0，但D-053两次真实响应均为jev-1.14.0。接口与基本概率格式通过；别名版本与文档不一致，后续校准必须保留实际版本，不能据两例保证版本稳定或语言质量。
+WARNING: Open known_issues[102]: RTC交付阻塞已收敛：锁定SDK只把frame.audio传入RawAudioTrack，任务身份未进入RTP；SerialAudioOutput/IdentifierOutput仅WS接入。现有原生audio无法据此提供P11逐任务开播/停止，不能直接接串行器后用发送EOS释放播放权。需明确方案边界，暂停未经批准的媒体架构改动。
+WARNING: Open known_issues[104]: D-054本地前置关口未通过：原始任务A/B各30ms进入真实SDK队列和Opus/RTP序列化后，发包触发输入和包时间范围不能按单任务直接对应（包20ms、任务边界30ms）；队列已去身份，解码延迟/采样归属尚无可靠映射。仅SDK/编码器、无浏览器/网络，不能宣称完整候选不可行。按用户停止条件，不运行后续Final/编号组合，不替换正式播放链。
+WARNING: Open known_issues[105]: Deepgram ASR/TTS固定批次与脚本已准备，待逐批授权；只读核实Speechmatics实时无折扣Enhanced $0.80/hr、AssemblyAI固定3.5实时$0.45/hr。其他厂商连接/重连与Soniox token预算、ElevenLabs具体voice/计费仍待核实，不套价或自动升级。
+WARNING: Open known_issues[115]: D-055首条Flux范围失败；D-057定位重叠词误拒、D-059确认前15事件恢复后又遇浮点边界误拒，两项已离线修复。每次均首例失败停止；仍未得到完整单连接成功或其他8例真实证据。
+WARNING: Open known_issues[119]: D-058真实TTS首条one连接在15秒合成时限超时，约16.19秒含关闭开销；整批停止，two/清空文本未执行，无重试。尚不知权限/SDK协议/服务原因，不能宣称TTS兼容。
+WARNING: Open known_issues[122]: D-060已实现隔离来源账本/真实Opus原PTS→RTP→实际解码坐标sidecar，5包哈希/PTS一致，起点-312，1个解码帧跨两任务；只证明坐标链，不证明跨编解码滤波的样本归属或浏览器任务渲染。按首关键关口未证明停止，Final/编号/延迟手机未运行，不替换正式播放链。
+WARNING: Open unverified_items[1]: Jev正式客户端两条虚构英文文本真实接口测试通过；仅基本连通/概率格式与两例区分，不证明语言效果、P95、真实音频流水线、并发或全部异常兼容。
+WARNING: Open unverified_items[2]: 未验证 ASR 单元时间戳、Partial 修订去重、双向同时说话时的回声及跟读队列行为。
+WARNING: Open unverified_items[3]: 历史v0.10原型证据保留；正式逐轮组件已实现并有桌面/390px fixture，以及本地WS真实API持久历史刷新证据。正式中英切换、完整历史状态/视觉矩阵及真实厂商ASR效果仍未验证，不再用原型证据代替正式实现。
+WARNING: Open unverified_items[4]: ASR事件映射基于官方文档、当前注册和锁定依赖静态审阅；未验证真实回包顺序、迟到Final/重连及时间戳覆盖，不证明自建TD已实现。
+WARNING: Open unverified_items[5]: 历史v0.12为原型；正式缓存/发布检查/显式生成/双单元试听/间隔保存/隔离/失败重试/进程重启保持已有本地API浏览器证据，音频为合成fixture。真实TTS音质、发布后缓存故障完整浏览器矩阵及动态语速组合仍未验证。
+WARNING: Open unverified_items[6]: 本轮证实官方/SDK字段存在及Speechmatics静态适配不匹配，未执行真实厂商回包测试；各Partial覆盖、重连、修订与队列仍需工程fixture/授权联调。
+WARNING: Open unverified_items[8]: D-049替代实质改义门槛；SDK上下文单次提交与真实本地WS/浏览器AudioWorklet取消旧Partial再播放Final已验证。真实厂商LLM/TTS取消残留、完整工具副作用组合与RTC仍未验证。
+WARNING: Open unverified_items[9]: AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。
+WARNING: Open unverified_items[12]: 真实AudioWorklet样本事件已验证；当前client_elapsed_ms是主线程收到渲染消息的时刻，不是硬件首播或精确render quantum时刻。数值播放指标仍明确缺失，渲染时钟关联与端到端指标待补。
+WARNING: Open unverified_items[13]: 本地.env Key已在D-053两次真实Jev请求成功使用；未打印/入库/写证据。正式Bot尚未配置、不自动读取该变量；其他调用仍须逐批授权。
+WARNING: Open unverified_items[15]: D-055原ASR批次首连接范围失败，D-057定位复测同样首缺口停止并证明重叠词被拒；已离线修复、未再真实验证。D-058 TTS首请求超时后停止，剩余未执行；三批不得重放。
+WARNING: Open unverified_items[17]: r45验证的是已发布Bot的正式Web测试（草稿快照）；该会话resource_version为null，不能证明发布资源manifest或公开RTC入口恢复。发布配置固定/版本隔离有SDK测试，但公开入口RTC任务仲裁未接，仍属R1/M4缺口。46.34ms仅本地替身资源恢复耗时，不是厂商延迟。
+WARNING: 34 tasks remain unchecked
+PASS: 0 errors, 35 warning(s)

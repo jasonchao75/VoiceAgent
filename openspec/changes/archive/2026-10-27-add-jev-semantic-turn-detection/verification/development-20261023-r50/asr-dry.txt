@@ -1,0 +1,1 @@
+INFO:__main__:Dry plan: deepgram-td-asr-digits-confirmation-v1 calls=1 ceiling=USD0.02 sha256=5de231deec136f6c0b1e9406edd024a33ff3879eac7b2891a6a5152dbf310183

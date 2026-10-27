@@ -1,0 +1,31 @@
+.......F                                                                 [100%]
+=================================== FAILURES ===================================
+_ test_already_collected_pure_input_has_no_extra_identifier_tools_in_inference _
+
+    def test_already_collected_pure_input_has_no_extra_identifier_tools_in_inference():
+        """Local collection must not ask the LLM to submit the same pure number again."""
+        handlers, boundary, owner, state = tools()
+        owner.begin_speech()
+        version = owner.submit(turn_id='2', source_ids=((0, 'b'),), text='123', final=True)
+        source = state.bind_source(0, 'b', 1, '123')
+        state.collect_local(source)
+        handlers.bind_response(version, source)
+        boundary.enrich_context = handlers.enrich_context
+        context = LLMContext(tools=handlers.schemas())
+        snapshot = boundary.bind(context)
+        assert len(context.tools.standard_tools) == 2
+>       assert snapshot.tools.standard_tools == []
+E       assert [<pipecat.ada... 0x1139d10f0>] == []
+E         
+E         Left contains 2 more items, first extra item: <pipecat.adapters.schemas.function_schema.FunctionSchema object at 0x108af74d0>
+E         Use -v to get more diff
+
+tests/test_td_identifier_tools.py:145: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_already_collected_pure_input_has_no_extra_identifier_tools_in_inference
+1 failed, 7 passed, 1 warning in 0.70s

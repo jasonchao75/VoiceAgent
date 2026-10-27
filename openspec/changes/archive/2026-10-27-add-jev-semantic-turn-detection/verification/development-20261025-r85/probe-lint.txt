@@ -1,0 +1,11 @@
+E501 Line too long (101 > 100)
+  --> tests/test_td_vendor_probe.py:67:101
+   |
+66 | @pytest.mark.parametrize("vendor", [None, "assemblyai", "speechmatics"])
+67 | def test_probe_cli_cannot_load_a_key_without_an_exact_confirmed_batch(monkeypatch, tmp_path, vendor):
+   |                                                                                                     ^
+68 |     """Dry-run and absent authorization cannot touch the local credential."""
+69 |     import hashlib
+   |
+
+Found 1 error.

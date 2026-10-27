@@ -1,0 +1,107 @@
+
+Running 23 tests using 1 worker
+
+(node:33475) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px zh (2.6s)
+  ✓   2 [desktop-chromium] › tests/ui/td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 390px zh (2.0s)
+  ✓   3 [desktop-chromium] › tests/ui/td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 1440px en (2.1s)
+  ✓   4 [desktop-chromium] › tests/ui/td-baseline.spec.js:47:3 › Checkpoint A compares production settings to frozen v0.14 at 390px en (2.1s)
+  ✓   5 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 1440px (551ms)
+  ✓   6 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 390px (510ms)
+  ✓   7 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 1440px (706ms)
+  ✓   8 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 390px (597ms)
+  ✓   9 [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 1440px (554ms)
+  ✓  10 [desktop-chromium] › tests/ui/td-history-recovery.spec.js:10:3 › Sessions failure recovers to an empty list without stale error at 390px (412ms)
+  ✓  11 [desktop-chromium] › tests/ui/td-playback-renderer.spec.js:5:1 › production renderer confirms a tagged PCM task from the actual AudioWorklet (491ms)
+  ✓  12 [desktop-chromium] › tests/ui/td-settings.spec.js:9:1 › formal Advanced edits and saves explicit TD settings (1.8s)
+  ✘  13 [desktop-chromium] › tests/ui/voice-bot.spec.js:84:1 › component drawers preserve approved ASR and LLM structure (5.3s)
+(node:33601) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  14 [desktop-chromium] › tests/ui/voice-bot.spec.js:111:1 › TTS provider rules and voice picker are responsive (3.0s)
+
+
+  1) [desktop-chromium] › tests/ui/voice-bot.spec.js:84:1 › component drawers preserve approved ASR and LLM structure 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.bot-card').first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.bot-card').first() with timeout 5000ms
+      - waiting for locator('.bot-card').first()
+
+
+      65 |   await page.goto("/");
+      66 |   await expect(page.getByRole("button", { name: "Bot settings", exact: true })).toBeVisible();
+    > 67 |   await expect(page.locator(".bot-card").first()).toBeVisible();
+         |                                                   ^
+      68 | }
+      69 |
+      70 | async function chooseBot(page, pattern) {
+        at waitForProduct (/Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/voice-bot.spec.js:67:51)
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/voice-bot.spec.js:85:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-component-drawer-38203-roved-ASR-and-LLM-structure-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/voice-bot-component-drawer-38203-roved-ASR-and-LLM-structure-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-component-drawer-38203-roved-ASR-and-LLM-structure-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/voice-bot-component-drawer-38203-roved-ASR-and-LLM-structure-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/voice-bot.spec.js:111:1 › TTS provider rules and voice picker are responsive 
+
+    Test was interrupted.
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.bot-card').first()
+    Expected: visible
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.bot-card').first() with timeout 5000ms
+      - waiting for locator('.bot-card').first()
+      - Test ended.
+
+
+      65 |   await page.goto("/");
+      66 |   await expect(page.getByRole("button", { name: "Bot settings", exact: true })).toBeVisible();
+    > 67 |   await expect(page.locator(".bot-card").first()).toBeVisible();
+         |                                                   ^
+      68 | }
+      69 |
+      70 | async function chooseBot(page, pattern) {
+        at waitForProduct (/Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/voice-bot.spec.js:67:51)
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/voice-bot.spec.js:115:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-TTS-provider-rules-and-voice-picker-are-responsive-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/voice-bot-TTS-provider-rules-and-voice-picker-are-responsive-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/voice-bot-TTS-provider-rules-and-voice-picker-are-responsive-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/voice-bot-TTS-provider-rules-and-voice-picker-are-responsive-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/voice-bot.spec.js:84:1 › component drawers preserve approved ASR and LLM structure 
+  1 interrupted
+    [desktop-chromium] › tests/ui/voice-bot.spec.js:111:1 › TTS provider rules and voice picker are responsive 
+  9 did not run
+  12 passed (23.6s)

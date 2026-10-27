@@ -1,0 +1,50 @@
+
+Running 6 tests using 1 worker
+
+(node:66529) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px zh (1.0s)
+  ✓  2 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 1440px en (705ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px zh (717ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 390px en (650ms)
+  ✓  5 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 650px en (645ms)
+  ✘  6 [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 701px en (719ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 701px en 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 81
+    Received:    78
+
+      31 |     expect(Math.abs(after.header[i].width-before.header[i].width)).toBeLessThan(1);
+      32 |     const center=(after.header[i].left+after.header[i].right)/2;
+    > 33 |     expect(center).toBeGreaterThanOrEqual(after.cells[i].left);
+         |                    ^
+      34 |     expect(center).toBeLessThanOrEqual(after.cells[i].right);
+      35 |    }
+      36 |   }else {
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-vocab-header.spec.js:33:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-vocab-header-frozen-voc-39b49-t-audio-columns-at-701px-en-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-vocab-header.spec.js:19:2 › frozen vocabulary header and input/audio columns at 701px en 
+  5 passed (4.9s)

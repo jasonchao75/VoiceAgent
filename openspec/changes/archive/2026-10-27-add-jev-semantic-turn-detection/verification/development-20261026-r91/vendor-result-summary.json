@@ -1,0 +1,38 @@
+{
+  "evidence_level": "external-real ASR adapter/SDK and production normalization only",
+  "status": "ok",
+  "connections": 1,
+  "elapsed_ms": 11737.979166995501,
+  "events": 26,
+  "final_events": 1,
+  "all_ranges_present": true,
+  "final_text": "please do not cancel my booking. I would like to change the time.",
+  "partial_rewrites": [
+    {
+      "event_index": 3,
+      "before": "please do not test",
+      "after": "please do not cancel my"
+    },
+    {
+      "event_index": 6,
+      "before": "please do not cancel my booking.",
+      "after": "please do not cancel my booking"
+    },
+    {
+      "event_index": 10,
+      "before": "please do not cancel my booking.",
+      "after": "please do not cancel my booking"
+    }
+  ],
+  "negation_present_in_final": true,
+  "actual_billed_cost_usd": null,
+  "conservative_connection_price_bound_usd": "0.00385",
+  "not_proven": [
+    "same-range Final after TD Partial commit cancellation/reanswer",
+    "real Jev timing competition",
+    "word timing truth/WPM",
+    "other models/languages/reconnect",
+    "real LLM tools/TTS cancellation",
+    "hardware/weak network/mobile/new latency"
+  ]
+}

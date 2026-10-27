@@ -1,0 +1,37 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm[24000-False] _
+
+sample_rate = 24000, fail = False
+
+    @pytest.mark.parametrize('sample_rate,fail', [(24000, False), (16000, True)])
+    async def test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm(sample_rate, fail):
+>       assert util.find_spec('src.tts.unit_synthesis') is not None, 'Fixed-unit renderer absent'
+E       AssertionError: Fixed-unit renderer absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x10566e8e0>('src.tts.unit_synthesis')
+E        +    where <function find_spec at 0x10566e8e0> = util.find_spec
+
+tests/test_echo_synthesis.py:14: AssertionError
+_ test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm[16000-True] __
+
+sample_rate = 16000, fail = True
+
+    @pytest.mark.parametrize('sample_rate,fail', [(24000, False), (16000, True)])
+    async def test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm(sample_rate, fail):
+>       assert util.find_spec('src.tts.unit_synthesis') is not None, 'Fixed-unit renderer absent'
+E       AssertionError: Fixed-unit renderer absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x10566e8e0>('src.tts.unit_synthesis')
+E        +    where <function find_spec at 0x10566e8e0> = util.find_spec
+
+tests/test_echo_synthesis.py:14: AssertionError
+=============================== warnings summary ===============================
+tests/test_echo_synthesis.py::test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm[24000-False]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_echo_synthesis.py::test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm[24000-False]
+FAILED tests/test_echo_synthesis.py::test_unit_renderer_uses_fixed_settings_and_validates_actual_pcm[16000-True]
+2 failed, 1 warning in 0.04s

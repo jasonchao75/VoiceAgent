@@ -1,0 +1,51 @@
+.....FF                                                                  [100%]
+=================================== FAILURES ===================================
+____ test_same_mixed_final_keeps_applied_value_and_reanswer_does_not_replay ____
+
+    async def test_same_mixed_final_keeps_applied_value_and_reanswer_does_not_replay():
+        from src.asr.transcript import SourceSegment, TranscriptView
+        handlers, boundary, owner, state = tools()
+        snapshot = TranscriptView('号码123', False,
+                                  (SourceSegment(0, 'a', 1, 0, 1000, '号码123', False),))
+        handlers.bind_snapshot(owner.current, snapshot, '编号')
+        outputs = []
+        await handlers.submit(params(boundary, 'submit_identifier', {'identifier': '123'}, outputs))
+        restart = owner.finalize(turn_id='1', source_ids=((0, 'a'),), revision=2, text='号码123')
+        final = TranscriptView('号码123', True,
+                               (SourceSegment(0, 'a', 2, 0, 1000, '号码123', True),))
+        handlers.bind_snapshot(restart.new_response, final, '编号')
+        await handlers.submit(params(boundary, 'submit_identifier', {'identifier': '123'}, outputs))
+>       assert state.value == '123' and outputs[-1]['value'] == '123'
+E       AssertionError: assert ('' == '123'
+E         
+E         - 123)
+
+tests/test_td_identifier_tools.py:113: AssertionError
+___ test_reanswer_cannot_reuse_success_for_number_absent_from_revised_input ____
+
+    async def test_reanswer_cannot_reuse_success_for_number_absent_from_revised_input():
+        from src.asr.transcript import SourceSegment, TranscriptView
+        handlers, boundary, owner, state = tools()
+        outputs = []
+        await handlers.submit(params(boundary, 'submit_identifier', {'identifier': '123'}, outputs))
+        restart = owner.finalize(turn_id='1', source_ids=((0, 'a'),), revision=2, text='号码321')
+        snapshot = TranscriptView('号码321', True,
+                                  (SourceSegment(0, 'a', 2, 0, 1000, '号码321', True),))
+        handlers.bind_snapshot(restart.new_response, snapshot, '编号')
+        await handlers.submit(params(boundary, 'submit_identifier', {'identifier': '123'}, outputs))
+>       assert outputs[-1]['status'] == 'invalid'
+E       AssertionError: assert 'submitted' == 'invalid'
+E         
+E         - invalid
+E         + submitted
+
+tests/test_td_identifier_tools.py:126: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_same_mixed_final_keeps_applied_value_and_reanswer_does_not_replay
+FAILED tests/test_td_identifier_tools.py::test_reanswer_cannot_reuse_success_for_number_absent_from_revised_input
+2 failed, 5 passed, 1 warning in 1.13s

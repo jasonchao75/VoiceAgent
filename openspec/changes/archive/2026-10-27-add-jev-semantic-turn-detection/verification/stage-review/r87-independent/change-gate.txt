@@ -1,0 +1,44 @@
+WARNING: Open known_issues[1]: 普通TD/唯一提交/编号工具/缓存、WS与受控正式RTC实际回执、Final取消/编号仲裁及持久历史已有本地证据；r78完整后端706通过，D-073批准播放范围已接且API进程停启原样。剩余跨连接音频源时间、E2E源停声映射、完整UI/真实厂商及设备/采用未闭环。D-049不做含义判断。
+WARNING: Open known_issues[12]: Flux原始Update桥接、Speechmatics metadata/fragments（含null详情）及自建端点隔离已实现并通过fixture；真实六模型回包、时间覆盖与重连兼容仍未验证，不以来源选项可见宣称兼容。
+WARNING: Open known_issues[15]: 已知来源/非法范围、匿名/混合快照缺口、同SDK快照恢复、接收任务代次与无上下文回调不猜当前连接、D-061有界失败均有本地证据。跨连接绝对音频时钟、真实六模型范围/修订/重连仍未验证，整体Open。
+WARNING: Open known_issues[17]: 严格全输入编号/WPM/保护/提醒/工具与混合修订已有SDK及正式WS/受控RTC证据；r84研发B本地真实API存储矩阵完成。真实模型语速、设备及独立C仍未验证。
+WARNING: Open known_issues[20]: 速度/编号工具不可变来源、幂等与Final结果共享已通过SDK；WS清空/停播/缓存代次组合通过。完整网络传输/真实厂商取消及RTC停止仍未验证，整体保持Open。
+WARNING: Open known_issues[25]: 来源D-061、普通TD/编号工具/缓存、实际WS与开发RTC任务仲裁及D-073播放范围已接。剩余跨连接绝对音频源时钟、六模型真实范围/修订/重连、E2E源端时钟、完整UI与最终独立审核；不再把已通过的RTC任务仲裁列为未接。
+WARNING: Open known_issues[33]: WS/开发RTC以实际Worklet任务身份和认证回执证明播放/停止，D-073范围不取回执时刻当精确值；旧标量不回填。尚缺真实厂商、硬件声学出声、弱网/手机和完整E2E源时钟，默认RTC未替换。
+WARNING: Open known_issues[37]: WS已补正式API/永久缓存/SDK受控清空/Worklet的完整编号网络组合：续说保留在播跟读、混合提问正常排队、清空停旧代次并拒绝其待播。SDK其他优先级矩阵已有证据；RTC逐任务映射/编号串行与真实厂商仍未闭环。
+WARNING: Open known_issues[38]: 纯/混合成功换代、旧纯范围跨续说改混合句回流、只提交/写入一次和已提交旧turn隔离均通过SDK；WS修订补读与清空停播组合通过。完整浏览器/厂商网络、RTC及失败恢复仍未验证。
+WARNING: Open known_issues[47]: 配置/缓存草稿及真实本地API/持久化已有r40/r45证据；r82配置/历史/Share固定fixture矩阵与双语错误状态完成Checkpoint A。真实TTS/音质、完整B故障组合与独立C可访问性仍缺，不扩展A证据层级。
+WARNING: Open known_issues[59]: 全目录mypy在numpy/__init__.pyi:737遇到Python3.12 type语法，项目mypy目标3.11；未将该失败宣称通过。需分离本次相关源文件检查与既有全目录依赖环境问题。 本次相关34源文件检查已通过，保留全目录环境限制。
+WARNING: Open known_issues[79]: 正式TD/Jev、新旧历史语言入口已接；原对话/事件值/来源ID排除翻译，动态候选状态和普通回复标签分片翻译。旧指标不重算，重复打开单控件，8历史视口通过。全部动态文案/全状态及视觉可访问性矩阵仍未闭环。
+WARNING: Open known_issues[80]: 旧原音轨清队列取消与D-068开发候选的实际任务停止/Final接续、完整编号串行均有本地正式入口证据。仍不证明硬件零残留/弱网实机或默认采用；这些剩余边界继续Open。
+WARNING: Open known_issues[101]: 2026-10-22官方models页称jev-latest指向jev-1.13.0，但D-053两次真实响应均为jev-1.14.0。接口与基本概率格式通过；别名版本与文档不一致，后续校准必须保留实际版本，不能据两例保证版本稳定或语言质量。
+WARNING: Open known_issues[102]: RTC交付阻塞已收敛：锁定SDK只把frame.audio传入RawAudioTrack，任务身份未进入RTP；SerialAudioOutput/IdentifierOutput仅WS接入。现有原生audio无法据此提供P11逐任务开播/停止，不能直接接串行器后用发送EOS释放播放权。需明确方案边界，暂停未经批准的媒体架构改动。
+WARNING: Open known_issues[115]: D-055首条Flux范围失败；D-057定位重叠词误拒、D-059确认前15事件恢复后又遇浮点边界误拒，两项已离线修复。每次均首例失败停止；仍未得到完整单连接成功或其他8例真实证据。
+WARNING: Open known_issues[119]: D-058真实TTS首条one连接在15秒合成时限超时，约16.19秒含关闭开销；整批停止，two/清空文本未执行，无重试。尚不知权限/SDK协议/服务原因，不能宣称TTS兼容。
+WARNING: Open known_issues[122]: D-060已实现隔离来源账本/真实Opus原PTS→RTP→实际解码坐标sidecar，5包哈希/PTS一致，起点-312，1个解码帧跨两任务；只证明坐标链，不证明跨编解码滤波的样本归属或浏览器任务渲染。按首关键关口未证明停止，Final/编号/延迟手机未运行，不替换正式播放链。
+WARNING: Open known_issues[136]: 阶段收敛审计发现D-060实验以排他解码样本归属作停止字段，比P11逐任务可靠渲染对应更强；false不能单独证明契约不可实现。实验也尚未实现浏览器映射/正式仲裁，需阶段评审确认可审计的跨界处理及实际回执验收条件，不重启已停止调查。
+WARNING: Open known_issues[149]: D-068字段修复后的正式RTC复测出现原生writer 10秒超时，尚无任务开播证据；停止当前浏览器批次，需据已留trace核对传输/worker原因，不宣称映射或闭环通过。
+WARNING: Open known_issues[179]: r79默认mypy目标3.11与本机3.13 numpy存根type语法不兼容，检查在依赖解析阶段停止。显式3.13无增量本模块通过；部署3.11未验证，不以此替代。
+WARNING: Open unverified_items[1]: Jev正式客户端两条虚构英文文本真实接口测试通过；仅基本连通/概率格式与两例区分，不证明语言效果、P95、真实音频流水线、并发或全部异常兼容。
+WARNING: Open unverified_items[2]: ASR修订去重/跟读队列已有本地SDK/WS证据；真实六模型时间覆盖、物理回声及真人双讲未验证，不用fixture证明设备效果。
+WARNING: Open unverified_items[3]: r82正式路由/组件固定fixture的Checkpoint A矩阵已闭环；完整本地真实API B故障矩阵、独立C及真实厂商/设备效果仍待完成，原型不冒充正式数据。
+WARNING: Open unverified_items[4]: 事件映射已有实际SDK/fixture与部分Flux真实证据；未证明其他目标模型/真实重连和完整时间覆盖，不把字段存在当厂商兼容。
+WARNING: Open unverified_items[5]: 历史v0.12为原型；正式缓存/发布检查/显式生成/双单元试听/间隔保存/隔离/失败重试/进程重启保持已有本地API浏览器证据，音频为合成fixture。真实TTS音质、发布后缓存故障完整浏览器矩阵及动态语速组合仍未验证。
+WARNING: Open unverified_items[6]: r84/85四家六模型新固定数字素材基本来源范围/Partial/Final实际通过；真实多场景修订/重连、跨连接时钟/语言效果仍未验证，不扩大单例结论。
+WARNING: Open unverified_items[8]: D-049替代实质改义门槛；SDK上下文单次提交与真实本地WS/浏览器AudioWorklet取消旧Partial再播放Final已验证。真实厂商LLM/TTS取消残留、完整工具副作用组合与RTC仍未验证。
+WARNING: Open unverified_items[9]: AEC静态核查：项目创建WebSocket/SmallWebRTC传输未显式指定echoCancellation；锁定依赖包含audio:true采集实现，不能据此推断实际音轨AEC关闭或已有效。后续需分别确认活跃采集路径、实际音轨设置及耳机/外放双讲效果，当前未实机测试；继续优先浏览器AEC、不预先新增服务端模块。
+WARNING: Open unverified_items[12]: D-073已用真实Worklet帧和认证nonce因果前后锚建立服务端时间范围，WS/开发RTC/持久化/UI通过。client_elapsed_ms仍只是主线程收件时刻，不用来当硬件首播；硬件出声与E2E源端停声关联仍未验证/未实现，具体缺口见R78-E2E-SOURCE-END-CLOCK。
+WARNING: Open unverified_items[13]: 本地.env Key已在D-053两次真实Jev请求成功使用；未打印/入库/写证据。正式Bot尚未配置、不自动读取该变量；其他调用仍须逐批授权。
+WARNING: Open unverified_items[15]: D-055原ASR批次首连接范围失败，D-057定位复测同样首缺口停止并证明重叠词被拒；已离线修复、未再真实验证。D-058 TTS首请求超时后停止，剩余未执行；三批不得重放。
+WARNING: Open unverified_items[17]: r45验证的是已发布Bot的正式Web测试（草稿快照）；该会话resource_version为null，不能证明发布资源manifest或公开RTC入口恢复。发布配置固定/版本隔离有SDK测试，但公开入口RTC任务仲裁未接，仍属R1/M4缺口。46.34ms仅本地替身资源恢复耗时，不是厂商延迟。
+WARNING: Open unverified_items[18]: D-062首条范围兼容通过，但虚构Albert合成英文实际识别明显偏离固定原文（如booking被识别为putty here）；仅一次人工可见错误，不据此报告整体WER、语言/语义效果或真实说话人质量通过。
+WARNING: Open unverified_items[19]: r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。
+WARNING: Open unverified_items[20]: D-065只证明flux-alexis-en/24k mono PCM16/one单次真实单元合成。未试听/实播、未测其他文本/音色/采样率/厂商取消或正式缓存/RTC全链；3计费字符不是实际账户美元账单。
+WARNING: Open unverified_items[22]: r68/r69已通过受控正式开发RTC任务映射、Final取消、编号仲裁及鉴权回执。默认链未替换；r70仅有限n=1局部时间观察，精确新增E2E、手机/Safari/弱网/听感/AEC/目标容量仍未证明。
+WARNING: Open unverified_items[23]: 本地同输入有效观测原链41.1ms/候选25.9ms（控制消息→输出探针回调），但原链captureStream额外延迟未校准、n=1，不能解释为改善或精确新增E2E/P95/硬件/手机结论。
+WARNING: Open unverified_items[26]: r81正式WS配置VAD停声源样本→Worklet渲染E2E范围已实现并通过真实本地入口/Final/回执、双视口双语、两端完整证据审计及应用进程停启原样；RTC上行源时钟仍未实现。硬件ADC/声学、真实厂商/手机/弱网仍未验证，不以WS替代全范围。 【r87更新】受控正式入口已证明认证源端→渲染范围及Final/重启；原缺失描述为历史。默认采用/设备/完整延迟和重连仍未验证，保持Open。
+WARNING: Open unverified_items[32]: RTC同包采集元数据→服务器processed PCM已通过，但仍需以同worker采集时钟认证挑战/回执、输入范围有界回填与候选VAD边界冻结后拼接播放锚；当前RTC E2E仍缺失。新增sender旁路的增量延迟/设备兼容也未测，不默认采用。 【r87更新】受控正式入口已证明认证源端→渲染范围及Final/重启；原缺失描述为历史。默认采用/设备/完整延迟和重连仍未验证，保持Open。
+WARNING: Open unverified_items[33]: 本机Python3.13 NumPy类型文件使用3.12语法，默认3.11 mypy解析失败；按实际3.13运行时检查78源文件通过。Python3.11目标环境检查仍未验证。
+WARNING: Open unverified_items[34]: 本地RTC两响应保守E2E为598–1335ms、815–1841ms，误差边界宽；只证明有界来源关联，不证明精确延迟或低延迟目标达标。新增链路同输入延迟对照仍未验证。
+WARNING: 51 tasks remain unchecked
+PASS: 0 errors, 43 warning(s)

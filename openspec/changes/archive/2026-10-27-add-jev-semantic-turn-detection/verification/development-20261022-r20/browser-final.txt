@@ -1,0 +1,39 @@
+
+Running 26 tests using 1 worker
+
+(node:13581) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 320px viewport overflow-safe (555ms)
+  ✓   2 [desktop-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 375px viewport overflow-safe (188ms)
+  ✓   3 [desktop-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 390px viewport overflow-safe (282ms)
+  ✓   4 [desktop-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 430px viewport overflow-safe (184ms)
+  ✓   5 [desktop-chromium] › tests/ui/mobile-demo.spec.js:45:1 › mobile fixture exposes reconnecting and ended states (235ms)
+  ✓   6 [desktop-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes ready state (152ms)
+  ✓   7 [desktop-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes connecting state (133ms)
+  ✓   8 [desktop-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes error state (134ms)
+  ✓   9 [desktop-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes ended state (149ms)
+  ✓  10 [desktop-chromium] › tests/ui/mobile-demo.spec.js:72:1 › microphone denial does not allocate a public session (268ms)
+  ✓  11 [desktop-chromium] › tests/ui/mobile-demo.spec.js:107:1 › mobile transcript consumes spoken TTS text including the opening message (1ms)
+  ✓  12 [desktop-chromium] › tests/ui/mobile-demo.spec.js:115:1 › all unavailable metadata states use one safe visitor message (200ms)
+(node:13631) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  13 [desktop-chromium] › tests/ui/td-webrtc-runtime.spec.js:13:1 › formal mobile route establishes the existing WebRTC audio track with local TD (8.4s)
+(node:13652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  14 [narrow-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 320px viewport overflow-safe (217ms)
+  ✓  15 [narrow-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 375px viewport overflow-safe (184ms)
+  ✓  16 [narrow-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 390px viewport overflow-safe (280ms)
+  ✓  17 [narrow-chromium] › tests/ui/mobile-demo.spec.js:10:3 › mobile fixture keeps the 430px viewport overflow-safe (183ms)
+  ✓  18 [narrow-chromium] › tests/ui/mobile-demo.spec.js:45:1 › mobile fixture exposes reconnecting and ended states (240ms)
+  ✓  19 [narrow-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes ready state (134ms)
+  ✓  20 [narrow-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes connecting state (148ms)
+  ✓  21 [narrow-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes error state (150ms)
+  ✓  22 [narrow-chromium] › tests/ui/mobile-demo.spec.js:65:3 › mobile fixture exposes ended state (149ms)
+  ✓  23 [narrow-chromium] › tests/ui/mobile-demo.spec.js:72:1 › microphone denial does not allocate a public session (248ms)
+  ✓  24 [narrow-chromium] › tests/ui/mobile-demo.spec.js:107:1 › mobile transcript consumes spoken TTS text including the opening message (0ms)
+  ✓  25 [narrow-chromium] › tests/ui/mobile-demo.spec.js:115:1 › all unavailable metadata states use one safe visitor message (193ms)
+(node:13681) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  26 [narrow-chromium] › tests/ui/td-webrtc-runtime.spec.js:13:1 › formal mobile route establishes the existing WebRTC audio track with local TD (7.1s)
+
+  26 passed (21.4s)

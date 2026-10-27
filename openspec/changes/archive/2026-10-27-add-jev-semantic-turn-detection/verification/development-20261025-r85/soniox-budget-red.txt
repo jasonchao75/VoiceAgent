@@ -1,0 +1,61 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+______ test_soniox_plan_reserves_tokens_instead_of_claiming_an_hourly_cap ______
+
+    def test_soniox_plan_reserves_tokens_instead_of_claiming_an_hourly_cap():
+        """Token billing needs explicit headroom and a bounded receive policy."""
+>       plan = probe().build_plan(single_vendor='soniox')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_vendor_probe.py:384: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def build_plan(
+        *, diagnostic: bool = False, repair_confirmation: bool = False,
+        fresh_digits: bool = False,
+        remaining_deepgram: bool = False,
+        single_vendor: str | None = None,
+    ) -> dict[str, Any]:
+        """Freeze nine model/file pairs and conservative public-price connection bounds."""
+        if sum((diagnostic, repair_confirmation, fresh_digits, remaining_deepgram,
+                single_vendor is not None)) > 1:
+            raise ValueError('Choose one exact batch scope')
+        if single_vendor not in {None, 'assemblyai', 'speechmatics'}:
+>           raise ValueError('Unsupported exact batch scope')
+E           ValueError: Unsupported exact batch scope
+
+scripts/evaluation/probe_td_compatibility.py:38: ValueError
+_____ test_token_guard_stops_abnormal_output_before_forwarding_more_audio ______
+
+    async def test_token_guard_stops_abnormal_output_before_forwarding_more_audio():
+        """Count every reported token including repeated snapshots; do not undercount revisions."""
+        import json
+        class Socket:
+            def __init__(self):
+                self.messages = iter([json.dumps({'tokens': [{'text': '1'}]}),
+                                      json.dumps({'tokens': [{'text': '1'}, {'text': '2'}]})])
+                self.closed = False
+                self.sent = []
+    
+            def __aiter__(self):
+                return self
+    
+            async def __anext__(self):
+                return next(self.messages)
+    
+            async def close(self):
+                self.closed = True
+    
+            async def send(self, data):
+                self.sent.append(data)
+    
+        socket = Socket()
+>       wrapper = probe().TokenBoundSocket(socket, limit=2)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'scripts.evaluation.probe_td_compatibility' has no attribute 'TokenBoundSocket'
+
+tests/test_td_vendor_probe.py:417: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_soniox_plan_reserves_tokens_instead_of_claiming_an_hourly_cap
+FAILED tests/test_td_vendor_probe.py::test_token_guard_stops_abnormal_output_before_forwarding_more_audio
+2 failed, 22 deselected in 0.06s

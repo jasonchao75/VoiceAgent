@@ -1,0 +1,95 @@
+{
+  "temporary_directory": "/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/voiceagent-stage-reconstruct-7lol2zgw",
+  "archive_sha256": "79444c3e3a3e6a728dd8fd1077948d3f75df8ea0fb52d636d116e5ca4f708288",
+  "patch_application": [
+    {
+      "round": 49,
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "round": 50,
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "round": 51,
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "files": [
+    {
+      "path": "frontend/src/main.js",
+      "reconstructed_sha256": "b66623ca627774c5c4a93cd4d6c0b4379376b1d713cf2c655f51a2708514db23",
+      "current_sha256": "b66623ca627774c5c4a93cd4d6c0b4379376b1d713cf2c655f51a2708514db23",
+      "matches": true
+    },
+    {
+      "path": "frontend/tests/ui/td-history-recovery.spec.js",
+      "reconstructed_sha256": "6bf9b32643d862c56b31d0a75eb7b42c64e333b23e181e4e48c80762876ed4ef",
+      "current_sha256": "6bf9b32643d862c56b31d0a75eb7b42c64e333b23e181e4e48c80762876ed4ef",
+      "matches": true
+    },
+    {
+      "path": "scripts/evaluation/probe_td_compatibility.py",
+      "reconstructed_sha256": "c37980250fcc20aa98e641b060b278f9bf7e97213f68f28bdb389217847a6b6c",
+      "current_sha256": "c37980250fcc20aa98e641b060b278f9bf7e97213f68f28bdb389217847a6b6c",
+      "matches": true
+    },
+    {
+      "path": "scripts/evaluation/probe_td_tts.py",
+      "reconstructed_sha256": "cc46129d79e99b1a1e716e650d2cc1e879762a724f3457c5a5908aee404aaa48",
+      "current_sha256": "cc46129d79e99b1a1e716e650d2cc1e879762a724f3457c5a5908aee404aaa48",
+      "matches": true
+    },
+    {
+      "path": "src/asr/factory.py",
+      "reconstructed_sha256": "77b5fb190c4910f864ef15182afbb363162b703fd28e27a2a77dd2d88c10a31f",
+      "current_sha256": "77b5fb190c4910f864ef15182afbb363162b703fd28e27a2a77dd2d88c10a31f",
+      "matches": true
+    },
+    {
+      "path": "src/asr/transcript.py",
+      "reconstructed_sha256": "d5e33401e82baf8b6c91df95cd1578261770cf083ed41b289c817d43dfcd65d2",
+      "current_sha256": "d5e33401e82baf8b6c91df95cd1578261770cf083ed41b289c817d43dfcd65d2",
+      "matches": true
+    },
+    {
+      "path": "src/asr/turn_events.py",
+      "reconstructed_sha256": "55283c7bdedef0261b60679e409871cd78737d1770813cfb9c66368e61c02945",
+      "current_sha256": "55283c7bdedef0261b60679e409871cd78737d1770813cfb9c66368e61c02945",
+      "matches": true
+    },
+    {
+      "path": "tests/test_td_asr_events.py",
+      "reconstructed_sha256": "4d646e56135bb3c7347ff94a3ad543951417b5703176006cc10ce7a80cc871cc",
+      "current_sha256": "4d646e56135bb3c7347ff94a3ad543951417b5703176006cc10ce7a80cc871cc",
+      "matches": true
+    },
+    {
+      "path": "tests/test_td_transcript.py",
+      "reconstructed_sha256": "668bb9758e2603e6c3b143d97c5549bbf8adcd0dcf113e93613f4226b6b14eac",
+      "current_sha256": "668bb9758e2603e6c3b143d97c5549bbf8adcd0dcf113e93613f4226b6b14eac",
+      "matches": true
+    },
+    {
+      "path": "tests/test_td_tts_vendor_probe.py",
+      "reconstructed_sha256": "2ca57a765ae20f614d64b9729eb5b26e0bbb73310ab6e44867873bb96b87188b",
+      "current_sha256": "2ca57a765ae20f614d64b9729eb5b26e0bbb73310ab6e44867873bb96b87188b",
+      "matches": true
+    },
+    {
+      "path": "tests/test_td_vendor_probe.py",
+      "reconstructed_sha256": "43d317d8754281a30f6d3a88c92a618636cdbd68f21a165c8e47b1128acdb43b",
+      "current_sha256": "43d317d8754281a30f6d3a88c92a618636cdbd68f21a165c8e47b1128acdb43b",
+      "matches": true
+    }
+  ],
+  "all_current_source_matches": true,
+  "archived_source_check": {
+    "files": 159,
+    "mismatches": [],
+    "scope": "Only archived src/frontend/tests/scripts inputs; no claim that all repository files were archived"
+  }
+}

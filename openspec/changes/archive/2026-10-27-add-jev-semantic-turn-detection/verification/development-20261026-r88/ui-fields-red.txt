@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:57858) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route (5.8s)
+
+
+  1) [desktop-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  locator('#number-length')
+    Expected: disabled
+    Received: enabled
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeDisabled" locator('#number-length') with timeout 5000ms
+      - waiting for locator('#number-length')
+        14 × locator resolved to <input min="1" step="1" value="16" required="" type="number" id="number-length"/>
+           - unexpected value "enabled"
+
+
+      139 |  await page.locator('#td-entry').click();await page.locator('[data-td="rules"]').click();
+      140 |  const fields=['number-length','collection-timeout','collection-message','overflow-message'];
+    > 141 |  for(const id of fields)await expect(page.locator('#'+id)).toBeDisabled();
+          |                                                            ^
+      142 |  await page.locator('#collection-enabled').check();
+      143 |  for(const id of fields)await expect(page.locator('#'+id)).toBeEnabled();
+      144 |  await page.locator('#number-length').fill('16');await page.locator('#collection-timeout').fill('8000');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-settings.spec.js:141:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-settings-number-complet-5fb96-as-null-on-the-formal-route-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-settings.spec.js:115:1 › number completeness disabled fields load, toggle and save as null on the formal route 

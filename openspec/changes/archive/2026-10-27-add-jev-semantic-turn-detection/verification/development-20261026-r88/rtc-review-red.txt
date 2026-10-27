@@ -1,0 +1,1 @@
+{"requestsStarted":1,"failureCallbacks":0,"stopReceiptBlocked":true}

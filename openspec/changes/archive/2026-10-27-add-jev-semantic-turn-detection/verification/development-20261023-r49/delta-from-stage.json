@@ -1,0 +1,35 @@
+{
+  "scope": "necessary offline W2 fix after sealed stage review inputs",
+  "base_snapshot": "96e44d90c51aad49186d638334391f779aad8067ffa97af8a03b339f64870ad7",
+  "original_archive_sha256": "79444c3e3a3e6a728dd8fd1077948d3f75df8ea0fb52d636d116e5ca4f708288",
+  "original_archive_unchanged": true,
+  "source_files": [
+    {
+      "path": "src/asr/transcript.py",
+      "stage_sha256": "2762e04e063c5e47f8d1431f33fbc7aa7d0de9836fd50aa78b7f2013d17db86b",
+      "current_sha256": "d5e33401e82baf8b6c91df95cd1578261770cf083ed41b289c817d43dfcd65d2"
+    },
+    {
+      "path": "src/asr/turn_events.py",
+      "stage_sha256": "7b38c2f73e5c66e047f2c5a459f42300eee89258c689bce01be572784faecad0",
+      "current_sha256": "55283c7bdedef0261b60679e409871cd78737d1770813cfb9c66368e61c02945"
+    },
+    {
+      "path": "src/asr/factory.py",
+      "stage_sha256": "827e3c2dd98263c88e916fa51d1bb46ab5c4aed7a98d9ff8f4a2aebf1054637f",
+      "current_sha256": "77b5fb190c4910f864ef15182afbb363162b703fd28e27a2a77dd2d88c10a31f"
+    },
+    {
+      "path": "tests/test_td_asr_events.py",
+      "stage_sha256": "cd755a8a8bc1e71f88ac76cc05f18036cdfe79e59af5aa9c66202663bcf20039",
+      "current_sha256": "4d646e56135bb3c7347ff94a3ad543951417b5703176006cc10ce7a80cc871cc"
+    },
+    {
+      "path": "tests/test_td_transcript.py",
+      "stage_sha256": "81d5636cef83dae43d1180cde74bfb556c26c9365b3a4f1d547e5873e66fc36c",
+      "current_sha256": "668bb9758e2603e6c3b143d97c5549bbf8adcd0dcf113e93613f4226b6b14eac"
+    }
+  ],
+  "patch_sha256": "f908ab6237256fbcbae6e3aa49d2578dd2af784eab24a4c9ae8b724e26754755",
+  "not_a_final_candidate": true
+}

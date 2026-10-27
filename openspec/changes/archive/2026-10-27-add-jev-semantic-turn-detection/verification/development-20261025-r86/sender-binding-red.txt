@@ -1,0 +1,24 @@
+✔ renderer-only state does not escape strict API receipt schema (0.436416ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (0.121458ms)
+✖ capture metadata observation binds the sender without changing the receiver worker (0.10625ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35.747041
+
+✖ failing tests:
+
+test at frontend/tests/unit/td-rtc-entry.test.js:24:1
+✖ capture metadata observation binds the sender without changing the receiver worker (0.10625ms)
+  TypeError: Cannot read properties of undefined (reading 'worker')
+      at TestContext.<anonymous> (file:///Volumes/work/OpenCode/VoiceAgent/frontend/tests/unit/td-rtc-entry.test.js:32:32)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)

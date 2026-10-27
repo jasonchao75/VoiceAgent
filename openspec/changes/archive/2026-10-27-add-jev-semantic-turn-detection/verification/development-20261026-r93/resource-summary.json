@@ -1,0 +1,25 @@
+{
+  "evidence_level": "local-real Linux arm64 cgroup limits/browser transport/persistence; fixture inference",
+  "python": "3.11.17 Linux aarch64",
+  "memory_max_bytes": 1073741824,
+  "cpu_max": "100000 100000",
+  "cpuset": "0",
+  "memory_peak_bytes": 180248576,
+  "memory_peak_mib": 171.8984375,
+  "oom_kill": 0,
+  "sample_count": 1199,
+  "server_rss_max_mib": 205.765625,
+  "sampled_event_loop_max_delay_ms": 73.38391699991007,
+  "sampled_pending_max": 0,
+  "sampled_processing_max": 0,
+  "sampler_period_ms": 100,
+  "caveats": [
+    "sampled zero queue does not prove zero transient queue",
+    "RSS includes shared pages; cgroup charge is a different measure",
+    "loop delay over observation window, not new-chain latency",
+    "single cold/warm WS calls, no capacity distribution or load concurrency",
+    "real Silero separate silence job, live WS VAD/inference is fixture",
+    "host browser resources outside server cgroup",
+    "not x86_64, physical smartphone, RTC, weak network or external vendors"
+  ]
+}

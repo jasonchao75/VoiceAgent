@@ -1,0 +1,24 @@
+
+==================================== ERRORS ====================================
+_________________ ERROR collecting tests/test_td_rtp_writer.py _________________
+ImportError while importing test module '/Volumes/work/OpenCode/VoiceAgent/tests/test_td_rtp_writer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_td_rtp_writer.py:7: in <module>
+    from src.pipeline.rtp_output import RTPCandidateWriter
+E   ModuleNotFoundError: No module named 'src.pipeline.rtp_output'
+------------------------------- Captured stderr --------------------------------
+2026-10-24 06:49:09.258 | INFO     | pipecat:<module>:54 - ᓚᘏᗢ Pipecat 1.8.1 (Python 3.13.2 (v3.13.2:4f8bb3947cf, Feb  4 2025, 11:51:10) [Clang 15.0.0 (clang-1500.3.9.4)]) ᓚᘏᗢ
+2026-10-24 06:49:09.785 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_td_rtp_writer.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 warning, 1 error in 1.08s

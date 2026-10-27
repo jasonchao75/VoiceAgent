@@ -1,0 +1,28 @@
+{
+  "all_sentinel_no_real_data": true,
+  "r92_missing_input_attribution_retracted": true,
+  "old_native_exports": {
+    "before": [
+      ".dockerignore",
+      "Dockerfile",
+      "frontend/.env",
+      "frontend/demo.html",
+      "frontend/evaluation.html",
+      "frontend/index.html",
+      "frontend/login.html",
+      "frontend/node_modules/inert.txt",
+      "scripts/deploy/verify_webrtc_production.py"
+    ],
+    "current": [
+      ".dockerignore",
+      "Dockerfile",
+      "frontend/.env",
+      "frontend/demo.html",
+      "frontend/evaluation.html",
+      "frontend/index.html",
+      "frontend/login.html",
+      "frontend/node_modules/inert.txt",
+      "scripts/deploy/verify_webrtc_production.py"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:47092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:275:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.7s)
+
+  1 passed (2.2s)

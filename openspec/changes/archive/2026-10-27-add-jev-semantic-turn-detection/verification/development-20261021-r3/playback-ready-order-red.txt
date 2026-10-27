@@ -1,0 +1,26 @@
+......F                                                                  [100%]
+=================================== FAILURES ===================================
+_______ test_ready_order_does_not_restore_echo_after_normal_or_overflow ________
+
+    def test_ready_order_does_not_restore_echo_after_normal_or_overflow():
+        """P03/P01 must hold when a delayed audio synthesis completes after its replacement."""
+        for kind in ('normal', 'overflow'):
+            player = arbiter()
+            player.enqueue(playback_id='answer', kind=kind, generation=0,
+                           source_id='response', revision=1, source_order=2)
+            echo = queue(player, 'late', final_segment=True)
+>           assert echo.status == 'cancelled_unplayed'
+E           AssertionError: assert 'queued' == 'cancelled_unplayed'
+E             
+E             - cancelled_unplayed
+E             + queued
+
+tests/test_td_playback.py:174: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_playback.py::test_send_is_unknown_until_actual_client_start_and_serial_finish
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_playback.py::test_ready_order_does_not_restore_echo_after_normal_or_overflow
+1 failed, 6 passed, 1 warning in 0.92s

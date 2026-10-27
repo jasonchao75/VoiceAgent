@@ -1,0 +1,56 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (3.436875ms)
+✔ targeted clear removes future samples without claiming they rendered (1.144458ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (0.647291ms)
+✔ clock challenge is observed in an actual later quantum without changing audio (1.208125ms)
+✔ explicit original turn identity groups resumed candidates and Final response versions (0.6865ms)
+✔ legacy sessions invent no TD attempts, turns or probabilities (0.068458ms)
+node:fs:436
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/private/tmp/voiceagent-r89-review-extracted/frontend/node_modules/@pipecat-ai/websocket-transport/dist/index.js'
+    at readFileSync (node:fs:436:20)
+    at file:///private/tmp/voiceagent-r89-review-extracted/frontend/tests/unit/td-input-source.test.js:6:11
+    at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+    at async node:internal/modules/esm/loader:639:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/private/tmp/voiceagent-r89-review-extracted/frontend/node_modules/@pipecat-ai/websocket-transport/dist/index.js'
+}
+
+Node.js v25.9.0
+✖ frontend/tests/unit/td-input-source.test.js (52.15225ms)
+✔ hung start receipt has a deadline; stop cannot bypass it and failure is explicit once (3.786667ms)
+✔ server acceptance with lost HTTP response never becomes a guessed successful receipt (1.040958ms)
+✔ close aborts and settles a pending request without failure callback or queued delivery (2.021792ms)
+✔ successful receipt order and HTTP rejection keep the authenticated protocol (0.649709ms)
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (2.863834ms)
+✔ closing during a delayed probe never writes to a replaced renderer (1.581166ms)
+✔ renderer-only state does not escape strict API receipt schema (0.371084ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (1.6885ms)
+✔ capture metadata observation binds the sender without changing the receiver worker (0.299208ms)
+✔ optional sender timing capability cannot disable existing RTP playback (0.890292ms)
+✔ formal RTC entry fails and interrupts on a hung receipt instead of stalling the stop queue (5.413542ms)
+✔ native metadata waits for server epoch and uses a separate authenticated capture sampler (3.443459ms)
+✔ closing aborts metadata work without retrying a batch or touching native audio (0.7245ms)
+✔ saved 1253499us output remains bound to its own 1253500us decode job without a tolerance (23.24675ms)
+✔ real output extent disagreement remains rejected instead of guessing ownership (6.455625ms)
+✔ missing native captureTime stays missing instead of using observation time (2.615708ms)
+✔ native bytes are unchanged while async payload proof is bounded and acknowledged (1.253166ms)
+✔ display rounding expands bounds and never creates a midpoint or fake missing zero (0.287125ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 24
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2091.443791
+
+✖ failing tests:
+
+test at frontend/tests/unit/td-input-source.test.js:1:1
+✖ frontend/tests/unit/td-input-source.test.js (52.15225ms)
+  'test failed'

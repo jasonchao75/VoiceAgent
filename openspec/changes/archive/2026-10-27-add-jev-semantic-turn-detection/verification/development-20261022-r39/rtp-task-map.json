@@ -1,0 +1,133 @@
+{
+  "level": "local-real SDK/codec/serialized RTP, no network/browser playback",
+  "native_queue_has_task_identity": false,
+  "input_tasks": [
+    {
+      "id": "partial-A",
+      "samples_24k": 720
+    },
+    {
+      "id": "final-B",
+      "samples_24k": 720
+    }
+  ],
+  "source_trace": [
+    {
+      "source_pts_24k": 0,
+      "oracle_task": "partial-A"
+    },
+    {
+      "source_pts_24k": 240,
+      "oracle_task": "partial-A"
+    },
+    {
+      "source_pts_24k": 480,
+      "oracle_task": "partial-A"
+    },
+    {
+      "source_pts_24k": 720,
+      "oracle_task": "final-B"
+    },
+    {
+      "source_pts_24k": 960,
+      "oracle_task": "final-B"
+    },
+    {
+      "source_pts_24k": 1200,
+      "oracle_task": "final-B"
+    },
+    {
+      "source_pts_24k": 1440,
+      "oracle_task": null
+    },
+    {
+      "source_pts_24k": 1680,
+      "oracle_task": null
+    },
+    {
+      "source_pts_24k": 1920,
+      "oracle_task": null
+    },
+    {
+      "source_pts_24k": 2160,
+      "oracle_task": null
+    },
+    {
+      "source_pts_24k": 2400,
+      "oracle_task": null
+    }
+  ],
+  "packets": [
+    {
+      "timestamp": 3968667258,
+      "sequence": 24450,
+      "payload_bytes": 468,
+      "trigger_source_pts_24k": 480,
+      "trigger_oracle_task": "partial-A",
+      "relative_rtp_48k": 0,
+      "nominal_input_spans": [
+        {
+          "task": "partial-A",
+          "nominal_input_overlap_48k": 960
+        }
+      ]
+    },
+    {
+      "timestamp": 3968668218,
+      "sequence": 24451,
+      "payload_bytes": 439,
+      "trigger_source_pts_24k": 960,
+      "trigger_oracle_task": "final-B",
+      "relative_rtp_48k": 960,
+      "nominal_input_spans": [
+        {
+          "task": "partial-A",
+          "nominal_input_overlap_48k": 480
+        },
+        {
+          "task": "final-B",
+          "nominal_input_overlap_48k": 480
+        }
+      ]
+    },
+    {
+      "timestamp": 3968669178,
+      "sequence": 24452,
+      "payload_bytes": 485,
+      "trigger_source_pts_24k": 1440,
+      "trigger_oracle_task": null,
+      "relative_rtp_48k": 1920,
+      "nominal_input_spans": [
+        {
+          "task": "final-B",
+          "nominal_input_overlap_48k": 960
+        }
+      ]
+    },
+    {
+      "timestamp": 3968670138,
+      "sequence": 24453,
+      "payload_bytes": 356,
+      "trigger_source_pts_24k": 1920,
+      "trigger_oracle_task": null,
+      "relative_rtp_48k": 2880,
+      "nominal_input_spans": []
+    },
+    {
+      "timestamp": 3968671098,
+      "sequence": 24454,
+      "payload_bytes": 361,
+      "trigger_source_pts_24k": 2400,
+      "trigger_oracle_task": null,
+      "relative_rtp_48k": 3840,
+      "nominal_input_spans": []
+    }
+  ],
+  "critical_limit": "Native path discards identity; encoder buffers across tasks. One task per emitted packet / last input trigger is unproven. Nominal overlaps are oracle input coordinates, NOT decoded sample ownership: codec delay/resampling remain unresolved.",
+  "gate": "NO_GO_TASK_MAPPING_NOT_PROVEN",
+  "later_cases": {
+    "Final_cancel_with_task_receipt": "NOT_RUN",
+    "identifier_arbitration": "NOT_RUN",
+    "browser_latency_and_compatibility": "NOT_RUN"
+  }
+}

@@ -1,0 +1,12 @@
+......................                                                   [100%]
+=============================== warnings summary ===============================
+tests/test_td_vendor_probe.py::test_locked_production_factory_exposes_the_guarded_connection_boundary[nova-3]
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/deepgram/core/websocket_compat.py:4: DeprecationWarning: websockets.exceptions.InvalidStatusCode is deprecated
+    from websockets.exceptions import InvalidStatusCode as InvalidWebSocketStatus  # type: ignore[attr-defined]
+
+tests/test_td_vendor_probe.py::test_locked_production_factory_exposes_the_guarded_connection_boundary[nova-3]
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/websockets/legacy/__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+22 passed, 2 warnings in 4.56s

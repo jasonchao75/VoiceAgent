@@ -1,0 +1,26 @@
+..F                                                                      [100%]
+=================================== FAILURES ===================================
+__________________ test_vendor_capability_cannot_connect_udp ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d2b7950>
+
+    def test_vendor_capability_cannot_connect_udp(monkeypatch):
+        module = fixture()
+        monkeypatch.setattr(socket.socket, 'connect', lambda *_: None)
+        restore = module.install_egress_guard({'203.0.113.10'})
+        token = module.VENDOR_CONNECT.set(True)
+        try:
+            with socket.socket(type=socket.SOCK_DGRAM) as sock:
+>               with pytest.raises(RuntimeError):
+E               Failed: DID NOT RAISE <class 'RuntimeError'>
+
+tests/test_td_tts_browser_fixture.py:53: Failed
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_browser_fixture.py::test_vendor_capability_cannot_connect_udp
+1 failed, 2 passed, 1 warning in 0.03s

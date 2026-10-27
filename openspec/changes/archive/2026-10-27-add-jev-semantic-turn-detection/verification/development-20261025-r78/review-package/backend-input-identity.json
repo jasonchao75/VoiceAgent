@@ -1,0 +1,15 @@
+{
+  "prior_backend": "46 passed, 2 warnings in 2.18s",
+  "backend_inputs_identical": true,
+  "common_changed_files": [
+    "openspec/changes/add-jev-semantic-turn-detection/verification/delivery-status.json"
+  ],
+  "new_files": [
+    "frontend/tests/unit/td-audio-worklet.test.js",
+    "frontend/tests/unit/td-history.test.js",
+    "frontend/tests/unit/td-render-clock.test.js",
+    "frontend/tests/unit/td-rtc-entry.test.js",
+    "frontend/tests/unit/td-rtp-decode-job.test.js",
+    "frontend/tests/unit/td-timing.test.js"
+  ]
+}

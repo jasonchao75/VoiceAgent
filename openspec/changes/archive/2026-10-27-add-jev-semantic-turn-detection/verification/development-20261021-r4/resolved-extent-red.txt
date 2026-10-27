@@ -1,0 +1,22 @@
+.......F                                                                 [100%]
+=================================== FAILURES ===================================
+________ test_resolved_final_preserves_submitted_extent_as_well_as_text ________
+
+    def test_resolved_final_preserves_submitted_extent_as_well_as_text():
+        """Tool/source consumers must not receive the provider's larger extent as authority."""
+        from src.asr.transcript import SourceSegment, TimedWord, TranscriptLedger
+        ledger = TranscriptLedger()
+        ledger.apply(SourceSegment(0, 'a', 1, 0, 1000, '1', False))
+        committed = ledger.consume()
+        ledger.apply(SourceSegment(0, 'a', 2, 0, 2000, '12', True,
+                                    (TimedWord('1', 0, 1000), TimedWord('2', 1000, 2000))))
+        resolved = ledger.resolve_snapshot(committed)
+        assert resolved.text == '1'
+>       assert resolved.segments[0].end_ms == 1000
+E       AssertionError: assert 2000 == 1000
+E        +  where 2000 = SourceSegment(epoch=0, source_id='a', revision=2, start_ms=0, end_ms=2000, text='12', final=True, words=(TimedWord(text='1', start_ms=0, end_ms=1000), TimedWord(text='2', start_ms=1000, end_ms=2000)), timing_reliable=True).end_ms
+
+tests/test_td_transcript.py:116: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_transcript.py::test_resolved_final_preserves_submitted_extent_as_well_as_text
+1 failed, 7 passed in 0.04s

@@ -1,0 +1,8 @@
+{
+  "call_id": "6ef2639a-0cdc-4c6c-9165-e8a718f216ab",
+  "evidence_level": "local-real",
+  "actual_process_restart": true,
+  "metrics_exact": true,
+  "events_exact": true,
+  "source_mapping_spans_preserved": true
+}

@@ -1,0 +1,25 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_idle_clock_sampling_cannot_fill_persistent_conversation_evidence _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1128f8640>
+
+    def test_idle_clock_sampling_cannot_fill_persistent_conversation_evidence(monkeypatch):
+        """Only anchors used by actual task ranges belong in durable conversation evidence."""
+        now = [0.0]
+        monkeypatch.setattr(CallCapture, 'elapsed_ms', lambda self: now[0])
+        capture = CallCapture(provider='openai', model='fixture')
+        for index in range(100):
+            sample = capture.render_clock.issue('a' * 32, 48000)
+            now[0] += 1
+            assert capture.ack_render_clock(sample, 'a' * 32, 48000, index * 128)
+>       assert capture.td_events == []
+E       AssertionError: assert [{'created_ms...a', ...}, ...] == []
+E         
+E         Left contains 100 more items, first extra item: {'created_ms': 1.0, 'event': 'playback_clock_anchor', 'evidence_source': 'authenticated_worklet_causal_bracket', 'render_clock_id': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}
+E         Use -v to get more diff
+
+tests/test_td_history.py:344: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_history.py::test_idle_clock_sampling_cannot_fill_persistent_conversation_evidence
+1 failed in 0.69s

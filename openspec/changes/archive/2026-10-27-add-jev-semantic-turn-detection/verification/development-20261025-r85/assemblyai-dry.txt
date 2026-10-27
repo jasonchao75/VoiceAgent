@@ -1,0 +1,1 @@
+INFO:__main__:Dry plan: assemblyai-td-single-digits-v1 calls=1 ceiling=USD0.02 sha256=95a9f76c14329c4f349ef0ea51093470627bb0cfdbd78f0eacb199b17a4ad435

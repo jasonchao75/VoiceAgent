@@ -1,0 +1,37 @@
+{
+  "batch_id": "soniox-td-single-digits-v1",
+  "cases": [
+    {
+      "id": "fresh-digits",
+      "path": "/Volumes/work/OpenCode/VoiceAgent/test-results/td-vendor-inputs/20261024/digits-ready.wav",
+      "sha256": "a93499196b16dd1e9307ba97bedd24d246dedf995755e05bc9f20e382139966e",
+      "duration_seconds": 5.1675,
+      "text": "One two three. Four five six. Seven eight nine.",
+      "provider": "soniox",
+      "model": "stt-rt-v5",
+      "options": {
+        "language_hints": [
+          "en"
+        ]
+      },
+      "silence_tail_seconds": 3,
+      "max_received_tokens": 1000
+    }
+  ],
+  "max_calls": 1,
+  "connection_wall_seconds": 30,
+  "connect_timeout_seconds": 5,
+  "cost_ceiling_usd": "0.02",
+  "maximum_public_price_usd": "0.018",
+  "price_verified": "2026-10-25",
+  "pricing_source": "https://soniox.com/pricing",
+  "turn_detection_source": "self_developed",
+  "retries": 0,
+  "recipient": "stt-rt.soniox.com",
+  "llm_jev_tts_calls": 0,
+  "public_price_bound": "Budget reserve, not guaranteed billing cap: 1000 audio tokens at USD2/M plus 4000 text tokens at USD4/M; 1000 reported tokens stops client with in-flight headroom; no context/translation",
+  "source_evidence": "new pinned PCM; existing sample-boundary repair; stop first gap",
+  "estimated_reserve_usd": "0.018",
+  "vendor_enforced_cost_cap": false,
+  "request_sha256": "be727c61f699bd59c443273f68aa7ad717467c99897187f76e3eeb130f96a907"
+}

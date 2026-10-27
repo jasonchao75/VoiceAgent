@@ -1,0 +1,5035 @@
+{
+  "snapshots": [
+    {
+      "elapsed_ms": 2250.1725000038277,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 101,
+        "proof": 101,
+        "only": 0
+      },
+      "observed_native_chunks": 101,
+      "accepted_native_chunks": 101,
+      "last_rejected_native": null,
+      "retained_chunks": 101,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 2293.2387920154724,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 103,
+        "proof": 103,
+        "only": 0
+      },
+      "observed_native_chunks": 103,
+      "accepted_native_chunks": 103,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 2414.298875024542,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 109,
+        "proof": 109,
+        "only": 0
+      },
+      "observed_native_chunks": 109,
+      "accepted_native_chunks": 109,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 2534.824000002118,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 115,
+        "proof": 115,
+        "only": 0
+      },
+      "observed_native_chunks": 115,
+      "accepted_native_chunks": 115,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 2654.2038340121508,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 121,
+        "proof": 121,
+        "only": 0
+      },
+      "observed_native_chunks": 121,
+      "accepted_native_chunks": 121,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 2740.424792020349,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 125,
+        "proof": 125,
+        "only": 0
+      },
+      "observed_native_chunks": 125,
+      "accepted_native_chunks": 125,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 2773.133542010328,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 127,
+        "proof": 127,
+        "only": 0
+      },
+      "observed_native_chunks": 127,
+      "accepted_native_chunks": 127,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 2894.9506250210106,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": false,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 133,
+        "proof": 133,
+        "only": 0
+      },
+      "observed_native_chunks": 133,
+      "accepted_native_chunks": 133,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3012.256417016033,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 139,
+        "proof": 139,
+        "only": 0
+      },
+      "observed_native_chunks": 139,
+      "accepted_native_chunks": 139,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3132.3812500049826,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 145,
+        "proof": 145,
+        "only": 0
+      },
+      "observed_native_chunks": 145,
+      "accepted_native_chunks": 145,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 102,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3250.755334011046,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 150,
+        "proof": 150,
+        "only": 0
+      },
+      "observed_native_chunks": 150,
+      "accepted_native_chunks": 150,
+      "last_rejected_native": null,
+      "retained_chunks": 99,
+      "retained_reports": 96,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 3245.898417022545,
+          "received_ms": 3250.645792024443,
+          "frame": 52539
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3252.666875021532,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 151,
+        "proof": 151,
+        "only": 0
+      },
+      "observed_native_chunks": 151,
+      "accepted_native_chunks": 151,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 102,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 3245.898417022545,
+          "received_ms": 3250.645792024443,
+          "frame": 52539
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3372.417625010712,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 157,
+        "proof": 157,
+        "only": 0
+      },
+      "observed_native_chunks": 157,
+      "accepted_native_chunks": 157,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 3245.898417022545,
+          "received_ms": 3250.645792024443,
+          "frame": 52539
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3479.512000019895,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 162,
+        "proof": 162,
+        "only": 0
+      },
+      "observed_native_chunks": 162,
+      "accepted_native_chunks": 162,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 3245.898417022545,
+          "received_ms": 3250.645792024443,
+          "frame": 52539
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3591.680000012275,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 168,
+        "proof": 168,
+        "only": 0
+      },
+      "observed_native_chunks": 168,
+      "accepted_native_chunks": 168,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 3245.898417022545,
+          "received_ms": 3250.645792024443,
+          "frame": 52539
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 3714.6446670230944,
+      "turn_id": "1",
+      "source": {
+        "sample": 29104,
+        "created_ms": 2249.88741701236,
+        "sealed": true,
+        "bounds": [
+          1712.3643340019044,
+          2229.750167025486
+        ],
+        "anchors": [
+          {
+            "sample_id": "71175040f04240fb92999089a6b7d332",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 28008,
+            "server_issued_ms": 1712.3643340019044,
+            "server_received_ms": 1717.9772500239778,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          },
+          {
+            "sample_id": "da1fb5487d414e0e940eb7a12fd78511",
+            "render_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "render_sample_rate": 16000,
+            "render_frame": 36200,
+            "server_issued_ms": 2224.8921249993145,
+            "server_received_ms": 2229.750167025486,
+            "evidence_source": "authenticated_worklet_causal_bracket"
+          }
+        ],
+        "coordinates": {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "first_frame": 32208,
+          "last_frame": 32208,
+          "input_sample_lower": 29104,
+          "input_sample_upper": 29104,
+          "mapping_spans": [
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 86400,
+              "segment_end": 87312,
+              "input_offset": 28784,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            },
+            {
+              "connection_id": "c26a59a8875347c9be600d01250f2602",
+              "ssrc": 3626819087,
+              "rtp_timestamp": 1740866879,
+              "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+              "decoded_start": 86400,
+              "decoded_end": 87360,
+              "segment_start": 87312,
+              "segment_end": 87360,
+              "input_offset": 29104,
+              "count": 320,
+              "input_sample": 29104,
+              "processed_sample": 87312,
+              "capture_time_ms": 1994,
+              "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+              "coordinate_kind": "reported_worker_performance_16k_ticks"
+            }
+          ],
+          "coordinate_kind": "browser_reported_rtp_capture_time"
+        }
+      },
+      "epoch": "c26a59a8875347c9be600d01250f2602",
+      "input_observations": {
+        "input": 174,
+        "proof": 174,
+        "only": 0
+      },
+      "observed_native_chunks": 174,
+      "accepted_native_chunks": 174,
+      "last_rejected_native": null,
+      "retained_chunks": 100,
+      "retained_reports": 101,
+      "matching_chunks": [
+        {
+          "offset": 28784,
+          "count": 320,
+          "proof": {
+            "processed_start": 86352,
+            "processed_end": 87312,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740865919,
+                "payload_sha256": "6442ce2f1f954382c84525394814208a25e3428c216252486daa3dedaabfb846",
+                "decoded_start": 85440,
+                "decoded_end": 86400,
+                "segment_start": 86352,
+                "segment_end": 86400
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 86400,
+                "segment_end": 87312
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1974,
+              2056.52220902266
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ]
+          ]
+        },
+        {
+          "offset": 29104,
+          "count": 320,
+          "proof": {
+            "processed_start": 87312,
+            "processed_end": 88272,
+            "source_rate": 48000,
+            "sample_rate": 16000,
+            "samples": 320,
+            "packets": [
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740866879,
+                "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+                "decoded_start": 86400,
+                "decoded_end": 87360,
+                "segment_start": 87312,
+                "segment_end": 87360
+              },
+              {
+                "connection_id": "c26a59a8875347c9be600d01250f2602",
+                "ssrc": 3626819087,
+                "rtp_timestamp": 1740867839,
+                "payload_sha256": "052904b9f0addcaf89a7972479cb406cb2b92df6d47ab8650037d026b3cf235f",
+                "decoded_start": 87360,
+                "decoded_end": 88320,
+                "segment_start": 87360,
+                "segment_end": 88272
+              }
+            ]
+          },
+          "reports": [
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              1994,
+              2056.5240000141785
+            ],
+            [
+              "0d77958b97d447bb8cc085ba4f3f3b44",
+              2014,
+              2056.5244590106886
+            ]
+          ]
+        }
+      ],
+      "point": {
+        "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+        "lower_frame": 32208,
+        "upper_frame": 32208,
+        "proofs": [
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 86400,
+            "segment_end": 87312,
+            "input_offset": 28784,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          },
+          {
+            "connection_id": "c26a59a8875347c9be600d01250f2602",
+            "ssrc": 3626819087,
+            "rtp_timestamp": 1740866879,
+            "payload_sha256": "225046a5113c9732fd92ba4f4140ad7d0c4bd7f7a5d506096fe1def269060166",
+            "decoded_start": 86400,
+            "decoded_end": 87360,
+            "segment_start": 87312,
+            "segment_end": 87360,
+            "input_offset": 29104,
+            "count": 320,
+            "input_sample": 29104,
+            "processed_sample": 87312,
+            "capture_time_ms": 1994,
+            "capture_clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+            "coordinate_kind": "reported_worker_performance_16k_ticks"
+          }
+        ]
+      },
+      "capture_anchors": [
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 184.93241700343788,
+          "received_ms": 190.18800000776537,
+          "frame": 3569
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 693.9185420051217,
+          "received_ms": 698.6287090112455,
+          "frame": 11715
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1204.0527500212193,
+          "received_ms": 1207.5556670024525,
+          "frame": 19862
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 1712.3643340019044,
+          "received_ms": 1717.9772500239778,
+          "frame": 28008
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2224.8921249993145,
+          "received_ms": 2229.750167025486,
+          "frame": 36200
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 2735.226084012538,
+          "received_ms": 2740.2794590161648,
+          "frame": 44376
+        },
+        {
+          "clock_id": "0d77958b97d447bb8cc085ba4f3f3b44",
+          "sample_rate": 16000,
+          "issued_ms": 3245.898417022545,
+          "received_ms": 3250.645792024443,
+          "frame": 52539
+        }
+      ]
+    }
+  ],
+  "first_native_proofs": [
+    {
+      "processed_start": 0,
+      "processed_end": 912,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 304,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740780479,
+          "payload_sha256": "3eb6d7c465f1a1c1da8fd55a469430be2c396fc93a7ea19ecf6cdb3fb5f135b3",
+          "decoded_start": 0,
+          "decoded_end": 960,
+          "segment_start": 0,
+          "segment_end": 912
+        }
+      ]
+    },
+    {
+      "processed_start": 912,
+      "processed_end": 1872,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740780479,
+          "payload_sha256": "3eb6d7c465f1a1c1da8fd55a469430be2c396fc93a7ea19ecf6cdb3fb5f135b3",
+          "decoded_start": 0,
+          "decoded_end": 960,
+          "segment_start": 912,
+          "segment_end": 960
+        },
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740781439,
+          "payload_sha256": "9dc8f4abd37c4274ff8e055fcdde69d685f420c21addbdfe38ed2a3ad14111ad",
+          "decoded_start": 960,
+          "decoded_end": 1920,
+          "segment_start": 960,
+          "segment_end": 1872
+        }
+      ]
+    },
+    {
+      "processed_start": 1872,
+      "processed_end": 2832,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740781439,
+          "payload_sha256": "9dc8f4abd37c4274ff8e055fcdde69d685f420c21addbdfe38ed2a3ad14111ad",
+          "decoded_start": 960,
+          "decoded_end": 1920,
+          "segment_start": 1872,
+          "segment_end": 1920
+        },
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740782399,
+          "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+          "decoded_start": 1920,
+          "decoded_end": 2880,
+          "segment_start": 1920,
+          "segment_end": 2832
+        }
+      ]
+    },
+    {
+      "processed_start": 2832,
+      "processed_end": 3792,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740782399,
+          "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+          "decoded_start": 1920,
+          "decoded_end": 2880,
+          "segment_start": 2832,
+          "segment_end": 2880
+        },
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740783359,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 2880,
+          "decoded_end": 3840,
+          "segment_start": 2880,
+          "segment_end": 3792
+        }
+      ]
+    },
+    {
+      "processed_start": 3792,
+      "processed_end": 4752,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740783359,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 2880,
+          "decoded_end": 3840,
+          "segment_start": 3792,
+          "segment_end": 3840
+        },
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740784319,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 3840,
+          "decoded_end": 4800,
+          "segment_start": 3840,
+          "segment_end": 4752
+        }
+      ]
+    },
+    {
+      "processed_start": 4752,
+      "processed_end": 5712,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740784319,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 3840,
+          "decoded_end": 4800,
+          "segment_start": 4752,
+          "segment_end": 4800
+        },
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740785279,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 4800,
+          "decoded_end": 5760,
+          "segment_start": 4800,
+          "segment_end": 5712
+        }
+      ]
+    },
+    {
+      "processed_start": 5712,
+      "processed_end": 6672,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740785279,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 4800,
+          "decoded_end": 5760,
+          "segment_start": 5712,
+          "segment_end": 5760
+        },
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740786239,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 5760,
+          "decoded_end": 6720,
+          "segment_start": 5760,
+          "segment_end": 6672
+        }
+      ]
+    },
+    {
+      "processed_start": 6672,
+      "processed_end": 7632,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740786239,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 5760,
+          "decoded_end": 6720,
+          "segment_start": 6672,
+          "segment_end": 6720
+        },
+        {
+          "connection_id": "c26a59a8875347c9be600d01250f2602",
+          "ssrc": 3626819087,
+          "rtp_timestamp": 1740787199,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 6720,
+          "decoded_end": 7680,
+          "segment_start": 6720,
+          "segment_end": 7632
+        }
+      ]
+    }
+  ]
+}

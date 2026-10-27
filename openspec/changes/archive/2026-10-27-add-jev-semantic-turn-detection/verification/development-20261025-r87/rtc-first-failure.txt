@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:53929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API (14.9s)
+
+
+  1) [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 0
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      139 |       return new Set(history.td_events?.filter(event=>event.event==='e2e_timing_bounds')
+      140 |         .map(event=>event.response_id)).size;
+    > 141 |     },{timeout:5000}).toBe(2);
+          |                       ^
+      142 |   }
+      143 |   writeFileSync(`${evidence}/formal-authenticated-receipts.json`,JSON.stringify({receipts,manifests},null,2));
+      144 |   await page.locator("#end").click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtc-entry.spec.js:141:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 

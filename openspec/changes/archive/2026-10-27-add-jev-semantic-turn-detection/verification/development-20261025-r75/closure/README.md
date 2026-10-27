@@ -1,0 +1,3 @@
+# r75 依赖闭包候选
+
+首次解包在收集测试时发现运行中的evaluation模块依赖其他已归档Change的prompt/context/dictionary固定文件，10个收集错误均源于该缺项，失败日志与初包保留在上层。此候选补这些只读源码依赖，不修改归档或产品行为。完整解包验证结果见extracted-backend.txt。所有未验证边界沿用当前自测报告；不自签独立PASS。

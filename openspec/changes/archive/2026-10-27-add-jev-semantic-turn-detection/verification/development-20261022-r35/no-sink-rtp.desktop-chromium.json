@@ -1,0 +1,9 @@
+{
+  "connection": "connecting",
+  "ice": "checking",
+  "mdnsCandidates": false,
+  "observations": [],
+  "remoteSinkCreated": false,
+  "htmlAudioElements": 0,
+  "remoteTrackState": "live"
+}

@@ -1,0 +1,6 @@
+src/api.py:1141: error: Incompatible types in assignment (expression has type "SecretStr | None", variable has type "SecretStr")  [assignment]
+src/api.py:1143: error: Incompatible types in assignment (expression has type "SecretStr | None", variable has type "SecretStr")  [assignment]
+src/api.py:1222: error: Argument "asr_provider" to "SessionRequest" has incompatible type "str"; expected "Literal['deepgram', 'speechmatics', 'soniox', 'assemblyai']"  [arg-type]
+src/api.py:1236: error: Argument "tts_provider" to "SessionRequest" has incompatible type "str"; expected "Literal['deepgram_flux', 'elevenlabs']"  [arg-type]
+src/api.py:1383: error: Argument "deepgram_api_key" to "SessionRequest" has incompatible type "str"; expected "SecretStr | None"  [arg-type]
+Found 5 errors in 1 file (checked 5 source files)

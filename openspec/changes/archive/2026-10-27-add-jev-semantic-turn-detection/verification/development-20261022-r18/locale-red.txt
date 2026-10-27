@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:11784) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:288:1 › formal language switch changes labels without changing TD request or user values (5.7s)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:288:1 › formal language switch changes labels without changing TD request or user values 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#td-language')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#td-language') with timeout 5000ms
+      - waiting for locator('#td-language')
+
+
+      289 |   const bot=await createRuleBot(request,baseURL,"locale");
+      290 |   await page.goto("/");await openRules(page,bot);
+    > 291 |   await expect(page.locator("#td-language")).toBeVisible();
+          |                                              ^
+      292 |   const values=()=>page.locator(".td-content input,.td-content textarea,.td-content select:not(#td-language)").evaluateAll(nodes=>nodes.map(node=>({id:node.id,value:node.value,checked:node.checked})));
+      293 |   const before=await values();
+      294 |   await page.locator("#td-language").selectOption("zh");
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:291:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-language-2e55a-g-TD-request-or-user-values-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-language-2e55a-g-TD-request-or-user-values-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-language-2e55a-g-TD-request-or-user-values-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-language-2e55a-g-TD-request-or-user-values-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:288:1 › formal language switch changes labels without changing TD request or user values 

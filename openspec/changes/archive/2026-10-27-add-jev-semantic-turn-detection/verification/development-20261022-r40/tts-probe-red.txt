@@ -1,0 +1,90 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_________ test_tts_plan_freezes_three_texts_voice_and_character_budget _________
+
+    def test_tts_plan_freezes_three_texts_voice_and_character_budget():
+>       plan = probe().build_plan()
+               ^^^^^^^
+
+tests/test_td_tts_vendor_probe.py:14: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_td_tts_vendor_probe.py:10: in probe
+    return import_module('scripts.evaluation.probe_td_tts')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.evaluation.probe_td_tts'
+import_ = <function _gcd_import at 0x1007d84a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.evaluation.probe_td_tts'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+_______ test_speak_budget_rejects_repeat_or_changed_text_before_sending ________
+
+    async def test_speak_budget_rejects_repeat_or_changed_text_before_sending():
+>       module = probe()
+                 ^^^^^^^
+
+tests/test_td_tts_vendor_probe.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_td_tts_vendor_probe.py:10: in probe
+    return import_module('scripts.evaluation.probe_td_tts')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.evaluation.probe_td_tts'
+import_ = <function _gcd_import at 0x1007d84a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.evaluation.probe_td_tts'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+_______ test_tts_cli_refuses_key_loading_without_specific_authorization ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10852fac0>
+
+    def test_tts_cli_refuses_key_loading_without_specific_authorization(monkeypatch):
+>       module = probe()
+                 ^^^^^^^
+
+tests/test_td_tts_vendor_probe.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_td_tts_vendor_probe.py:10: in probe
+    return import_module('scripts.evaluation.probe_td_tts')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.evaluation.probe_td_tts'
+import_ = <function _gcd_import at 0x1007d84a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.evaluation.probe_td_tts'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_vendor_probe.py::test_tts_plan_freezes_three_texts_voice_and_character_budget
+FAILED tests/test_td_tts_vendor_probe.py::test_speak_budget_rejects_repeat_or_changed_text_before_sending
+FAILED tests/test_td_tts_vendor_probe.py::test_tts_cli_refuses_key_loading_without_specific_authorization
+3 failed in 0.03s

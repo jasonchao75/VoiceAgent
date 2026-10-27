@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#history-dialog').locator('.td-record:has(> h4:text-is("Audio resource ready"))').filter({ hasText: 'true' }) to be visible[22m
+[2m    60 × locator resolved to hidden <section class="td-record">…</section>[22m
+
+    at /Volumes/work/OpenCode/VoiceAgent/frontend/[eval1]:13:16 {
+  log: [
+    `  - waiting for locator('#history-dialog').locator('.td-record:has(> h4:text-is("Audio resource ready"))').filter({ hasText: 'true' }) to be visible`,
+    '    60 × locator resolved to hidden <section class="td-record">…</section>'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v25.9.0

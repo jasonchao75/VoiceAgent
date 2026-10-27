@@ -1,0 +1,21 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_jev_budget_is_uniform_without_hidden_ui_field ______________
+
+    def test_jev_budget_is_uniform_without_hidden_ui_field():
+        """D-050 permits new configurations and normalizes legacy/requested budgets to 100."""
+        from src.asr.td_config import CustomTDSettings
+    
+        data = td_settings()
+        data['jev'].pop('max_calls')
+>       assert CustomTDSettings.model_validate(data).jev.max_calls == 100
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CustomTDSettings
+E       jev.max_calls
+E         Field required [type=missing, input_value={'endpoint': 'https://api...ete', 'wait_ms': 1500}]}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/missing
+
+tests/test_td_config.py:159: ValidationError
+=========================== short test summary info ============================
+FAILED tests/test_td_config.py::test_jev_budget_is_uniform_without_hidden_ui_field
+1 failed, 10 deselected in 0.05s

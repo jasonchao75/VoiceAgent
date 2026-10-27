@@ -1,0 +1,97 @@
+
+Running 2 tests using 1 worker
+
+(node:22602) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings (2.0s)
+(node:22615) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [narrow-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings (30.2s)
+
+
+  1) [narrow-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Advanced', exact: true })
+        - locator resolved to <button class="" type="button" data-page="advanced">Advanced</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <header>…</header> from <section class="workspace">…</section> subtree intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <header>…</header> from <section class="workspace">…</section> subtree intercepts pointer events
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <div>…</div> from <section class="workspace">…</section> subtree intercepts pointer events
+      14 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header>…</header> from <section class="workspace">…</section> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header>…</header> from <section class="workspace">…</section> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <div>…</div> from <section class="workspace">…</section> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <div>…</div> from <section class="workspace">…</section> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      52 |   await page.locator('.pipeline-card[data-component="asr"]').click();
+      53 |   await page.locator('#bot-turn-source').selectOption('provider_native');
+    > 54 |   await page.getByRole('button', {name:'Advanced', exact:true}).click();
+         |                                                                 ^
+      55 |   await expect(page.locator('#td-entry')).toBeHidden();
+      56 |   await expect(page.locator('#td-general')).toBeVisible();
+      57 |   await page.getByRole('button', {name:'Bot settings', exact:true}).click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-settings.spec.js:54:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-narrow-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-narrow-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-narrow-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-narrow-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [narrow-chromium] › tests/ui/td-settings.spec.js:7:1 › formal Advanced edits and saves explicit TD settings 
+  1 passed (33.0s)

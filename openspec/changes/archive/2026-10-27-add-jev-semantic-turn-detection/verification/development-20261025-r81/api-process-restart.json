@@ -1,0 +1,19 @@
+{
+  "evidence_level": "local-real",
+  "call_id": "04d659e8-6bab-4ba8-86e1-82cbbb5e9733",
+  "actual_process_restart": true,
+  "metrics_exact": true,
+  "events_exact": true,
+  "e2e_ranges": {
+    "lower_ms": 702.8553750133142,
+    "upper_ms": 1313.451083988184,
+    "playback_id": "752586b12edb4c50a29407c677be10ba",
+    "response_id": "1:1",
+    "anchor_ids": [
+      "6aa5d72c3d174d62a911656989456c99",
+      "64b4ea39c3af42949995c75920f50470"
+    ],
+    "source": "authenticated_worklet_causal_bracket",
+    "origin": "vad_speech_end_source_sample"
+  }
+}

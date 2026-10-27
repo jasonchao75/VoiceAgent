@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:99865) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings (852ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings 
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 72
+    Received:    207
+
+      59 |     await page.setViewportSize({width,height:1000});
+      60 |     const overflow = await page.locator("#advanced-empty").evaluate(node=>({scroll:node.scrollWidth,client:node.clientWidth}));
+    > 61 |     expect(overflow.scroll).toBeLessThanOrEqual(overflow.client);
+         |                             ^
+      62 |   }
+      63 | });
+      64 |
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-settings.spec.js:61:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-settings-formal-Advance-e91cc--saves-explicit-TD-settings-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-settings.spec.js:6:1 › formal Advanced edits and saves explicit TD settings 

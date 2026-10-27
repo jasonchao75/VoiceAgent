@@ -1,0 +1,89 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_sdk_queued_audio_blocks_deadline_before_vad_begins ____________
+
+    async def test_sdk_queued_audio_blocks_deadline_before_vad_begins():
+        """Use the SDK's paused input queue, rather than faking its backlog state."""
+        import asyncio
+    
+        from pipecat.audio.vad.vad_analyzer import VADState
+        from pipecat.frames.frames import InputAudioRawFrame, StartFrame, TranscriptionFrame
+        from pipecat.pipeline.pipeline import Pipeline
+        from pipecat.pipeline.worker import PipelineWorker
+        from pipecat.processors.frame_processor import FrameProcessor
+        from pipecat.workers.runner import WorkerRunner
+    
+        from src.pipeline.custom_td import CustomTDAudioInput
+    
+        ready, processed = asyncio.Event(), asyncio.Event()
+        out = []
+    
+        class StartingVAD:
+            async def analyze_audio(self, audio):
+                return VADState.STARTING
+    
+            async def cleanup(self):
+                pass
+    
+        class Sink(FrameProcessor):
+            async def process_frame(self, frame, direction):
+                await super().process_frame(frame, direction)
+                if isinstance(frame, StartFrame):
+                    ready.set()
+                if isinstance(frame, InputAudioRawFrame):
+                    processed.set()
+                if isinstance(frame, TranscriptionFrame):
+                    out.append(frame)
+                await self.push_frame(frame, direction)
+    
+        td = coordinator()
+        audio = CustomTDAudioInput(td, StartingVAD())
+        worker = PipelineWorker(Pipeline([audio, td, Sink()]), enable_rtvi=False)
+        runner = WorkerRunner(handle_sigint=False, handle_sigterm=False)
+        await runner.add_workers(worker)
+        running = asyncio.create_task(runner.run())
+        try:
+            await asyncio.wait_for(ready.wait(), 2)
+            await td.receive_transcript(interim())
+            await td.speech_stopped(0)
+            await audio.pause_processing_system_frames()
+            await audio.queue_frame(InputAudioRawFrame(bytes(320), 16000, 1))
+            await td.advance(3000)
+            # Commit counters change before downstream queue delivery, so inspect both.
+>           assert td.responses.user_submission_count == 0
+E           assert 1 == 0
+E            +  where 1 = <src.pipeline.response_revision.ResponseRevisions object at 0x115939fd0>.user_submission_count
+E            +    where <src.pipeline.response_revision.ResponseRevisions object at 0x115939fd0> = <src.pipeline.custom_td.CustomTDCoordinator object at 0x1159397f0>.responses
+
+tests/test_td_runtime.py:1121: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-22 08:01:14.566 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+2026-10-22 08:01:15.161 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> CustomTDAudioInput#0
+2026-10-22 08:01:15.161 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDAudioInput#0 -> CustomTDCoordinator#0
+2026-10-22 08:01:15.162 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking CustomTDCoordinator#0 -> Sink#0
+2026-10-22 08:01:15.162 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-22 08:01:15.162 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-22 08:01:15.163 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+2026-10-22 08:01:15.163 | DEBUG    | pipecat.workers.runner:add_workers:233 - WorkerRunner 'runner-ebef4e2e': added worker 'PipelineWorker#0'
+2026-10-22 08:01:15.163 | DEBUG    | pipecat.workers.runner:run:277 - WorkerRunner 'runner-ebef4e2e': started running
+2026-10-22 08:01:15.164 | DEBUG    | pipecat.workers.runner:_start_worker:461 - WorkerRunner 'runner-ebef4e2e': starting worker 'PipelineWorker#0'
+2026-10-22 08:01:15.259 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1186 - PipelineWorker#0: Starting. Waiting for StartFrame#0 to reach the end of the pipeline...
+2026-10-22 08:01:15.260 | DEBUG    | pipecat.pipeline.worker:_cancel:1119 - Cancelling pipeline worker PipelineWorker#0
+2026-10-22 08:01:15.261 | DEBUG    | pipecat.registry.registry:register:132 - Worker 'PipelineWorker#0' ready (local)
+2026-10-22 08:01:15.261 | DEBUG    | pipecat.workers.runner:_send_registry:513 - WorkerRunner 'runner-ebef4e2e': broadcasting registry: ['PipelineWorker#0']
+2026-10-22 08:01:15.261 | DEBUG    | pipecat.workers.base_worker:_maybe_activate:1277 - Worker 'PipelineWorker#0': activated
+2026-10-22 08:01:15.261 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_start:1199 - PipelineWorker#0: StartFrame#0 reached the end of the pipeline, pipeline is now ready.
+2026-10-22 08:01:15.262 | DEBUG    | pipecat.pipeline.worker:_wait_for_pipeline_end:1219 - PipelineWorker#0: Closing. Waiting for CancelFrame#0(reason: None) to reach the end of the pipeline...
+2026-10-22 08:01:15.263 | DEBUG    | pipecat.pipeline.worker:wait_for_cancel:1210 - PipelineWorker#0: CancelFrame#0(reason: None) reached the end of the pipeline.
+2026-10-22 08:01:15.263 | DEBUG    | pipecat.utils.base_object:cleanup:176 - PipelineWorker#0: waiting on event handlers to finish ['on_pipeline_finished']...
+2026-10-22 08:01:15.264 | DEBUG    | pipecat.pipeline.worker:run:869 - Pipeline worker PipelineWorker#0 is finishing...
+2026-10-22 08:01:15.264 | DEBUG    | pipecat.pipeline.worker:run:873 - Pipeline worker PipelineWorker#0 has finished
+2026-10-22 08:01:15.264 | DEBUG    | pipecat.workers.runner:run:320 - WorkerRunner 'runner-ebef4e2e': finished running
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_sdk_queued_audio_blocks_deadline_before_vad_begins
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_sdk_queued_audio_blocks_deadline_before_vad_begins
+1 failed, 44 deselected, 1 warning in 1.13s

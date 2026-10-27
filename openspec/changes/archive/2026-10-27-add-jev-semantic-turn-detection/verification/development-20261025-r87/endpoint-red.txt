@@ -1,0 +1,45 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_rtp_capture_endpoint_requires_live_auth_and_the_server_epoch _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1173a8050>
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+
+    def test_rtp_capture_endpoint_requires_live_auth_and_the_server_epoch(monkeypatch, session_request):
+        """A raw timestamp POST cannot create input evidence without native PCM provenance."""
+        async def pipeline(**kwargs):
+            """Keep a real live lease while replacing only provider inference."""
+            await kwargs['websocket'].send_json({'ready': True})
+            await kwargs['websocket'].receive_text()
+        monkeypatch.setattr('src.api.run_voice_agent_session', pipeline)
+        payload = session_request.model_dump(mode='json')
+        payload.update(session_type='chat_test', deepgram_api_key='inert-asr', llm_api_key='inert-llm')
+        with TestClient(create_app()) as client:
+            session = client.post('/api/sessions', json=payload,
+                                  headers={'Origin': 'http://localhost:8000'}).json()
+            with client.websocket_connect(session['websocket_path'],
+                                          headers={'Origin': 'http://localhost:8000'}) as socket:
+                assert socket.receive_json()['ready']
+                body = {'connection_id': 'a' * 32, 'records': [{'clock_id': 'b' * 32,
+                    'ssrc': 7, 'rtp_timestamp': 1, 'payload_sha256': 'c' * 64,
+                    'capture_time_ms': 100., 'capture_clock': 'worker_performance'}]}
+                url = f"/api/sessions/{session['session_id']}/rtp-input"
+>               assert client.post(url, json=body).status_code == 401
+E               AssertionError: assert 405 == 401
+E                +  where 405 = <Response [405 Method Not Allowed]>.status_code
+E                +    where <Response [405 Method Not Allowed]> = post('/api/sessions/0b2cc909-193e-4316-b3cc-6a2e465dd9d7/rtp-input', json={'connection_id': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'records': [{'capture_clock': 'worker_performance', 'capture_tim...bbbbbbbbbbbbbbbbbbbbbbbb', 'payload_sha256': 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc', ...}]})
+E                +      where post = <starlette.testclient.TestClient object at 0x117330980>.post
+
+tests/test_playback_receipts_api.py:346: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /Volumes/work/OpenCode/VoiceAgent/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_playback_receipts_api.py::test_rtp_capture_endpoint_requires_live_auth_and_the_server_epoch
+1 failed, 4 deselected, 2 warnings in 1.55s

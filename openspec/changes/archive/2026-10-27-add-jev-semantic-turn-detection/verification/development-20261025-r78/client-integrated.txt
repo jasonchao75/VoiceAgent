@@ -1,0 +1,16 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (1.299167ms)
+✔ targeted clear removes future samples without claiming they rendered (0.696125ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (0.374541ms)
+✔ clock challenge is observed in an actual later quantum without changing audio (0.35775ms)
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (1.835709ms)
+✔ closing during a delayed probe never writes to a replaced renderer (0.380375ms)
+✔ renderer-only state does not escape strict API receipt schema (0.302625ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (0.139167ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 37.314667

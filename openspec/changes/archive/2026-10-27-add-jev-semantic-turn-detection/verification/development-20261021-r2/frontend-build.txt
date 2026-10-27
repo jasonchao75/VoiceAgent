@@ -1,0 +1,4 @@
+npm --prefix frontend run build
+Exit code: 0
+Vite 8.2.2: 182 modules transformed, production build succeeded.
+Scope: source option labels only; no UI Checkpoint A/B claim.

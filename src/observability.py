@@ -64,7 +64,9 @@ class SessionTimingObserver(BaseObserver):
         elif isinstance(data.frame, UserStoppedSpeakingFrame):
             event = "user_turn_end"
         elif isinstance(data.frame, TranscriptionFrame):
-            event = "asr_final"
+            if data.frame.metadata.get("td_source_only"):
+                return
+            event = "td_commit" if data.frame.metadata.get("td_commit") else "asr_final"
         elif isinstance(data.frame, LLMTextFrame):
             event = "llm_first_token"
         elif isinstance(data.frame, TTSAudioRawFrame):

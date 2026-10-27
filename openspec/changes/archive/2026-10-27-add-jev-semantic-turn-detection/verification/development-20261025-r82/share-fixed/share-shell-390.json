@@ -1,0 +1,59 @@
+{
+  "actual": {
+    "headings": [
+      "Public demo profile",
+      "QR code",
+      "Web Link"
+    ],
+    "cards": [
+      {
+        "radius": "12px",
+        "padding": "16px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "16px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "16px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      }
+    ],
+    "overflow": false,
+    "grid": 1
+  },
+  "expected": {
+    "headings": [
+      "Public demo profile",
+      "QR code",
+      "Web Link"
+    ],
+    "cards": [
+      {
+        "radius": "12px",
+        "padding": "16px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "16px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      },
+      {
+        "radius": "12px",
+        "padding": "16px",
+        "background": "rgba(21, 24, 23, 0.94)"
+      }
+    ],
+    "overflow": false,
+    "grid": 1
+  },
+  "approvedMobileOrder": {
+    "decision": "D-072",
+    "formalListAfterContent": true,
+    "frozenListAfterContent": false
+  }
+}

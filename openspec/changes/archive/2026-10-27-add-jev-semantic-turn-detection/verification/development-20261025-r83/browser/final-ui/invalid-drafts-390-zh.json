@@ -1,0 +1,30 @@
+{
+  "evidenceLevel": "fixture",
+  "states": [
+    {
+      "name": "empty-keyword",
+      "error": "请至少填写一个关键词和一条词表映射。",
+      "draft": "",
+      "writes": 0
+    },
+    {
+      "name": "duplicate-alias",
+      "error": "识别词不能重复。",
+      "draft": "one, ONE",
+      "writes": 0
+    },
+    {
+      "name": "inverted-wait",
+      "error": "最长静音等待不能小于最短静音等待。",
+      "draft": "3000",
+      "writes": 0
+    },
+    {
+      "name": "empty-option",
+      "error": "请完整填写每个 Jev 输出选项。",
+      "draft": "",
+      "writes": 0
+    }
+  ],
+  "validSave": true
+}

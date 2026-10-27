@@ -1,0 +1,120 @@
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+_ test_first_final_always_restarts_submitted_partial[\u6211\u8981\u529e\u7406] _
+
+final = '我要办理'
+
+    @pytest.mark.parametrize('final', ['我要办理', '我要办理。', '我不要办理'])
+    def test_first_final_always_restarts_submitted_partial(final):
+        """Identical, formatting-only and changed-meaning Finals all restart (D-049)."""
+>       state = controller()
+                ^^^^^^^^^^^^
+
+tests/test_td_response_revision.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def controller():
+        """Require the production response revision boundary."""
+>       assert util.find_spec('src.pipeline.response_revision') is not None, 'Final restart absent'
+E       AssertionError: Final restart absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1049a68e0>('src.pipeline.response_revision')
+E        +    where <function find_spec at 0x1049a68e0> = util.find_spec
+
+tests/test_td_response_revision.py:10: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 00:30:37.233 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+_ test_first_final_always_restarts_submitted_partial[\u6211\u8981\u529e\u7406\u3002] _
+
+final = '我要办理。'
+
+    @pytest.mark.parametrize('final', ['我要办理', '我要办理。', '我不要办理'])
+    def test_first_final_always_restarts_submitted_partial(final):
+        """Identical, formatting-only and changed-meaning Finals all restart (D-049)."""
+>       state = controller()
+                ^^^^^^^^^^^^
+
+tests/test_td_response_revision.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def controller():
+        """Require the production response revision boundary."""
+>       assert util.find_spec('src.pipeline.response_revision') is not None, 'Final restart absent'
+E       AssertionError: Final restart absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1049a68e0>('src.pipeline.response_revision')
+E        +    where <function find_spec at 0x1049a68e0> = util.find_spec
+
+tests/test_td_response_revision.py:10: AssertionError
+_ test_first_final_always_restarts_submitted_partial[\u6211\u4e0d\u8981\u529e\u7406] _
+
+final = '我不要办理'
+
+    @pytest.mark.parametrize('final', ['我要办理', '我要办理。', '我不要办理'])
+    def test_first_final_always_restarts_submitted_partial(final):
+        """Identical, formatting-only and changed-meaning Finals all restart (D-049)."""
+>       state = controller()
+                ^^^^^^^^^^^^
+
+tests/test_td_response_revision.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def controller():
+        """Require the production response revision boundary."""
+>       assert util.find_spec('src.pipeline.response_revision') is not None, 'Final restart absent'
+E       AssertionError: Final restart absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1049a68e0>('src.pipeline.response_revision')
+E        +    where <function find_spec at 0x1049a68e0> = util.find_spec
+
+tests/test_td_response_revision.py:10: AssertionError
+_________ test_stale_and_foreign_final_do_not_cancel_current_response __________
+
+    def test_stale_and_foreign_final_do_not_cancel_current_response():
+        """A new speech generation fences old Final even before its next submission."""
+>       state = controller()
+                ^^^^^^^^^^^^
+
+tests/test_td_response_revision.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def controller():
+        """Require the production response revision boundary."""
+>       assert util.find_spec('src.pipeline.response_revision') is not None, 'Final restart absent'
+E       AssertionError: Final restart absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1049a68e0>('src.pipeline.response_revision')
+E        +    where <function find_spec at 0x1049a68e0> = util.find_spec
+
+tests/test_td_response_revision.py:10: AssertionError
+_______ test_final_submission_does_not_restart_and_side_effects_are_once _______
+
+    def test_final_submission_does_not_restart_and_side_effects_are_once():
+        """A Final-first turn and a replayed tool side effect do not trigger more work."""
+>       state = controller()
+                ^^^^^^^^^^^^
+
+tests/test_td_response_revision.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def controller():
+        """Require the production response revision boundary."""
+>       assert util.find_spec('src.pipeline.response_revision') is not None, 'Final restart absent'
+E       AssertionError: Final restart absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1049a68e0>('src.pipeline.response_revision')
+E        +    where <function find_spec at 0x1049a68e0> = util.find_spec
+
+tests/test_td_response_revision.py:10: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial[\u6211\u8981\u529e\u7406]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial[\u6211\u8981\u529e\u7406]
+FAILED tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial[\u6211\u8981\u529e\u7406\u3002]
+FAILED tests/test_td_response_revision.py::test_first_final_always_restarts_submitted_partial[\u6211\u4e0d\u8981\u529e\u7406]
+FAILED tests/test_td_response_revision.py::test_stale_and_foreign_final_do_not_cancel_current_response
+FAILED tests/test_td_response_revision.py::test_final_submission_does_not_restart_and_side_effects_are_once
+5 failed, 1 warning in 1.12s

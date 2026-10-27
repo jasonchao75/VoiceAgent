@@ -1,0 +1,30 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (2.25675ms)
+✔ targeted clear removes future samples without claiming they rendered (1.554583ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (0.988084ms)
+✔ clock challenge is observed in an actual later quantum without changing audio (0.599042ms)
+✔ explicit original turn identity groups resumed candidates and Final response versions (1.020125ms)
+✔ legacy sessions invent no TD attempts, turns or probabilities (0.194875ms)
+Locked SDK PCM parity, initial silence trim, contiguous merge and missing provenance passed
+Locked serializer accepts annotated protobuf; decoded PCM unchanged
+✔ frontend/tests/unit/td-input-source.test.js (86.773459ms)
+✔ only a matching actual Worklet observation can acknowledge an authenticated challenge (3.132917ms)
+✔ closing during a delayed probe never writes to a replaced renderer (1.665709ms)
+✔ renderer-only state does not escape strict API receipt schema (0.353458ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (0.157625ms)
+✔ capture metadata observation binds the sender without changing the receiver worker (0.735166ms)
+✔ optional sender timing capability cannot disable existing RTP playback (1.025958ms)
+✔ native metadata waits for server epoch and uses a separate authenticated capture sampler (1.986959ms)
+✔ closing aborts metadata work without retrying a batch or touching native audio (0.821208ms)
+✔ saved 1253499us output remains bound to its own 1253500us decode job without a tolerance (13.159625ms)
+✔ real output extent disagreement remains rejected instead of guessing ownership (6.204ms)
+✔ missing native captureTime stays missing instead of using observation time (1.707958ms)
+✔ native bytes are unchanged while async payload proof is bounded and acknowledged (0.502333ms)
+✔ display rounding expands bounds and never creates a midpoint or fake missing zero (0.313959ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2082.046291

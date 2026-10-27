@@ -1,0 +1,264 @@
+
+Running 6 tests using 1 worker
+
+(node:66990) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:15:2 › keyboard section navigation and named controls at 1440px (5.8s)
+(node:66995) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:43:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 1440px (5.5s)
+(node:67004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:59:2 › keyboard Sessions drawer opens and Escape restores its trigger at 1440px (5.5s)
+(node:67013) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:15:2 › keyboard section navigation and named controls at 390px (5.5s)
+(node:67021) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:43:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 390px (5.4s)
+(node:67028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:59:2 › keyboard Sessions drawer opens and Escape restores its trigger at 390px (5.5s)
+
+
+  1) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:15:2 › keyboard section navigation and named controls at 1440px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#jev-back')
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" locator('#jev-back') with timeout 5000ms
+      - waiting for locator('#jev-back')
+        14 × locator resolved to <button id="jev-back" type="button" class="td-link-button jev-back">← Turn Detection</button>
+           - unexpected value "inactive"
+
+
+      23 |   expect(await page.locator('[data-td="semantic"]').evaluate(node=>node.matches(':focus-visible'))).toBe(true);
+      24 |   await page.locator('#open-jev').focus();await page.keyboard.press('Enter');
+    > 25 |   await expect(page.locator('#jev-back')).toBeFocused();
+         |                                           ^
+      26 |   await page.locator('[data-jev="questions"]').focus();await page.keyboard.press('Space');
+      27 |   await expect(page.locator('[data-jev="questions"]')).toHaveAttribute('aria-pressed','true');
+      28 |   await page.locator('#jev-back').focus();await page.keyboard.press('Enter');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:25:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--f66b2-nd-named-controls-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--f66b2-nd-named-controls-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--f66b2-nd-named-controls-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--f66b2-nd-named-controls-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:43:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 1440px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('.td-aliases').last()
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" locator('.td-aliases').last() with timeout 5000ms
+      - waiting for locator('.td-aliases').last()
+        14 × locator resolved to <input class="td-aliases" aria-label="Recognized variants"/>
+           - unexpected value "inactive"
+
+
+      44 |   await openTDSettings(page,context,{width,baseline:false});
+      45 |   await page.locator('#add-word').focus();await page.keyboard.press('Enter');
+    > 46 |   await expect(page.locator('.td-aliases').last()).toBeFocused();
+         |                                                    ^
+      47 |   await page.locator('#mappings .td-mapping').last().locator('button').focus();await page.keyboard.press('Enter');
+      48 |   await expect(page.locator('.td-aliases').first()).toBeFocused();
+      49 |   await page.locator('#mappings .td-mapping').first().locator('button').focus();await page.keyboard.press('Enter');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:46:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--c770f-al-preserve-focus-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--c770f-al-preserve-focus-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--c770f-al-preserve-focus-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--c770f-al-preserve-focus-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:59:2 › keyboard Sessions drawer opens and Escape restores its trigger at 1440px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#close-history')
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" locator('#close-history') with timeout 5000ms
+      - waiting for locator('#close-history')
+        14 × locator resolved to <button type="button" id="close-history" class="text-button dialog-close" aria-label="Close session details">×</button>
+           - unexpected value "inactive"
+
+
+      61 |   await page.getByRole('button',{name:'Sessions',exact:true}).focus();await page.keyboard.press('Enter');
+      62 |   const row=page.locator('.history-row').first();await row.focus();await page.keyboard.press('Enter');
+    > 63 |   await expect(page.locator('#history-dialog')).toBeVisible();await expect(page.locator('#close-history')).toBeFocused();
+         |                                                                                                            ^
+      64 |   await page.keyboard.press('Escape');await expect(page.locator('#history-dialog')).toBeHidden();await expect(row).toBeFocused();
+      65 |  });
+      66 | }
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:63:108
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--d7979-tores-its-trigger-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--d7979-tores-its-trigger-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--d7979-tores-its-trigger-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--d7979-tores-its-trigger-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:15:2 › keyboard section navigation and named controls at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#jev-back')
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" locator('#jev-back') with timeout 5000ms
+      - waiting for locator('#jev-back')
+        14 × locator resolved to <button id="jev-back" type="button" class="td-link-button jev-back">← Turn Detection</button>
+           - unexpected value "inactive"
+
+
+      23 |   expect(await page.locator('[data-td="semantic"]').evaluate(node=>node.matches(':focus-visible'))).toBe(true);
+      24 |   await page.locator('#open-jev').focus();await page.keyboard.press('Enter');
+    > 25 |   await expect(page.locator('#jev-back')).toBeFocused();
+         |                                           ^
+      26 |   await page.locator('[data-jev="questions"]').focus();await page.keyboard.press('Space');
+      27 |   await expect(page.locator('[data-jev="questions"]')).toHaveAttribute('aria-pressed','true');
+      28 |   await page.locator('#jev-back').focus();await page.keyboard.press('Enter');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:25:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--3161a-and-named-controls-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--3161a-and-named-controls-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--3161a-and-named-controls-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--3161a-and-named-controls-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:43:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('.td-aliases').last()
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" locator('.td-aliases').last() with timeout 5000ms
+      - waiting for locator('.td-aliases').last()
+        14 × locator resolved to <input class="td-aliases" aria-label="Recognized variants"/>
+           - unexpected value "inactive"
+
+
+      44 |   await openTDSettings(page,context,{width,baseline:false});
+      45 |   await page.locator('#add-word').focus();await page.keyboard.press('Enter');
+    > 46 |   await expect(page.locator('.td-aliases').last()).toBeFocused();
+         |                                                    ^
+      47 |   await page.locator('#mappings .td-mapping').last().locator('button').focus();await page.keyboard.press('Enter');
+      48 |   await expect(page.locator('.td-aliases').first()).toBeFocused();
+      49 |   await page.locator('#mappings .td-mapping').first().locator('button').focus();await page.keyboard.press('Enter');
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:46:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--7f4d0-val-preserve-focus-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--7f4d0-val-preserve-focus-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--7f4d0-val-preserve-focus-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--7f4d0-val-preserve-focus-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:59:2 › keyboard Sessions drawer opens and Escape restores its trigger at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#close-history')
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" locator('#close-history') with timeout 5000ms
+      - waiting for locator('#close-history')
+        14 × locator resolved to <button type="button" id="close-history" class="text-button dialog-close" aria-label="Close session details">×</button>
+           - unexpected value "inactive"
+
+
+      61 |   await page.getByRole('button',{name:'Sessions',exact:true}).focus();await page.keyboard.press('Enter');
+      62 |   const row=page.locator('.history-row').first();await row.focus();await page.keyboard.press('Enter');
+    > 63 |   await expect(page.locator('#history-dialog')).toBeVisible();await expect(page.locator('#close-history')).toBeFocused();
+         |                                                                                                            ^
+      64 |   await page.keyboard.press('Escape');await expect(page.locator('#history-dialog')).toBeHidden();await expect(row).toBeFocused();
+      65 |  });
+      66 | }
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-keyboard-accessibility.spec.js:63:108
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--f10e2-stores-its-trigger-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-keyboard-accessibility--f10e2-stores-its-trigger-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-keyboard-accessibility--f10e2-stores-its-trigger-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-keyboard-accessibility--f10e2-stores-its-trigger-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:15:2 › keyboard section navigation and named controls at 1440px 
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:43:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 1440px 
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:59:2 › keyboard Sessions drawer opens and Escape restores its trigger at 1440px 
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:15:2 › keyboard section navigation and named controls at 390px 
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:43:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 390px 
+    [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:59:2 › keyboard Sessions drawer opens and Escape restores its trigger at 390px 

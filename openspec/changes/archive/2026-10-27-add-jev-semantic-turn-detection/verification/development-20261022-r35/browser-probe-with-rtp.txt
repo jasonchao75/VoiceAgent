@@ -1,0 +1,42 @@
+
+Running 2 tests using 1 worker
+
+(node:23177) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-rtc-capabilities.spec.js:6:1 › inspect RTP and decoded-audio API boundaries without providers or a call (350ms)
+  ✘  2 [desktop-chromium] › tests/ui/td-rtc-capabilities.spec.js:61:1 › RTP synchronization progress alone does not prove a playback sink exists (5.4s)
+
+
+  1) [desktop-chromium] › tests/ui/td-rtc-capabilities.spec.js:61:1 › RTP synchronization progress alone does not prove a playback sink exists 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 2
+    Received:    0
+
+      109 |   });
+      110 |   writeFileSync(`../openspec/changes/add-jev-semantic-turn-detection/verification/development-20261022-r35/no-sink-rtp.${info.project.name}.json`,JSON.stringify(result,null,2));
+    > 111 |   expect(result.observations.length).toBeGreaterThanOrEqual(2);
+          |                                      ^
+      112 |   expect(result.htmlAudioElements).toBe(0);
+      113 | });
+      114 |
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtc-capabilities.spec.js:111:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-capabilities-RTP-sy-01f69-rove-a-playback-sink-exists-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtc-capabilities-RTP-sy-01f69-rove-a-playback-sink-exists-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-capabilities-RTP-sy-01f69-rove-a-playback-sink-exists-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtc-capabilities-RTP-sy-01f69-rove-a-playback-sink-exists-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtc-capabilities.spec.js:61:1 › RTP synchronization progress alone does not prove a playback sink exists 
+  1 passed (6.2s)

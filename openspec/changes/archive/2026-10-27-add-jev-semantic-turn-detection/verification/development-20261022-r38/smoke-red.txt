@@ -1,0 +1,118 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_____ test_smoke_plan_is_two_fixed_synthetic_requests_without_credentials ______
+
+    def test_smoke_plan_is_two_fixed_synthetic_requests_without_credentials():
+>       smoke = module()
+                ^^^^^^^^
+
+tests/test_jev_vendor_smoke.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_jev_vendor_smoke.py:12: in module
+    return import_module('scripts.vendor.typesafe.test_jev')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.vendor.typesafe.test_jev'
+import_ = <function _gcd_import at 0x104e344a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.vendor.typesafe.test_jev'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________________ test_missing_grant_stops_before_loading_a_key _________________
+
+tmp_path = PosixPath('/private/var/folders/fd/4jrj88t51tdcpn9l_qmdm_lw0000gn/T/pytest-of-zhaozichen/pytest-275/test_missing_grant_stops_befor0')
+
+    def test_missing_grant_stops_before_loading_a_key(tmp_path):
+>       smoke = module()
+                ^^^^^^^^
+
+tests/test_jev_vendor_smoke.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_jev_vendor_smoke.py:12: in module
+    return import_module('scripts.vendor.typesafe.test_jev')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.vendor.typesafe.test_jev'
+import_ = <function _gcd_import at 0x104e344a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.vendor.typesafe.test_jev'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________ test_smoke_stops_at_first_error_without_retry_or_secret_output ________
+
+    async def test_smoke_stops_at_first_error_without_retry_or_secret_output():
+>       smoke = module()
+                ^^^^^^^^
+
+tests/test_jev_vendor_smoke.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_jev_vendor_smoke.py:12: in module
+    return import_module('scripts.vendor.typesafe.test_jev')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.vendor.typesafe.test_jev'
+import_ = <function _gcd_import at 0x104e344a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.vendor.typesafe.test_jev'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+___ test_smoke_uses_production_question_shape_and_records_only_safe_metadata ___
+
+    async def test_smoke_uses_production_question_shape_and_records_only_safe_metadata():
+>       smoke = module()
+                ^^^^^^^^
+
+tests/test_jev_vendor_smoke.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_jev_vendor_smoke.py:12: in module
+    return import_module('scripts.vendor.typesafe.test_jev')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'scripts.vendor.typesafe.test_jev'
+import_ = <function _gcd_import at 0x104e344a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'scripts.vendor.typesafe.test_jev'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_jev_vendor_smoke.py::test_smoke_plan_is_two_fixed_synthetic_requests_without_credentials
+FAILED tests/test_jev_vendor_smoke.py::test_missing_grant_stops_before_loading_a_key
+FAILED tests/test_jev_vendor_smoke.py::test_smoke_stops_at_first_error_without_retry_or_secret_output
+FAILED tests/test_jev_vendor_smoke.py::test_smoke_uses_production_question_shape_and_records_only_safe_metadata
+4 failed in 0.09s

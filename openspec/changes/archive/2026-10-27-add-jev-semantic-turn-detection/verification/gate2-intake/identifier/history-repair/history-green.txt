@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:21613) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 1440px (652ms)
+  ✓  2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:12:3 › history keeps legacy playback unverified at 390px (510ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 1440px (651ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:55:3 › formal per-turn history preserves candidates and response versions at 390px (544ms)
+  ✓  5 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted incomplete identifier remains visible after refresh at 1440px (585ms)
+  ✓  6 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted overflow identifier remains visible after refresh at 1440px (593ms)
+  ✓  7 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted incomplete identifier remains visible after refresh at 390px (514ms)
+  ✓  8 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:141:5 › unsubmitted overflow identifier remains visible after refresh at 390px (521ms)
+
+  8 passed (4.9s)

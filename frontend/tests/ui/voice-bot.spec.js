@@ -10,6 +10,10 @@ const productFixture = JSON.parse(
   readFileSync(path.resolve("../tests/ui/fixtures/voice-bot-editor.json"), "utf8"),
 );
 
+const catalogFixture = JSON.parse(
+  readFileSync(path.resolve("tests/ui/fixtures/td-catalog.json"), "utf8"),
+);
+
 const voiceFixture = {
   voices: [
     {
@@ -32,6 +36,13 @@ const voiceFixture = {
 };
 
 test.beforeEach(async ({ page }) => {
+  // These fixture paths must not depend on a running backend or its auth session.
+  await page.route("**/api/auth/session", route => route.fulfill({
+    contentType:"application/json", body:JSON.stringify({idle_expires_at:4000000000,absolute_expires_at:4000000000}),
+  }));
+  await page.route("**/api/catalogs", route => route.fulfill({
+    contentType:"application/json", body:JSON.stringify(catalogFixture),
+  }));
   await page.route("**/api/bots", (route) => {
     if (route.request().method() !== "GET") return route.fallback();
     return route.fulfill({
@@ -267,7 +278,12 @@ test("provider catalog drives model, language, Turn, and advanced branches", asy
   await provider.selectOption("deepgram");
   await model.selectOption("nova-3");
   await expect(panel.getByLabel("Turn detection source")).toHaveValue("off");
-  await expect(panel.getByLabel("Turn detection source")).toBeDisabled();
+  await expect(panel.getByLabel("Turn detection source")).toBeEnabled();
+  await expect(panel.getByLabel("Turn detection source").locator('option[value="self_developed"]')).toHaveCount(1);
+  await expect(panel.getByLabel("Turn detection source").locator('option[value="provider_native"]')).toHaveCount(0);
+  await panel.getByLabel("Turn detection source").selectOption("self_developed");
+  await expect(panel.getByLabel("Turn detection source")).toHaveValue("self_developed");
+  await panel.getByLabel("Turn detection source").selectOption("off");
   await expect(panel.getByLabel("Endpointing silence (ms)")).toHaveValue("300");
   await page.screenshot({ path: path.join(evidenceDir, `actual-gate-2-deepgram-nova.${testInfo.project.name}.png`), animations: "disabled" });
 

@@ -1,0 +1,30 @@
+F.....F                                                                  [100%]
+=================================== FAILURES ===================================
+_________ test_explicit_priority_settings_are_frozen_and_serializable __________
+
+    def test_explicit_priority_settings_are_frozen_and_serializable():
+>       value = CustomTDSettings.model_validate({**td_settings(), 'priority_rule': priority_settings()})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CustomTDSettings
+E       priority_rule
+E         Extra inputs are not permitted [type=extra_forbidden, input_value={'enabled': True, 'keywor...过目标，请确认'}}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+
+tests/test_td_rule_settings.py:23: ValidationError
+________ test_disabled_rule_keeps_draft_and_aliases_cannot_be_ambiguous ________
+
+    def test_disabled_rule_keeps_draft_and_aliases_cannot_be_ambiguous():
+        rule = priority_settings()
+        rule['enabled'] = False
+>       value = CustomTDSettings.model_validate({**td_settings(), 'priority_rule': rule})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CustomTDSettings
+E       priority_rule
+E         Extra inputs are not permitted [type=extra_forbidden, input_value={'enabled': False, 'keywo...过目标，请确认'}}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+
+tests/test_td_rule_settings.py:42: ValidationError
+=========================== short test summary info ============================
+FAILED tests/test_td_rule_settings.py::test_explicit_priority_settings_are_frozen_and_serializable
+FAILED tests/test_td_rule_settings.py::test_disabled_rule_keeps_draft_and_aliases_cannot_be_ambiguous
+2 failed, 5 passed in 0.04s

@@ -1,0 +1,23 @@
+..F...                                                                   [100%]
+=================================== FAILURES ===================================
+________ test_sdk_context_connector_also_refuses_automatic_reconnection ________
+
+    def test_sdk_context_connector_also_refuses_automatic_reconnection():
+        """Nova uses a context-manager connector rather than Flux's async connector."""
+        module = probe()
+        calls = []
+        budget = module.ConnectionBudget()
+        guarded = budget.context_connector(lambda **kwargs: calls.append(True))
+        guarded(model='nova-3')
+        with pytest.raises(RuntimeError, match='budget'):
+            guarded(model='nova-3')
+>       assert calls == [True]
+E       assert [] == [True]
+E         
+E         Right contains one more item: True
+E         Use -v to get more diff
+
+tests/test_td_vendor_probe.py:51: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_td_vendor_probe.py::test_sdk_context_connector_also_refuses_automatic_reconnection
+1 failed, 5 passed in 4.44s

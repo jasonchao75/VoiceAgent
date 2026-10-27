@@ -1,0 +1,16 @@
+{
+  "first_failure": {
+    "event": "mapping_failed",
+    "reason": "packet_deadline",
+    "counts": {
+      "packets": 0,
+      "mappings": 51,
+      "decoded": 0
+    }
+  },
+  "decoder_events": [
+    {
+      "event": "decoder_configured"
+    }
+  ]
+}

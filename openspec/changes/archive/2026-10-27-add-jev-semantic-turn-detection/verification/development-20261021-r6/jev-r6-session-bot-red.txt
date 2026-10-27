@@ -1,0 +1,24 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_server_bound_bot_identity_survives_session_claim _____________
+
+session_request = SessionRequest(session_type='web_call', asr_api_key=None, tts_api_key=None, deepgram_api_key=SecretStr('**********'), ...tts_stability=0.5, tts_similarity_boost=0.8, tts_style=0.0, tts_use_speaker_boost=False, tts_text_normalization='auto')
+runtime_config = RuntimeConfig(language='en', audio=AudioConfig(encoding='linear16', input_sample_rate=16000, output_sample_rate=24000,...nLimits(pending_token_ttl_seconds=120, idle_timeout_seconds=300, max_duration_seconds=1800, max_concurrent_sessions=3))
+voice_catalog = VoiceCatalog(source_url='https://developers.deepgram.com/docs/flux-tts/voices', listen_url='https://talk.deepgram.com/..., accent='British', gender='Male', age='Mature', traits=['friendly', 'kind', 'caring', 'calming'], use_cases=['IVR'])])
+llm_catalog = LLMProviderCatalog(verified_at='2026-09-15', providers=[LLMProviderEntry(id='openai', name='OpenAI', base_url='https:/...authentication', models_url='https://platform.openai.com/docs/api-reference/models/list', supports_custom_model=True)])
+
+    async def test_server_bound_bot_identity_survives_session_claim(
+        session_request, runtime_config, voice_catalog, llm_catalog,
+    ):
+        """Runtime cache scope comes from resolved server Bot provenance, not inline fields."""
+        store = SessionStore(token_ttl_seconds=120, max_sessions=3)
+>       lease = await store.create(
+            request=session_request, runtime=runtime_config,
+            voice_catalog=voice_catalog, llm_catalog=llm_catalog, bot_id="saved-bot",
+        )
+E       TypeError: SessionStore.create() got an unexpected keyword argument 'bot_id'
+
+tests/test_session.py:136: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_session.py::test_server_bound_bot_identity_survives_session_claim
+1 failed in 0.03s

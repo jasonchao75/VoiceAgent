@@ -1,0 +1,142 @@
+
+Running 4 tests using 1 worker
+
+(node:6910) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 1440px (301ms)
+(node:6916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 390px (128ms)
+(node:6923) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 1440px (133ms)
+(node:6931) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 390px (106ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 1440px 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/
+    Call log:
+      - navigating to "http://127.0.0.1:5173/", waiting until "load"
+
+
+      25 |       return route.fulfill({ contentType: "application/json", body: JSON.stringify(response) });
+      26 |     });
+    > 27 |     await page.goto("/");
+         |                ^
+      28 |     await expect(page.locator(".bot-card").first()).toBeVisible();
+      29 |     await page.getByRole("button", { name: "Sessions", exact: true }).click();
+      30 |     await page.locator(".history-row").first().click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:27:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-histor-dcb83-ayback-unverified-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 390px 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/
+    Call log:
+      - navigating to "http://127.0.0.1:5173/", waiting until "load"
+
+
+      25 |       return route.fulfill({ contentType: "application/json", body: JSON.stringify(response) });
+      26 |     });
+    > 27 |     await page.goto("/");
+         |                ^
+      28 |     await expect(page.locator(".bot-card").first()).toBeVisible();
+      29 |     await page.getByRole("button", { name: "Sessions", exact: true }).click();
+      30 |     await page.locator(".history-row").first().click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:27:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-histor-53786-layback-unverified-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-histor-53786-layback-unverified-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-histor-53786-layback-unverified-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-histor-53786-layback-unverified-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 1440px 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/
+    Call log:
+      - navigating to "http://127.0.0.1:5173/", waiting until "load"
+
+
+      70 |       return route.fulfill({contentType:"application/json",body:JSON.stringify(response)});
+      71 |     });
+    > 72 |     await page.goto("/");
+         |                ^
+      73 |     await page.getByRole("button",{name:"Sessions",exact:true}).click();
+      74 |     await page.locator(".history-row").first().click();
+      75 |     const dialog=page.locator("#history-dialog");
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:72:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-formal-30283-response-versions-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 390px 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/
+    Call log:
+      - navigating to "http://127.0.0.1:5173/", waiting until "load"
+
+
+      70 |       return route.fulfill({contentType:"application/json",body:JSON.stringify(response)});
+      71 |     });
+    > 72 |     await page.goto("/");
+         |                ^
+      73 |     await page.getByRole("button",{name:"Sessions",exact:true}).click();
+      74 |     await page.locator(".history-row").first().click();
+      75 |     const dialog=page.locator("#history-dialog");
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-evidence.spec.js:72:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-formal-c17b4--response-versions-at-390px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-evidence-formal-c17b4--response-versions-at-390px-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-evidence-formal-c17b4--response-versions-at-390px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-evidence-formal-c17b4--response-versions-at-390px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 1440px 
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:10:3 › history keeps legacy playback unverified at 390px 
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 1440px 
+    [desktop-chromium] › tests/ui/td-history-evidence.spec.js:43:3 › formal per-turn history preserves candidates and response versions at 390px 

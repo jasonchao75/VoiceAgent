@@ -1,0 +1,61 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_retained_final_and_echo_keep_original_turn_after_a_new_turn_started ___
+
+    async def test_retained_final_and_echo_keep_original_turn_after_a_new_turn_started():
+        from src.asr.td_config import IdentifierRuleSettings
+        from src.pipeline.identifier_rules import IdentifierRules
+        from tests.test_td_identifier import collection
+        from tests.test_td_rule_settings import priority_settings
+    
+        events, offered = [], []
+        td = coordinator(
+            identifier_rules=IdentifierRules(
+                IdentifierRuleSettings.model_validate(priority_settings()), collection()
+            ),
+            identifier_output=lambda view, evaluation, turn_id: offered.append(turn_id),
+            evidence_sink=events.append,
+        )
+    
+        async def push(frame, *args, **kwargs):
+            pass
+    
+        td.push_frame = push
+        td.assistant_context("请提供编号")
+        await td.speech_started()
+        await td.receive_transcript(interim("1"))
+        await td.speech_stopped(1000)
+        await td.advance(1350)
+        await td.speech_started()
+        question = interim("where")
+        question.result.update(
+            turn_index=1,
+            audio_window_start=10,
+            audio_window_end=11,
+            words=[{"word": "where", "start": 10, "end": 11}],
+        )
+        await td.receive_transcript(question)
+        await td.speech_stopped(11000)
+        await td.advance(13500)
+        await td.speech_started()
+        late = interim("3")
+        late.result["event"] = "EndOfTurn"
+        await td.receive_transcript(late)
+        revision = [event for event in events if event["event"] == "identifier_retained_revision"][-1]
+        raw = [
+            event for event in events if event["event"] == "source_transcript" and event["text"] == "3"
+        ][-1]
+>       assert revision["turn_id"] == 1 and raw["turn_id"] == 1 and offered[-1] == 1
+E       assert (1 == 1 and 2 == 1)
+
+tests/test_td_runtime.py:714: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 20:18:30.036 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_retained_final_and_echo_keep_original_turn_after_a_new_turn_started
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_retained_final_and_echo_keep_original_turn_after_a_new_turn_started
+1 failed, 20 deselected, 1 warning in 1.15s

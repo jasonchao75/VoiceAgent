@@ -1,0 +1,182 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_interrupt_hook_does_not_block_local_stop_on_wire_backpressure ______
+
+fut = <Task cancelled name='Task-3' coro=<test_interrupt_hook_does_not_block_local_stop_on_wire_backpressure.<locals>.send() done, defined at /Volumes/work/OpenCode/VoiceAgent/tests/test_flux_interrupt_boundary.py:204>>
+timeout = 2.0
+
+    async def wait_for(fut, timeout, *, loop=None, race_handler=None):
+        """
+        Alternate implementation of asyncio.wait_for() based on the version from Python 3.8. It handles simultaneous
+        cancellation of wait and completion of future differently and consistently across python versions 3.6+.
+    
+        Builtin asyncio.wait_for() behaviours:
+            Python 3.6, 3.7 and PyPy3:
+                Cancellation of wait_for could lose the completed future's result.
+            Python 3.8+:
+                Cancellation of wait_for could lose the cancellation request.
+    
+        Whenever waiting for a future's result the user expects to either have the future completed or cancelled.
+        Unfortunately due to technical details there is a chance that both will happen simultaneously. The builtin version
+        of asyncio.wait_for() shipped with Python either handles one or the other only. If losing the future's result or
+        ignoring the cancellation is critical to the application it may not be suitable for use.
+    
+        Using this implementation, in case both conditions occur at the same time a subclassed CancelledError will be
+        raised which also contains the result of the future. The caller code must catch this exception and handle the
+        result if it is important. Otherwise it can be used the same way as the builtin wait_for.
+    
+        If the caller prefers to handle the race-condition with a callback, the `race_handler` argument may be provided.
+        It will be called with the result of the future when the waiter task is being cancelled. Even if this is provided,
+        the special error will be raised in the place of a normal CancelledError.
+    
+        Additionally, this implementation will inherit the behaviour of the inner future when it comes to ignoring
+        cancellation. The builtin version prefers to always be cancellable, even if that means the wrapped future may
+        not be terminated with it. (behaviour of builtin _cancel_and_wait) This behaviour is also improved in
+        timeout-cancel edge cases, where the builtin would not wait for the termination of the inner future if the
+        waiter was cancelled after timeout handling had already started. This is more consistent as the inner future
+        must always be stopped for it to return.
+    
+        NOTE: CancelledWithResultError is limited to the coroutine wait_for is invoked from!
+        If this wait_for is wrapped in tasks those will not propagate the special exception, but raise their own
+        CancelledError instances.
+        """
+        if loop is None:
+            loop = get_running_loop()
+        elif sys.version_info >= (3, 10):  # pragma: no cover
+            raise RuntimeError("loop parameter has been dropped since Python 3.10")
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            return await _cancel_and_wait2(fut, loop, False, race_handler)
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = partial(_release_waiter, waiter)
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            try:
+>               await waiter
+E               asyncio.exceptions.CancelledError
+
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/wait_for2/impl.py:152: CancelledError
+
+During handling of the above exception, another exception occurred:
+
+message = {'type': 'Interrupt'}
+
+    async def send(message):
+>       await blocked.wait()
+
+tests/test_flux_interrupt_boundary.py:205: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asyncio.locks.Event object at 0x1178630d0 [set]>
+
+    async def wait(self):
+        """Block until the internal flag is true.
+    
+        If the internal flag is true on entry, return True
+        immediately.  Otherwise, block until another coroutine calls
+        set() to set the flag to true, then return True.
+        """
+        if self._value:
+            return True
+    
+        fut = self._get_loop().create_future()
+        self._waiters.append(fut)
+        try:
+>           await fut
+E           asyncio.exceptions.CancelledError
+
+/Users/zhaozichen/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/locks.py:213: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+    async def test_interrupt_hook_does_not_block_local_stop_on_wire_backpressure():
+        """The SDK forwards local interruption only after this provider hook returns."""
+        service, _, old, _ = setup_service()
+        blocked = asyncio.Event()
+    
+        async def send(message):
+            await blocked.wait()
+    
+        service._transport_send_json = send
+        try:
+>           await asyncio.wait_for(service.on_audio_context_interrupted(old), .02)
+
+tests/test_flux_interrupt_boundary.py:209: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/wait_for2/impl.py:172: in wait_for
+    return await _cancel_and_wait2(fut, loop, False, race_handler)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fut = <Task cancelled name='Task-2' coro=<ConfirmedDeepgramFluxTTSService.on_audio_context_interrupted() done, defined at /Volumes/work/OpenCode/VoiceAgent/src/tts/confirmed_flux.py:32>>
+loop = <_UnixSelectorEventLoop running=False closed=False debug=False>
+cancelling = False, race_handler = None
+
+    async def _cancel_and_wait2(fut, loop, cancelling, race_handler):
+        """
+        The builtin implementation of _cancel_and_wait is made in a way to ensure cancellation of it will always be
+        possible, at the cost of ensuring that the wrapped future shall terminate inside it.
+    
+        The documentation says that
+            - "If a timeout occurs, it cancels the task and raises asyncio.TimeoutError."
+            - "The function will wait until the future is actually cancelled"
+        , but their combination will result in undocumented behaviour:
+            If a timeout occurs and the inner future is cancelled, then cancelling the waiter will instantly cancel
+            it and the inner future may still be running, which does not fulfill the second promise.
+    
+        This implementation will prioritize cancellation or the result of the inner future dynamically as it makes sense.
+        """
+        if not cancelling:
+            # We need to detect explicit cancellations so the good-case value returning will not be used.
+            waiter = loop.create_future()
+            cb = partial(_release_waiter, waiter)
+            fut.add_done_callback(cb)
+            fut.cancel()
+            try:
+                await waiter
+            except CancelledError:
+                cancelling = True  # explicitly cancelling the inner from now on
+            finally:
+                fut.remove_done_callback(cb)
+        else:
+            fut.cancel()
+        # At this point there's no benefit of wrapping the future with a waiter since we're cancelling it?
+        try:
+            fut_result = await fut
+            if not cancelling:
+                return fut_result
+        except CancelledError as exc:
+            if cancelling:
+                raise exc
+>           raise TimeoutError() from exc
+E           TimeoutError
+
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/wait_for2/impl.py:67: TimeoutError
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_flux_interrupt_boundary.py::test_interrupt_hook_does_not_block_local_stop_on_wire_backpressure
+1 failed, 7 deselected, 3 warnings in 1.12s

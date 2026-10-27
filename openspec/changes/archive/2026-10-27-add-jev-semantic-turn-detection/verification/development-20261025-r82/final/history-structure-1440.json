@@ -1,0 +1,110 @@
+{
+  "reference": {
+    "listStyle": {
+      "titleFont": "15px",
+      "filterColumns": 3,
+      "columns": [
+        "block",
+        "block",
+        "block",
+        "block",
+        "block"
+      ]
+    },
+    "metadata": {
+      "h2": {
+        "fontSize": "18px",
+        "color": "rgb(237, 242, 239)"
+      },
+      "h2 + p": {
+        "fontSize": "11px",
+        "color": "rgb(116, 128, 121)"
+      },
+      ".recording-unavailable": {
+        "fontSize": "11px",
+        "color": "rgb(143, 154, 149)"
+      }
+    },
+    "header": {
+      "display": "flex",
+      "alignItems": "flex-start"
+    },
+    "title": {
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "marginTop": "0px",
+      "marginBottom": "0px"
+    },
+    "badge": {
+      "fontSize": "10px",
+      "color": "rgb(120, 240, 179)",
+      "backgroundColor": "rgb(16, 36, 27)",
+      "borderRadius": "6px"
+    },
+    "user": {
+      "fontSize": "13px",
+      "padding": "10px 13px",
+      "borderRadius": "12px",
+      "backgroundColor": "rgb(21, 60, 44)"
+    },
+    "details": {
+      "borderTopWidth": "1px",
+      "paddingTop": "12px"
+    },
+    "overflow": false
+  },
+  "production": {
+    "listStyle": {
+      "titleFont": "15px",
+      "filterColumns": 3,
+      "columns": [
+        "block",
+        "block",
+        "block",
+        "block",
+        "block"
+      ]
+    },
+    "metadata": {
+      "h2": {
+        "fontSize": "18px",
+        "color": "rgb(237, 242, 239)"
+      },
+      "h2 + p": {
+        "fontSize": "11px",
+        "color": "rgb(116, 128, 121)"
+      },
+      ".recording-unavailable": {
+        "fontSize": "11px",
+        "color": "rgb(143, 154, 149)"
+      }
+    },
+    "header": {
+      "display": "flex",
+      "alignItems": "flex-start"
+    },
+    "title": {
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "marginTop": "0px",
+      "marginBottom": "0px"
+    },
+    "badge": {
+      "fontSize": "10px",
+      "color": "rgb(120, 240, 179)",
+      "backgroundColor": "rgb(16, 36, 27)",
+      "borderRadius": "6px"
+    },
+    "user": {
+      "fontSize": "13px",
+      "padding": "10px 13px",
+      "borderRadius": "12px",
+      "backgroundColor": "rgb(21, 60, 44)"
+    },
+    "details": {
+      "borderTopWidth": "1px",
+      "paddingTop": "12px"
+    },
+    "overflow": false
+  }
+}

@@ -1,0 +1,4 @@
+src/pipeline/rtp_output.py:49: error: Argument 1 to "add" of "set" has incompatible type "Any | None"; expected "str"  [arg-type]
+src/pipeline/rtp_output.py:50: error: Argument 1 to "get" of "dict" has incompatible type "Any | None"; expected "str"  [arg-type]
+src/pipeline/rtp_output.py:52: error: Argument 1 to "add" of "set" has incompatible type "Any | None"; expected "str"  [arg-type]
+Found 3 errors in 1 file (checked 1 source file)

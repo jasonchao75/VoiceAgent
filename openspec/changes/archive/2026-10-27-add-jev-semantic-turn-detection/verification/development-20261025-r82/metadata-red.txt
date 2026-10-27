@@ -1,0 +1,70 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 [desktop-chromium] › tests/ui/td-history-baseline.spec.js:8:32 › formal Sessions retains frozen turn hierarchy at 1440px (742ms)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [desktop-chromium] › tests/ui/td-history-baseline.spec.js:8:32 › formal Sessions retains frozen turn hierarchy at 1440px 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+    @@ -14,19 +14,19 @@
+          "display": "flex",
+        },
+        "metadata": Object {
+          ".recording-unavailable": Object {
+            "color": "rgb(143, 154, 149)",
+    -       "fontSize": "11px",
+    +       "fontSize": "16px",
+          },
+          "h2": Object {
+            "color": "rgb(237, 242, 239)",
+    -       "fontSize": "18px",
+    +       "fontSize": "24px",
+          },
+          "h2 + p": Object {
+    -       "color": "rgb(116, 128, 121)",
+    -       "fontSize": "11px",
+    +       "color": "rgb(237, 242, 239)",
+    +       "fontSize": "16px",
+          },
+        },
+        "overflow": false,
+        "title": Object {
+          "fontSize": "14px",
+
+      50 |  const production=await signature(actual);
+      51 |  writeFileSync(`${evidence}/history-structure-${width}.json`,JSON.stringify({reference,production},null,2));
+    > 52 |  expect(production).toEqual(reference);
+         |                     ^
+      53 |  await page.screenshot({path:`${evidence}/history-structure-${width}.png`,fullPage:true});
+      54 |  await baseline.close();
+      55 | });
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-history-baseline.spec.js:52:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-baseline-formal-d6afb-en-turn-hierarchy-at-1440px-desktop-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-baseline-formal-d6afb-en-turn-hierarchy-at-1440px-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-history-baseline-formal-d6afb-en-turn-hierarchy-at-1440px-desktop-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-history-baseline-formal-d6afb-en-turn-hierarchy-at-1440px-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-history-baseline-formal-d6afb-en-turn-hierarchy-at-1440px-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-history-baseline.spec.js:8:32 › formal Sessions retains frozen turn hierarchy at 1440px 
+  1 did not run
+  1 error was not a part of any test, see above for details

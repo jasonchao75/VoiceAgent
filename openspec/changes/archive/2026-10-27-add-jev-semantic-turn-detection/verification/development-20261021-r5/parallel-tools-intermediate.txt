@@ -1,0 +1,29 @@
+..F................                                                      [100%]
+=================================== FAILURES ===================================
+________ test_clear_reanswer_does_not_clear_a_new_collection_generation ________
+
+    async def test_clear_reanswer_does_not_clear_a_new_collection_generation():
+        handlers, boundary, owner, state = tools()
+        output = []
+        await handlers.clear(params(boundary, "clear_identifier", {}, output))
+        new = state.bind_source(0, "b", 1, "12")
+        state.collect_local(new)
+        restart = owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
+        handlers.bind_response(restart.new_response, state.bind_source(0, "a", 2, "号码123"))
+        await handlers.clear(params(boundary, "clear_identifier", {}, output))
+        assert state.value == "12" and state.generation == 1
+>       assert output[-1]["status"] == "cleared"
+E       AssertionError: assert 'superseded' == 'cleared'
+E         
+E         - cleared
+E         + superseded
+
+tests/test_td_identifier_tools.py:74: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_tools.py::test_clear_reanswer_does_not_clear_a_new_collection_generation
+1 failed, 18 passed, 1 warning in 1.19s

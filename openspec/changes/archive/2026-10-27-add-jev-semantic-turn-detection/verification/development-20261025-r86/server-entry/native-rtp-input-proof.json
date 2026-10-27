@@ -1,0 +1,228 @@
+{
+  "evidenceLevel": "local-real",
+  "boundary": "server RTP/decoder/resampler only; browser capture clock unproven",
+  "proofs": [
+    {
+      "processed_start": 0,
+      "processed_end": 912,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 304,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715014683,
+          "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+          "decoded_start": 0,
+          "decoded_end": 960,
+          "segment_start": 0,
+          "segment_end": 912
+        }
+      ]
+    },
+    {
+      "processed_start": 912,
+      "processed_end": 1872,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715014683,
+          "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+          "decoded_start": 0,
+          "decoded_end": 960,
+          "segment_start": 912,
+          "segment_end": 960
+        },
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715015643,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 960,
+          "decoded_end": 1920,
+          "segment_start": 960,
+          "segment_end": 1872
+        }
+      ]
+    },
+    {
+      "processed_start": 1872,
+      "processed_end": 2832,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715015643,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 960,
+          "decoded_end": 1920,
+          "segment_start": 1872,
+          "segment_end": 1920
+        },
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715016603,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 1920,
+          "decoded_end": 2880,
+          "segment_start": 1920,
+          "segment_end": 2832
+        }
+      ]
+    },
+    {
+      "processed_start": 2832,
+      "processed_end": 3792,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715016603,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 1920,
+          "decoded_end": 2880,
+          "segment_start": 2832,
+          "segment_end": 2880
+        },
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715017563,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 2880,
+          "decoded_end": 3840,
+          "segment_start": 2880,
+          "segment_end": 3792
+        }
+      ]
+    },
+    {
+      "processed_start": 3792,
+      "processed_end": 4752,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715017563,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 2880,
+          "decoded_end": 3840,
+          "segment_start": 3792,
+          "segment_end": 3840
+        },
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715018523,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 3840,
+          "decoded_end": 4800,
+          "segment_start": 3840,
+          "segment_end": 4752
+        }
+      ]
+    },
+    {
+      "processed_start": 4752,
+      "processed_end": 5712,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715018523,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 3840,
+          "decoded_end": 4800,
+          "segment_start": 4752,
+          "segment_end": 4800
+        },
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715019483,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 4800,
+          "decoded_end": 5760,
+          "segment_start": 4800,
+          "segment_end": 5712
+        }
+      ]
+    },
+    {
+      "processed_start": 5712,
+      "processed_end": 6672,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715019483,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 4800,
+          "decoded_end": 5760,
+          "segment_start": 5712,
+          "segment_end": 5760
+        },
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715020443,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 5760,
+          "decoded_end": 6720,
+          "segment_start": 5760,
+          "segment_end": 6672
+        }
+      ]
+    },
+    {
+      "processed_start": 6672,
+      "processed_end": 7632,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715020443,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 5760,
+          "decoded_end": 6720,
+          "segment_start": 6672,
+          "segment_end": 6720
+        },
+        {
+          "connection_id": "dea545552de241a9a569d7c09cbd1448",
+          "ssrc": 784344987,
+          "rtp_timestamp": 3715021403,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 6720,
+          "decoded_end": 7680,
+          "segment_start": 6720,
+          "segment_end": 7632
+        }
+      ]
+    }
+  ]
+}

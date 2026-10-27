@@ -1,0 +1,95 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[deepgram-flux-general-en] _
+
+provider = 'deepgram', model = 'flux-general-en'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('assemblyai', 'universal-streaming-english'),
+    ])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        td = coordinator()
+        td.asr.source_normalizer = SourceNormalizer(provider, model)
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        def frame(source, text, start=None, end=None):
+            if provider == 'deepgram':
+                payload = {'event': 'Update', 'turn_index': source, 'transcript': text}
+                if start is not None:
+                    payload.update(audio_window_start=start, audio_window_end=end)
+            else:
+                payload = {'turn_order': source, 'transcript': text}
+                if start is not None:
+                    payload['words'] = [{'text': text, 'start': start * 1000, 'end': end * 1000}]
+            return InterimTranscriptionFrame(text, '', '', result=payload)
+    
+        td.push_frame = push
+        await td.receive_transcript(frame(0, '12'))
+        await td.receive_transcript(frame(1, '34', .2, .4))
+        await td.speech_stopped(1000)
+        await td.advance(9999)
+>       assert not any(isinstance(item, TranscriptionFrame) for item in out)
+E       assert not True
+E        +  where True = any(<generator object test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers.<locals>.<genexpr> at 0x115c60040>)
+
+tests/test_td_runtime.py:943: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-22 07:43:44.311 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+_ test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[assemblyai-universal-streaming-english] _
+
+provider = 'assemblyai', model = 'universal-streaming-english'
+
+    @pytest.mark.parametrize('provider,model', [
+        ('deepgram', 'flux-general-en'), ('assemblyai', 'universal-streaming-english'),
+    ])
+    async def test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers(
+        provider, model,
+    ):
+        """A later unrelated turn is not evidence that a missing source range recovered."""
+        from pipecat.frames.frames import TranscriptionFrame
+    
+        td = coordinator()
+        td.asr.source_normalizer = SourceNormalizer(provider, model)
+        out = []
+    
+        async def push(frame, *args, **kwargs):
+            out.append(frame)
+    
+        def frame(source, text, start=None, end=None):
+            if provider == 'deepgram':
+                payload = {'event': 'Update', 'turn_index': source, 'transcript': text}
+                if start is not None:
+                    payload.update(audio_window_start=start, audio_window_end=end)
+            else:
+                payload = {'turn_order': source, 'transcript': text}
+                if start is not None:
+                    payload['words'] = [{'text': text, 'start': start * 1000, 'end': end * 1000}]
+            return InterimTranscriptionFrame(text, '', '', result=payload)
+    
+        td.push_frame = push
+        await td.receive_transcript(frame(0, '12'))
+        await td.receive_transcript(frame(1, '34', .2, .4))
+        await td.speech_stopped(1000)
+        await td.advance(9999)
+>       assert not any(isinstance(item, TranscriptionFrame) for item in out)
+E       assert not True
+E        +  where True = any(<generator object test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers.<locals>.<genexpr> at 0x115c61c40>)
+
+tests/test_td_runtime.py:943: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[deepgram-flux-general-en]
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[deepgram-flux-general-en]
+FAILED tests/test_td_runtime.py::test_stable_source_missing_time_blocks_other_sources_until_same_id_recovers[assemblyai-universal-streaming-english]
+2 failed, 29 deselected, 1 warning in 1.40s

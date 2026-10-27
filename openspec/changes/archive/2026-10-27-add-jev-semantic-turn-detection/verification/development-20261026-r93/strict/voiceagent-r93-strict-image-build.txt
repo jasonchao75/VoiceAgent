@@ -1,0 +1,124 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.74kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/node:22-alpine
+#3 DONE 6.7s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 6.8s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 656B done
+#4 DONE 0.0s
+
+#5 [frontend-builder 1/6] FROM docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+#5 resolve docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 done
+#5 DONE 0.0s
+
+#6 [runtime  1/13] FROM docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377
+#6 resolve docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377 done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 7.00kB 0.1s done
+#7 DONE 0.1s
+
+#8 [runtime  3/13] WORKDIR /app
+#8 CACHED
+
+#9 [runtime  5/13] RUN pip install -r requirements.lock
+#9 CACHED
+
+#10 [runtime  4/13] COPY pyproject.toml requirements.lock ./
+#10 CACHED
+
+#11 [runtime  2/13] RUN addgroup --system voiceagent && adduser --system --ingroup voiceagent voiceagent
+#11 CACHED
+
+#12 [runtime  6/13] RUN python -m nltk.downloader -d /usr/local/share/nltk_data punkt_tab
+#12 CACHED
+
+#13 [frontend-builder 3/6] COPY frontend/package.json frontend/package-lock.json ./
+#13 CACHED
+
+#14 [frontend-builder 2/6] WORKDIR /build/frontend
+#14 CACHED
+
+#15 [frontend-builder 4/6] RUN npm ci
+#15 CACHED
+
+#16 [runtime  7/13] COPY --chown=voiceagent:voiceagent src/ ./src/
+#16 DONE 0.0s
+
+#17 [frontend-builder 5/6] COPY frontend/ ./
+#17 DONE 0.0s
+
+#18 [runtime  8/13] COPY --chown=voiceagent:voiceagent configs/runtime/ ./configs/runtime/
+#18 DONE 0.0s
+
+#19 [runtime  9/13] COPY --chown=voiceagent:voiceagent scripts/deploy/verify_evaluation_production.py ./scripts/deploy/verify_evaluation_production.py
+#19 DONE 0.0s
+
+#20 [frontend-builder 6/6] RUN npm run build
+#20 ...
+
+#21 [runtime 10/13] COPY --chown=voiceagent:voiceagent scripts/deploy/verify_webrtc_production.py ./scripts/deploy/verify_webrtc_production.py
+#21 DONE 0.0s
+
+#22 [runtime 11/13] COPY --chown=voiceagent:voiceagent openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/ ./openspec/changes/archive/2026-09-27-add-asr-automated-evaluation/fixtures/
+#22 DONE 0.0s
+
+#20 [frontend-builder 6/6] RUN npm run build
+#20 0.173 
+#20 0.173 > voice-agent-frontend@0.1.0 build
+#20 0.173 > vite build
+#20 0.173 
+#20 0.296 vite v8.2.2 building client environment for production...
+#20 0.304 transforming...
+#20 0.431 ✓ 196 modules transformed.
+#20 0.470 rendering chunks...
+#20 0.509 computing gzip size...
+#20 0.512 dist/index.html                                    0.84 kB │ gzip:  0.39 kB
+#20 0.512 dist/demo.html                                     0.85 kB │ gzip:  0.40 kB
+#20 0.512 dist/login.html                                    2.31 kB │ gzip:  0.93 kB
+#20 0.512 dist/assets/td-rtp-input-worker-SbEdjOj-.js        2.41 kB
+#20 0.512 dist/assets/td-rtp-candidate-worker-DANWGN9z.js    4.10 kB
+#20 0.512 dist/assets/td-audio-worklet-BIuzPORB.js           5.15 kB
+#20 0.512 dist/evaluation.html                             303.74 kB │ gzip: 82.16 kB
+#20 0.512 dist/assets/login-BNVcW8Ri.css                     3.63 kB │ gzip:  1.36 kB
+#20 0.512 dist/assets/evaluation-CWcc11kK.css                9.94 kB │ gzip:  2.76 kB
+#20 0.512 dist/assets/demo-tByE4cBr.css                     10.16 kB │ gzip:  3.09 kB
+#20 0.512 dist/assets/app-7_eiuHmK.css                      55.07 kB │ gzip: 11.58 kB
+#20 0.512 dist/assets/modulepreload-polyfill-P2Xu9kJm.js     0.67 kB │ gzip:  0.38 kB
+#20 0.512 dist/assets/login-1oQnc6c6.js                      1.25 kB │ gzip:  0.71 kB
+#20 0.512 dist/assets/td-render-clock-2xM6-IQT.js            2.94 kB │ gzip:  1.27 kB
+#20 0.512 dist/assets/pipecat-client-DiCvJYhI.js            84.92 kB │ gzip: 22.07 kB
+#20 0.512 dist/assets/demo-POt7i7m9.js                     106.09 kB │ gzip: 28.45 kB
+#20 0.512 dist/assets/evaluation-BvclxGAq.js               136.37 kB │ gzip: 39.50 kB
+#20 0.512 dist/assets/app-D4PqE_C3.js                      217.85 kB │ gzip: 67.85 kB
+#20 0.512 dist/assets/pipecat-transport-De8eyXAH.js        359.49 kB │ gzip: 94.68 kB
+#20 0.512 
+#20 0.513 ✓ built in 215ms
+#20 DONE 0.5s
+
+#23 [runtime 12/13] COPY --chown=voiceagent:voiceagent --from=frontend-builder /build/frontend/dist ./frontend/dist/
+#23 DONE 0.0s
+
+#24 [runtime 13/13] RUN mkdir -p /data /evaluation-data && chown voiceagent:voiceagent /data /evaluation-data
+#24 DONE 0.1s
+
+#25 exporting to image
+#25 exporting layers 0.1s done
+#25 exporting manifest sha256:cc57882e972b05aeab9abe16019bd20bc4ec0c8ba78c04e38672ebb1ee1eeffa done
+#25 exporting config sha256:74db3ef13afe2af9ed63479b947fb7ed1c116d3bf8f9ea5af4894df86c32131f done
+#25 exporting attestation manifest sha256:bcb390339aee8722ed5a32604afd4552e5edfd361a79baeba15110d14e3c7180 done
+#25 exporting manifest list sha256:92223298f87b16a086451fd91f1fafed1472a8b3495abdc8268d46b36fd727b1 done
+#25 naming to docker.io/library/voiceagent-td-resource-r93:strict done
+#25 unpacking to docker.io/library/voiceagent-td-resource-r93:strict 0.0s done
+#25 DONE 0.1s

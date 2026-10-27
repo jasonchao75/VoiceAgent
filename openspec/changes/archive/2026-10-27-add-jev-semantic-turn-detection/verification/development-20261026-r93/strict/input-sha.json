@@ -1,0 +1,7 @@
+{
+  "Dockerfile": "39604898bdb37718ff78602a55b54f62eb485b44bfb85f38c40910955b070df2",
+  ".dockerignore": "3a6119a8f105ccb30c28640170d999b258664b58bf2ab56cc7c92436dff2afa5",
+  "requirements.lock": "b1a7e4407804ed3337627a6e1ac38ba49be5b4a82f4272c9747f8b861234f5e9",
+  "tests/ui/td_local_app.py": "1c41610f1c71aa7cf8140004c9217f5974cf618db5f8c5976d94e80dce38b550",
+  "tests/test_docker_context.py": "18df0eaaf9e8c2ef8b4b1f2e92d6dbcda8f626bb66a383dc3ee9f39e0a17fa1d"
+}

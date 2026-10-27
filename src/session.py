@@ -12,6 +12,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 from src.asr.config import ASRProvider, TurnDetectionSource, validate_asr_options
+from src.asr.td_config import CustomTDSettings
 from src.config import (
     LLMConfig,
     LLMProviderCatalog,
@@ -47,6 +48,8 @@ class SessionRequest(BaseModel):
     asr_provider: ASRProvider = "deepgram"
     asr_model: str = Field(default="flux-general-en", min_length=1, max_length=100)
     turn_detection_source: TurnDetectionSource = "provider_native"
+    td_config: CustomTDSettings | None = None
+    jev_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     asr_options: dict[str, object] = Field(default_factory=dict)
     asr_language_hints: list[
         Literal["en", "es", "fr", "de", "hi", "ru", "pt", "ja", "it", "nl"]
@@ -73,6 +76,7 @@ class SessionRequest(BaseModel):
     tts_text_normalization: Literal["auto", "on", "off"] = "auto"
 
     @field_validator(
+        "jev_api_key",
         "asr_api_key",
         "tts_api_key",
         "deepgram_api_key",
@@ -93,6 +97,11 @@ class SessionRequest(BaseModel):
     @model_validator(mode="after")
     def require_component_keys(self) -> SessionRequest:
         """Require independent ASR and TTS credentials with legacy fallbacks."""
+        if self.turn_detection_source == "self_developed" and self.session_type != "chat_test":
+            if self.td_config is None:
+                raise ValueError("td_config is required for self_developed")
+            if self.jev_api_key is None:
+                raise ValueError("Jev API key is required for self_developed")
         if self.session_type != "chat_test" and self.effective_asr_key is None:
             raise ValueError("ASR API key is required")
         if self.effective_tts_key is None:
@@ -125,6 +134,7 @@ class BotSessionRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    jev_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
     bot_id: str = Field(min_length=1, max_length=100)
     session_type: Literal["web_call", "chat_test"] = "web_call"
     asr_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
@@ -134,6 +144,7 @@ class BotSessionRequest(BaseModel):
     elevenlabs_api_key: SecretStr | None = Field(default=None, min_length=8, max_length=500)
 
     @field_validator(
+        "jev_api_key",
         "asr_api_key",
         "tts_api_key",
         "deepgram_api_key",
@@ -168,6 +179,7 @@ class SessionConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
+    td_config: CustomTDSettings | None = None
     llm: LLMConfig
     asr: ASRSessionConfig
     tts: TTSConfig
@@ -183,12 +195,14 @@ class SessionCredentials:
     asr_api_key: SecretStr
     tts_api_key: SecretStr
     llm_api_key: SecretStr
+    jev_api_key: SecretStr | None = None
 
     def clear(self) -> None:
         """Drop references to provider keys after the session ends."""
         self.asr_api_key = SecretStr("")
         self.tts_api_key = SecretStr("")
         self.llm_api_key = SecretStr("")
+        self.jev_api_key = None
 
     @property
     def deepgram_api_key(self) -> SecretStr:
@@ -207,6 +221,7 @@ class SessionLease:
     session_type: SessionType
     created_at: float
     expires_at: float
+    bot_id: str | None = None
     claimed: bool = False
     closed: bool = False
 
@@ -250,6 +265,7 @@ class SessionStore:
         runtime: RuntimeConfig,
         voice_catalog: VoiceCatalog,
         llm_catalog: LLMProviderCatalog,
+        bot_id: str | None = None,
     ) -> SessionLease:
         """Validate a request and create a short-lived, unclaimed session lease.
 
@@ -285,11 +301,13 @@ class SessionStore:
                     asr_api_key=request.effective_asr_key or SecretStr(""),
                     tts_api_key=request.effective_tts_key,
                     llm_api_key=request.llm_api_key,
+                    jev_api_key=request.jev_api_key,
                 ),
                 config=session_config,
                 session_type=request.session_type,
                 created_at=now,
                 expires_at=now + self._token_ttl_seconds,
+                bot_id=bot_id,
             )
             self._pending[token] = lease
         return lease
@@ -464,6 +482,7 @@ def build_session_config(
         text_normalization=request.tts_text_normalization,
     )
     return SessionConfig(
+        td_config=request.td_config.model_copy(deep=True) if request.td_config else None,
         llm=llm,
         asr=ASRSessionConfig(
             provider=request.asr_provider,

@@ -1,0 +1,51 @@
+
+Running 1 test using 1 worker
+
+(node:32002) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API (12.1s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 
+
+    Error: expect(locator).not.toBeVisible() failed
+
+    Locator:  locator('[data-screen="error"]')
+    Expected: not visible
+    Received: visible
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "not toBeVisible" locator('[data-screen="error"]') with timeout 5000ms
+      - waiting for locator('[data-screen="error"]')
+        14 × locator resolved to <section inert="" class="screen" aria-hidden="true" data-screen="error">…</section>
+           - unexpected value "visible"
+
+
+      79 |   await expect.poll(()=>receipts.filter(item=>item.status===204 && item.receipt.event==='task_stopped' && item.receipt.rendered_samples>0).length,{timeout:10000}).toBeGreaterThan(0);
+      80 |   await expect.poll(()=>receipts.filter(item=>item.status===204 && item.receipt.event==='task_finished').length,{timeout:10000}).toBeGreaterThanOrEqual(2);
+    > 81 |   await expect(page.locator('[data-screen="error"]')).not.toBeVisible();
+         |                                                           ^
+      82 |   await expect(page.locator("audio")).toHaveJSProperty("muted",true);
+      83 |   const manifests=await page.evaluate(()=>window.__rtcManifests);
+      84 |   for(const item of receipts.filter(item=>item.receipt.event==='task_finished')) {
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-rtc-entry.spec.js:81:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-rtc-entry-formal-mobile-6f5b3-s-through-authenticated-API-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API 
+  1 error was not a part of any test, see above for details

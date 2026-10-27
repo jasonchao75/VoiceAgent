@@ -1,0 +1,16 @@
+✔ hung start receipt has a deadline; stop cannot bypass it and failure is explicit once (1.808041ms)
+✔ server acceptance with lost HTTP response never becomes a guessed successful receipt (0.346834ms)
+✔ close aborts and settles a pending request without failure callback or queued delivery (0.348375ms)
+✔ successful receipt order and HTTP rejection keep the authenticated protocol (0.177292ms)
+✔ renderer-only state does not escape strict API receipt schema (0.323958ms)
+✔ receiver transform is installed with initial transceivers before SDP or track consumers (0.44075ms)
+✔ capture metadata observation binds the sender without changing the receiver worker (0.084125ms)
+✔ optional sender timing capability cannot disable existing RTP playback (0.390833ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35.147125

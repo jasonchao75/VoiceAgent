@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import shutil
 import sqlite3
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import aiosqlite
 
@@ -100,6 +101,12 @@ class HistoryStore:
                 CREATE INDEX IF NOT EXISTS idx_calls_started_at ON calls(started_at DESC);
                 """
             )
+            await database.execute(
+                """CREATE TABLE IF NOT EXISTS td_events (
+                    call_id TEXT NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
+                    sequence INTEGER NOT NULL, payload TEXT NOT NULL,
+                    PRIMARY KEY (call_id, sequence))"""
+            )
             await self._migrate_turn_metrics(database)
             await self._migrate_calls(database)
             await database.execute(
@@ -142,6 +149,8 @@ class HistoryStore:
             "incomplete_reason TEXT",
             "context_applied INTEGER",
             "context_failure_reason TEXT",
+            "playback_evidence TEXT",
+            "timing_ranges TEXT",
         ]
         for column_def in new_columns:
             try:
@@ -213,6 +222,7 @@ class HistoryStore:
         recording_status: str,
         error_category: str | None = None,
         diagnostic_id: str | None = None,
+        td_events: list[dict[str, Any]] | None = None,
     ) -> None:
         """Atomically store the final transcript, metrics, and recording state."""
         relative_path = None
@@ -239,6 +249,13 @@ class HistoryStore:
                 ),
             )
             await database.executemany(
+                "INSERT OR REPLACE INTO td_events (call_id, sequence, payload) VALUES (?, ?, ?)",
+                [
+                    (call_id, index, json.dumps(event, ensure_ascii=False, allow_nan=False))
+                    for index, event in enumerate(td_events or [])
+                ],
+            )
+            await database.executemany(
                 "INSERT OR REPLACE INTO turns VALUES (?, ?, ?, ?, ?)",
                 [(call_id, item.sequence, item.role, item.text, item.created_ms) for item in turns],
             )
@@ -249,8 +266,8 @@ class HistoryStore:
                        tts_first_audio_ms, playback_ms, server_to_playback_ms,
                        turn_to_playback_ms, asr_final_reason, incomplete_reason,
                        reasoning_tokens, reasoning_status, reasoning_control,
-                       context_applied, context_failure_reason
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       context_applied, context_failure_reason, playback_evidence, timing_ranges
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     (
                         call_id,
@@ -270,6 +287,8 @@ class HistoryStore:
                         item.reasoning_control,
                         item.context_applied,
                         item.context_failure_reason,
+                        item.playback_evidence,
+                        json.dumps(item.model_dump(mode="json")["timing_ranges"]),
                     )
                     for item in metrics
                 ],
@@ -311,6 +330,12 @@ class HistoryStore:
                     "SELECT * FROM turns WHERE call_id=? ORDER BY sequence", (call_id,)
                 )
             ).fetchall()
+            td_rows = await (
+                await database.execute(
+                    "SELECT payload FROM td_events WHERE call_id=? ORDER BY sequence",
+                    (call_id,),
+                )
+            ).fetchall()
             metrics = await (
                 await database.execute(
                     "SELECT * FROM turn_metrics WHERE call_id=? ORDER BY turn_index", (call_id,)
@@ -326,12 +351,20 @@ class HistoryStore:
             sample_rate=row["sample_rate"],
             channels=row["channels"],
             recording_bytes=row["recording_bytes"],
+            td_events=[json.loads(item["payload"]) for item in td_rows],
             turns=[
                 HistoryTurn(**{key: item[key] for key in item.keys() if key != "call_id"})
                 for item in turns
             ],
             metrics=[
-                TurnMetric(**{k: item[k] for k in item.keys() if k != "call_id"})
+                TurnMetric(
+                    **{
+                        **{
+                            k: item[k] for k in item.keys() if k not in {"call_id", "timing_ranges"}
+                        },
+                        "timing_ranges": json.loads(item["timing_ranges"] or "{}"),
+                    }
+                )
                 for item in metrics
             ],
         )

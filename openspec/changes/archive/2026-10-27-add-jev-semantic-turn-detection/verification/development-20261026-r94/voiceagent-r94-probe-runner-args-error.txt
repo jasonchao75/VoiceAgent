@@ -1,0 +1,124 @@
+.FF                                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_actual_sdk_cancel_cycle_is_bounded_without_real_connection ________
+
+    async def test_actual_sdk_cancel_cycle_is_bounded_without_real_connection():
+        socket = Socket()
+    
+        async def connect(*args, **kwargs):
+            return socket
+    
+>       result = await probe().run_case('inert-fixture-key', connector=connect)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_tts_cancel_probe.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/evaluation/probe_td_tts_cancel.py:234: in run_case
+    await runner.add_workers([worker])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pipecat.workers.runner.WorkerRunner object at 0x114f0f710>
+workers = ([<pipecat.pipeline.worker.PipelineWorker object at 0x114f0cdd0>],)
+worker = [<pipecat.pipeline.worker.PipelineWorker object at 0x114f0cdd0>]
+
+    async def add_workers(self, *workers: BaseWorker) -> None:
+        """Add one or more workers to the runner.
+    
+        Adding a worker attaches it to the runner's bus and registry, and
+        starts it in the background. If the runner is not yet running
+        (``add_workers`` was called before :meth:`run`), workers are
+        queued and started during run setup; if the runner is already
+        running, each worker starts immediately.
+    
+        Every added worker is a peer: the runner privileges none of them.
+        They run concurrently, and whichever are still running when the
+        runner ends are cancelled. With ``auto_end=True`` the runner ends
+        once every root worker has finished, so a worker that never
+        finishes on its own, such as a bus-only one waiting for messages,
+        keeps it up until :meth:`end` or :meth:`cancel` is called.
+    
+        Args:
+            *workers: One or more workers to add.
+        """
+        for worker in workers:
+>           if worker.name in self._entries:
+               ^^^^^^^^^^^
+E           AttributeError: 'list' object has no attribute 'name'
+
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/workers/runner.py:220: AttributeError
+----------------------------- Captured stderr call -----------------------------
+2026-10-26 05:26:12.747 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+2026-10-26 05:26:13.417 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0::Source -> ScopedDeepgramFluxTTSService#0
+2026-10-26 05:26:13.418 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking ScopedDeepgramFluxTTSService#0 -> Sink#0
+2026-10-26 05:26:13.419 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#0 -> Pipeline#0::Sink
+2026-10-26 05:26:13.419 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#0::Source -> Pipeline#0
+2026-10-26 05:26:13.420 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#0 -> PipelineWorker#0::Sink
+_________ test_completed_turn_is_untriggered_without_second_paid_text __________
+
+    async def test_completed_turn_is_untriggered_without_second_paid_text():
+        socket = Socket(completed=True)
+    
+        async def connect(*args, **kwargs):
+            return socket
+    
+>       result = await probe().run_case('inert-fixture-key', connector=connect)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_tts_cancel_probe.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/evaluation/probe_td_tts_cancel.py:234: in run_case
+    await runner.add_workers([worker])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pipecat.workers.runner.WorkerRunner object at 0x114fbc8d0>
+workers = ([<pipecat.pipeline.worker.PipelineWorker object at 0x114f12910>],)
+worker = [<pipecat.pipeline.worker.PipelineWorker object at 0x114f12910>]
+
+    async def add_workers(self, *workers: BaseWorker) -> None:
+        """Add one or more workers to the runner.
+    
+        Adding a worker attaches it to the runner's bus and registry, and
+        starts it in the background. If the runner is not yet running
+        (``add_workers`` was called before :meth:`run`), workers are
+        queued and started during run setup; if the runner is already
+        running, each worker starts immediately.
+    
+        Every added worker is a peer: the runner privileges none of them.
+        They run concurrently, and whichever are still running when the
+        runner ends are cancelled. With ``auto_end=True`` the runner ends
+        once every root worker has finished, so a worker that never
+        finishes on its own, such as a bus-only one waiting for messages,
+        keeps it up until :meth:`end` or :meth:`cancel` is called.
+    
+        Args:
+            *workers: One or more workers to add.
+        """
+        for worker in workers:
+>           if worker.name in self._entries:
+               ^^^^^^^^^^^
+E           AttributeError: 'list' object has no attribute 'name'
+
+/tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/workers/runner.py:220: AttributeError
+----------------------------- Captured stderr call -----------------------------
+2026-10-26 05:26:13.481 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2::Source -> ScopedDeepgramFluxTTSService#1
+2026-10-26 05:26:13.481 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking ScopedDeepgramFluxTTSService#1 -> Sink#1
+2026-10-26 05:26:13.481 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Sink#1 -> Pipeline#2::Sink
+2026-10-26 05:26:13.482 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking PipelineWorker#1::Source -> Pipeline#2
+2026-10-26 05:26:13.482 | DEBUG    | pipecat.processors.frame_processor:link:679 - Linking Pipeline#2 -> PipelineWorker#1::Sink
+=============================== warnings summary ===============================
+../../../../tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/pipecat/audio/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
+    import audioop
+
+tests/test_td_tts_cancel_probe.py::test_actual_sdk_cancel_cycle_is_bounded_without_real_connection
+  /tmp/voiceagent-r91-py311/lib/python3.11/site-packages/google/api_core/_python_version_support.py:254: FutureWarning: You are using a Python version (3.11.15) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+    warnings.warn(message, FutureWarning)
+
+tests/test_td_tts_cancel_probe.py::test_actual_sdk_cancel_cycle_is_bounded_without_real_connection
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_cancel_probe.py::test_actual_sdk_cancel_cycle_is_bounded_without_real_connection
+FAILED tests/test_td_tts_cancel_probe.py::test_completed_turn_is_untriggered_without_second_paid_text
+2 failed, 1 passed, 3 warnings in 1.10s

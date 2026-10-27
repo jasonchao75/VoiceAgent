@@ -1,0 +1,54 @@
+
+Running 8 tests using 1 worker
+
+(node:46654) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop-chromium] › tests/ui/td-runtime.spec.js:275:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state (1.1s)
+(node:46660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [desktop-chromium] › tests/ui/td-runtime.spec.js:321:1 › deleting a vocabulary row during a real slow save retains newer unsaved edits (696ms)
+  ✓  3 [desktop-chromium] › tests/ui/td-runtime.spec.js:351:1 › failed TD save retains draft and retries against the actual API (765ms)
+  ✓  4 [desktop-chromium] › tests/ui/td-runtime.spec.js:403:1 › late save failure stays with its original Bot after selection changes (668ms)
+  ✓  5 [desktop-chromium] › tests/ui/td-runtime.spec.js:424:1 › formal TD settings remain operable at 390px with actual saved configuration (482ms)
+  ✓  6 [desktop-chromium] › tests/ui/td-runtime.spec.js:445:1 › audio generation failure permits an explicit retry without publishing or losing settings (526ms)
+  ✓  7 [desktop-chromium] › tests/ui/td-runtime.spec.js:464:1 › formal language switch changes labels without changing TD request or user values (613ms)
+  ✓  8 [desktop-chromium] › tests/ui/td-runtime.spec.js:486:1 › formal TD language defaults to Chinese without replacing user prompts (404ms)
+
+
+  1) [desktop-chromium] › tests/ui/td-runtime.spec.js:275:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state 
+
+    Error: expect(received).toBeCloseTo(expected, precision)
+
+    Expected: 0.1
+    Received: 10
+
+    Expected precision:    3
+    Expected difference: < 0.0005
+    Received difference:   9.9
+
+      299 |   await expect.poll(()=>page.evaluate(()=>window.__tdAudioStarts.length)).toBe(2);
+      300 |   const audio=await page.evaluate(()=>window.__tdAudioStarts);
+    > 301 |   expect(audio[0].duration).toBeCloseTo(.1,3);
+          |                             ^
+      302 |   expect(audio[1].when-audio[0].when).toBeCloseTo(.15,3);
+      303 |   await page.locator("#echo-gap").fill("60");
+      304 |   await page.getByRole("button",{name:"Save TD settings",exact:true}).click();
+        at /Volumes/work/OpenCode/VoiceAgent/frontend/tests/ui/td-runtime.spec.js:301:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/playwright/td-runtime-formal-cache-UI-72c6a--refreshes-actual-API-state-desktop-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop-chromium] › tests/ui/td-runtime.spec.js:275:1 › formal cache UI blocks incomplete publication, generates and listens, then saves and refreshes actual API state 
+  7 passed (6.0s)

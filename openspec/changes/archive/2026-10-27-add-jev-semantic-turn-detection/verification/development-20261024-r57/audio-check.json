@@ -1,0 +1,17 @@
+{
+  "evidence_level": "external-real",
+  "format": {
+    "sample_rate": 24000,
+    "channels": 1,
+    "sample_width": 2,
+    "frames": 17280
+  },
+  "duration_seconds": 0.72,
+  "nonzero_samples": 17180,
+  "peak_abs": 27566,
+  "rms": 5833.238250564365,
+  "wav_sha256": "62e05cc6b82e8a80b23b57a0bf271b176e7e1b717f2cd4e1aabe1fdc3d1a2bcc",
+  "ignored_audio_path": "scripts/vendor/deepgram/logs/deepgram-td-tts-one-confirmation-v1-D-065/case-1.wav",
+  "auditory_quality_review": "not_performed",
+  "actual_playback": "not_verified"
+}

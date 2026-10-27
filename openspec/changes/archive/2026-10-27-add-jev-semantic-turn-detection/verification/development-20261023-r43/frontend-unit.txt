@@ -1,0 +1,13 @@
+✔ rendered identity starts only in an actual quantum and finishes after end (1.889125ms)
+✔ targeted clear removes future samples without claiming they rendered (0.443417ms)
+✔ render coordinates identify first sample and preserve the last sample across late end markers (0.666708ms)
+✔ explicit original turn identity groups resumed candidates and Final response versions (0.364042ms)
+✔ legacy sessions invent no TD attempts, turns or probabilities (0.299916ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36.231708

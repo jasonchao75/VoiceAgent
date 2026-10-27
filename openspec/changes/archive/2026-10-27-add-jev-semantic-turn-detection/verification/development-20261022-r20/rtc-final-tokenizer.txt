@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:13935) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-webrtc-runtime.spec.js:13:1 › formal mobile route establishes the existing WebRTC audio track with local TD (8.6s)
+(node:13975) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [narrow-chromium] › tests/ui/td-webrtc-runtime.spec.js:13:1 › formal mobile route establishes the existing WebRTC audio track with local TD (7.3s)
+
+  2 passed (16.6s)

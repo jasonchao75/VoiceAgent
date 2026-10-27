@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:59425) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop-chromium] › tests/ui/td-rtc-entry.spec.js:15:1 › formal mobile route records task-specific RTP renderer receipts through authenticated API (7.5s)
+
+  1 passed (8.0s)

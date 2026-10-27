@@ -1,0 +1,112 @@
+{
+  "evidenceLevel": "local-real",
+  "boundary": "server RTP/decoder/resampler only; browser capture clock unproven",
+  "proofs": [
+    {
+      "processed_start": 0,
+      "processed_end": 912,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 304,
+      "packets": [
+        {
+          "connection_id": "84fc3218ae4c4eb0ab2af0f2c0d5a8f3",
+          "ssrc": 1136589373,
+          "rtp_timestamp": 2309011480,
+          "payload_sha256": "9dc8f4abd37c4274ff8e055fcdde69d685f420c21addbdfe38ed2a3ad14111ad",
+          "decoded_start": 0,
+          "decoded_end": 960,
+          "segment_start": 0,
+          "segment_end": 912
+        }
+      ]
+    },
+    {
+      "processed_start": 912,
+      "processed_end": 1872,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "84fc3218ae4c4eb0ab2af0f2c0d5a8f3",
+          "ssrc": 1136589373,
+          "rtp_timestamp": 2309011480,
+          "payload_sha256": "9dc8f4abd37c4274ff8e055fcdde69d685f420c21addbdfe38ed2a3ad14111ad",
+          "decoded_start": 0,
+          "decoded_end": 960,
+          "segment_start": 912,
+          "segment_end": 960
+        },
+        {
+          "connection_id": "84fc3218ae4c4eb0ab2af0f2c0d5a8f3",
+          "ssrc": 1136589373,
+          "rtp_timestamp": 2309012440,
+          "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+          "decoded_start": 960,
+          "decoded_end": 1920,
+          "segment_start": 960,
+          "segment_end": 1872
+        }
+      ]
+    },
+    {
+      "processed_start": 1872,
+      "processed_end": 2832,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "84fc3218ae4c4eb0ab2af0f2c0d5a8f3",
+          "ssrc": 1136589373,
+          "rtp_timestamp": 2309012440,
+          "payload_sha256": "848169cfbb6abc64c268688fdf7943d4e94651310119f3d52acca48c8064cf9a",
+          "decoded_start": 960,
+          "decoded_end": 1920,
+          "segment_start": 1872,
+          "segment_end": 1920
+        },
+        {
+          "connection_id": "84fc3218ae4c4eb0ab2af0f2c0d5a8f3",
+          "ssrc": 1136589373,
+          "rtp_timestamp": 2309013400,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 1920,
+          "decoded_end": 2880,
+          "segment_start": 1920,
+          "segment_end": 2832
+        }
+      ]
+    },
+    {
+      "processed_start": 2832,
+      "processed_end": 3792,
+      "source_rate": 48000,
+      "sample_rate": 16000,
+      "samples": 320,
+      "packets": [
+        {
+          "connection_id": "84fc3218ae4c4eb0ab2af0f2c0d5a8f3",
+          "ssrc": 1136589373,
+          "rtp_timestamp": 2309013400,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 1920,
+          "decoded_end": 2880,
+          "segment_start": 2832,
+          "segment_end": 2880
+        },
+        {
+          "connection_id": "84fc3218ae4c4eb0ab2af0f2c0d5a8f3",
+          "ssrc": 1136589373,
+          "rtp_timestamp": 2309014360,
+          "payload_sha256": "f60a2cd2a4f6076738580c4f51e7ddf14b02d3ea85a9c508c7c09d504df229fd",
+          "decoded_start": 2880,
+          "decoded_end": 3840,
+          "segment_start": 2880,
+          "segment_end": 3792
+        }
+      ]
+    }
+  ]
+}

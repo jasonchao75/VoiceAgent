@@ -1,0 +1,29 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_opening_and_reminders_are_bound_to_speech_generation_even_without_llm_response _
+
+    async def test_opening_and_reminders_are_bound_to_speech_generation_even_without_llm_response():
+        owner = ResponseRevisions()
+        tts = service(owner)
+        token = tts._tts_response.set(None)
+        try:
+            context = tts.create_context_id()
+        finally:
+            tts._tts_response.reset(token)
+        owner.begin_speech()
+        await tts.push_frame(TTSAudioRawFrame(b"\x01\x00", 24000, 1, context_id=context))
+>       assert tts.sent == []
+E       AssertionError: assert [TTSAudioRawF...ntext_id='1')] == []
+E         
+E         Left contains one more item: TTSAudioRawFrame(audio=b'\x01\x00', sample_rate=24000, num_channels=1, num_frames=1, id=0, name='TTSAudioRawFrame#0', pts=None, broadcast_sibling_id=None, metadata={}, transport_source=None, transport_destination=None, context_id='1')
+E         Use -v to get more diff
+
+tests/test_td_tts_scope.py:201: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_tts_scope.py::test_opening_and_reminders_are_bound_to_speech_generation_even_without_llm_response
+1 failed, 5 deselected, 1 warning in 0.68s

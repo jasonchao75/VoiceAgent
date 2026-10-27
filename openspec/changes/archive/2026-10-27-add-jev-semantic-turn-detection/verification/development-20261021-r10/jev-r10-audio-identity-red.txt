@@ -1,0 +1,47 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___ test_task_identity_survives_transport_style_reconstruction_and_protobuf ____
+
+    async def test_task_identity_survives_transport_style_reconstruction_and_protobuf():
+>       module = protocol()
+                 ^^^^^^^^^^
+
+tests/test_td_audio_identity.py:14: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def protocol():
+>       assert util.find_spec("src.pipeline.audio_identity") is not None, "Audio task identity absent"
+E       AssertionError: Audio task identity absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104f4a8e0>('src.pipeline.audio_identity')
+E        +    where <function find_spec at 0x104f4a8e0> = util.find_spec
+
+tests/test_td_audio_identity.py:9: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-10-21 19:24:31.165 | DEBUG    | pipecat.transports.smallwebrtc.connection:<module>:67 - [SCTP] USERDATA_MAX_LENGTH set to 1100
+_________ test_distinct_audio_types_do_not_share_mutable_task_identity _________
+
+    def test_distinct_audio_types_do_not_share_mutable_task_identity():
+>       module = protocol()
+                 ^^^^^^^^^^
+
+tests/test_td_audio_identity.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def protocol():
+>       assert util.find_spec("src.pipeline.audio_identity") is not None, "Audio task identity absent"
+E       AssertionError: Audio task identity absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x104f4a8e0>('src.pipeline.audio_identity')
+E        +    where <function find_spec at 0x104f4a8e0> = util.find_spec
+
+tests/test_td_audio_identity.py:9: AssertionError
+=============================== warnings summary ===============================
+tests/test_td_audio_identity.py::test_task_identity_survives_transport_style_reconstruction_and_protobuf
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_audio_identity.py::test_task_identity_survives_transport_style_reconstruction_and_protobuf
+FAILED tests/test_td_audio_identity.py::test_distinct_audio_types_do_not_share_mutable_task_identity
+2 failed, 1 warning in 1.11s

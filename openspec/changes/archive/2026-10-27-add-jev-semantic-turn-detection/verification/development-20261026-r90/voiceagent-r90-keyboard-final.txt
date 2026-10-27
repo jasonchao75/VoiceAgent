@@ -1,0 +1,17 @@
+
+Running 10 tests using 1 worker
+
+(node:68745) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:16:2 › keyboard section navigation and named controls at 1440px (898ms)
+  ✓   2 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:44:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 1440px (461ms)
+  ✓   3 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:60:2 › keyboard Sessions drawer opens and Escape restores its trigger at 1440px (447ms)
+  ✓   4 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 1440px (407ms)
+  ✓   5 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:83:2 › keyboard ASR component drawer focus and source selection at 1440px (425ms)
+  ✓   6 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:16:2 › keyboard section navigation and named controls at 390px (713ms)
+  ✓   7 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:44:2 › keyboard vocabulary and Jev row creation and removal preserve focus at 390px (447ms)
+  ✓   8 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:60:2 › keyboard Sessions drawer opens and Escape restores its trigger at 390px (410ms)
+  ✓   9 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:68:2 › keyboard Sessions returns to refreshed row identity at 390px (409ms)
+  ✓  10 [desktop-chromium] › tests/ui/td-keyboard-accessibility.spec.js:83:2 › keyboard ASR component drawer focus and source selection at 390px (413ms)
+
+  10 passed (5.4s)

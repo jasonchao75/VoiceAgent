@@ -1,0 +1,78 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_revised_preparing_echo_discards_old_result_and_metadata_only_final_reuses_latest _
+
+    async def test_revised_preparing_echo_discards_old_result_and_metadata_only_final_reuses_latest():
+        rules = policy()
+        output = SerialAudioOutput(responses=ResponseRevisions())
+        started, release = asyncio.Event(), asyncio.Event()
+    
+        class Audio:
+            async def chunks(self, text, *, generation):
+                if text == "12":
+                    started.set()
+                    await release.wait()
+                yield b"\x02\x00" * 240
+    
+>       echo = controller(rules, Audio(), output)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_identifier_output.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rules = <src.pipeline.identifier_rules.IdentifierRules object at 0x117930980>
+audio = <test_td_identifier_output.test_revised_preparing_echo_discards_old_result_and_metadata_only_final_reuses_latest.<locals>.Audio object at 0x117931550>
+output = <src.pipeline.serial_output.SerialAudioOutput object at 0x117930c20>
+
+    def controller(rules, audio, output):
+>       assert util.find_spec("src.pipeline.identifier_output") is not None, (
+            "Identifier output binding absent"
+        )
+E       AssertionError: Identifier output binding absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1056aa8e0>('src.pipeline.identifier_output')
+E        +    where <function find_spec at 0x1056aa8e0> = util.find_spec
+
+tests/test_td_identifier_output.py:14: AssertionError
+_ test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued _
+
+    async def test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued():
+        rules = policy()
+        output = SerialAudioOutput(responses=ResponseRevisions())
+        started, release = asyncio.Event(), asyncio.Event()
+    
+        class Audio:
+            async def chunks(self, text, *, generation):
+                started.set()
+                await release.wait()
+                yield b"\x01\x00" * 240
+    
+>       echo = controller(rules, Audio(), output)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_td_identifier_output.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rules = <src.pipeline.identifier_rules.IdentifierRules object at 0x117833390>
+audio = <test_td_identifier_output.test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued.<locals>.Audio object at 0x1179302f0>
+output = <src.pipeline.serial_output.SerialAudioOutput object at 0x117833610>
+
+    def controller(rules, audio, output):
+>       assert util.find_spec("src.pipeline.identifier_output") is not None, (
+            "Identifier output binding absent"
+        )
+E       AssertionError: Identifier output binding absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x1056aa8e0>('src.pipeline.identifier_output')
+E        +    where <function find_spec at 0x1056aa8e0> = util.find_spec
+
+tests/test_td_identifier_output.py:14: AssertionError
+=============================== warnings summary ===============================
+<frozen abc>:106
+  <frozen abc>:106: DeprecationWarning: `AudioContextTTSService` is deprecated since 0.0.105 and will be removed in 2.0.0. Use `WebsocketTTSService` instead.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_td_identifier_output.py::test_revised_preparing_echo_discards_old_result_and_metadata_only_final_reuses_latest
+FAILED tests/test_td_identifier_output.py::test_collection_clear_invalidates_a_pending_recovery_before_any_audio_is_queued
+2 failed, 1 warning in 0.80s

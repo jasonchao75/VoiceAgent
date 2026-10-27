@@ -1,0 +1,45 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/history/capture.py:3:1
+   |
+ 1 |   """In-memory non-blocking capture of final text and turn timings."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import math
+ 6 | | import time
+ 7 | | from collections.abc import Callable
+ 8 | | from dataclasses import dataclass, field
+ 9 | | from typing import Any
+10 | |
+11 | | from pipecat.frames.frames import (
+12 | |     InputAudioRawFrame,
+13 | |     LLMContextFrame,
+14 | |     LLMFullResponseEndFrame,
+15 | |     LLMTextFrame,
+16 | |     MetricsFrame,
+17 | |     TranscriptionFrame,
+18 | |     TTSAudioRawFrame,
+19 | |     TTSStartedFrame,
+20 | |     UserStartedSpeakingFrame,
+21 | |     UserStoppedSpeakingFrame,
+22 | | )
+23 | | from pipecat.metrics.metrics import LLMUsageMetricsData
+24 | |
+25 | | from src.history.models import HistoryTurn, LatencyInterval, TurnMetric
+26 | | from src.history.recording import AudioRecorder
+27 | | from src.history.render_clock import RenderClockLedger
+28 | | from src.history.source_clock import CaptureSampleLedger, observe_input_source
+29 | | from src.history.rtp_source import RTPCaptureLedger
+30 | | from src.llm.capabilities import get_model_capability
+   | |_____________________________________________________^
+help: Organize imports
+   |
+27 | from src.history.render_clock import RenderClockLedger
+28 + from src.history.rtp_source import RTPCaptureLedger
+29 | from src.history.source_clock import CaptureSampleLedger, observe_input_source
+   - from src.history.rtp_source import RTPCaptureLedger
+30 | from src.llm.capabilities import get_model_capability
+   |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

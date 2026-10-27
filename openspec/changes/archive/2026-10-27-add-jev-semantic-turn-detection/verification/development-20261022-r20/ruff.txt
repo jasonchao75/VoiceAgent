@@ -1,0 +1,49 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/ui/td_local_app.py:3:1
+   |
+ 1 |   """Loopback-only production-route test app with deterministic external provider replacements."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import argparse
+ 6 | | import ipaddress
+ 7 | | import os
+ 8 | | import socket
+ 9 | | import math
+10 | | import struct
+11 | | from pathlib import Path
+12 | | from typing import Any
+13 | |
+14 | | from cryptography.fernet import Fernet
+15 | | from pipecat.audio.vad.vad_analyzer import VADState
+16 | | from pipecat.frames.frames import (
+17 | |     Frame,
+18 | |     InputAudioRawFrame,
+19 | |     InterimTranscriptionFrame,
+20 | |     LLMTextFrame,
+21 | |     TTSAudioRawFrame,
+22 | |     TTSStoppedFrame,
+23 | | )
+24 | | from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
+25 | | from pipecat.services.settings import TTSSettings
+26 | | from pipecat.services.tts_service import TTSService
+27 | |
+28 | | from src.asr.factory import ASRService
+29 | | from src.asr.turn_events import SourceNormalizer
+30 | | from src.llm.scoped import ScopedOpenAILLMService
+31 | | from src.pipeline.custom_td import CustomTDAudioInput, CustomTDCoordinator
+32 | | from src.pipeline.jev import JevResult
+33 | | from src.tts.response_scope import ResponseScopedTTSMixin
+   | |_________________________________________________________^
+help: Organize imports
+   |
+6  | import ipaddress
+7  + import math
+8  | import os
+9  | import socket
+   - import math
+10 | import struct
+   |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
