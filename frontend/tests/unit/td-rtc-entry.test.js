@@ -73,3 +73,25 @@ test('formal RTC entry fails and interrupts on a hung receipt instead of stallin
   await playback?.close();for(const name of names)globalThis[name]=saved[name];
  }
 });
+
+for (const failure of ['module','worker','resume']) {
+ test(`RTC preparation releases acquired resources when ${failure} fails`,async()=>{
+  const names=['AudioContext','AudioWorkletNode','Worker','RTCRtpScriptTransform','AudioDecoder'];
+  const saved=Object.fromEntries(names.map(name=>[name,globalThis[name]]));
+  let closed=0,disconnected=0,created=0,terminated=0;
+  try {
+   globalThis.RTCRtpScriptTransform=class {};globalThis.AudioDecoder=class {};
+   globalThis.AudioContext=class {
+    constructor(){this.sampleRate=48000;this.audioWorklet={addModule:async()=>{if(failure==='module')throw Error('fixture');}};}
+    async resume(){if(failure==='resume')throw Error('fixture');}
+    async close(){closed++;}
+   };
+   globalThis.AudioWorkletNode=class {constructor(){this.port={postMessage(){}};}connect(){}disconnect(){disconnected++;}};
+   globalThis.Worker=class {constructor(){if(failure==='worker' && created===1)throw Error('fixture');created++;}postMessage(){}terminate(){terminated++;}};
+   const {prepareRTCPlayback}=await import('../../src/td-rtc-entry.js');
+   await assert.rejects(prepareRTCPlayback({}, {sessionId:'fixture',token:'inert',onFailure(){}}),/fixture/);
+   assert.equal(closed,1);assert.equal(terminated,created);
+   assert.equal(disconnected,failure==='module'?0:1);
+  } finally {for(const name of names)globalThis[name]=saved[name];}
+ });
+}

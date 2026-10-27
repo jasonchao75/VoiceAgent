@@ -153,3 +153,40 @@ def test_publish_refuses_configuration_changed_during_audio_validation(monkeypat
         )
         assert result.status_code == 400 and "configuration changed" in result.text
         assert client.get(f"/api/bots/{bot_id}/share").json()["published"] is False
+
+
+def test_production_rtc_protocol_matches_identifier_rule_and_source(monkeypatch):
+    """Default app enables task audio only for the published custom identifier path."""
+    monkeypatch.setenv("VOICE_AGENT_STORAGE_KEY", Fernet.generate_key().decode())
+
+    async def synthesize(unit, config, rate, *, timeout, api_key):
+        return b"\x01\x00" * 100
+
+    for source, enabled, expected in [
+        ("self_developed", True, "rtp_candidate"),
+        ("self_developed", False, "native"),
+        ("provider_native", True, "native"),
+    ]:
+        with TestClient(create_app()) as client:
+            client.app.state.echo_synthesize = synthesize
+            body = payload()
+            body["turn_detection_source"] = source
+            body["td_config"]["priority_rule"]["enabled"] = enabled
+            created = client.post("/api/bots", json=body, headers=ORIGIN)
+            assert created.status_code == 201, created.text
+            bot_id = created.json()["id"]
+            if source == "self_developed" and enabled:
+                generated = client.post(
+                    f"/api/bots/{bot_id}/echo-audio/generate", json={}, headers=ORIGIN
+                )
+                assert generated.status_code == 200, generated.text
+            published = client.post(
+                f"/api/bots/{bot_id}/publish", json={"public_title": "Fixture"}, headers=ORIGIN
+            )
+            assert published.status_code == 200, published.text
+            public_id = published.json()["public_id"]
+            response = client.post(
+                f"/api/public/demos/{public_id}/sessions", json={}, headers=ORIGIN
+            )
+            assert response.status_code == 201, response.text
+            assert response.json()["playback_mode"] == expected

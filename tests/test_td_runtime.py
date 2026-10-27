@@ -1458,3 +1458,202 @@ async def test_new_vad_diagnostics_cannot_block_audio_on_sink_failure():
     finally:
         await audio.cleanup()
         await td.cleanup()
+
+
+@pytest.mark.parametrize("resume", [False, True])
+@pytest.mark.parametrize("target", [3, 11])
+async def test_nova_cumulative_merged_digits_stay_local_until_complete(resume, target):
+    """A provider's merged numeric word must not cross a local-only commit fence."""
+    from pipecat.frames.frames import TranscriptionFrame
+
+    from src.asr.td_config import IdentifierRuleSettings
+    from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+    from src.pipeline.identifier_rules import IdentifierRules
+    from tests.test_td_rule_settings import priority_settings
+
+    config = priority_settings()
+    config["collection"]["target_length"] = target
+    config["wpm_threshold"] = 200
+    state = IdentifierCollection(
+        IdentifierVocabulary({"1": ["1"], "2": ["2"], "3": ["3"]}), target_length=target
+    )
+    offers = []
+    td = coordinator(
+        identifier_rules=IdentifierRules(IdentifierRuleSettings.model_validate(config), state),
+        identifier_output=lambda snapshot, evaluation, turn: offers.append(
+            (snapshot.text, snapshot.final)
+        ),
+    )
+    td.asr.source_normalizer = SourceNormalizer("deepgram", "nova-3", sample_rate=16000)
+    frames = []
+
+    async def push(frame, *args, **kwargs):
+        frames.append(frame)
+
+    td.push_frame = push
+    td.assistant_context("编号")
+
+    def nova(text, end, final=False):
+        """Replay actual Nova cumulative source shape, with one merged word."""
+        return InterimTranscriptionFrame(
+            text,
+            "",
+            "",
+            result={
+                "start": 0,
+                "duration": end,
+                "is_final": final,
+                "channel": {
+                    "alternatives": [
+                        {"transcript": text, "words": [{"word": text, "start": 0, "end": end}]}
+                    ]
+                },
+            },
+        )
+
+    await td.speech_started()
+    await td.receive_transcript(nova("12", 1.2))
+    await td.speech_stopped(1200)
+    await td.advance(1550)
+    assert state.value == "12"
+    assert offers == [("12", False)]
+    assert td.responses.user_submission_count == 0
+    if resume:
+        await td.speech_started()
+    await td.receive_transcript(nova("123", 2.4))
+    assert offers == [("12", False)]
+    await td.receive_transcript(nova("123", 2.4, True))
+    assert offers == [("12", False)]
+    if resume:
+        await td.speech_stopped(2400)
+    await td.advance(6500)
+    assert state.value == "123"
+    assert td.source_evidence_error is None
+    commits = [f for f in frames if isinstance(f, TranscriptionFrame)]
+    assert len(commits) == (1 if target == 3 else 0)
+    if commits:
+        assert commits[0].text == "123"
+    if target == 11:
+        await td.advance(10400 if resume else 9200)
+        from pipecat.frames.frames import TTSSpeakFrame
+
+        assert len([f for f in frames if isinstance(f, TTSSpeakFrame)]) == 1
+
+
+async def test_late_local_correction_is_echoed_but_not_in_next_question():
+    """Late same-range correction remains local even after its candidate is closed."""
+    from pipecat.frames.frames import TranscriptionFrame
+
+    from src.asr.td_config import IdentifierRuleSettings
+    from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+    from src.pipeline.identifier_rules import IdentifierRules
+    from tests.test_td_rule_settings import priority_settings
+
+    config = priority_settings()
+    config["collection"] = None
+    config["wpm_threshold"] = 200
+    state = IdentifierCollection(
+        IdentifierVocabulary({str(i): [str(i)] for i in range(4)}), target_length=11
+    )
+    echoes, frames = [], []
+    td = coordinator(
+        identifier_rules=IdentifierRules(IdentifierRuleSettings.model_validate(config), state),
+        identifier_output=lambda snapshot, evaluation, turn: echoes.append(snapshot.text),
+    )
+
+    async def push(frame, *args, **kwargs):
+        frames.append(frame)
+
+    td.push_frame = push
+    td.assistant_context("编号")
+    await td.speech_started()
+    await td.receive_transcript(interim("12"))
+    await td.speech_stopped(1000)
+    await td.advance(1350)
+    correction = interim("13")
+    correction.result["event"] = "EndOfTurn"
+    await td.receive_transcript(correction)
+    await td.receive_transcript(correction)
+    assert echoes == ["12", "13"]
+    await td.speech_started()
+    question = interim("hello")
+    question.result.update(
+        turn_index=1,
+        audio_window_start=1,
+        audio_window_end=2,
+        words=[{"word": "hello", "start": 1, "end": 2}],
+    )
+    await td.receive_transcript(question)
+    await td.speech_stopped(2000)
+    await td.advance(4500)
+    assert [f.text for f in frames if isinstance(f, TranscriptionFrame)] == ["hello"]
+    assert state.value == "13"
+
+
+async def test_clear_rejects_late_cumulative_nova_source():
+    """Clearing an identifier must invalidate every later revision of its old source."""
+    target = 11
+    from pipecat.frames.frames import TranscriptionFrame
+
+    from src.asr.td_config import IdentifierRuleSettings
+    from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
+    from src.pipeline.identifier_rules import IdentifierRules
+    from tests.test_td_rule_settings import priority_settings
+
+    config = priority_settings()
+    config["collection"]["target_length"] = target
+    config["wpm_threshold"] = 200
+    state = IdentifierCollection(
+        IdentifierVocabulary({"1": ["1"], "2": ["2"], "3": ["3"]}), target_length=target
+    )
+    offers = []
+    td = coordinator(
+        identifier_rules=IdentifierRules(IdentifierRuleSettings.model_validate(config), state),
+        identifier_output=lambda snapshot, evaluation, turn: offers.append(
+            (snapshot.text, snapshot.final)
+        ),
+    )
+    td.asr.source_normalizer = SourceNormalizer("deepgram", "nova-3", sample_rate=16000)
+    frames = []
+
+    async def push(frame, *args, **kwargs):
+        frames.append(frame)
+
+    td.push_frame = push
+    td.assistant_context("编号")
+
+    def nova(text, end, final=False):
+        """Replay actual Nova cumulative source shape, with one merged word."""
+        return InterimTranscriptionFrame(
+            text,
+            "",
+            "",
+            result={
+                "start": 0,
+                "duration": end,
+                "is_final": final,
+                "channel": {
+                    "alternatives": [
+                        {"transcript": text, "words": [{"word": text, "start": 0, "end": end}]}
+                    ]
+                },
+            },
+        )
+
+    await td.speech_started()
+    await td.receive_transcript(nova("12", 1.2))
+    await td.speech_stopped(1200)
+    await td.advance(1550)
+    assert state.value == "12"
+    assert offers == [("12", False)]
+    assert td.responses.user_submission_count == 0
+    state.clear_tool(state.bind_source(0, "clear", 1, "clear"))
+    await td.speech_started()
+    await td.receive_transcript(nova("123", 2.4))
+    await td.receive_transcript(nova("123", 2.4, True))
+    await td.speech_stopped(2400)
+    await td.advance(10400)
+    assert offers == [("12", False)]
+    assert state.value == ""
+    assert not any(isinstance(f, TranscriptionFrame) for f in frames)
+    assert td.source_evidence_error is None

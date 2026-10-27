@@ -234,6 +234,7 @@ class TranscriptLedger:
         self.epoch = 0
         self._segments: dict[tuple[int, str], SourceSegment] = {}
         self._consumed: dict[int, float] = {}
+        self._local_sources: set[tuple[int, str]] = set()
 
     def reconnect(self) -> int:
         """Advance connection identity while preserving unsubmitted old speech."""
@@ -268,6 +269,8 @@ class TranscriptLedger:
         for segment in sorted(
             self._segments.values(), key=lambda item: (item.epoch, item.start_ms, item.source_id)
         ):
+            if (segment.epoch, segment.source_id) in self._local_sources:
+                continue
             consumed = self._consumed.get(segment.epoch, -1.0)
             if not segment.boundary_before(consumed, segment.end_ms):
                 continue
@@ -314,6 +317,7 @@ class TranscriptLedger:
         snapshot: TranscriptView,
         *,
         require_final: bool = True,
+        expand_local: bool = False,
     ) -> TranscriptView | None:
         """Resolve only a submitted source extent when its corresponding Final arrives."""
         resolved = []
@@ -325,6 +329,9 @@ class TranscriptLedger:
                 or current.sample_rate != original.sample_rate
             ):
                 return None
+            if expand_local and (original.epoch, original.source_id) in self._local_sources:
+                resolved.append(current)
+                continue
             if (
                 not current.boundary_before(current.start_ms, original.start_ms)
                 and not current.boundary_before(original.start_ms, current.start_ms)
@@ -386,3 +393,25 @@ class TranscriptLedger:
                     self._consumed.get(segment.epoch, -1.0), segment.end_ms
                 )
         return snapshot
+
+    def consume_local(self, snapshot: TranscriptView | None = None) -> TranscriptView:
+        """Own whole local sources without inventing digit boundaries for their revisions."""
+        snapshot = snapshot if snapshot is not None else self.view()
+        if snapshot.missing_reason:
+            raise ValueError(snapshot.missing_reason)
+        for segment in snapshot.segments:
+            self._consumed[segment.epoch] = max(
+                self._consumed.get(segment.epoch, -1.0), segment.end_ms
+            )
+            current = self._segments.get((segment.epoch, segment.source_id))
+            if current is not None and current.start_ms == segment.start_ms:
+                self._local_sources.add((segment.epoch, segment.source_id))
+        return snapshot
+
+    def freeze_submission(self, snapshot: TranscriptView) -> None:
+        """Restore strict audio fences when locally collected content reaches the LLM."""
+        for segment in snapshot.segments:
+            self._local_sources.discard((segment.epoch, segment.source_id))
+            self._consumed[segment.epoch] = max(
+                self._consumed.get(segment.epoch, -1.0), segment.end_ms
+            )

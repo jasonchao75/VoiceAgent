@@ -158,7 +158,9 @@ class CustomTDCoordinator(FrameProcessor):
                 continue
             if key == live_key:
                 continue
-            revised = self.ledger.resolve_snapshot(snapshot, require_final=False)
+            revised = self.ledger.resolve_snapshot(
+                snapshot, require_final=False, expand_local=turn_id > self._turn_index
+            )
             if revised is None or revised == snapshot:
                 continue
             evaluation = rules.evaluate(revised, assistant, allow_new_collection=False)
@@ -175,16 +177,22 @@ class CustomTDCoordinator(FrameProcessor):
                 echo_eligible=evaluation.echo_eligible,
             )
             if (
-                evaluation.path == "ordinary"
-                and revised.text
+                revised.text
                 and turn_id == self._active_turn_id
                 and turn_id > self._turn_index
+                and (
+                    self._speaking or self._candidate or evaluation.path in {"ordinary", "complete"}
+                )
             ):
                 self._pending_mixed[key] = revised
             else:
                 self._pending_mixed.pop(key, None)
             rules.confirm_committed()
-            self._notify_identifier_output(revised, evaluation, turn_id=turn_id)
+            if turn_id > self._turn_index and (self._speaking or self._candidate):
+                if self._identifier_observe:
+                    self._identifier_observe(revised, evaluation, turn_id)
+            else:
+                self._notify_identifier_output(revised, evaluation, turn_id=turn_id)
 
     def _notify_identifier_output(
         self,
@@ -385,11 +393,20 @@ class CustomTDCoordinator(FrameProcessor):
             if changed:
                 local = self._local_snapshot or self._revised_local_snapshot
                 if local is not None and self._candidate and self.identifier_rules:
-                    revised = self.ledger.resolve_snapshot(local, require_final=False)
+                    revised = self.ledger.resolve_snapshot(
+                        local, require_final=False, expand_local=True
+                    )
                     if revised is not None and revised != local:
                         evaluation = self.identifier_rules.evaluate(revised, self._local_assistant)
                         self._rule_evaluation = evaluation
-                        if evaluation.path in {"ordinary", "complete"}:
+                        if (
+                            self._revised_local_snapshot is not None
+                            or evaluation.path in {"ordinary", "complete"}
+                            or any(
+                                new.end_ms > old.end_ms
+                                for old, new in zip(local.segments, revised.segments, strict=True)
+                            )
+                        ):
                             self._revised_local_snapshot = revised
                             self._local_snapshot = None
                         else:
@@ -405,7 +422,11 @@ class CustomTDCoordinator(FrameProcessor):
                         if key in self._retained_local:
                             _, assistant, generation, turn_id = self._retained_local[key]
                             self._retained_local[key] = (revised, assistant, generation, turn_id)
-                        self._notify_identifier_output(revised, evaluation)
+                        if self._revised_local_snapshot is not None:
+                            if self._identifier_observe:
+                                self._identifier_observe(revised, evaluation, self._active_turn_id)
+                        else:
+                            self._notify_identifier_output(revised, evaluation)
                 self._revise_retained_local()
                 for segment in segments:
                     related_turns = {
@@ -649,6 +670,7 @@ class CustomTDCoordinator(FrameProcessor):
             if self._rule_evaluation and self._rule_evaluation.path == "complete":
                 self._retain_local(snapshot)
             self.ledger.consume()
+            self.ledger.freeze_submission(snapshot)
             self._local_snapshot = None
             self._revised_local_snapshot = None
             self._pending_mixed.clear()
@@ -707,7 +729,8 @@ class CustomTDCoordinator(FrameProcessor):
             elif evaluation.path == "overlength" and elapsed >= completeness.overflow_pause_ms:
                 reminder = completeness.overflow_text
         if reminder is not None:
-            self._retain_local(self.ledger.consume())
+            self._retain_local(self.ledger.consume_local(view))
+            self._pending_mixed.clear()
             self._candidate = None
             self._rule_evaluation = None
             self._local_snapshot = None
@@ -730,7 +753,9 @@ class CustomTDCoordinator(FrameProcessor):
             return
         assert settings.pause_ms is not None
         if view.text and elapsed >= settings.pause_ms:
-            snapshot = self.ledger.consume()
+            snapshot = self.ledger.consume_local(view)
+            self._pending_mixed.clear()
+            self._revised_local_snapshot = None
             self._retain_local(snapshot)
             self._local_snapshot = snapshot
             self._local_assistant = self._assistant

@@ -1,0 +1,40 @@
+{
+  "phase": "verified",
+  "product_acceptance": "pending",
+  "ui_change": false,
+  "known_issues": [
+    {
+      "id": "R1",
+      "status": "Resolved",
+      "summary": "独立审阅指出累计来源扩展可能在续说时立即派发补读，需要等待新停顿；正在补回归修复。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R2",
+      "status": "Resolved",
+      "summary": "续说后累计来源隐藏导致未满位提醒丢失，已补待处理view，复验中。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R3",
+      "status": "Resolved",
+      "summary": "既有RTC播放器初始化中途失败可能未释放AudioContext；正在检查本次正式启用影响。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "R4",
+      "status": "Resolved",
+      "summary": "独立审核发现纯跟读结束后同范围修订可能漏补读或混入下一问；已修复并新增test_late_local_correction_is_echoed_but_not_in_next_question。",
+      "disclosed_to_user": true
+    }
+  ],
+  "unverified_items": [
+    {
+      "id": "LIVE",
+      "status": "Open",
+      "summary": "本地自测与分项独立审核通过；尚未部署。真实手机、扬声器/AEC、弱网和收费厂商端到端未测，沿用用户先上线再实测的授权，不宣称效果验收。",
+      "disclosed_to_user": true
+    }
+  ],
+  "external_calls": []
+}

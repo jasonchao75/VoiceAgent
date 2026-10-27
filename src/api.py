@@ -1767,14 +1767,16 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
         return PublicSessionResponse(
             session_id=lease.session_id,
             connection_url=f"/api/public/webrtc/{lease.token}",
-            playback_mode=(
-                "rtp_candidate"
-                if development_rtp_candidate
-                and lease.config.asr.turn_detection_source == "self_developed"
-                else "native"
-            ),
+            playback_mode=("rtp_candidate" if _uses_task_playback(lease) else "native"),
             ice_servers=[{"urls": url} for url in ice_server_urls],
             expires_in_seconds=runtime.session.pending_token_ttl_seconds,
+        )
+
+    def _uses_task_playback(lease: SessionLease) -> bool:
+        """Keep the announced protocol and all RTP clock/playback wiring consistent."""
+        rule = lease.config.td_config.priority_rule if lease.config.td_config else None
+        return lease.config.asr.turn_detection_source == "self_developed" and (
+            development_rtp_candidate or bool(rule and rule.enabled)
         )
 
     async def _run_mobile_connection(lease: SessionLease, connection: Any) -> None:
@@ -1797,20 +1799,12 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
                 connection=connection,
                 runtime=runtime,
                 custom_td=lease.config.asr.turn_detection_source == "self_developed",
-                candidate_playback=(
-                    development_rtp_candidate
-                    and lease.config.asr.turn_detection_source == "self_developed"
-                ),
+                candidate_playback=_uses_task_playback(lease),
             )
-            if development_rtp_candidate and hasattr(transport, "td_rtp_input_ledger"):
+            if _uses_task_playback(lease) and hasattr(transport, "td_rtp_input_ledger"):
                 capture.rtp_source.begin_epoch(transport.td_rtp_input_ledger.connection_id)
             await run_voice_agent_pipeline(
-                playback_protocol=(
-                    "webrtc_candidate"
-                    if development_rtp_candidate
-                    and lease.config.asr.turn_detection_source == "self_developed"
-                    else "webrtc"
-                ),
+                playback_protocol=("webrtc_candidate" if _uses_task_playback(lease) else "webrtc"),
                 transport=transport,
                 lease=lease,
                 runtime=runtime,

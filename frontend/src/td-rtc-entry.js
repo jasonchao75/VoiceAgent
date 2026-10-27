@@ -29,11 +29,13 @@ export function bindRTCTransform(transport,worker,Transform=globalThis.RTCRtpScr
 export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,evidence=()=>{}}) {
   if(!globalThis.RTCRtpScriptTransform || !globalThis.AudioDecoder) throw new Error('Task playback is unavailable in this browser.');
   const context=new AudioContext({sampleRate:48000});
+  let player,worker,inputWorker,sourceUploader;
+  try {
   await context.audioWorklet.addModule(new URL('./td-audio-worklet.js',import.meta.url));
-  const player=new AudioWorkletNode(context,'stream_processor');
-  const worker=new Worker(new URL('./td-rtp-candidate-worker.js',import.meta.url),{type:'module'});
-  const inputWorker=new Worker(new URL('./td-rtp-input-worker.js',import.meta.url),{type:'module'});
-  const sourceUploader=new RTPCaptureUploader({sessionId,token,worker:inputWorker,evidence});
+  player=new AudioWorkletNode(context,'stream_processor');
+  worker=new Worker(new URL('./td-rtp-candidate-worker.js',import.meta.url),{type:'module'});
+  inputWorker=new Worker(new URL('./td-rtp-input-worker.js',import.meta.url),{type:'module'});
+  sourceUploader=new RTPCaptureUploader({sessionId,token,worker:inputWorker,evidence});
   inputWorker.onmessage=({data})=>{
     evidence({side:'input',...data});
     sourceUploader.observe(data);
@@ -79,4 +81,12 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
     return peer;
   };
   return {async close(){receipts.close();clockSampler.close();sourceUploader.close();worker.terminate();inputWorker.terminate();player.disconnect();await context.close();}};
+  } catch(error) {
+    sourceUploader?.close();
+    worker?.terminate();
+    inputWorker?.terminate();
+    player?.disconnect();
+    await context.close().catch(()=>{});
+    throw error;
+  }
 }

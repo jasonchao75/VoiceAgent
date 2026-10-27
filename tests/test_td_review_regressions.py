@@ -80,3 +80,36 @@ def test_revised_semantic_target_is_not_bypassed_by_old_final_window():
     clock.transcript(token, "actually I also want", final=False)
     clock.semantic(token, 2000, text_revision=clock.text_revision)
     assert clock.poll(800) is None
+
+
+def test_local_source_can_expand_but_a_real_submission_restores_the_strict_fence():
+    """Local source ownership must never weaken the ordinary LLM boundary contract."""
+    normalizer = SourceNormalizer("deepgram", "nova-3", sample_rate=16000)
+    ledger = TranscriptLedger()
+
+    def apply(text, duration):
+        """Feed a single whole-word snapshot with explicit provider timing."""
+        for segment in normalizer.normalize(
+            {
+                "start": 0,
+                "duration": duration,
+                "is_final": False,
+                "channel": {
+                    "alternatives": [
+                        {"transcript": text, "words": [{"word": text, "start": 0, "end": duration}]}
+                    ]
+                },
+            }
+        ):
+            ledger.apply(segment)
+
+    apply("12", 1)
+    first = ledger.consume_local()
+    apply("123", 2)
+    expanded = ledger.resolve_snapshot(first, require_final=False, expand_local=True)
+    assert expanded.text == "123"
+    assert ledger.view().missing_reason is None and ledger.view().text == ""
+    ledger.freeze_submission(expanded)
+    apply("1234", 3)
+    assert ledger.view().missing_reason == "cross_commit_word_overlaps_boundary"
+    assert ledger.resolve_snapshot(expanded, require_final=False, expand_local=True) is None
