@@ -163,7 +163,7 @@ def test_production_rtc_protocol_matches_identifier_rule_and_source(monkeypatch)
         return b"\x01\x00" * 100
 
     for source, enabled, expected in [
-        ("self_developed", True, "rtp_candidate"),
+        ("self_developed", True, "native"),
         ("self_developed", False, "native"),
         ("provider_native", True, "native"),
     ]:

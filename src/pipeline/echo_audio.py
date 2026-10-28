@@ -43,7 +43,12 @@ class EchoAudio:
             raise ValueError("Invalid echo audio limits")
 
     async def chunks(
-        self, text: str, *, generation: int, trace: Mapping[str, Any] | None = None
+        self,
+        text: str,
+        *,
+        generation: int,
+        trace: Mapping[str, Any] | None = None,
+        units: tuple[str, ...] | None = None,
     ) -> AsyncIterator[bytes]:
         """Read/recover fixed audio and yield at most 20ms PCM chunks while identity is current.
 
@@ -55,7 +60,7 @@ class EchoAudio:
             """Keep recovery ownership and each reader's original task attribution."""
             self.record(event, **{**(trace or {}), "collection_generation": generation, **fields})
 
-        units = self.collection.vocabulary.audio_units(text)
+        units = self.collection.vocabulary.audio_units(text) if units is None else units
         if units is None:
             raise ValueError("Input outside echo vocabulary")
         chunk_bytes = max(2, round(self.sample_rate * 0.02) * 2)

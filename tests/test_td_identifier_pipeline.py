@@ -156,9 +156,12 @@ async def test_real_sdk_identifier_tool_continuation_and_final_share_one_effect(
                 },
             )
         )
-        await asyncio.wait_for(replied.wait(), 3)
+        await asyncio.sleep(0.05)
+        assert owner.current.final
+        assert state.successful
+        assert not replied.is_set()
         assert state.value == "123" and owner.user_submission_count == 1
-        assert responses == ["verified:1:1", "verified:1:2"]
+        assert responses == ["verified:1:1"]
         starts = [event for event in events if event["event"] == "tool_started"]
         assert len(starts) == (0 if pure_input else 1)
         results = [event for event in events if event["event"] == "identifier_tool_result"]

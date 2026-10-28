@@ -208,6 +208,22 @@ class CallCapture:
 
     def record_td_event(self, event: dict[str, Any]) -> None:
         """Collect actual decision evidence without synchronous persistence on the audio path."""
+        if event.get("event") == "response_final_confirmed":
+            for utterance in reversed(self.td_events):
+                if (
+                    utterance.get("event") == "conversation_utterance"
+                    and utterance.get("role") == "user"
+                    and str(utterance.get("turn_id")) == str(event.get("turn_id"))
+                ):
+                    utterance.setdefault("submitted_text", utterance.get("text"))
+                    utterance["text"] = event["text"]
+                    utterance["source_final"] = True
+                    sequence = utterance.get("history_sequence")
+                    if isinstance(sequence, int) and 0 <= sequence < len(self.turns):
+                        self.turns[sequence] = self.turns[sequence].model_copy(
+                            update={"text": event["text"]}
+                        )
+                    break
         turn_key = str(event.get("turn_id"))
         if event.get("event") == "speech_resumed":
             if not self._source_ends.get(turn_key, {}).get("sealed"):

@@ -10,6 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from src.asr.transcript import TranscriptView
+from src.pipeline.response_revision import canonical_final_text
 
 _SEPARATORS = frozenset(" \t\r\n,，、.-－—")
 
@@ -295,6 +296,20 @@ class IdentifierCollection:
         key = (source.epoch, source.source_id)
         if self.validate_submission(source, identifier) is None and (
             self._values.get(key) == self.vocabulary.normalize(identifier)
+        ):
+            self._applied_texts[key] = source.text
+            self.mark_success(final=self.all_final)
+
+    def confirm_equivalent_final(self, source: IdentifierSource) -> None:
+        """Finalize already-applied evidence without replaying a tool or writing a new value."""
+        key = (source.epoch, source.source_id)
+        applied = self._applied_texts.get(key)
+        if (
+            applied is not None
+            and key in self._values
+            and self._valid(source)
+            and self._source_finals.get(key, False)
+            and canonical_final_text(applied) == canonical_final_text(source.text)
         ):
             self._applied_texts[key] = source.text
             self.mark_success(final=self.all_final)

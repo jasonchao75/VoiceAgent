@@ -68,3 +68,21 @@
 ### Scenario: 私有TD提交不重复显示为ASR字幕
 - WHEN 同一输入已经产生厂商Final，又被TD内部提交给LLM
 - THEN 客户端ASR字幕不因内部TDSubmission再追加一次；真实不同输入即使文本相同仍各显示，迟到ASR Final照常显示，LLM提交不受影响
+
+## Requirement: Approved native playback replacement
+正式RTC编号会话MUST使用浏览器原生RTP/Opus音轨，替代上文任务映射及解码接口要求。保留服务端串行队列和取消，MUST NOT等待客户端任务回执。最多20ms音频在原生track等待消费；服务端发送完成MUST NOT标记客户端播完。清空、打断及有效Final重答取消对应未发声音，允许短暂浏览器缓冲尾音。
+### Scenario: Native without decoder APIs
+- WHEN 正式编号RTC连接的浏览器没有WebCodecs或encoded transform
+- THEN 原生播放可用，不加载逐包播放器；真实连接失败仍释放资源并报告
+### Scenario: Append after partial send
+- GIVEN 同来源123仅1已开始发送，23待发
+- WHEN 更新为123456
+- THEN 保留23并追加456，不重发1、不漏23；格式变化不新增音频，真实更正合并最新完整片段
+## Requirement: Final content comparison
+本条替代主规格中相同Final也重答的规则。已提交Partial的首个有效Final，去Unicode标点和空白后文字相同MUST继续原回答并更新有效转写及后续上下文；其他字符变化MUST取消对应旧回答并重答，不再调用语义模型。
+### Scenario: Same or formatting Final
+- WHEN 我要办理的Final为我要办理或我 要办理。
+- THEN 不新增LLM/TTS请求，不取消原回答，不重复字幕或工具副作用
+### Scenario: Changed Final
+- WHEN Final为我不要办理
+- THEN 同轮取消旧生成及未发声音，以新文字重答；重复或旧轮Final不再次触发

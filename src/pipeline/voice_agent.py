@@ -9,11 +9,12 @@ from typing import Literal
 
 from fastapi import WebSocket
 from pipecat.adapters.schemas.function_schema import FunctionSchema
-from pipecat.frames.frames import TTSSpeakFrame
+from pipecat.frames.frames import InterruptionFrame, TTSSpeakFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker, ProcessorUnusablePolicy
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
+from pipecat.processors.frame_processor import FrameDirection
 from pipecat.serializers.protobuf import ProtobufFrameSerializer
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.transports.base_transport import BaseTransport, TransportParams
@@ -35,9 +36,10 @@ from src.pipeline.audio_identity import AudioTaskTagger, TaskProtobufSerializer
 from src.pipeline.custom_td import prepare_custom_td
 from src.pipeline.echo_audio import EchoAudio
 from src.pipeline.identifier import IdentifierCollection, IdentifierVocabulary
-from src.pipeline.identifier_output import IdentifierOutput
 from src.pipeline.identifier_rules import IdentifierRules
 from src.pipeline.identifier_tools import IdentifierTools
+from src.pipeline.incremental_identifier_output import IncrementalIdentifierOutput
+from src.pipeline.native_output import NativeSerialAudioOutput
 from src.pipeline.response_revision import ResponseRevisions
 from src.pipeline.response_scope import ResponseScope
 from src.pipeline.serial_output import SerialAudioOutput
@@ -246,7 +248,20 @@ async def run_voice_agent_pipeline(
         if responses is not None and playback_protocol in {"websocket", "webrtc_candidate"}
         else None
     )
-    identifier_output: IdentifierOutput | None = None
+    if responses is not None and playback_protocol == "webrtc":
+        native_output = transport.output()
+
+        async def cancel_native_audio() -> None:
+            """Finish native transport cancellation before the next direct PCM write."""
+            await native_output.process_frame(InterruptionFrame(), FrameDirection.DOWNSTREAM)
+
+        serial_output = NativeSerialAudioOutput(
+            responses=responses,
+            evidence_sink=event_sink,
+            write=native_output.write_audio_frame,
+            cancel_audio=cancel_native_audio,
+        )
+    identifier_output: IncrementalIdentifierOutput | None = None
     if serial_output is not None and identifier_rules is not None:
         if echo_cache is None:
             raise ValueError("Custom identifier output requires the application audio cache")
@@ -265,7 +280,7 @@ async def run_voice_agent_pipeline(
             if event_sink:
                 event_sink({"event": event, **fields})
 
-        identifier_output = IdentifierOutput(
+        identifier_output = IncrementalIdentifierOutput(
             collection=identifier_rules.collection,
             audio=EchoAudio(
                 cache=echo_cache,

@@ -64,6 +64,8 @@ class IdentifierTools:
         self.bind_response(version, self.collection.bind_snapshot(snapshot))
         if version.response_id in self._sources:
             self._evidence[version.response_id] = snapshot
+            if version.final:
+                self.collection.confirm_equivalent_final(self._sources[version.response_id])
 
     def _record_result(
         self,

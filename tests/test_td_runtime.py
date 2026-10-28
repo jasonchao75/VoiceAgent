@@ -391,7 +391,7 @@ async def test_final_reanswer_keeps_original_input_keyword_gate_and_generation()
     original = owner.submit(turn_id="1", source_ids=((0, "a"),), text="号码1", final=False)
     snapshot = TranscriptView("号码1", False, (SourceSegment(0, "a", 1, 0, 1000, "号码1", False),))
     tools.bind_snapshot(original, snapshot, "普通开场，没有采集要求")
-    final = owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码1")
+    final = owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="编号1")
     tools.bind_snapshot(final.new_response, snapshot, "请提供编号")
     results = []
 

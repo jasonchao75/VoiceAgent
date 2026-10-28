@@ -78,6 +78,15 @@ class TDResponseRestartFrame(DataFrame):
     response_id: str = ""
 
 
+@dataclass
+class TDTranscriptUpdateFrame(DataFrame):
+    """Update finalized user text without rerunning inference or removing assistant output."""
+
+    authority: object | None = None
+    turn_id: int = 0
+    text: str = ""
+
+
 class TDUserAggregator(LLMUserAggregator):
     """Reuse Pipecat aggregation while atomically ordering custom transcript and stop."""
 
@@ -103,6 +112,13 @@ class TDUserAggregator(LLMUserAggregator):
 
     async def process_frame(self, frame: Frame, direction: FrameDirection) -> None:
         """Process the transcript before the stop signal inside the same ordered task."""
+        if isinstance(frame, TDTranscriptUpdateFrame):
+            if frame.authority is self._td_authority and frame.text.strip():
+                index = self._td_indices.get(frame.turn_id)
+                messages = self._context.get_messages()
+                if index is not None and index < len(messages):
+                    messages[index] = {"role": "user", "content": frame.text}
+            return
         if isinstance(frame, TDResponseRestartFrame):
             if frame.authority is not self._td_authority or not frame.text.strip():
                 return

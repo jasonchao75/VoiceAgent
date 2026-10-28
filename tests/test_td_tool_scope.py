@@ -212,7 +212,7 @@ async def test_final_before_scheduled_effect_allows_current_response_to_execute(
     pending = asyncio.create_task(boundary.execute(params(original, outputs), apply))
     # execute schedules its business task then yields before that task starts.
     await asyncio.sleep(0)
-    owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="faster")
+    owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="faster please")
     await pending
     await boundary.execute(params(boundary.bind(LLMContext()), outputs), apply)
     assert actions == ["faster"] and outputs == [{"status": "applied"}]

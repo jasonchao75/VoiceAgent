@@ -20,3 +20,8 @@ RTC统一选择函数用于session响应、transport安装、input时钟和pipel
 
 播放器模块发worker_ready，客户端在原RTC连接前以10秒有界等待确认模块可执行；监听error/messageerror并锁存ready后、bridge建立前的失败。该握手不代表解码或可听成功；运行时仍走原bridge失败清理。公开demo页面和直接demo.html返回no-store；无法追溯修复已打开旧页，缺失旧hash资源时提示刷新，不切到原生无身份播放。
 自建TD使用标准RTVIProcessor工厂的专用observer，仅忽略TDSubmissionFrame；保留厂商Interim/Final事件、其他RTVI、普通模式原observer和LLM链路。手机现有UI仅显示厂商Final，不将内部Partial提交伪作厂商Final；来源可修订Partial字幕不在此修复范围。
+
+## Approved repair 2026-10-28 (supersedes task-renderer design above)
+正式RTC自建TD含编号规则走native RTP/Opus。服务端串行输出使用原生track消费future进行20ms有界发送，不以SDK排队等同发送完成；取消中断当前writer并清理原生track待发队列。队列按服务端发送终态释放，无客户端回执、包映射或WebCodecs依赖。客户端实际开播/结束保持未知。输入、录音和ASR音频时钟沿用native链路。
+编号计划以同来源规范化单元序列区分格式、追加与真实更正；跟踪已开始发送的单元位置，追加保留旧未发尾段，真正更正撤销旧未发范围并补读完整最新来源。不同来源相同数字不去重。回调检查collection generation及来源版本。
+Final比较仅去Unicode标点和空白；一致更新转写与上下文但不重新发LLM，不改变response ID和副作用归属；不一致沿用受控取消重答。旧轮次Final仍拒绝。

@@ -194,6 +194,108 @@
       "status": "Resolved",
       "summary": "Chrome138正常回归在调用通话前/api/bots鉴权检查处Execution context destroyed，疑开发服务器重载；保存trace后复查，不掩盖失败。 失败trace显示页面二次加载，Vite同时间日志为src/td-rtc-entry.js热重载；保留initial-navigation-trace.zip，停止编辑后同条件13.6s通过，尚未进入通话前的测试环境重载。",
       "disclosed_to_user": true
+    },
+    {
+      "id": "MOBILE-98F5840B-MAPPING-DEADLINE",
+      "status": "Open",
+      "disclosed_to_user": true,
+      "summary": "Latest production Android Chrome138 call 98f5840b-41d1-449f-9a94-027773008c77 on verified b7b44b9 assets failed mapping_deadline. Packets601/mappings603/decoded595, pending packets6/pending mappings0, target packet present mapping absent; native lost8/discarded0. Jev HTTP200. Root mapping loss mechanism and rollback boundary require review; prior patch does not close mobile stability. User also reports slow PC identifier readback; measured breakdown pending."
+    },
+    {
+      "id": "RTP-DECODED-DUPLICATE-MAPPING",
+      "status": "Open",
+      "summary": "Independent in-memory mock of actual worker: duplicate identical SSRC/timestamp/payload after successful decode is re-enqueued without retired decoded identity; mapping already removed, triggers mapping_deadline after1s. This matches latest failure shape but is not proven phone root. Preserve payload identity validation when fixing.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PC-935DBCF8-ECHO-QUEUE-LATENCY",
+      "status": "Open",
+      "summary": "Yesterday PC web_call 935dbcf8-c2cf-4a49-83ce-46ed582d4b73 has four echo/correction jobs. First dispatch8.3ms after scheduling; subsequent dispatched corrections wait978.8ms and3199.8ms. Cache reads2.1–16.3ms, no recovery synthesis. Server receives started receipts296.2/1289.1/3499.9ms after scheduling; these include receipt return and are not acoustic latency. 514media_gap events do not alone prove network fault; source continuity failure ends call. Need review cumulative extension versus correction and queue arbitration, ASR cadence, stop-to-render measurement.",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PC-ECHO-EXTENSION-AND-FORMATTING-REPLAY",
+      "status": "Resolved",
+      "summary": "935dbcf8 event chain confirms1234 echo then appended12345 scheduled whole correction(cancelled before dispatch);123453 whole correction dispatched; punctuation/space-only Final123453. scheduled and dispatched same six digits again,3199.8ms queue delay. Collection value itself updates1234→12345→123453 rather than duplicate concatenation. Need canonical unit/range-aware incremental playback and format-only suppression. ASR reported123453 vs user says123456789; raw provider cause pending.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "REPAIR-PLAN-FINAL-CONTRACT",
+      "status": "Resolved",
+      "summary": "repair-plan.md section3.2 says Final改义; accepted voice-pipeline spec requires restart on first valid Final after Partial submission even when text is identical. Clarify as preserving current trigger, or obtain explicit separate behavior decision.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "REPAIR-PLAN-NATIVE-SCHEDULING",
+      "status": "Resolved",
+      "summary": "Static plan review: native output proposal lacks explicit replacement for renderer receipt-driven task release and stop barriers in SerialAudioOutput/PlaybackArbiter; needs transport-paced completion, bounded send-ahead and cancellation/queue handoff contracts, without claiming client audibility.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "REPAIR-PLAN-PARTIAL-SEND-RANGES",
+      "status": "Resolved",
+      "summary": "Static plan review: incremental table covers fully queued/sent snapshots but needs concrete partial-send revision scenarios and mapping from canonical unit ranges to dispatched audio; preserve unsent old suffix on extension and specify true correction scope.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "REPAIR-PLAN-TAIL-ACCEPTANCE",
+      "status": "Resolved",
+      "summary": "Native playback proposal acknowledges short residual buffered audio but has no measurable cancellation-tail acceptance boundary or failure policy; hardware/network testing remains necessary before product acceptance.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "NATIVE-REPAIR-DEVELOPMENT-CHECKS",
+      "status": "Resolved",
+      "summary": "Initial development tests found 3 legacy assertions requiring identical Final restarts; updated to approved policy. Incremental correction fixture used out-of-vocabulary4, needs corrected valid fixture. Local Python3.13 numpy stubs prevent default mypy Python3.11 parsing; use local3.13 check and CI3.11 authoritative check. No production changes deployed.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "NATIVE-INCREMENTAL-UNIT-ORDER",
+      "status": "Resolved",
+      "summary": "Independent mock of production incremental planner and native pump with delayed cache: source12 emits PCM labels[gap,2,1]. Concurrent per-position preparation plus equal source_order permits cache completion order to reorder digits. Blocking until source-position scheduling regression passes.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "INCREMENTAL-ASYNC-UNIT-ORDER",
+      "status": "Resolved",
+      "summary": "Independent review found per-unit concurrent cache preparation can enqueue later units before first unit. Reserve serial slots before cache awaits and add slow-first-cache regression. Grouped numeric vocabulary also needs direct canonical unit rendering rather than alias lookup.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "NATIVE-INCREMENTAL-CANCELLED-RANGE",
+      "status": "Resolved",
+      "summary": "Independent mock: consider12 -> prepare -> observe same source with echo_eligible false -> native pump cancels queued units -> consider same source eligible true emits nothing; plan.jobs positions remain cancelled_unplayed and cannot be rescheduled. Blocking until cancelled unsent ranges can resume without replaying sent units.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "NATIVE-ACTIVE-ECHO-ELIGIBILITY",
+      "status": "Resolved",
+      "summary": "Independent mock: a two-chunk active echo with first chunk in writer is observed with same units but echo_eligible=false (e.g. latest cumulative WPM/timing changes). Native validity check stops source after1 of2 chunks. This violates P02 ordinary continuation preserving already-started valid echo; sent position then cannot resume. Must separate active historical eligibility from new candidate eligibility while preserving true content/clear invalidation.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "NATIVE-FINAL-HISTORY-EFFECTIVE",
+      "status": "Resolved",
+      "summary": "Independent static trace: equivalent Final updates LLMContext and response_final_confirmed event, but CallCapture ignores TDTranscriptUpdateFrame while provider Final is td_source_only; main HistoryTurn/conversation_utterance remains original Partial with source_final false. Need effective Final persistence contract and refresh/API regression while retaining submitted Partial audit.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
+    },
+    {
+      "id": "NATIVE-FINAL-MIXED-SUCCESS",
+      "status": "Resolved",
+      "summary": "Independent direct probe: mixed Partial号码123 tool submits123; identical Final does not restart and bind_snapshot refreshes final source, but no confirm_submission/mark_success runs (IdentifierRules._committed false for mixed input). Collection has all_final True, successful False, so next collection cannot reset correctly. Formatting-only Final additionally leaves _applied_texts unequal. Need confirmation of prior validated contribution on equivalent Final without reexecuting tool or acquiring new authority.",
+      "disclosed_to_user": true,
+      "resolution": "2026-10-28 approved native repair; see verification/native-repair-self-test.md and tests/test_native_incremental_repair.py. Native tail duration remains hardware-unverified and accepted in principle, not a numeric performance claim."
     }
   ],
   "unverified_items": [
@@ -218,7 +320,13 @@
     {
       "id": "MOBILE-POST-READY-AUDIBILITY",
       "status": "Open",
-      "summary": "worker404及重复字幕补丁尚待发布后一次真机验证；已打开旧页面不会被no-store追溯刷新。回执证明渲染，不证明设备扬声器可听；仅Partial未Final时不新增最终字幕展示。",
+      "summary": "b7b44b9已部署且公开资源/缓存头核对成功，仍待刷新页面后一次Android可听与字幕复验；旧页不能被no-store追溯刷新。仅Partial未Final不新增最终字幕；历史缺包唯一原因仍未确定。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "PC-ECHO-300MS-BUDGET",
+      "status": "Open",
+      "summary": "PC Test bot entry confirmed by user; candidate yesterday session935dbcf8 includes slow correction dispatch waits up to3199.8ms. Actual microphone-stop to first-render latency and network vs chunking allocation remain unverified; no300ms promise.",
       "disclosed_to_user": true
     }
   ],
@@ -231,5 +339,16 @@
     "public_assets_match_verified_build": true,
     "pending_sessions": 0,
     "active_sessions": 0
+  },
+  "native_repair": {
+    "status": "local_engineering_pass_deployment_pending",
+    "external_calls": 0,
+    "recording_sha256": "891e6026f044c5e96e98b73cce37ff2dc05a10fb84770c31d6a411e38bcdf258",
+    "deployment_authorization": "D-20261028-IMPLEMENT-REPAIR",
+    "client_playback_progress": "unsupported",
+    "paid_external_tests": "not_authorized_not_performed",
+    "backend": "830 passed, 9 skipped, 6 dependency warnings",
+    "independent_review": "PASS",
+    "browser": "anonymous native identifier desktop+narrow; PC WS and ordinary RTC passed"
   }
 }

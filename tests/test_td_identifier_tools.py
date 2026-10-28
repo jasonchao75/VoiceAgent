@@ -68,8 +68,8 @@ async def test_clear_reanswer_does_not_clear_a_new_collection_generation():
     await handlers.clear(params(boundary, "clear_identifier", {}, output))
     new = state.bind_source(0, "b", 1, "12")
     state.collect_local(new)
-    restart = owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
-    handlers.bind_response(restart.new_response, state.bind_source(0, "a", 2, "号码123"))
+    owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
+    handlers.bind_response(owner.current, state.bind_source(0, "a", 2, "号码123"))
     await handlers.clear(params(boundary, "clear_identifier", {}, output))
     assert state.value == "12" and state.generation == 1
     assert output[-1]["status"] == "superseded" and output[-1]["value"] == "12"
@@ -108,11 +108,12 @@ async def test_same_mixed_final_keeps_applied_value_and_reanswer_does_not_replay
     handlers.bind_snapshot(owner.current, snapshot, "编号")
     outputs = []
     await handlers.submit(params(boundary, "submit_identifier", {"identifier": "123"}, outputs))
-    restart = owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
+    owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
     final = TranscriptView("号码123", True, (SourceSegment(0, "a", 2, 0, 1000, "号码123", True),))
-    handlers.bind_snapshot(restart.new_response, final, "编号")
+    handlers.bind_snapshot(owner.current, final, "编号")
     await handlers.submit(params(boundary, "submit_identifier", {"identifier": "123"}, outputs))
     assert state.value == "123" and outputs[-1]["value"] == "123"
+    assert state.successful
 
 
 async def test_reanswer_cannot_reuse_success_for_number_absent_from_revised_input():
@@ -153,11 +154,11 @@ async def test_invalid_tool_arguments_do_not_change_collection_success_proof():
     from src.asr.transcript import SourceSegment, TranscriptView
 
     handlers, boundary, owner, state = tools()
-    restart = owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
+    owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
     snapshot = TranscriptView(
         "号码123", True, (SourceSegment(0, "a", 2, 0, 1000, "号码123", True),)
     )
-    handlers.bind_snapshot(restart.new_response, snapshot, "编号")
+    handlers.bind_snapshot(owner.current, snapshot, "编号")
     source = state.bind_snapshot(snapshot)
     state.submit_tool(source, "123")
     assert not state.successful
@@ -217,11 +218,11 @@ async def test_new_mixed_input_after_success_resets_only_when_valid_submit_runs(
     from src.asr.transcript import SourceSegment, TranscriptView
 
     handlers, boundary, owner, state = tools()
-    first = owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
+    owner.finalize(turn_id="1", source_ids=((0, "a"),), revision=2, text="号码123")
     snapshot = TranscriptView(
         "号码123", True, (SourceSegment(0, "a", 2, 0, 1000, "号码123", True),)
     )
-    handlers.bind_snapshot(first.new_response, snapshot, "编号")
+    handlers.bind_snapshot(owner.current, snapshot, "编号")
     output = []
     await handlers.submit(params(boundary, "submit_identifier", {"identifier": "123"}, output))
     assert state.successful
@@ -239,13 +240,11 @@ async def test_new_mixed_input_after_success_resets_only_when_valid_submit_runs(
     await handlers.submit(params(boundary, "submit_identifier", {"identifier": "321"}, output))
     assert state.value == "321" and state.generation == 1
     if not new_final:
-        revised = owner.finalize(
-            turn_id="2", source_ids=((0, "b"),), revision=2, text="新的号码321"
-        )
+        owner.finalize(turn_id="2", source_ids=((0, "b"),), revision=2, text="新的号码321")
         final_snapshot = TranscriptView(
             "新的号码321", True, (SourceSegment(0, "b", 2, 1000, 2000, "新的号码321", True),)
         )
-        handlers.bind_snapshot(revised.new_response, final_snapshot, "编号")
+        handlers.bind_snapshot(owner.current, final_snapshot, "编号")
         await handlers.submit(params(boundary, "submit_identifier", {"identifier": "321"}, output))
         assert state.value == "321" and state.generation == 1 and state.successful
     await boundary.close()

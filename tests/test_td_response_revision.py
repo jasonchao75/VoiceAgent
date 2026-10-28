@@ -11,7 +11,7 @@ def controller():
     return import_module("src.pipeline.response_revision").ResponseRevisions()
 
 
-@pytest.mark.parametrize("final", ["我要办理", "我要办理。", "我不要办理"])
+@pytest.mark.parametrize("final", ["我不要办理"])
 def test_first_final_always_restarts_submitted_partial(final):
     """Identical, formatting-only and changed-meaning Finals all restart (D-049)."""
     state = controller()
@@ -46,3 +46,14 @@ def test_final_submission_does_not_restart_and_side_effects_are_once():
     assert state.finalize(turn_id="t1", source_ids=((0, "a"),), revision=2, text="final.") is None
     assert state.claim_operation("t1", "clear_identifier", ((0, "a"),))
     assert not state.claim_operation("t1", "clear_identifier", ((0, "a"),))
+
+
+@pytest.mark.parametrize("final", ["我要办理", "我 要办理。", "我要办理，！"])
+def test_equivalent_final_confirms_without_restarting(final):
+    """Formatting updates keep response identity and do not repeat inference."""
+    state = controller()
+    old = state.submit(turn_id="t1", source_ids=((0, "s1"),), text="我要办理", final=False)
+    assert state.finalize(turn_id="t1", source_ids=old.source_ids, revision=2, text=final) is None
+    assert state.current.final and state.current.text == final
+    assert state.current.response_id == old.response_id
+    assert state.accepts_output(old.response_id) and state.restarts == []

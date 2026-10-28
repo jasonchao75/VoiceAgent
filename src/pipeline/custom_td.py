@@ -38,7 +38,11 @@ from src.asr.transcript import (
 from src.pipeline.identifier_rules import IdentifierEvaluation, IdentifierRules
 from src.pipeline.jev import JevResult
 from src.pipeline.response_revision import ResponseRevisions, ResponseVersion
-from src.pipeline.td_strategies import TDResponseRestartFrame, TDSubmissionFrame
+from src.pipeline.td_strategies import (
+    TDResponseRestartFrame,
+    TDSubmissionFrame,
+    TDTranscriptUpdateFrame,
+)
 from src.pipeline.turn_detection import CandidateToken, TurnClock, WaitPolicy
 
 Decision = Callable[..., Awaitable[JevResult]]
@@ -463,6 +467,7 @@ class CustomTDCoordinator(FrameProcessor):
                 if self._submitted_snapshot is not None:
                     resolved = self.ledger.resolve_snapshot(self._submitted_snapshot)
                     if resolved is not None:
+                        previous_response = self.responses.current
                         restart = self.responses.finalize(
                             turn_id=str(self._turn_index),
                             source_ids=tuple(
@@ -471,6 +476,30 @@ class CustomTDCoordinator(FrameProcessor):
                             revision=max(s.revision for s in resolved.segments),
                             text=resolved.text,
                         )
+                        current_response = self.responses.current
+                        if (
+                            not restart
+                            and previous_response
+                            and not previous_response.final
+                            and current_response
+                            and current_response.final
+                        ):
+                            if self._bind_input:
+                                self._bind_input(current_response, resolved, self._assistant)
+                            if self.identifier_rules:
+                                self.identifier_rules.confirm_committed()
+                            self.record(
+                                "response_final_confirmed",
+                                text=resolved.text,
+                                response_id=current_response.response_id,
+                            )
+                            await self.push_frame(
+                                TDTranscriptUpdateFrame(
+                                    authority=self.authority,
+                                    turn_id=self._turn_index,
+                                    text=resolved.text,
+                                )
+                            )
                         if restart:
                             if self._bind_input:
                                 self._bind_input(restart.new_response, resolved, self._assistant)

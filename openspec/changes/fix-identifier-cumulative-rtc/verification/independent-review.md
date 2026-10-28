@@ -1,3 +1,59 @@
+# 2026-10-28 原生播放与增量跟读最终独立审核
+
+- 审核者：`native_repair_verifier`，独立于实现Agent；未修改生产代码、未调整需求或代替用户验收。
+- 结论：**PASS（限定本轮已确认修复的本地工程交付范围）**。本结论取代本轮首轮BLOCKED；下方2026-10-27历史PASS不作为本轮依据。
+- 对照：repair-plan、Delta、design、tasks、决策D-20261028-NATIVE-PLAYBACK / FINAL-CONTENT-RESTART / IMPLEMENT-REPAIR。无页面布局/基线修改，ui_change=false；浏览器验证使用正式路由与生产管线，只替换外部服务。
+- 发布仍须以最终提交的全量检查、GitHub CI/CD和公开健康/版本核对为准。PASS不证明真机体验、ASR准确率或300ms目标；用户已明确授权自测/审核后部署并复测。
+
+## 独立复验
+
+1. 直接执行最终代码定向组：`pytest -q tests/test_native_incremental_repair.py tests/test_td_response_revision.py tests/test_td_identifier_pipeline.py tests/test_td_identifier_tools.py tests/test_td_history.py`：**47 passed，1既有依赖弃用警告**；日志`/tmp/voiceagent-native-independent-release.log`。之前两轮独立组15/20/46通过不混作最终数量。
+2. 直接执行项目门禁：`python3 scripts/quality/verify_change.py fix-identifier-cumulative-rtc`：**PASS，0 errors / 15 warnings**；日志`/tmp/voiceagent-native-independent-gate-final.log`。警告仍含已披露历史根因/真机/延迟未验证及发布收尾任务，不等同零风险。
+3. 独立临时探针：延迟首位cache20ms、第二位1ms、10ms gap时，修复前输出`[gap,2,1]`，来源预留后输出`[1,gap,2]`。复验同文及`号码 1,2,3。`Final均保持编号123、successful=True、只一次工具结果。
+4. 独立上下文探针：格式Final原位更新用户条目，保留已有assistant消息，产生0个新inference frames；最终定向组另验证SQLite重开后有效Final正文、submitted_text原提交及单用户记录。
+
+## 发现并阻止、已复验闭环的问题
+
+- NATIVE-INCREMENTAL-UNIT-ORDER：并发异步cache不能决定数字顺序；stream_audio在await前预留来源槽位。
+- NATIVE-INCREMENTAL-CANCELLED-RANGE：已取消但未发送及prepare前失效无arbiter task的范围可以重排；新ID避免旧失效任务复活，已发送位置不重播。
+- NATIVE-ACTIVE-ECHO-ELIGIBILITY：后续语速/时间证据变化不截断已开始有效单元；清空/真正内容失效仍取消。
+- NATIVE-FINAL-HISTORY-EFFECTIVE：Final等价更新主历史有效文本与source_final，保留submitted_text；不新增第二用户记录，SQLite重开回归通过。
+- NATIVE-FINAL-MIXED-SUCCESS：Final等价在既有已验证contribution上刷新成功证明，不重新执行业务工具，不为新来源赋予旧授权。
+- 另复核native cancellation：阻塞write由wake取消，完成native输出Interruption处理后再启下一任务；不再通过异步下游清理与新writer竞争。挂起writer回归验证顺序屏障。
+
+上述项均已由实现Agent向用户披露，并在delivery-status标记Resolved及记录证据；本审核未发现本轮仍阻塞部署的代码缺陷。
+
+## 读取并交叉核对的开发者证据（不冒认独立执行）
+
+- fixture：历史ASR序列1234→12345→123453→格式Final，旧planner重播、新planner输出123453一次；新增重复/修订/取消/部分发送回归。该序列来自历史记录，不是新ASR结果或人工核定参考答案。
+- local-real：用户指定15秒私有音频完整240000 samples经过本地Silero，SHA-256 `891e6026f044c5e96e98b73cce37ff2dc05a10fb84770c31d6a411e38bcdf258`；0外部请求。音频留在私有/tmp目录，不入Git。
+- local-real + fixture：正式网站鉴权开启、匿名公共RTC编号入口、主动禁用AudioDecoder/encoded transform，两视口**2 passed**（`/tmp/voiceagent-native-identifier-browser3.log`）。JSON mode=native，真实音轨peak约0.132，clear工具成功、server_send_cancelled、任务客户端回执与映射请求为空；读取的结果来自实际生产路由。
+- local-real + fixture：最终代码PC WebSocket麦克风路径及普通native RTC **2 passed**（`/tmp/voiceagent-native-pc-rtc-final.log`），验证Final内容修订、声音频率切换和挂断清理。
+- 开发者最后混合成功证明更新后的release全量：**830 passed、9 skipped、6既有依赖警告**，日志`/tmp/voiceagent-native-backend-release.log`，本审核读取其最终结果。前端51单元、build、ruff/mypy检查通过，详见native-repair-self-test.md。
+- 初始browser401登录cookie与活动通话未落库轮询失败均保留并解释，后续同条件修正测试后两视口通过，不将初始失败隐藏或当作播放通过。
+
+## 证据边界与剩余范围
+
+**未验证**：真实Android/iOS硬件、AEC/蓝牙/运营商弱网、当前厂商ASR准确率、客户录音人工逐字参考、声学尾音实测时长、300ms停口到可听目标。私有音频VAD回放不证明ASR/端到端跟读识别正确；浏览器本地合成音频不证明真实手机可听体验。默认native路径移除旧逐包匹配/解码/回执故障前置条件，不意味着已查明历史手机丢包首因。客户端任务实际开播/完成指标保持未知，不将服务端消费future伪称听到。
+
+这些范围已在自测报告与delivery-status披露；保持product_acceptance=pending，部署后由用户复测，未代填最终产品验收。
+
+## 本次审阅源码指纹
+
+- `src/pipeline/native_output.py`: `ab6bc184566dac8c76277d3b21a249b766346c49440c180127497f7a158df5aa`
+- `src/pipeline/incremental_identifier_output.py`: `6bb2acab17d2bc58570db9b04ed17dd45a8c4f50a9785ec160c13248b823cb60`
+- `src/pipeline/response_revision.py`: `4d0a3d0664e8f2ea13a2c1fe6ac960a9a8e0f70cf8ba2d446cdd871fb07330a5`
+- `src/pipeline/td_strategies.py`: `d9c1c23c006f60a8cdca6c0e1571c2a5a8098c46d19d8c3eae21c2aba82134e6`
+- `src/pipeline/custom_td.py`: `72960752a112f419fd7286681db9c5df80fd034e7844eaa0a2411a2a107206d7`
+- `src/pipeline/serial_output.py`: `053a4fe15b7e65145decab35753cbede788a5332880ec4b197fa8f05a142299c`
+- `src/pipeline/identifier.py`: `6787a865ef21c27becfebc2e070d1b079baf41282145947fc45e1420bc6d72c6`
+- `src/pipeline/identifier_tools.py`: `cd87e125972e834e08e3334737d2535a0f44c84cbcda874c392e1a957da2e5f0`
+- `src/history/capture.py`: `dc9df96ad6d11fc543d5a470f046bacb5db5393d36c2d849915c11ed95248122`
+- `src/pipeline/voice_agent.py`: `16a1ca0639d73675254224b4505281321e4bb5d8b49cb8ab1474fd9a0cdd91f2`
+- `src/api.py`: `aa3dac6b0b7d76a45a9b77ad4ce207d9df21c60123f61338ecfd67a2713114ac`
+
+---
+
 # 独立审核结论
 
 - 日期：2026-10-27

@@ -67,6 +67,7 @@ class SerialAudioOutput(FrameProcessor):
         self._jobs: dict[str, asyncio.Task[None]] = {}
         self._closed = False
         self._bytes = 0
+        self._sent_bytes: dict[str, int] = {}
         self._limit = max_buffer_bytes
         self._order = 0
         self._source_orders: dict[tuple[int, str], int] = {}
@@ -192,6 +193,7 @@ class SerialAudioOutput(FrameProcessor):
         valid: Callable[[], bool],
         sample_rate: int = 24000,
         final_segment: bool = False,
+        reserve_order: bool = False,
         turn_id: int | None = None,
     ) -> None:
         """Prepare async cached/recovered audio; late results never bypass source fences."""
@@ -208,6 +210,9 @@ class SerialAudioOutput(FrameProcessor):
         self._jobs[playback_id] = asyncio.current_task()  # type: ignore[assignment]
         cls = audio_frame_type(playback_id=playback_id, kind=kind, response_id=None)
         try:
+            # Reserve source order before any asynchronous cache read can overtake it.
+            if reserve_order:
+                await self._audio(cls(b"", sample_rate, 1))
             async for pcm in samples:
                 if self._closed or (kind != "normal" and generation != self.arbiter.generation):
                     return
@@ -310,7 +315,7 @@ class SerialAudioOutput(FrameProcessor):
             else:
                 self.arbiter._request_stop(task)
             await self.push_frame(ErrorFrame(error="Voice output queue limit exceeded"))
-        else:
+        elif frame.audio:
             buffer.frames.append(frame)
             self._bytes += len(frame.audio)
         self._wake.set()
@@ -442,6 +447,9 @@ class SerialAudioOutput(FrameProcessor):
             ):
                 frame = active_buffer.frames.popleft()
                 self._bytes -= len(frame.audio)
+                self._sent_bytes[active.playback_id] = self._sent_bytes.get(
+                    active.playback_id, 0
+                ) + len(frame.audio)
                 await self.push_frame(frame)
             if (
                 active_buffer.ended

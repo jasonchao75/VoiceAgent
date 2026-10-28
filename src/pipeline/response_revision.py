@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import unicodedata
+from dataclasses import dataclass, replace
 
 SourceIds = tuple[tuple[int, str], ...]
+
+
+def canonical_final_text(value: str) -> str:
+    """Ignore only the user-approved punctuation and whitespace differences."""
+    return "".join(
+        c for c in value if not c.isspace() and not unicodedata.category(c).startswith("P")
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,7 +100,7 @@ class ResponseRevisions:
         revision: int,
         text: str,
     ) -> ResponseRestart | None:
-        """Replace the current Partial answer once, irrespective of semantic equivalence.
+        """Finalize once, restarting only for content changes beyond punctuation and spaces.
 
         Args:
             turn_id: Original TD user turn, never a newly allocated turn.
@@ -113,6 +121,10 @@ class ResponseRevisions:
             or revision < 1
             or current.speech_generation != self._speech_generation
         ):
+            return None
+
+        if canonical_final_text(current.text) == canonical_final_text(text):
+            self._current = replace(current, text=text, final=True)
             return None
         replacement = ResponseVersion(
             current.turn_id,

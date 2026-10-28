@@ -1835,9 +1835,8 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
 
     def _uses_task_playback(lease: SessionLease) -> bool:
         """Keep the announced protocol and all RTP clock/playback wiring consistent."""
-        rule = lease.config.td_config.priority_rule if lease.config.td_config else None
-        return lease.config.asr.turn_detection_source == "self_developed" and (
-            development_rtp_candidate or bool(rule and rule.enabled)
+        return (
+            lease.config.asr.turn_detection_source == "self_developed" and development_rtp_candidate
         )
 
     async def _run_mobile_connection(lease: SessionLease, connection: Any) -> None:
