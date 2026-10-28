@@ -63,6 +63,8 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   }
   const publicId=share.public_id;
   expect(publicId).toBeTruthy();
+  const missingWorker=process.env.VOICE_AGENT_TD_MISSING_WORKER==='1';
+  if(missingWorker) await page.route('**/td-rtp-candidate-worker.js*',route=>route.fulfill({status:404,body:'Not found'}));
   // Vite serves the same production demo document at its public route; APIs stay real.
   const document=await request.get("/demo.html");
   await page.route(`**/demo/${publicId}`,route=>route.fulfill({response:document}));
@@ -191,6 +193,18 @@ test("formal mobile RTC identifier arbitration uses actual renderer receipts",as
   await page.locator("#start-call").click();
   await expect.poll(()=>Boolean(session),{timeout:10000}).toBe(true);
   expect(session.ice_servers).toEqual([]);
+  if(missingWorker) {
+    await expect(page.locator('#error-copy')).toContainText('Reload this page');
+    await expect.poll(()=>errors.length).toBe(1);
+    expect(errors[0]).toMatchObject({status:204,stage:'signaling',playback_failure_reason:'playback_worker_unavailable'});
+    await expect.poll(async()=>{
+      const health=await (await request.get('/health')).json();return health.pending_sessions+health.active_sessions;
+    }).toBe(0);
+    expect(await page.evaluate(()=>window.__rtcConnections?.length || 0)).toBe(0);
+    await expect.poll(()=>page.evaluate(()=>window.__rtcMicTracks.every(track=>track.readyState==='ended'))).toBe(true);
+    writeFileSync(`${evidence}/missing-worker.json`,JSON.stringify({errors,cleanupVerified:true},null,2));
+    return;
+  }
   if(process.env.VOICE_AGENT_TD_REPLAY_OLD_DEADLINE==='1' || process.env.VOICE_AGENT_TD_REPLAY_OLD_SILENCE==='1') {
     await expect.poll(()=>errors.length,{timeout:10000}).toBe(1);
     expect(errors[0].playback_failure_reason).toBe(process.env.VOICE_AGENT_TD_REPLAY_OLD_SILENCE==='1'?'packet_deadline':'mapping_deadline');

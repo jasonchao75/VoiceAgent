@@ -296,8 +296,8 @@ async function startCall() {
     await client.connect({ connection_url: session.connection_url });
   } catch (error) {
     const category = connectionStage === "permission" ? "microphone_unavailable"
-      : connectionStage === "session" ? "session_unavailable" : error.code === "playback_unsupported" ? "playback_unsupported" : "connection_failed";
-    await failCall("Couldn’t connect", error.message, category, "connection");
+      : connectionStage === "session" ? "session_unavailable" : error.code === "playback_unsupported" ? "playback_unsupported" : error.code === "playback_failed" ? "playback_failed" : "connection_failed";
+    await failCall("Couldn’t connect", error.message, category, "connection",error.playbackReason);
   }
 }
 
@@ -328,7 +328,7 @@ function failCall(title, copy, safeErrorCategory = "connection_failed", endReaso
       'packet_deadline','missing_ssrc','packet_queue_limit','mapping_deadline','transform_stream_error',
       'decoder_unavailable','multiple_receiver_transform','decoder_error','decode_job_unowned_output',
       'invalid_task_extent','decoded_extent_overflow','playback_receipt_unconfirmed','invalid_playback_control',
-      'remote_audio_start_failed']);
+      'remote_audio_start_failed','playback_worker_unavailable']);
     const extra=playbackReason ? {playback_failure_reason:safeReasons.has(playbackReason)?playbackReason:'unknown_playback_failure'} : {};
     const reporting=reportSessionEvent("mobile_call_error",{safe_error_category:safeErrorCategory,
       stage:connectionStage,end_reason:endReason,...extra,...(playbackDiagnostics?{playback_diagnostics:playbackDiagnostics}:{})});

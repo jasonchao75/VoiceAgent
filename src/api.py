@@ -359,6 +359,7 @@ class BrowserEvent(BaseModel):
             "mapping_deadline",
             "transform_stream_error",
             "decoder_unavailable",
+            "playback_worker_unavailable",
             "multiple_receiver_transform",
             "decoder_error",
             "decode_job_unowned_output",
@@ -2364,10 +2365,15 @@ def create_app(*, development_rtp_candidate: bool = False) -> FastAPI:
         @app.get("/{path:path}", include_in_schema=False)
         async def spa_fallback(path: str) -> FileResponse:
             if path.startswith("demo/") and len(path.split("/")) == 2:
-                return FileResponse(FRONTEND_DIST / "demo.html")
+                return FileResponse(
+                    FRONTEND_DIST / "demo.html", headers={"Cache-Control": "no-store"}
+                )
             candidate = FRONTEND_DIST / path
             if path and candidate.is_file() and FRONTEND_DIST in candidate.resolve().parents:
-                return FileResponse(candidate)
+                return FileResponse(
+                    candidate,
+                    headers={"Cache-Control": "no-store"} if candidate.suffix == ".html" else None,
+                )
             return FileResponse(FRONTEND_DIST / "index.html")
 
     return app

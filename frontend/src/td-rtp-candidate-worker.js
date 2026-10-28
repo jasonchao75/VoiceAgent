@@ -142,3 +142,4 @@ function attachEncodedStream(transformer) {
   } catch { fail('decoder_unavailable'); }
 }
 self.onrtctransform = ({transformer}) => attachEncodedStream(transformer);
+emit({event:'worker_ready'});

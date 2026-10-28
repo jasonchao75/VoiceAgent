@@ -150,7 +150,7 @@
     {
       "id": "RTP-INTAKE-BACKPRESSURE",
       "status": "Resolved",
-      "summary": "离线mapping先到+90ms解码复现packet_deadline：transform等待deliver阻塞后续读取。拆分接收与有序解码，避免应用引入接收背压；不等于已证明手机实际丢包根因。 新增测试旧代码红/修复绿，10worker测试与Chrome138真实本机组合播放通过；独立只读审核未发现补丁阻塞缺陷。",
+      "summary": "离线mapping先到+90ms解码复现packet_deadline：transform等待deliver阻塞后续读取。拆分接收与有序解码，避免应用引入接收背压；不等于已证明手机实际丢包根因。 新增测试旧代码红/修复绿，10worker测试与Chrome138真实本机组合播放通过；独立只读审核未发现补丁阻塞缺陷。 限定补丁7752141已通过CI/CD上线，生产HEAD及公开资源哈希一致；尚未获得修复后手机结果。",
       "disclosed_to_user": true
     },
     {
@@ -163,6 +163,36 @@
       "id": "RECEIVE-STATS-LATE-PEER",
       "status": "Resolved",
       "summary": "独立审核发现close后迟到createPeerConnection仍可启动新的getStats采样器，需在原始peer创建前拒绝已关闭播放器并补回归。 已在创建原始peer前拒绝closed状态，16项RTC entry测试通过，独立复核通过。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "MOBILE-SILENT-2002B221",
+      "status": "Resolved",
+      "summary": "用户真机2002b221连接后保持至主动挂断，但反馈听不到机器人声音；服务端开场及3轮TTS first audio存在，需查端到端播放，不把ack当用户可听。 同时间手机请求旧worker-CMWK8wxh.js返回404（当前应7WgU_t1y），启动无worker错误监听/握手，原生音轨静音导致无任务音频且不报错；缺陷已定位，待复现修复。 补模块ready握手、404/import错误及运行时错误处理、10秒启动上限和demo HTML no-store。真实Chrome138404测试3.6s通过，正常播放13.6s通过；旧已打开页面必须刷新，手机可听待复测。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "MOBILE-DUPLICATE-CAPTIONS",
+      "status": "Resolved",
+      "summary": "同通话用户反馈每条transcript重复；需要区分ASR/TD展示重复与业务重复触发，来源未证实，不按文本盲去重。 确认RTVI观察器将原ASR Final及私有TDSubmissionFrame作为两帧各发一次字幕；修复专用观察器仅过滤私有提交，不去重真实同文输入、不改变LLM。 自建TD专用RTVI观察器只过滤私有TDSubmission，不按文本去重、不影响LLM。原SDK对照4消息，新3，覆盖迟到Final和两次同文；正式RTC场景仍提交、回答并清空。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "WORKER-READY-RESUME-RACE",
+      "status": "Resolved",
+      "summary": "独立审核发现worker ready后到bridge创建前的运行时error可能被可选回调丢弃；必须锁存失败并在prepare返回前验证。 已锁存ready后失败，resume返回后assertHealthy；20entry测试通过，独立复核PASS。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "CAPTIONS-PARTIAL-REGRESSION",
+      "status": "Resolved",
+      "summary": "单纯过滤全部TDSubmission会让仅Partial的已提交输入无final字幕，需验证并避免修重复时漏显示。 独立规格核对：公开Transcript显示ASR确认文本，私有TD提交不是ASR Final。本次保留原final-only展示；provider Final迟到照常显示，同文两次各保留；不新增可修订Partial UI。此项按范围澄清收口，不恢复伪Final。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "WORKER-READY-UI-NAV",
+      "status": "Resolved",
+      "summary": "Chrome138正常回归在调用通话前/api/bots鉴权检查处Execution context destroyed，疑开发服务器重载；保存trace后复查，不掩盖失败。 失败trace显示页面二次加载，Vite同时间日志为src/td-rtc-entry.js热重载；保留initial-navigation-trace.zip，停止编辑后同条件13.6s通过，尚未进入通话前的测试环境重载。",
       "disclosed_to_user": true
     }
   ],
@@ -183,6 +213,12 @@
       "id": "SUSTAINED-DECODE-CAPACITY",
       "status": "Open",
       "summary": "压力探针持续人为增加每包35ms时达到packet_queue_limit，按现有保护终止；不能把修复误超时说成支持长期低于实时的解码设备。真实手机持续解码性能待验。",
+      "disclosed_to_user": true
+    },
+    {
+      "id": "MOBILE-POST-READY-AUDIBILITY",
+      "status": "Open",
+      "summary": "worker404及重复字幕补丁尚待发布后一次真机验证；已打开旧页面不会被no-store追溯刷新。回执证明渲染，不证明设备扬声器可听；仅Partial未Final时不新增最终字幕展示。",
       "disclosed_to_user": true
     }
   ],

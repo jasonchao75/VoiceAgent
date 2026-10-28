@@ -541,3 +541,16 @@ def test_playback_receive_diagnostics_accepts_bounded_counters():
     }
     event = BrowserEvent(event="mobile_call_error", elapsed_ms=1, playback_diagnostics=values)
     assert event.playback_diagnostics.model_dump(exclude_none=True) == values
+
+
+def test_public_demo_html_is_not_cached(monkeypatch, tmp_path):
+    """New demo navigations must re-fetch their versioned asset references after deploy."""
+    import src.api as api
+
+    (tmp_path / "demo.html").write_text("<html>fixture</html>")
+    monkeypatch.setattr(api, "FRONTEND_DIST", tmp_path)
+    with TestClient(create_app()) as client:
+        for path in ("/demo/fixture", "/demo.html"):
+            response = client.get(path)
+            assert response.status_code == 200
+            assert response.headers["cache-control"] == "no-store"

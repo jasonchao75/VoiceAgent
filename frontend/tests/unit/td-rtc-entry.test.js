@@ -2,6 +2,35 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {playbackReceipt} from '../../src/td-rtc-entry.js';
 import {observeReceiveStats} from '../../src/td-rtc-entry.js';
+import {loadPlaybackWorker} from '../../src/td-rtc-entry.js';
+
+test('worker module load failure rejects startup instead of silently connecting',async()=>{
+ const worker={},load=loadPlaybackWorker(worker,()=>assert.fail('not ready'));
+ worker.onerror({preventDefault(){}});
+ await assert.rejects(load.ready,error=>error.playbackReason==='playback_worker_unavailable');
+ load.close();
+});
+
+test('worker ready has a bounded wait and does not imply playback',async()=>{
+ const load=loadPlaybackWorker({},()=>{},5);
+ await assert.rejects(load.ready,/Audio player could not load/);load.close();
+});
+
+test('worker runtime errors are surfaced and late errors after close are ignored',async()=>{
+ const worker={},failures=[],load=loadPlaybackWorker(worker,reason=>failures.push(reason));
+ worker.onmessage({data:{event:'worker_ready'}});await load.ready;
+ const late=worker.onmessageerror;late();
+ assert.deepEqual(failures,['playback_worker_unavailable']);
+ load.close();late();assert.equal(failures.length,1);
+});
+
+test('worker failure after ready is latched even before its runtime consumer exists',async()=>{
+ const worker={},load=loadPlaybackWorker(worker,()=>{});
+ worker.onmessage({data:{event:'worker_ready'}});await load.ready;
+ worker.onerror({preventDefault(){}});
+ assert.throws(()=>load.assertHealthy(),/Audio player could not load/);
+ load.close();
+});
 
 test('receiver diagnostics whitelist native counters and preserve unknown values',async()=>{
  const stats=observeReceiveStats({getStats:async()=>new Map([['audio',{
@@ -82,7 +111,7 @@ test('formal RTC entry fails and interrupts on a hung receipt instead of stallin
  try {
   globalThis.AudioContext=class {constructor(){this.sampleRate=48000;this.audioWorklet={addModule:async()=>{}};}async resume(){}async close(){}};
   globalThis.AudioWorkletNode=class {constructor(){this.port={postMessage:data=>messages.push(data)};player=this;}connect(){}disconnect(){}};
-  globalThis.Worker=class {postMessage(){}terminate(){}};
+  globalThis.Worker=class {constructor(){queueMicrotask(()=>this.onmessage?.({data:{event:'worker_ready'}}));}postMessage(){}terminate(){}};
   globalThis.RTCRtpScriptTransform=class {};globalThis.AudioDecoder=class {};
   globalThis.setTimeout=fn=>{timers.set(++nextTimer,fn);return nextTimer;};
   globalThis.clearTimeout=id=>timers.delete(id);
@@ -116,7 +145,7 @@ for (const failure of ['module','worker','resume']) {
     async close(){closed++;}
    };
    globalThis.AudioWorkletNode=class {constructor(){this.port={postMessage(){}};}connect(){}disconnect(){disconnected++;}};
-   globalThis.Worker=class {constructor(){if(failure==='worker' && created===1)throw Error('fixture');created++;}postMessage(){}terminate(){terminated++;}};
+   globalThis.Worker=class {constructor(){if(failure==='worker' && created===1)throw Error('fixture');created++;queueMicrotask(()=>this.onmessage?.({data:{event:'worker_ready'}}));}postMessage(){}terminate(){terminated++;}};
    const {prepareRTCPlayback}=await import('../../src/td-rtc-entry.js');
    await assert.rejects(prepareRTCPlayback({}, {sessionId:'fixture',token:'inert',onFailure(){}}),/fixture/);
    assert.equal(closed,1);assert.equal(terminated,created);
@@ -169,7 +198,7 @@ test('late datachannel messages after close cannot restart playback or clock req
  try {
   globalThis.AudioContext=class {constructor(){this.sampleRate=48000;this.audioWorklet={addModule:async()=>{}};}async resume(){}async close(){}};
   globalThis.AudioWorkletNode=class {constructor(){this.port={postMessage(){posts++;}};}connect(){}disconnect(){}};
-  globalThis.Worker=class {postMessage(){posts++;}terminate(){}};
+  globalThis.Worker=class {constructor(){queueMicrotask(()=>this.onmessage?.({data:{event:'worker_ready'}}));}postMessage(){posts++;}terminate(){}};
   globalThis.RTCRtpScriptTransform=class {};globalThis.AudioDecoder=class {};
   globalThis.fetch=async()=>{requests++;return {ok:false};};
   const peer={addEventListener(){},createDataChannel(){return {addEventListener(type,listener){received=listener;}};}};

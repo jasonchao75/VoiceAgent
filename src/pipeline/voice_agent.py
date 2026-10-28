@@ -42,6 +42,7 @@ from src.pipeline.response_revision import ResponseRevisions
 from src.pipeline.response_scope import ResponseScope
 from src.pipeline.serial_output import SerialAudioOutput
 from src.pipeline.speed_control import SessionSpeedController
+from src.pipeline.td_rtvi import TDRTVIProcessor
 from src.pipeline.td_strategies import create_custom_aggregators
 from src.session import SessionLease
 from src.tts import TTSProviderRegistry
@@ -419,6 +420,7 @@ async def run_voice_agent_pipeline(
     )
     worker = PipelineWorker(
         pipeline,
+        rtvi_processor=TDRTVIProcessor() if custom_td is not None else None,
         name=f"voice-session-{lease.session_id}",
         conversation_id=lease.session_id,
         idle_timeout_secs=runtime.session.idle_timeout_seconds,

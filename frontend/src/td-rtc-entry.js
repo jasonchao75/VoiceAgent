@@ -4,6 +4,30 @@ import {RenderClockSampler} from './td-render-clock.js';
 import {RTPCaptureUploader} from './td-rtp-capture.js';
 import {PlaybackReceiptSender} from './td-playback-receipts.js';
 
+export function loadPlaybackWorker(worker,onRuntimeFailure,timeoutMs=10000) {
+  let ready=false,closed=false,timer,rejectReady,failure;
+  const fail=()=>{
+    if(closed || failure)return;
+    clearTimeout(timer);
+    const error=new Error('Audio player could not load. Reload this page before trying again.');
+    error.code='playback_failed';error.playbackReason='playback_worker_unavailable';
+    failure=error;
+    if(ready) {onRuntimeFailure('playback_worker_unavailable');return;}
+    rejectReady(error);
+  };
+  const promise=new Promise((resolve,reject)=>{
+    rejectReady=reject;
+    worker.onmessage=({data})=>{
+      if(closed || data?.event!=='worker_ready')return;
+      ready=true;clearTimeout(timer);worker.onmessage=null;resolve();
+    };
+    worker.onerror=event=>{event.preventDefault?.();fail();};
+    worker.onmessageerror=fail;
+    timer=setTimeout(fail,timeoutMs);
+  });
+  return {ready:promise,assertHealthy(){if(failure)throw failure;},close(){closed=true;clearTimeout(timer);worker.onerror=null;worker.onmessageerror=null;}};
+}
+
 export function playbackReceipt(data) {
   const receipt={event:data.event,playback_id:data.playback_id,rendered_samples:data.rendered_samples,
     elapsed_ms:data.elapsed_ms,evidence_source:'audio_worklet_render',render_clock_id:data.render_clock_id};
@@ -75,11 +99,14 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
     throw error;
   }
   const context=new AudioContext({sampleRate:48000});
-  let player,worker,inputWorker,sourceUploader;
+  let player,worker,inputWorker,sourceUploader,workerLifecycle,bridge;
   try {
   await context.audioWorklet.addModule(new URL('./td-audio-worklet.js',import.meta.url));
   player=new AudioWorkletNode(context,'stream_processor');
   worker=new Worker(new URL('./td-rtp-candidate-worker.js',import.meta.url),{type:'module'});
+  workerLifecycle=loadPlaybackWorker(worker,reason=>bridge?.fail(reason));
+  // A constructed Worker is not proof its script loaded; do not mute native audio and connect blind.
+  await workerLifecycle.ready;
   inputWorker=new Worker(new URL('./td-rtp-input-worker.js',import.meta.url),{type:'module'});
   sourceUploader=new RTPCaptureUploader({sessionId,token,worker:inputWorker,evidence});
   inputWorker.onmessage=({data})=>{
@@ -88,10 +115,11 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
   };
   player.connect(context.destination);
   await context.resume();
+  workerLifecycle.assertHealthy();
   let clockSampler,receiveStats,closed=false;
   const receipts=new PlaybackReceiptSender({sessionId,token,
     onFailure:reason=>bridge.fail(reason)});
-  const bridge=new RTPCandidatePlayback({worker,player,evidence,
+  bridge=new RTPCandidatePlayback({worker,player,evidence,
     onClockSample:data=>clockSampler?.observe(data),send(message){
     if(message.event==='candidate_failed') { onFailure(message.reason,{...message.details,...receiveStats?.read(),client_build:new URL(import.meta.url).pathname.split('/').pop()});return; }
     if(message.event!=='receipt') return;
@@ -129,8 +157,9 @@ export async function prepareRTCPlayback(transport,{sessionId,token,onFailure,ev
     };
     return peer;
   };
-  return {async close(){if(closed)return;closed=true;receiveStats?.close();receipts.close();clockSampler.close();sourceUploader.close();worker.terminate();inputWorker.terminate();player.disconnect();await context.close();}};
+  return {async close(){if(closed)return;closed=true;receiveStats?.close();workerLifecycle.close();receipts.close();clockSampler.close();sourceUploader.close();worker.terminate();inputWorker.terminate();player.disconnect();await context.close();}};
   } catch(error) {
+    workerLifecycle?.close();
     sourceUploader?.close();
     worker?.terminate();
     inputWorker?.terminate();
